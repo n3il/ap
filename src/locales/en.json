@@ -1,0 +1,124 @@
+{
+  "login": {
+    "title": "Welcome Back",
+    "subtitle": "Sign in to continue",
+    "phoneNumber": "Phone Number",
+    "phonePlaceholder": "+1 (555) 000-0000",
+    "sendCode": "Send Code",
+    "verificationCode": "Verification Code",
+    "codePlaceholder": "Enter 6-digit code",
+    "verify": "Verify & Sign In",
+    "resendCode": "Resend Code",
+    "changeNumber": "Change Number",
+    "email": "Email",
+    "password": "Password",
+    "emailPlaceholder": "your@email.com",
+    "passwordPlaceholder": "Enter your password",
+    "forgotPassword": "Forgot Password?",
+    "signIn": "Sign In",
+    "orContinueWith": "Or continue with",
+    "continueWithEmail": "Email",
+    "google": "Google",
+    "apple": "Apple",
+    "noAccount": "Don't have an account? ",
+    "signUp": "Sign Up",
+    "errors": {
+      "fillAllFields": "Please fill in all fields",
+      "enterPhoneNumber": "Please enter your phone number",
+      "enterVerificationCode": "Please enter the verification code",
+      "invalidPhoneNumber": "Please enter a valid phone number",
+      "loginFailed": "Login Failed",
+      "verificationFailed": "Verification Failed",
+      "codeSendFailed": "Failed to send code",
+      "googleSignInFailed": "Google Sign-In Failed",
+      "appleSignInFailed": "Apple Sign-In Failed"
+    },
+    "success": {
+      "codeSent": "Verification code sent to your phone"
+    }
+  },
+  "signup": {
+    "title": "Create Account",
+    "subtitle": "Sign up to get started",
+    "fullName": "Full Name",
+    "email": "Email",
+    "password": "Password",
+    "confirmPassword": "Confirm Password",
+    "fullNamePlaceholder": "John Doe",
+    "emailPlaceholder": "your@email.com",
+    "passwordPlaceholder": "At least 6 characters",
+    "confirmPasswordPlaceholder": "Re-enter your password",
+    "createAccount": "Create Account",
+    "haveAccount": "Already have an account? ",
+    "signIn": "Sign In",
+    "errors": {
+      "fillAllFields": "Please fill in all fields",
+      "invalidEmail": "Please enter a valid email address",
+      "passwordTooShort": "Password must be at least 6 characters long",
+      "passwordsDoNotMatch": "Passwords do not match",
+      "signUpFailed": "Sign Up Failed"
+    },
+    "success": {
+      "title": "Success",
+      "message": "Account created successfully! Please check your email to verify your account.",
+      "ok": "OK"
+    }
+  },
+  "onboarding": {
+    "steps": {
+      "welcome": {
+        "title": "Welcome!",
+        "subtitle": "Let's get you set up",
+        "description": "We're excited to have you here! Let's take a moment to set up your profile and preferences.",
+        "getStarted": "Get Started"
+      },
+      "profile": {
+        "title": "Complete Your Profile",
+        "subtitle": "Tell us a bit about yourself",
+        "displayName": "Display Name *",
+        "displayNamePlaceholder": "How should we call you?",
+        "bio": "Bio (Optional)",
+        "bioPlaceholder": "Tell us about yourself...",
+        "back": "Back",
+        "next": "Next"
+      },
+      "preferences": {
+        "title": "Set Your Preferences",
+        "subtitle": "Customize your experience",
+        "enableNotifications": "Enable Notifications",
+        "notificationsDescription": "Get updates about your account",
+        "theme": "Theme",
+        "light": "Light",
+        "dark": "Dark",
+        "back": "Back",
+        "complete": "Complete"
+      }
+    },
+    "errors": {
+      "enterDisplayName": "Please enter your display name",
+      "onboardingFailed": "Failed to complete onboarding. Please try again."
+    }
+  },
+  "forgotPassword": {
+    "title": "Reset Password",
+    "subtitle": "Enter your email and we'll send you instructions to reset your password",
+    "email": "Email",
+    "emailPlaceholder": "your@email.com",
+    "sendResetLink": "Send Reset Link",
+    "backToLogin": "Back to Login",
+    "errors": {
+      "enterEmail": "Please enter your email address"
+    },
+    "success": {
+      "title": "Check Your Email",
+      "message": "We have sent you instructions to reset your password.",
+      "ok": "OK"
+    }
+  },
+  "common": {
+    "error": "Error",
+    "loading": "Loading...",
+    "cancel": "Cancel",
+    "save": "Save"
+  }
+}

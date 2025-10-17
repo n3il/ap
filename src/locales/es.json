@@ -1,0 +1,124 @@
+{
+  "login": {
+    "title": "Bienvenido de Nuevo",
+    "subtitle": "Inicia sesión para continuar",
+    "phoneNumber": "Número de Teléfono",
+    "phonePlaceholder": "+34 600 000 000",
+    "sendCode": "Enviar Código",
+    "verificationCode": "Código de Verificación",
+    "codePlaceholder": "Ingresa código de 6 dígitos",
+    "verify": "Verificar e Iniciar Sesión",
+    "resendCode": "Reenviar Código",
+    "changeNumber": "Cambiar Número",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "emailPlaceholder": "tu@correo.com",
+    "passwordPlaceholder": "Ingresa tu contraseña",
+    "forgotPassword": "¿Olvidaste tu contraseña?",
+    "signIn": "Iniciar Sesión",
+    "orContinueWith": "O continúa con",
+    "continueWithEmail": "Correo",
+    "google": "Google",
+    "apple": "Apple",
+    "noAccount": "¿No tienes una cuenta? ",
+    "signUp": "Regístrate",
+    "errors": {
+      "fillAllFields": "Por favor completa todos los campos",
+      "enterPhoneNumber": "Por favor ingresa tu número de teléfono",
+      "enterVerificationCode": "Por favor ingresa el código de verificación",
+      "invalidPhoneNumber": "Por favor ingresa un número de teléfono válido",
+      "loginFailed": "Error al Iniciar Sesión",
+      "verificationFailed": "Error de Verificación",
+      "codeSendFailed": "Error al enviar el código",
+      "googleSignInFailed": "Error al Iniciar Sesión con Google",
+      "appleSignInFailed": "Error al Iniciar Sesión con Apple"
+    },
+    "success": {
+      "codeSent": "Código de verificación enviado a tu teléfono"
+    }
+  },
+  "signup": {
+    "title": "Crear Cuenta",
+    "subtitle": "Regístrate para comenzar",
+    "fullName": "Nombre Completo",
+    "email": "Correo Electrónico",
+    "password": "Contraseña",
+    "confirmPassword": "Confirmar Contraseña",
+    "fullNamePlaceholder": "Juan Pérez",
+    "emailPlaceholder": "tu@correo.com",
+    "passwordPlaceholder": "Al menos 6 caracteres",
+    "confirmPasswordPlaceholder": "Vuelve a ingresar tu contraseña",
+    "createAccount": "Crear Cuenta",
+    "haveAccount": "¿Ya tienes una cuenta? ",
+    "signIn": "Iniciar Sesión",
+    "errors": {
+      "fillAllFields": "Por favor completa todos los campos",
+      "invalidEmail": "Por favor ingresa un correo electrónico válido",
+      "passwordTooShort": "La contraseña debe tener al menos 6 caracteres",
+      "passwordsDoNotMatch": "Las contraseñas no coinciden",
+      "signUpFailed": "Error al Registrarse"
+    },
+    "success": {
+      "title": "Éxito",
+      "message": "¡Cuenta creada exitosamente! Por favor revisa tu correo para verificar tu cuenta.",
+      "ok": "OK"
+    }
+  },
+  "onboarding": {
+    "steps": {
+      "welcome": {
+        "title": "¡Bienvenido!",
+        "subtitle": "Vamos a configurar tu cuenta",
+        "description": "¡Estamos emocionados de tenerte aquí! Tomemos un momento para configurar tu perfil y preferencias.",
+        "getStarted": "Comenzar"
+      },
+      "profile": {
+        "title": "Completa tu Perfil",
+        "subtitle": "Cuéntanos un poco sobre ti",
+        "displayName": "Nombre a Mostrar *",
+        "displayNamePlaceholder": "¿Cómo deberíamos llamarte?",
+        "bio": "Biografía (Opcional)",
+        "bioPlaceholder": "Cuéntanos sobre ti...",
+        "back": "Atrás",
+        "next": "Siguiente"
+      },
+      "preferences": {
+        "title": "Configura tus Preferencias",
+        "subtitle": "Personaliza tu experiencia",
+        "enableNotifications": "Habilitar Notificaciones",
+        "notificationsDescription": "Recibe actualizaciones sobre tu cuenta",
+        "theme": "Tema",
+        "light": "Claro",
+        "dark": "Oscuro",
+        "back": "Atrás",
+        "complete": "Completar"
+      }
+    },
+    "errors": {
+      "enterDisplayName": "Por favor ingresa tu nombre a mostrar",
+      "onboardingFailed": "Error al completar la configuración. Por favor intenta de nuevo."
+    }
+  },
+  "forgotPassword": {
+    "title": "Restablecer Contraseña",
+    "subtitle": "Ingresa tu correo y te enviaremos instrucciones para restablecer tu contraseña",
+    "email": "Correo Electrónico",
+    "emailPlaceholder": "tu@correo.com",
+    "sendResetLink": "Enviar Enlace",
+    "backToLogin": "Volver al Inicio de Sesión",
+    "errors": {
+      "enterEmail": "Por favor ingresa tu dirección de correo"
+    },
+    "success": {
+      "title": "Revisa tu Correo",
+      "message": "Te hemos enviado instrucciones para restablecer tu contraseña.",
+      "ok": "OK"
+    }
+  },
+  "common": {
+    "error": "Error",
+    "loading": "Cargando...",
+    "cancel": "Cancelar",
+    "save": "Guardar"
+  }
+}

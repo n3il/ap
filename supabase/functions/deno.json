@@ -1,0 +1,9 @@
+{
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2.39.0",
+    "hyperliquid": "npm:hyperliquid@^1.13.0"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window"]
+  }
+}

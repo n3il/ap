@@ -1,0 +1,124 @@
+{
+  "login": {
+    "title": "Bienvenue",
+    "subtitle": "Connectez-vous pour continuer",
+    "phoneNumber": "Numéro de Téléphone",
+    "phonePlaceholder": "+33 6 00 00 00 00",
+    "sendCode": "Envoyer le Code",
+    "verificationCode": "Code de Vérification",
+    "codePlaceholder": "Entrez le code à 6 chiffres",
+    "verify": "Vérifier et Se Connecter",
+    "resendCode": "Renvoyer le Code",
+    "changeNumber": "Changer le Numéro",
+    "email": "E-mail",
+    "password": "Mot de Passe",
+    "emailPlaceholder": "votre@email.com",
+    "passwordPlaceholder": "Entrez votre mot de passe",
+    "forgotPassword": "Mot de passe oublié?",
+    "signIn": "Se Connecter",
+    "orContinueWith": "Ou continuez avec",
+    "continueWithEmail": "E-mail",
+    "google": "Google",
+    "apple": "Apple",
+    "noAccount": "Pas de compte? ",
+    "signUp": "S'inscrire",
+    "errors": {
+      "fillAllFields": "Veuillez remplir tous les champs",
+      "enterPhoneNumber": "Veuillez entrer votre numéro de téléphone",
+      "enterVerificationCode": "Veuillez entrer le code de vérification",
+      "invalidPhoneNumber": "Veuillez entrer un numéro de téléphone valide",
+      "loginFailed": "Échec de la Connexion",
+      "verificationFailed": "Échec de la Vérification",
+      "codeSendFailed": "Échec de l'envoi du code",
+      "googleSignInFailed": "Échec de la Connexion Google",
+      "appleSignInFailed": "Échec de la Connexion Apple"
+    },
+    "success": {
+      "codeSent": "Code de vérification envoyé à votre téléphone"
+    }
+  },
+  "signup": {
+    "title": "Créer un Compte",
+    "subtitle": "Inscrivez-vous pour commencer",
+    "fullName": "Nom Complet",
+    "email": "E-mail",
+    "password": "Mot de Passe",
+    "confirmPassword": "Confirmer le Mot de Passe",
+    "fullNamePlaceholder": "Jean Dupont",
+    "emailPlaceholder": "votre@email.com",
+    "passwordPlaceholder": "Au moins 6 caractères",
+    "confirmPasswordPlaceholder": "Ressaisissez votre mot de passe",
+    "createAccount": "Créer un Compte",
+    "haveAccount": "Vous avez déjà un compte? ",
+    "signIn": "Se Connecter",
+    "errors": {
+      "fillAllFields": "Veuillez remplir tous les champs",
+      "invalidEmail": "Veuillez entrer une adresse e-mail valide",
+      "passwordTooShort": "Le mot de passe doit comporter au moins 6 caractères",
+      "passwordsDoNotMatch": "Les mots de passe ne correspondent pas",
+      "signUpFailed": "Échec de l'Inscription"
+    },
+    "success": {
+      "title": "Succès",
+      "message": "Compte créé avec succès! Veuillez vérifier votre e-mail pour vérifier votre compte.",
+      "ok": "OK"
+    }
+  },
+  "onboarding": {
+    "steps": {
+      "welcome": {
+        "title": "Bienvenue!",
+        "subtitle": "Configurons votre compte",
+        "description": "Nous sommes ravis de vous avoir ici! Prenons un moment pour configurer votre profil et vos préférences.",
+        "getStarted": "Commencer"
+      },
+      "profile": {
+        "title": "Complétez Votre Profil",
+        "subtitle": "Parlez-nous un peu de vous",
+        "displayName": "Nom d'Affichage *",
+        "displayNamePlaceholder": "Comment devrions-nous vous appeler?",
+        "bio": "Biographie (Optionnel)",
+        "bioPlaceholder": "Parlez-nous de vous...",
+        "back": "Retour",
+        "next": "Suivant"
+      },
+      "preferences": {
+        "title": "Définissez Vos Préférences",
+        "subtitle": "Personnalisez votre expérience",
+        "enableNotifications": "Activer les Notifications",
+        "notificationsDescription": "Recevez des mises à jour sur votre compte",
+        "theme": "Thème",
+        "light": "Clair",
+        "dark": "Sombre",
+        "back": "Retour",
+        "complete": "Terminer"
+      }
+    },
+    "errors": {
+      "enterDisplayName": "Veuillez entrer votre nom d'affichage",
+      "onboardingFailed": "Échec de la configuration. Veuillez réessayer."
+    }
+  },
+  "forgotPassword": {
+    "title": "Réinitialiser le Mot de Passe",
+    "subtitle": "Entrez votre e-mail et nous vous enverrons des instructions pour réinitialiser votre mot de passe",
+    "email": "E-mail",
+    "emailPlaceholder": "votre@email.com",
+    "sendResetLink": "Envoyer le Lien",
+    "backToLogin": "Retour à la Connexion",
+    "errors": {
+      "enterEmail": "Veuillez entrer votre adresse e-mail"
+    },
+    "success": {
+      "title": "Vérifiez Votre E-mail",
+      "message": "Nous vous avons envoyé des instructions pour réinitialiser votre mot de passe.",
+      "ok": "OK"
+    }
+  },
+  "common": {
+    "error": "Erreur",
+    "loading": "Chargement...",
+    "cancel": "Annuler",
+    "save": "Enregistrer"
+  }
+}
