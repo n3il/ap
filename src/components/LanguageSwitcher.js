@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text, TouchableOpacity, Stack } from '@/components/ui';
+import { View, Text, TouchableOpacity, Stack } from '@/components/ui';
 import { useLocalization } from '@/hooks/useLocalization';
 
 const LANGUAGES = [
@@ -12,7 +12,7 @@ export default function LanguageSwitcher() {
   const { locale, changeLocale } = useLocalization();
 
   return (
-    <Box sx={{ width: '100%' }}>
+    <View sx={{ width: '100%' }}>
       <Text variant="sm" sx={{ fontWeight: '600', marginBottom: 3 }}>
         Language / Idioma / Langue
       </Text>
@@ -52,6 +52,6 @@ export default function LanguageSwitcher() {
           );
         })}
       </Stack>
-    </Box>
+    </View>
   );
 }

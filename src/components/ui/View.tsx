@@ -3,11 +3,11 @@ import { View as RNView, type ViewProps as RNViewProps } from 'react-native';
 import { View as DripsyView } from 'dripsy';
 import type { SxProp } from 'dripsy';
 
-export interface BoxProps extends RNViewProps {
+export interface ViewProps extends RNViewProps {
   sx?: SxProp;
 }
 
-const Box = React.forwardRef<React.ComponentRef<typeof RNView>, BoxProps>(
+const View = React.forwardRef<React.ComponentRef<typeof RNView>, ViewProps>(
   ({ sx, style, ...props }, ref) => {
     // If there's an sx prop, use Dripsy's View for theme-aware styling
     // Otherwise use React Native's View for maximum compatibility
@@ -26,6 +26,6 @@ const Box = React.forwardRef<React.ComponentRef<typeof RNView>, BoxProps>(
   },
 );
 
-Box.displayName = 'Box';
+View.displayName = 'View';
 
-export default Box;
+export default View;

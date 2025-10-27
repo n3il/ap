@@ -1,12 +1,12 @@
 // Core UI components
-export { default as Box } from './Box';
+export { default as View } from './View';
+export { default as SafeAreaView } from './SafeAreaView';
+export { default as ScrollView } from './ScrollView';
 export { default as Text } from './Text';
 export { default as Button } from './Button';
 export { default as IconButton } from './IconButton';
 export { default as TextInput } from './TextInput';
 export { default as TouchableOpacity } from './TouchableOpacity';
-export { default as SafeAreaView } from './SafeAreaView';
-export { default as ScrollView } from './ScrollView';
 
 // Layout components
 export { default as Card } from './Card';
@@ -24,9 +24,6 @@ export { default as Skeleton } from './Skeleton';
 
 // Form components
 export { default as FormField } from './FormField';
-
-// Export React Native View directly for compatibility
-export { View } from 'react-native';
 
 export {
   ActivityIndicator,

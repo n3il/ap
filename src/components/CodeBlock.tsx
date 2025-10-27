@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Box, Text } from '@/components/ui';
+import { View, Text } from '@/components/ui';
 
 type TokenType =
   | 'comment'
@@ -104,7 +104,7 @@ export default function CodeBlock({ code, language }: CodeBlockProps) {
   const tokens = tokenize(code ?? '');
 
   return (
-    <Box
+    <View
       sx={{
         backgroundColor: 'surface',
         borderWidth: 1,
@@ -127,6 +127,6 @@ export default function CodeBlock({ code, language }: CodeBlockProps) {
           </Text>
         ))}
       </Text>
-    </Box>
+    </View>
   );
 }

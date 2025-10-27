@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text, StatusBadge, LabelValue, Divider, Stack } from '@/components/ui';
+import { View, Text, StatusBadge, LabelValue, Divider, Stack } from '@/components/ui';
 import GlassCard from './GlassCard';
 
 export default function TradeCard({ trade }) {
@@ -51,7 +51,7 @@ export default function TradeCard({ trade }) {
             label="Exit Price"
             value={`$${parseFloat(trade.exit_price).toLocaleString()}`}
           />
-          <Box sx={{ alignItems: 'flex-end' }}>
+          <View sx={{ alignItems: 'flex-end' }}>
             <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
               Realized P&L
             </Text>
@@ -61,26 +61,26 @@ export default function TradeCard({ trade }) {
             >
               {pnlSign}${Math.abs(pnl).toLocaleString()}
             </Text>
-          </Box>
+          </View>
         </Stack>
       )}
 
       <Divider sx={{ marginTop: 2 }} />
 
       <Stack direction="row" justify="space-between" sx={{ marginTop: 2 }}>
-        <Box>
+        <View>
           <Text variant="xs" tone="muted">Entry</Text>
           <Text variant="xs" tone="subtle">
             {formatDate(trade.entry_timestamp)}
           </Text>
-        </Box>
+        </View>
         {!isOpen && (
-          <Box sx={{ alignItems: 'flex-end' }}>
+          <View sx={{ alignItems: 'flex-end' }}>
             <Text variant="xs" tone="muted">Exit</Text>
             <Text variant="xs" tone="subtle">
               {formatDate(trade.exit_timestamp)}
             </Text>
-          </Box>
+          </View>
         )}
       </Stack>
     </GlassCard>

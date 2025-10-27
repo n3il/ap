@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Box, Text, TouchableOpacity, StatusBadge, Divider, Stack } from '@/components/ui';
+import { View, Text, TouchableOpacity, StatusBadge, Divider, Stack } from '@/components/ui';
 import GlassCard from './GlassCard';
 
 export default function AssessmentCard({ assessment }) {
@@ -20,37 +20,37 @@ export default function AssessmentCard({ assessment }) {
     <GlassCard sx={{ marginBottom: 3 }}>
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
         <Stack direction="row" justify="space-between" align="flex-start" sx={{ marginBottom: 2 }}>
-          <Box sx={{ flex: 1 }}>
+          <View sx={{ flex: 1 }}>
             <StatusBadge variant="accent">{typeLabel}</StatusBadge>
             <Text variant="xs" tone="muted" sx={{ marginTop: 2 }}>
               {formatDate(assessment.timestamp)}
             </Text>
-          </Box>
+          </View>
           <Text variant="lg" tone="muted">
             {expanded ? '▼' : '▶'}
           </Text>
         </Stack>
 
         {assessment.trade_action_taken && (
-          <Box sx={{ marginTop: 2, marginBottom: 2 }}>
+          <View sx={{ marginTop: 2, marginBottom: 2 }}>
             <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
               Action Taken
             </Text>
             <Text sx={{ color: 'success', fontWeight: '600' }}>
               {assessment.trade_action_taken}
             </Text>
-          </Box>
+          </View>
         )}
 
         {expanded && (
           <>
             <Divider sx={{ marginTop: 3 }} />
-            <Box sx={{ paddingTop: 3 }}>
-              <Box sx={{ marginBottom: 3 }}>
+            <View sx={{ paddingTop: 3 }}>
+              <View sx={{ marginBottom: 3 }}>
                 <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
                   Market Data Snapshot
                 </Text>
-                <Box
+                <View
                   sx={{
                     backgroundColor: 'rgba(0, 0, 0, 0.3)',
                     borderRadius: 'lg',
@@ -60,14 +60,14 @@ export default function AssessmentCard({ assessment }) {
                   <Text variant="xs" tone="subtle" sx={{ fontFamily: 'monospace' }}>
                     {JSON.stringify(assessment.market_data_snapshot, null, 2)}
                   </Text>
-                </Box>
-              </Box>
+                </View>
+              </View>
 
-              <Box sx={{ marginBottom: 3 }}>
+              <View sx={{ marginBottom: 3 }}>
                 <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
                   LLM Analysis
                 </Text>
-                <Box
+                <View
                   sx={{
                     backgroundColor: 'rgba(0, 0, 0, 0.3)',
                     borderRadius: 'lg',
@@ -77,8 +77,8 @@ export default function AssessmentCard({ assessment }) {
                   <Text variant="sm" tone="subtle">
                     {assessment.llm_response_text}
                   </Text>
-                </Box>
-              </Box>
+                </View>
+              </View>
 
               <TouchableOpacity
                 onPress={() => setExpanded(!expanded)}
@@ -93,16 +93,16 @@ export default function AssessmentCard({ assessment }) {
                   Show Less
                 </Text>
               </TouchableOpacity>
-            </Box>
+            </View>
           </>
         )}
 
         {!expanded && (
-          <Box sx={{ marginTop: 2 }}>
+          <View sx={{ marginTop: 2 }}>
             <Text variant="xs" tone="muted">
               Tap to view full analysis
             </Text>
-          </Box>
+          </View>
         )}
       </TouchableOpacity>
     </GlassCard>

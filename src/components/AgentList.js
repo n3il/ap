@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Text } from '@/components/ui';
+import { View, Text } from '@/components/ui';
 import AgentCard from './AgentCard';
 
 export default function AgentList({
@@ -13,20 +13,20 @@ export default function AgentList({
   if (!agents.length) {
     return (
       emptyState || (
-        <Box sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
+        <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
           <Text variant="lg" tone="muted" sx={{ marginBottom: 2, fontWeight: '600' }}>
             No agents available
           </Text>
           <Text variant="sm" tone="subtle" sx={{ textAlign: 'center' }}>
             Create or publish an agent to see it appear here.
           </Text>
-        </Box>
+        </View>
       )
     );
   }
 
   return (
-    <Box>
+    <View>
       {listTitle && (
         <Text variant="xl" sx={{ fontWeight: '700', marginBottom: 4 }}>
           {listTitle}
@@ -41,6 +41,6 @@ export default function AgentList({
           onPress={() => onAgentPress?.(agent)}
         />
       ))}
-    </Box>
+    </View>
   );
 }

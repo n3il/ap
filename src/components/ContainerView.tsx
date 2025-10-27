@@ -1,6 +1,5 @@
 import React from 'react';
-import type { ViewProps } from 'react-native';
-import { Box } from '@/components/ui';
+import { View, type ViewProps } from '@/components/ui';
 import { useColors } from '@/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -12,14 +11,14 @@ export default function ContainerView({ children, style, ...props }: ContainerVi
   const { background } = useColors();
 
   return (
-    <Box
+    <View
       sx={{ flex: 1, backgroundColor: background }}
       {...props}
-      style={[{ flex: 1, backgroundColor: background }, style]}
+      style={style}
     >
       <SafeAreaView style={{ flex: 1 }}>
           {children}
       </SafeAreaView>
-    </Box>
+    </View>
   );
 }

@@ -72,13 +72,9 @@ export default function SplashScreen() {
         {/* Logo/Brand */}
         <View style={styles.logoContainer}>
           <View style={styles.logoGlass}>
-            <Text style={styles.logoText}>{'[ ]'}</Text>
+            <Text style={styles.logoText}>{''}</Text>
           </View>
         </View>
-
-        {/* App Name */}
-        <Text style={styles.appName}>{`[   ]`}</Text>
-        <Text style={styles.tagline}>AI-Powered Trading Agents</Text>
 
         {/* Loading indicator */}
         <View style={styles.loadingContainer}>
