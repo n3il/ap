@@ -10,7 +10,7 @@ import {
 } from '@/components/ui';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
-import Container from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLocalization } from '@/hooks/useLocalization';
 import { OtpInput } from "react-native-otp-entry";
@@ -80,7 +80,7 @@ export default function VerifyOTPScreen() {
   };
 
   return (
-    <Container>
+    <ContainerView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{
@@ -223,6 +223,6 @@ export default function VerifyOTPScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </Container>
+    </ContainerView>
   );
 }

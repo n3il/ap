@@ -18,7 +18,7 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { supabase } from '@/config/supabase';
-import Container from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 
 export default function AccountSettingsScreen() {
   const { user } = useAuth();
@@ -140,7 +140,7 @@ export default function AccountSettingsScreen() {
   );
 
   return (
-    <Container>
+    <ContainerView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         sx={{ flex: 1 }}
@@ -479,6 +479,6 @@ export default function AccountSettingsScreen() {
           </AnimatedBox>
         </ScrollView>
       </KeyboardAvoidingView>
-    </Container>
+    </ContainerView>
   );
 }

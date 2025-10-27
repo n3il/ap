@@ -11,7 +11,7 @@ import {
 } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
-import ContainerView from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import { useLocalization } from '@/hooks/useLocalization';
 
 export default function ForgotPasswordScreen() {

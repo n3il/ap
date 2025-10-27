@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Container from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import StatCard from '@/components/StatCard';
 import CreateAgentModal from '@/components/CreateAgentModal';
 import PromptManagerModal from '@/components/PromptManagerModal';
@@ -182,29 +182,29 @@ export default function AgentsScreen() {
 
   if (isLoading) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#fff" />
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   if (error) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
           <Text sx={{ color: '#f87171', textAlign: 'center', marginBottom: 4 }}>Error loading agents</Text>
           <TouchableOpacity onPress={refetch} sx={{ backgroundColor: '#3b82f6', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 'xl' }}>
             <Text sx={{ color: 'white', fontWeight: '600' }}>Retry</Text>
           </TouchableOpacity>
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   return (
-    <Container>
+    <ContainerView>
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           sx={{ flex: 1 }}
@@ -369,6 +369,6 @@ export default function AgentsScreen() {
           }}
         />
       </SafeAreaView>
-    </Container>
+    </ContainerView>
   );
 }

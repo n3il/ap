@@ -10,7 +10,7 @@ import {
 } from '@/components/ui';
 import { SafeAreaView } from '@/components/ui';
 import { useRouter } from 'expo-router';
-import Container from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import { useMarketSnapshot } from '@/hooks/useMarketSnapshot';
 import { useTradingData } from '@/hooks/useTradingData';
 import { useAccountBalance } from '@/hooks/useAccountBalance';
@@ -459,7 +459,7 @@ export default function MarketsScreen() {
   };
 
   return (
-    <Container>
+    <ContainerView>
       <SafeAreaView style={{ flex: 1 }}>
         <View style={styles.header}>
           <View style={styles.headerLeft}>
@@ -712,7 +712,7 @@ export default function MarketsScreen() {
           )}
         </ScrollView>
       </SafeAreaView>
-    </Container>
+    </ContainerView>
   );
 }
 

@@ -3,7 +3,7 @@ import { View, ScrollView, ActivityIndicator, TouchableOpacity, Text } from '@/c
 import Markdown from 'react-native-markdown-display';
 import { useMutation } from '@tanstack/react-query';
 import CodeBlock from '@/components/CodeBlock';
-import ContainerView from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import GlassVariations from '@/components/GlassVariations';
 
 const BASE_URL = 'http://192.168.4.78:24574';

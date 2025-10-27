@@ -1,6 +1,6 @@
 import React from 'react';
 import { Text, View } from '@/components/ui';
-import ContainerView from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import { useRouter } from 'expo-router';
 import { useEffect } from 'react';
 

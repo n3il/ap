@@ -226,7 +226,7 @@ function MyCard() {
 - `src/components/ui/index.ts` - Updated exports
 - `src/components/GlassCard.js` - Now wrapper around Card
 - `src/components/StatCard.js` - Uses new utilities
-- `src/components/Container.tsx` - Uses useColors hook
+- `src/components/ContainerView.tsx` - Uses useColors hook
 
 ## Next Steps
 

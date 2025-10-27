@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from '@/components/ui';
 import { useQuery } from '@tanstack/react-query';
-import Container from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import AssessmentCard from '@/components/AssessmentCard';
 import StatCard from '@/components/StatCard';
 import { assessmentService } from '@/services/assessmentService';
@@ -31,29 +31,29 @@ export default function AssessmentsScreen() {
 
   if (isLoading) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#fff" />
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   if (error) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
           <Text sx={{ color: '#f87171', textAlign: 'center', marginBottom: 4 }}>Error loading assessments</Text>
           <TouchableOpacity onPress={refetch} sx={{ backgroundColor: '#a855f7', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 'xl' }}>
             <Text sx={{ color: '#f1f5f9', fontWeight: '600' }}>Retry</Text>
           </TouchableOpacity>
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   return (
-    <Container>
+    <ContainerView>
       <SafeAreaView style={{ flex: 1 }}>
         <ScrollView
           sx={{ flex: 1 }}
@@ -204,6 +204,6 @@ export default function AssessmentsScreen() {
           </View>
       </ScrollView>
       </SafeAreaView>
-    </Container>
+    </ContainerView>
   );
 }

@@ -3,7 +3,7 @@ import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from '@/com
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
 import { SafeAreaView } from '@/components/ui';
-import Container from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import AgentList from '@/components/AgentList';
 import MarketPricesWidget from '@/components/MarketPricesWidget';
 import { agentService } from '@/services/agentService';
@@ -48,17 +48,17 @@ export default function ExploreScreen() {
 
   if (isLoading) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#fff" />
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   if (error) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
           <Text tone="muted" sx={{ textAlign: 'center', marginBottom: 4, color: 'error' }}>
             Error loading published agents
@@ -67,12 +67,12 @@ export default function ExploreScreen() {
             Pull down to retry or return later while the desk syncs.
           </Text>
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   return (
-    <Container>
+    <ContainerView>
       <SafeAreaView sx={{ flex: 1 }}>
         <ScrollView
           sx={{ flex: 1 }}
@@ -161,6 +161,6 @@ export default function ExploreScreen() {
           </View>
         </ScrollView>
       </SafeAreaView>
-    </Container>
+    </ContainerView>
   );
 }

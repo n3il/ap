@@ -9,7 +9,7 @@ import {
 } from '@/components/ui';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Container from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import TradeCard from '@/components/TradeCard';
 import AssessmentCard from '@/components/AssessmentCard';
 import StatCard from '@/components/StatCard';
@@ -117,17 +117,17 @@ const AgentReadScreen = () => {
 
   if (agentLoading) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#fff" />
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   if (agentError || !agent) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
           <Text tone="muted" sx={{ textAlign: 'center', marginBottom: 4, color: 'error' }}>
             Error loading agent details
@@ -144,7 +144,7 @@ const AgentReadScreen = () => {
             <Text sx={{ color: '#e2e8f0', fontWeight: '600' }}>Go Back</Text>
           </TouchableOpacity>
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
@@ -161,7 +161,7 @@ const AgentReadScreen = () => {
     : 'Not shared';
 
   return (
-    <Container>
+    <ContainerView>
       <ScrollView sx={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
         <View sx={{ paddingHorizontal: 6, paddingTop: 16, paddingBottom: 6 }}>
           <TouchableOpacity onPress={() => router.back()} sx={{ marginBottom: 4 }}>
@@ -542,7 +542,7 @@ const AgentReadScreen = () => {
           )}
         </View>
       </ScrollView>
-    </Container>
+    </ContainerView>
   );
 };
 

@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from '@/components/ui';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import Container from '@/components/Container';
+import ContainerView from '@/components/ContainerView';
 import { PromptAssignmentsCard, PromptModals } from '@/components/ManagePrompts';
 import GlassCard from '@/components/GlassCard';
 import { agentService } from '@/services/agentService';
@@ -204,17 +204,17 @@ const AgentManageScreen = () => {
 
   if (agentLoading) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color="#fff" />
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   if (agentError || !agent) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
           <Text tone="muted" sx={{ textAlign: 'center', marginBottom: 4, color: 'error' }}>
             Error loading agent settings
@@ -231,13 +231,13 @@ const AgentManageScreen = () => {
             <Text sx={{ color: '#f8fafc', fontWeight: '600' }}>Go Back</Text>
           </TouchableOpacity>
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   if (!isOwnAgent) {
     return (
-      <Container>
+      <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
           <Text tone="muted" sx={{ textAlign: 'center', marginBottom: 4 }}>
             Only the agent owner can edit publishing and prompt settings.
@@ -254,12 +254,12 @@ const AgentManageScreen = () => {
             <Text sx={{ color: '#f8fafc', fontWeight: '600' }}>Return</Text>
           </TouchableOpacity>
         </View>
-      </Container>
+      </ContainerView>
     );
   }
 
   return (
-    <Container>
+    <ContainerView>
       <ScrollView sx={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
         <View sx={{ paddingHorizontal: 6, paddingTop: 16, paddingBottom: 6 }}>
           <TouchableOpacity onPress={handleGoBack} sx={{ marginBottom: 4 }}>
@@ -413,7 +413,7 @@ const AgentManageScreen = () => {
           queryClient.invalidateQueries(['prompts']);
         }}
       />
-    </Container>
+    </ContainerView>
   );
 };
 
