@@ -115,7 +115,66 @@ Deno.serve(async (req)=>{
       throw assessmentError;
     }
     console.log('Assessment saved:', assessment.id);
-    // 9. Execute trade action if needed
+
+    // 9. Calculate and record PnL snapshot
+    try {
+      // Fetch all closed trades to calculate realized PnL
+      const { data: closedTrades } = await supabase
+        .from('trades')
+        .select('realized_pnl')
+        .eq('agent_id', agent_id)
+        .eq('status', 'CLOSED');
+
+      const realizedPnl = (closedTrades || [])
+        .reduce((sum, trade) => sum + (parseFloat(trade.realized_pnl) || 0), 0);
+
+      // Calculate unrealized PnL from open positions
+      const priceMap = new Map(
+        marketData.map(asset => [asset.symbol, asset.price])
+      );
+
+      const unrealizedPnl = (openPositions || []).reduce((sum, position) => {
+        const currentPrice = priceMap.get(position.asset);
+        if (!currentPrice || !position.entry_price || !position.size) return sum;
+
+        const entryValue = parseFloat(position.entry_price) * parseFloat(position.size);
+        const currentValue = currentPrice * parseFloat(position.size);
+        const positionPnl = position.side === 'LONG'
+          ? currentValue - entryValue
+          : entryValue - currentValue;
+
+        return sum + positionPnl;
+      }, 0);
+
+      const initialCapital = parseFloat(agent.initial_capital) || 0;
+      const equity = initialCapital + realizedPnl + unrealizedPnl;
+
+      // Insert snapshot
+      const { error: snapshotError } = await supabase
+        .from('agent_pnl_snapshots')
+        .insert([{
+          agent_id: agent_id,
+          timestamp: new Date().toISOString(),
+          equity: equity,
+          realized_pnl: realizedPnl,
+          unrealized_pnl: unrealizedPnl,
+          open_positions_count: openPositions?.length || 0,
+          margin_used: 0, // TODO: Calculate from position sizes
+          assessment_id: assessment.id,
+        }]);
+
+      if (snapshotError) {
+        console.error('Error saving PnL snapshot:', snapshotError);
+        // Don't throw - snapshot is non-critical
+      } else {
+        console.log('PnL snapshot recorded:', { equity, realizedPnl, unrealizedPnl });
+      }
+    } catch (snapshotErr) {
+      console.error('Error recording snapshot:', snapshotErr);
+      // Continue execution even if snapshot fails
+    }
+
+    // 10. Execute trade action if needed
     let tradeResult = null;
     if (llmResponse.action && llmResponse.action !== 'NO_ACTION') {
       console.log('Trade action detected, calling execute_hyperliquid_trade...');

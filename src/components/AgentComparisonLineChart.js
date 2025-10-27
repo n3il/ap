@@ -1,9 +1,11 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, Button } from '@/components/ui';
+import { View, Text, Button, ActivityIndicator } from '@/components/ui';
 import { Animated } from 'react-native';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import SectionTitle from '@/components/SectionTitle';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useMultiAgentSnapshots } from '@/hooks/useAgentSnapshots';
+import { agentSnapshotService } from '@/services/agentSnapshotService';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -181,7 +183,7 @@ const MOCK_AGENTS = [
   },
 ];
 
-const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
+const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
   const [expanded, setExpanded] = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -204,9 +206,63 @@ const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
     return () => pulse.stop();
   }, [pulseAnim]);
 
-  const { agents, yMin, yMax, yTicks, timeLabels } = useMemo(() => {
+  const agentIds = useMemo(() => agentConfigs?.map(a => a.id) || [], [agentConfigs]);
+  const { data: snapshotsData, isLoading, error } = useMultiAgentSnapshots(agentIds, timeframe);
+
+  const chartData = useMemo(() => {
+    // Use mock data if no agents configured or error
+    if (!agentConfigs || agentConfigs.length === 0 || error) {
+      return { agents: MOCK_AGENTS, useMockData: true };
+    }
+
+    // If still loading or no data, use mock
+    if (isLoading || !snapshotsData) {
+      return { agents: MOCK_AGENTS, useMockData: true };
+    }
+
+    // Transform real snapshot data
+    const transformedAgents = agentConfigs.map((agent, index) => {
+      const snapshots = snapshotsData[agent.id] || [];
+      const percentData = agentSnapshotService.calculatePercentChange(
+        snapshots,
+        parseFloat(agent.initial_capital) || 10000
+      );
+
+      // Normalize timestamps to 0-1 range for x-axis
+      const timeMin = percentData[0]?.timestamp ? new Date(percentData[0].timestamp).getTime() : Date.now();
+      const timeMax = percentData[percentData.length - 1]?.timestamp
+        ? new Date(percentData[percentData.length - 1].timestamp).getTime()
+        : Date.now();
+      const timeRange = timeMax - timeMin || 1;
+
+      const normalizedData = percentData.map(point => ({
+        time: (new Date(point.timestamp).getTime() - timeMin) / timeRange,
+        percent: point.percent,
+      }));
+
+      // Ensure we have at least start and end points
+      if (normalizedData.length === 0) {
+        normalizedData.push({ time: 0, percent: 0 }, { time: 1, percent: 0 });
+      } else if (normalizedData.length === 1) {
+        normalizedData.unshift({ time: 0, percent: 0 });
+      }
+
+      return {
+        id: agent.id,
+        name: agent.name,
+        color: getProviderColor(agent.llm_provider),
+        data: normalizedData,
+      };
+    });
+
+    return { agents: transformedAgents, useMockData: false };
+  }, [agentConfigs, snapshotsData, isLoading, error]);
+
+  const { agents } = chartData;
+
+  const { yMin, yMax, yTicks, timeLabels } = useMemo(() => {
     // Calculate y-axis range
-    const allPercents = MOCK_AGENTS.flatMap((agent) => agent.data.map((d) => d.percent));
+    const allPercents = agents.flatMap((agent) => agent.data.map((d) => d.percent));
     const min = Math.min(...allPercents, 0);
     const max = Math.max(...allPercents, 0);
     const range = max - min;
@@ -245,14 +301,8 @@ const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
 
     const timeLabels = [0, 0.5, 1].map(getTimeLabel);
 
-    // Add colors to agents based on provider
-    const agentsWithColors = MOCK_AGENTS.map(agent => ({
-      ...agent,
-      color: getProviderColor(agent.llm_provider),
-    }));
-
-    return { agents: agentsWithColors, yMin, yMax, yTicks, timeLabels };
-  }, [timeframe]);
+    return { yMin, yMax, yTicks, timeLabels };
+  }, [agents, timeframe]);
 
   const scaleY = (percent) => {
     const normalized = (percent - yMin) / (yMax - yMin);
@@ -263,11 +313,47 @@ const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
     return PADDING.left + time * PLOT_WIDTH;
   };
 
+  if (isLoading) {
+    return (
+      <View sx={{ marginTop: 4, alignItems: 'center', paddingVertical: 8 }}>
+        <ActivityIndicator size="small" />
+        <Text sx={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+          Loading performance data...
+        </Text>
+      </View>
+    );
+  }
+
   return (
-    <View>
-      <SectionTitle
-        title="Top Agents"
-      />
+    <View sx={{ marginTop: 4 }}>
+      <SectionTitle title="Top Agents" />
+      <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
+        <Text
+          sx={{
+            fontSize: 12,
+            textTransform: 'uppercase',
+            letterSpacing: 1.5,
+            color: '#94a3b8',
+          }}
+        >
+          Agent Performance {chartData.useMockData && '(Demo)'}
+        </Text>
+        <View sx={{ flexDirection: 'row', gap: 3 }}>
+          {agents.map((agent) => (
+            <View key={agent.id} sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
+              <View
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: agent.color,
+                }}
+              />
+              <Text sx={{ fontSize: 10, color: '#94a3b8' }}>{agent.name}</Text>
+            </View>
+          ))}
+        </View>
+      </View>
 
       <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
         {/* Y-axis grid lines */}
