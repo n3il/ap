@@ -12,6 +12,8 @@ import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import InfoSlides from '@/components/InfoSlides';
+import useRouteAuth from '@/hooks/useRouteAuth';
+import { ROUTES } from '@/config/routes';
 
 const { width, height } = Dimensions.get('window');
 
@@ -21,6 +23,7 @@ export default function GetStartedScreen() {
   const [currentSlide, setCurrentSlide] = useState(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
+  const { requireAuth } = useRouteAuth();
 
   useEffect(() => {
     Animated.parallel([
@@ -40,6 +43,10 @@ export default function GetStartedScreen() {
 
   const handleAuth = (type) => {
     router.push('auth', { type });
+  };
+
+  const handleContinueWithoutAuth = () => {
+    router.push(ROUTES.TABS_EXPLORE_INDEX.path);
   };
 
   const videoSrc = require('@/../assets/3571264-hd_1920_1080_30fps.mp4');
@@ -103,7 +110,7 @@ export default function GetStartedScreen() {
           transform: [{ scale: scaleAnim }],
         }}
       >
-        <SafeAreaView sx={{ flex: 1 }}>
+        <SafeAreaView style={{ flex: 1 }}>
           <InfoSlides onSlideChange={handleSlideChange} />
 
           {/* Bottom Section */}
@@ -168,6 +175,32 @@ export default function GetStartedScreen() {
                 </Text>
               </TouchableOpacity>
             </View>
+
+            {/* Skip Auth Button - Only show if REQUIRE_AUTH=false */}
+            {!requireAuth && (
+              <TouchableOpacity
+                sx={{
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  height: 48,
+                  marginTop: 3,
+                }}
+                onPress={handleContinueWithoutAuth}
+                activeOpacity={0.8}
+              >
+                <Text
+                  variant="body"
+                  style={{
+                    fontSize: 15,
+                    fontWeight: '500',
+                    color: 'rgba(255, 255, 255, 0.7)',
+                    textDecorationLine: 'underline',
+                  }}
+                >
+                  Continue without account
+                </Text>
+              </TouchableOpacity>
+            )}
           </View>
         </SafeAreaView>
       </Animated.View>

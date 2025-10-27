@@ -6,18 +6,21 @@ import { useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import { View, ActivityIndicator } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';
+import useRouteAuth from '@/hooks/useRouteAuth';
+import { ROUTES } from '@/config/routes';
 
 export default function TabsLayout() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { theme, isDark } = useTheme();
+  const { canAccessRoute, requireAuth } = useRouteAuth();
 
   useEffect(() => {
-    if (!user && !loading) {
-      // Redirect to get-started if not authenticated
+    // Only redirect if auth is required and user is not authenticated
+    if (!user && !loading && requireAuth) {
       router.replace('/');
     }
-  }, [user, loading]);
+  }, [user, loading, requireAuth]);
 
   if (loading) {
     return (
@@ -27,12 +30,18 @@ export default function TabsLayout() {
     );
   }
 
+  // Check accessibility for each tab route
+  const canAccessExplore = canAccessRoute(ROUTES.TABS_EXPLORE_INDEX.path);
+  const canAccessAgents = canAccessRoute(ROUTES.TABS_AGENTS.path);
+  const canAccessPerformance = canAccessRoute(ROUTES.TABS_PERFORMANCE.path);
+  const canAccessProfile = canAccessRoute(ROUTES.TABS_PROFILE_INDEX.path);
+
   return (
     <NativeTabs
       tintColor={theme.colors.accent}
       backgroundColor={theme.colors.background}
       badgeBackgroundColor={theme.colors.info.DEFAULT}
-      labelStyle ={{
+      labelStyle={{
         default: theme.colors.text.secondary,
         selected: theme.colors.accent,
       }}
@@ -48,8 +57,9 @@ export default function TabsLayout() {
           title: 'Explore',
           headerShown: false,
         }}
+        disabled={!canAccessExplore}
       >
-        <Label>Explore</Label>
+        <Label>{canAccessExplore ? 'Explore' : 'Explore 🔒'}</Label>
         <Icon sf="network" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
@@ -58,10 +68,11 @@ export default function TabsLayout() {
           title: 'Agents',
           headerShown: false,
         }}
+        disabled={!canAccessAgents}
       >
-         <Label>Agents</Label>
-         <Icon sf="doc.text.magnifyingglass" drawable="custom_android_drawable" />
-         <Badge>1</Badge>
+        <Label>{canAccessAgents ? 'Agents' : 'Agents 🔒'}</Label>
+        <Icon sf="doc.text.magnifyingglass" drawable="custom_android_drawable" />
+        {canAccessAgents && <Badge>1</Badge>}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
         name="performance"
@@ -69,8 +80,9 @@ export default function TabsLayout() {
           title: 'Performance',
           headerShown: false,
         }}
+        disabled={!canAccessPerformance}
       >
-        <Label>Performance</Label>
+        <Label>{canAccessPerformance ? 'Performance' : 'Performance 🔒'}</Label>
         <Icon sf="chart.line.uptrend.xyaxis" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
@@ -79,8 +91,9 @@ export default function TabsLayout() {
           title: 'Settings',
           headerShown: false,
         }}
+        disabled={!canAccessProfile}
       >
-        <Label>Settings</Label>
+        <Label>{canAccessProfile ? 'Settings' : 'Settings 🔒'}</Label>
         <Icon sf="gear" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
     </NativeTabs>
