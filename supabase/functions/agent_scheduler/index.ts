@@ -18,7 +18,6 @@ Deno.serve(async (req) => {
       console.error('Error fetching active agents:', agentsError)
       throw agentsError
     }
-
     console.log(`Found ${activeAgents?.length || 0} active agents`)
 
     if (!activeAgents || activeAgents.length === 0) {

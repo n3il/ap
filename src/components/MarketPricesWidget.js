@@ -10,15 +10,12 @@ import {
 } from '@/utils/marketFormatting';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AgentComparisonLineChart from './AgentComparisonLineChart';
+import SectionTitle from '@/components/SectionTitle';
+import { useSx } from 'dripsy';
+import TimeFrameSelector from '@/components/TimeFrameSelector';
 
 const SPARKLINE_WIDTH = 88;
 const SPARKLINE_HEIGHT = 32;
-
-const TIMEFRAME_OPTIONS = [
-  { id: '1h', label: '1H' },
-  { id: '24h', label: '24H' },
-  { id: '7d', label: '7D' },
-];
 
 const Sparkline = ({ data = [] }) => {
   const valid = data.filter((value) => Number.isFinite(value));
@@ -90,14 +87,14 @@ const PriceColumn = ({
       <Text
         sx={{
           color: '#f8fafc',
-          fontSize: 18,
-          fontWeight: '600'
+          fontSize: 16,
+          fontWeight: '300'
         }}
         numberOfLines={1}
       >
         {formatCurrency(asset?.price)}
       </Text>
-      <View sx={{ marginTop: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View sx={{ marginTop: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
           {hasChange ? formatPercent(rangePercent) : '—'}
         </Text>
@@ -105,7 +102,7 @@ const PriceColumn = ({
           ({Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'})
         </Text>
       </View>
-      <View sx={{ marginTop: 3 }}>
+      <View sx={{ marginTop: 3, height: SPARKLINE_HEIGHT }}>
         {!isHistoryLoading && (
           <Sparkline data={sparklineData} />
         )}
@@ -115,6 +112,7 @@ const PriceColumn = ({
 };
 
 export default function MarketPricesWidget({ tickers, sx: customSx }) {
+  const sxToStyle = useSx();
   const [timeframe, setTimeframe] = useState('1h');
   const router = useRouter();
   const {
@@ -168,48 +166,44 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
 
   return (
     <View sx={customSx}>
-      <View sx={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 4 }}>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          {error ? (
-            <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-              <MaterialCommunityIcons name="alert-circle-outline" size={16} color={"red"} />
-            </View>
-          ) : (
-            <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 1 }}>
-              <MaterialCommunityIcons name="signal" size={16} color={"green"} />
-            </View>
-          )}
-          <Text
-            sx={{
-              fontSize: 12,
-              textTransform: 'uppercase',
-              letterSpacing: 1.5,
-              color: '#94a3b8'
-            }}
-          >
-            Live Markets
-          </Text>
-        </View>
+      <View sx={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 2 }}>
+        <SectionTitle
+          title="Live Markets"
+          error={error}
+          successIcon={<MaterialCommunityIcons name="signal" size={16} color={"green"} />}
+          errorIcon={<MaterialCommunityIcons name="alert-circle-outline" size={16} color={"red"} />}
+        />
 
-        <View sx={{ alignItems: 'flex-end' }}>
-          <TouchableOpacity
+        <View sx={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+          <Button
+            variant="outline"
+            size="xs"
             sx={{
-              alignSelf: 'flex-end',
-              paddingHorizontal: 3,
-              paddingVertical: 6,
               borderRadius: 'full',
-              borderWidth: 1,
-              borderColor: 'primary',
-              marginBottom: 1
+              flexDirection: 'row',
+              alignItems: 'center',
+              paddingHorizontal: 2
+            }}
+            textProps={{
+              sx: {
+                fontSize: 11,
+                fontWeight: '600',
+                color: 'secondary'
+              }
             }}
             onPress={handleMore}
             accessibilityRole="button"
             accessibilityLabel="Open full market view"
           >
-            <Text sx={{ fontSize: 11, fontWeight: '600', color: '#ffffff' }}>
-              All assets
+            <MaterialCommunityIcons
+              name="lightning-bolt"
+              size={12}
+              style={sxToStyle({ color: 'primary' })}
+              />
+            <Text sx={{ fontSize: 11, fontWeight: '600', color: 'primary' }}>
+              Buy / Sell
             </Text>
-          </TouchableOpacity>
+          </Button>
         </View>
       </View>
 
@@ -252,38 +246,7 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
         )}
       </View>
       <View sx={{ marginTop: 4, alignItems: 'flex-end' }}>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', marginBottom: 2 }}>
-          {TIMEFRAME_OPTIONS.map((option) => {
-            const isSelected = timeframe === option.id;
-            return (
-              <Button
-                key={option.id}
-                variant="outline"
-                onPress={() => setTimeframe(option.id)}
-                style={{
-                  paddingHorizontal: 2,
-                  paddingVertical: 1,
-                  borderWidth: 1,
-                  borderColor: isSelected ? 'accent' : 'rgba(255, 255, 255, 0.2)',
-                  backgroundColor: isSelected ? 'rgba(107, 114, 128, 0.2)' : 'rgba(255, 255, 255, 0.1)',
-                  marginRight: 2
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={`Set timeframe to ${option.label}`}
-                textProps={{
-                  sx: {
-                    fontSize: 11,
-                    fontWeight: '600',
-                    textTransform: 'uppercase',
-                    color: isSelected ? 'accent' : 'rgba(248, 250, 252, 0.3)'
-                  }
-                }}
-              >
-                {option.label}
-              </Button>
-            );
-          })}
-        </View>
+        <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
 
         <AgentComparisonLineChart timeframe={timeframe} />
       </View>

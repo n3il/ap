@@ -1,12 +1,12 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Stack, StatusBadge, LabelValue, Divider, Card } from '@/components/ui';
+import { isLiquidGlassAvailable } from 'expo-glass-effect';
 
 export default function AgentCard({ agent, latestAssessment, isOwnAgent = false, onPress }) {
   const calculatePnL = () => {
     // This would be calculated from trades data
     return 0;
   };
-
   const pnl = calculatePnL();
   const pnlColor = pnl > 0 ? 'success' : pnl < 0 ? 'error' : 'foreground';
   const pnlSign = pnl > 0 ? '+' : '';
@@ -126,9 +126,7 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <Card
-        variant="glass"
-      >
+      <Card variant="glass" glassIntensity={100} glassTintColor="rgba(0, 0, 0, 0.9)">
         <View sx={{ marginBottom: 3, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <View sx={{ flex: 1 }}>
             <View sx={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>

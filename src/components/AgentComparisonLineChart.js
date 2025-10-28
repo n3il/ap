@@ -1,57 +1,209 @@
-import React, { useMemo } from 'react';
-import { View, Text } from '@/components/ui';
-import Svg, { Polyline, Line, Circle } from 'react-native-svg';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
+import { View, Text, Button } from '@/components/ui';
+import { Animated } from 'react-native';
+import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
+import SectionTitle from '@/components/SectionTitle';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+
+const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const CHART_WIDTH = 350;
 const CHART_HEIGHT = 180;
-const PADDING = { top: 20, right: 10, bottom: 30, left: 40 };
+const PADDING = { top: 20, right: 40, bottom: 0, left: 0 };
 const PLOT_WIDTH = CHART_WIDTH - PADDING.left - PADDING.right;
 const PLOT_HEIGHT = CHART_HEIGHT - PADDING.top - PADDING.bottom;
+
+// Provider brand colors - neon versions
+const PROVIDER_COLORS = {
+  openai: '#00ff9f',
+  anthropic: '#ff6b35',
+  deepseek: '#00d4ff',
+  google: '#0099ff',
+  gemini: '#0099ff',
+  meta: '#0080ff',
+  llama: '#0080ff',
+  mistral: '#ffaa00',
+  cohere: '#00ffcc',
+  default: '#94a3b8',
+};
+
+const getProviderColor = (llmProvider) => {
+  if (!llmProvider) return PROVIDER_COLORS.default;
+  const provider = llmProvider.toLowerCase();
+  return PROVIDER_COLORS[provider] || PROVIDER_COLORS.default;
+};
 
 // Mock data for 3 agents
 const MOCK_AGENTS = [
   {
     id: '1',
     name: 'Quantum Trader',
-    color: '#7CFFAA',
+    llm_provider: 'openai',
     data: [
       { time: 0, percent: 0 },
-      { time: 0.2, percent: 2.3 },
-      { time: 0.4, percent: 1.8 },
-      { time: 0.6, percent: 4.5 },
-      { time: 0.8, percent: 3.9 },
-      { time: 1, percent: 5.2 },
+      { time: 0.025, percent: 0.4 },
+      { time: 0.05, percent: 1.1 },
+      { time: 0.075, percent: 0.9 },
+      { time: 0.1, percent: 1.7 },
+      { time: 0.125, percent: 2.0 },
+      { time: 0.15, percent: 2.5 },
+      { time: 0.175, percent: 2.2 },
+      { time: 0.2, percent: 1.9 },
+      { time: 0.225, percent: 1.5 },
+      { time: 0.25, percent: 2.1 },
+      { time: 0.275, percent: 2.4 },
+      { time: 0.3, percent: 2.8 },
+      { time: 0.325, percent: 3.1 },
+      { time: 0.35, percent: 3.5 },
+      { time: 0.375, percent: 3.3 },
+      { time: 0.4, percent: 3.9 },
+      { time: 0.425, percent: 4.2 },
+      { time: 0.45, percent: 3.8 },
+      { time: 0.475, percent: 4.4 },
+      { time: 0.5, percent: 4.7 },
+      { time: 0.525, percent: 4.5 },
+      { time: 0.55, percent: 4.1 },
+      { time: 0.575, percent: 3.7 },
+      { time: 0.6, percent: 4.0 },
+      { time: 0.625, percent: 4.4 },
+      { time: 0.65, percent: 4.8 },
+      { time: 0.675, percent: 4.6 },
+      { time: 0.7, percent: 5.0 },
+      { time: 0.725, percent: 5.3 },
+      { time: 0.75, percent: 5.1 },
+      { time: 0.775, percent: 4.8 },
+      { time: 0.8, percent: 5.2 },
+      { time: 0.825, percent: 4.9 },
+      { time: 0.85, percent: 5.4 },
+      { time: 0.875, percent: 5.6 },
+      { time: 0.9, percent: 5.3 },
+      { time: 0.925, percent: 5.5 },
+      { time: 0.95, percent: 5.8 },
+      { time: 0.975, percent: 5.6 },
+      { time: 1, percent: 6.0 },
     ],
   },
   {
     id: '2',
     name: 'Neural Alpha',
-    color: '#1565ff',
+    llm_provider: 'anthropic',
     data: [
       { time: 0, percent: 0 },
-      { time: 0.2, percent: -1.2 },
-      { time: 0.4, percent: 0.5 },
-      { time: 0.6, percent: 1.8 },
-      { time: 0.8, percent: 2.3 },
-      { time: 1, percent: 3.1 },
+      { time: 0.025, percent: -0.3 },
+      { time: 0.05, percent: -0.7 },
+      { time: 0.075, percent: -1.0 },
+      { time: 0.1, percent: -1.5 },
+      { time: 0.125, percent: -1.2 },
+      { time: 0.15, percent: -0.9 },
+      { time: 0.175, percent: -0.6 },
+      { time: 0.2, percent: -0.2 },
+      { time: 0.225, percent: 0.1 },
+      { time: 0.25, percent: 0.4 },
+      { time: 0.275, percent: 0.3 },
+      { time: 0.3, percent: 0.7 },
+      { time: 0.325, percent: 0.8 },
+      { time: 0.35, percent: 1.1 },
+      { time: 0.375, percent: 0.9 },
+      { time: 0.4, percent: 1.3 },
+      { time: 0.425, percent: 1.4 },
+      { time: 0.45, percent: 1.7 },
+      { time: 0.475, percent: 1.6 },
+      { time: 0.5, percent: 2.0 },
+      { time: 0.525, percent: 1.9 },
+      { time: 0.55, percent: 2.2 },
+      { time: 0.575, percent: 2.4 },
+      { time: 0.6, percent: 2.5 },
+      { time: 0.625, percent: 2.7 },
+      { time: 0.65, percent: 2.9 },
+      { time: 0.675, percent: 2.7 },
+      { time: 0.7, percent: 3.0 },
+      { time: 0.725, percent: 2.8 },
+      { time: 0.75, percent: 2.6 },
+      { time: 0.775, percent: 2.9 },
+      { time: 0.8, percent: 3.2 },
+      { time: 0.825, percent: 3.1 },
+      { time: 0.85, percent: 3.4 },
+      { time: 0.875, percent: 3.3 },
+      { time: 0.9, percent: 3.5 },
+      { time: 0.925, percent: 3.6 },
+      { time: 0.95, percent: 3.8 },
+      { time: 0.975, percent: 3.9 },
+      { time: 1, percent: 4.1 },
     ],
   },
   {
     id: '3',
     name: 'DeepSeek Pro',
-    color: '#ef4444',
+    llm_provider: 'deepseek',
     data: [
       { time: 0, percent: 0 },
-      { time: 0.2, percent: 1.5 },
-      { time: 0.4, percent: -0.8 },
-      { time: 0.6, percent: -2.1 },
-      { time: 0.8, percent: -1.5 },
-      { time: 1, percent: 0.8 },
+      { time: 0.025, percent: 0.5 },
+      { time: 0.05, percent: 0.9 },
+      { time: 0.075, percent: 1.3 },
+      { time: 0.1, percent: 1.7 },
+      { time: 0.125, percent: 1.4 },
+      { time: 0.15, percent: 1.1 },
+      { time: 0.175, percent: 0.9 },
+      { time: 0.2, percent: 0.6 },
+      { time: 0.225, percent: 0.4 },
+      { time: 0.25, percent: 0.1 },
+      { time: 0.275, percent: -0.2 },
+      { time: 0.3, percent: -0.7 },
+      { time: 0.325, percent: -0.9 },
+      { time: 0.35, percent: -1.1 },
+      { time: 0.375, percent: -1.3 },
+      { time: 0.4, percent: -1.6 },
+      { time: 0.425, percent: -1.9 },
+      { time: 0.45, percent: -2.3 },
+      { time: 0.475, percent: -2.5 },
+      { time: 0.5, percent: -2.6 },
+      { time: 0.525, percent: -2.4 },
+      { time: 0.55, percent: -2.1 },
+      { time: 0.575, percent: -1.8 },
+      { time: 0.6, percent: -1.6 },
+      { time: 0.625, percent: -1.4 },
+      { time: 0.65, percent: -1.1 },
+      { time: 0.675, percent: -0.9 },
+      { time: 0.7, percent: -0.6 },
+      { time: 0.725, percent: -0.5 },
+      { time: 0.75, percent: -0.2 },
+      { time: 0.775, percent: 0.0 },
+      { time: 0.8, percent: 0.3 },
+      { time: 0.825, percent: 0.4 },
+      { time: 0.85, percent: 0.7 },
+      { time: 0.875, percent: 0.8 },
+      { time: 0.9, percent: 1.0 },
+      { time: 0.925, percent: 1.2 },
+      { time: 0.95, percent: 1.4 },
+      { time: 0.975, percent: 1.5 },
+      { time: 1, percent: 1.7 },
     ],
   },
 ];
 
 const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
+  const [expanded, setExpanded] = useState(false);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.5,
+          duration: 1000,
+          useNativeDriver: false,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: false,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, [pulseAnim]);
+
   const { agents, yMin, yMax, yTicks, timeLabels } = useMemo(() => {
     // Calculate y-axis range
     const allPercents = MOCK_AGENTS.flatMap((agent) => agent.data.map((d) => d.percent));
@@ -70,24 +222,36 @@ const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
       return value;
     });
 
-    // Generate time labels based on timeframe
+    // Generate time labels based on timeframe using locale string
+    const now = new Date();
     const getTimeLabel = (normalizedTime) => {
+      const date = new Date(now);
+
       if (timeframe === '1h') {
-        const minutes = Math.round(normalizedTime * 60);
-        return `${minutes}m`;
+        // Go back 1 hour from now, then add normalized time
+        date.setMinutes(date.getMinutes() - 60 + (normalizedTime * 60));
+        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
       } else if (timeframe === '24h') {
-        const hours = Math.round(normalizedTime * 24);
-        return `${hours}h`;
+        // Go back 24 hours from now, then add normalized time
+        date.setHours(date.getHours() - 24 + (normalizedTime * 24));
+        return date.toLocaleTimeString('en-US', { hour: 'numeric' });
       } else if (timeframe === '7d') {
-        const days = Math.round(normalizedTime * 7);
-        return `${days}d`;
+        // Go back 7 days from now, then add normalized time
+        date.setDate(date.getDate() - 7 + (normalizedTime * 7));
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       }
       return '';
     };
 
     const timeLabels = [0, 0.5, 1].map(getTimeLabel);
 
-    return { agents: MOCK_AGENTS, yMin, yMax, yTicks, timeLabels };
+    // Add colors to agents based on provider
+    const agentsWithColors = MOCK_AGENTS.map(agent => ({
+      ...agent,
+      color: getProviderColor(agent.llm_provider),
+    }));
+
+    return { agents: agentsWithColors, yMin, yMax, yTicks, timeLabels };
   }, [timeframe]);
 
   const scaleY = (percent) => {
@@ -100,34 +264,10 @@ const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
   };
 
   return (
-    <View sx={{ marginTop: 4 }}>
-      <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-        <Text
-          sx={{
-            fontSize: 12,
-            textTransform: 'uppercase',
-            letterSpacing: 1.5,
-            color: '#94a3b8',
-          }}
-        >
-          Agent Performance
-        </Text>
-        <View sx={{ flexDirection: 'row', gap: 3 }}>
-          {agents.map((agent) => (
-            <View key={agent.id} sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-              <View
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: agent.color,
-                }}
-              />
-              <Text sx={{ fontSize: 10, color: '#94a3b8' }}>{agent.name}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
+    <View>
+      <SectionTitle
+        title="Top Agents"
+      />
 
       <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
         {/* Y-axis grid lines */}
@@ -146,15 +286,32 @@ const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
           );
         })}
 
+        {/* Y-axis labels */}
+        {yTicks.map((tick, i) => {
+          const y = scaleY(tick);
+          return (
+            <SvgText
+              key={`y-label-${i}`}
+              x={PADDING.left + PLOT_WIDTH + 8}
+              y={y + 4}
+              fontSize={10}
+              fill="#64748b"
+              textAnchor="start"
+            >
+              {tick.toFixed(1)}%
+            </SvgText>
+          );
+        })}
+
         {/* Zero line (emphasized) */}
         <Line
           x1={PADDING.left}
           y1={scaleY(0)}
           x2={PADDING.left + PLOT_WIDTH}
           y2={scaleY(0)}
-          stroke="rgba(148, 163, 184, 0.3)"
+          stroke="rgba(158, 149, 149, 0.8)"
           strokeWidth={1.5}
-          strokeDasharray="4,4"
+          strokeDasharray="3,3"
         />
 
         {/* Agent lines */}
@@ -173,18 +330,26 @@ const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
                 points={points}
                 fill="none"
                 stroke={agent.color}
-                strokeWidth={2.5}
+                strokeWidth={1.5}
                 strokeLinejoin="round"
                 strokeLinecap="round"
+                strokeDasharray="4,8"
                 opacity={0.9}
               />
               {/* End point circle */}
               {agent.data.length > 0 && (
-                <Circle
+                <AnimatedCircle
                   cx={scaleX(agent.data[agent.data.length - 1].time)}
                   cy={scaleY(agent.data[agent.data.length - 1].percent)}
-                  r={4}
+                  r={pulseAnim.interpolate({
+                    inputRange: [1, 1.5],
+                    outputRange: [4, 6],
+                  })}
                   fill={agent.color}
+                  opacity={pulseAnim.interpolate({
+                    inputRange: [1, 1.5],
+                    outputRange: [0.9, 0.6],
+                  })}
                 />
               )}
             </React.Fragment>
@@ -208,30 +373,71 @@ const AgentComparisonLineChart = ({ timeframe = '1h' }) => {
         ))}
       </View>
 
-      {/* Current performance stats */}
-      <View sx={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 4, gap: 2 }}>
-        {agents.map((agent) => {
-          const finalPercent = agent.data[agent.data.length - 1].percent;
-          const isPositive = finalPercent >= 0;
-          return (
-            <View key={agent.id} sx={{ flex: 1, alignItems: 'center' }}>
-              <Text sx={{ fontSize: 10, color: '#64748b', marginBottom: 1 }}>
-                {agent.name}
-              </Text>
-              <Text
+      {/* More button */}
+      <View sx={{ alignItems: 'flex-end', marginTop: 0 }}>
+        <Button
+          variant="ghost"
+          size="sm"
+          onPress={() => setExpanded(!expanded)}
+          sx={{ opacity: 0.3 }}
+        >
+          {expanded ? 'Less' : <MaterialCommunityIcons name="fullscreen" size={24} color="white" />}
+        </Button>
+      </View>
+
+      {/* Expanded agent details table */}
+      {expanded && (
+        <View sx={{ marginTop: 3, gap: 2 }}>
+          {agents.map((agent) => {
+            const finalPercent = agent.data[agent.data.length - 1].percent;
+            const isPositive = finalPercent >= 0;
+            const startPercent = agent.data[0].percent;
+            const change = finalPercent - startPercent;
+
+            return (
+              <View
+                key={agent.id}
                 sx={{
-                  fontSize: 16,
-                  fontWeight: '700',
-                  color: isPositive ? '#34d399' : '#f87171',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  paddingVertical: 3,
+                  paddingHorizontal: 4,
+                  backgroundColor: 'rgba(30, 41, 59, 0.3)',
+                  borderRadius: 'xl',
+                  borderLeftWidth: 3,
+                  borderLeftColor: agent.color,
                 }}
               >
-                {isPositive ? '+' : ''}
-                {finalPercent.toFixed(1)}%
-              </Text>
-            </View>
-          );
-        })}
-      </View>
+                <View sx={{ flex: 1 }}>
+                  <Text sx={{ fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 1 }}>
+                    {agent.name}
+                  </Text>
+                  <Text sx={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>
+                    {agent.llm_provider}
+                  </Text>
+                </View>
+
+                <View sx={{ alignItems: 'flex-end' }}>
+                  <Text
+                    sx={{
+                      fontSize: 18,
+                      fontWeight: '700',
+                      color: isPositive ? '#34d399' : '#f87171',
+                      marginBottom: 1,
+                    }}
+                  >
+                    {isPositive ? '+' : ''}{finalPercent.toFixed(1)}%
+                  </Text>
+                  <Text sx={{ fontSize: 10, color: '#64748b' }}>
+                    {change >= 0 ? '+' : ''}{change.toFixed(1)}% {timeframe}
+                  </Text>
+                </View>
+              </View>
+            );
+          })}
+        </View>
+      )}
     </View>
   );
 };

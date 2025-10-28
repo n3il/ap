@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions } from '@/components/ui';
-import { SafeAreaView } from '@/components/ui';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, Card } from '@/components/ui';
+import ContainerView from '@/components/ContainerView';
 import { AnimatedBox } from '@/components/ui/animated';
-import { GlassView } from 'expo-glass-effect';
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown } from 'react-native-reanimated';
+import SectionTitle from '@/components/SectionTitle';
 
 const { width } = Dimensions.get('window');
 
@@ -77,35 +77,24 @@ export default function ProfileScreen() {
   ];
 
   return (
-    <SafeAreaView sx={{ flex: 1, backgroundColor: 'background' }}>
-      <View sx={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}/>
-
+    <ContainerView>
       <ScrollView
         sx={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingHorizontal: 1, paddingTop: 6 }}
       >
         {/* Header */}
-        <View sx={{ paddingHorizontal: 6, paddingTop: 6, paddingBottom: 6 }}>
-          <Text sx={{ fontSize: 36, fontWeight: '700', color: 'textPrimary', marginBottom: 2 }}>
-            Profile
-          </Text>
-          <Text sx={{ fontSize: 16, color: 'textSecondary' }}>
-            Manage your account and preferences
-          </Text>
-        </View>
+        <SectionTitle title="Profile" sx={{ fontSize: 16, padding: 6 }} />
 
         {/* Profile Card */}
         <AnimatedBox
           entering={FadeInDown.delay(100).springify()}
           sx={{ marginHorizontal: 6, marginBottom: 6 }}
         >
-          <GlassView
-            glassEffectStyle="clear"
-            tintColor="rgba(0, 0, 0, .9)"
-            isInteractive
-            style={{
+          <Card
+            variant="glass"
+            sx={{
               borderRadius: 24,
-              padding: 12,
             }}
           >
             <View sx={{ flexDirection: 'row' }}>
@@ -123,7 +112,7 @@ export default function ProfileScreen() {
                   borderColor: 'rgba(99, 102, 241, 0.5)'
                 }}
               >
-                <Text sx={{ fontSize: 30, fontWeight: '700', color: '#818cf8' }}>
+                <Text sx={{ fontSize: 30, fontWeight: '700', color: '#818cf8', lineHeight: 36 }}>
                   {getInitials()}
                 </Text>
               </View>
@@ -137,34 +126,11 @@ export default function ProfileScreen() {
                 </Text>
               </View>
             </View>
-          </GlassView>
-        </AnimatedBox>
-
-        <AnimatedBox
-          entering={FadeInDown.delay(100).springify()}
-          sx={{ marginHorizontal: 6, marginBottom: 6, flexDirection: 'row' }}
-        >
-          {/* Stats */}
-          <View sx={{ flexDirection: 'row', width: '100%', justifyContent: 'space-between', paddingTop: 4, borderTopWidth: 1, borderColor: 'border' }}>
-            <View style={{ flex: 1, borderRadius: 24, padding: 12 }}>
-              <Text sx={{ fontSize: 24, fontWeight: '700', color: 'textPrimary' }}>0</Text>
-              <Text sx={{ fontSize: 14, color: 'textSecondary', marginTop: 1 }}>Active</Text>
-            </View>
-            <View sx={{ width: 1, height: 48, backgroundColor: 'border' }} />
-            <View style={{ flex: 1, borderRadius: 24, padding: 12 }}>
-              <Text sx={{ fontSize: 24, fontWeight: '700', color: 'textPrimary' }}>0</Text>
-              <Text sx={{ fontSize: 14, color: 'textSecondary', marginTop: 1 }}>Paused</Text>
-            </View>
-            <View sx={{ width: 1, height: 48, backgroundColor: 'border' }} />
-            <View style={{ flex: 1, borderRadius: 24, padding: 12 }}>
-              <Text sx={{ fontSize: 24, fontWeight: '700', color: 'textPrimary' }}>0</Text>
-              <Text sx={{ fontSize: 14, color: 'textSecondary', marginTop: 1 }}>Streak</Text>
-            </View>
-          </View>
+          </Card>
         </AnimatedBox>
 
         {/* Menu Items */}
-        <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
+        <View sx={{ paddingHorizontal: 6, marginBottom: 6, marginTop: 8 }}>
           <Text sx={{ fontSize: 18, fontWeight: '600', color: 'textPrimary', marginBottom: 4 }}>
             Settings
           </Text>
@@ -264,6 +230,6 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </AnimatedBox>
       </ScrollView>
-    </SafeAreaView>
+    </ContainerView>
   );
 }

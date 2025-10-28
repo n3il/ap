@@ -31,7 +31,7 @@ export default function ExploreScreen() {
     (agent) => {
       router.push({
         pathname: '/(tabs)/(explore)/agent/[id]',
-        params: { id: agent.id },
+        params: { id: agent.id, name: agent.name },
       });
     },
     [router]
@@ -99,7 +99,10 @@ export default function ExploreScreen() {
         </View>
 
         <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
-          <MarketPricesWidget tickers={['BTC', 'ETH', 'SOL']} sx={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: 'border', paddingTop: 4 }} />
+          <MarketPricesWidget
+            tickers={['BTC', 'ETH', 'SOL']}
+            sx={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: 'border', paddingTop: 4 }}
+          />
         </View>
 
         <View sx={{ paddingHorizontal: 6 }}>

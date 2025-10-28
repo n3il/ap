@@ -1,49 +1,74 @@
 import React from 'react';
 import { ActivityIndicator, TouchableOpacity } from 'react-native';
 import type { TouchableOpacityProps, ViewStyle } from 'react-native';
-import { useDripsyTheme } from 'dripsy';
+import { useDripsyTheme, useSx } from 'dripsy';
 import type { SxProp } from 'dripsy';
 
 import type { AppTheme } from '@/theme/dripsy';
 import Text, { type TextProps } from './Text';
 
 type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'ghost';
+type ButtonSize = 'sm' | 'md' | 'lg';
 
-export interface ButtonProps extends TouchableOpacityProps {
+export interface ButtonProps extends Omit<TouchableOpacityProps, 'style'> {
   variant?: ButtonVariant;
+  size?: ButtonSize;
   loading?: boolean;
   textProps?: Partial<TextProps>;
   sx?: SxProp;
 }
 
-const variantStyles: Record<
-  ButtonVariant,
-  {
-    backgroundColor: keyof AppTheme['colors'];
-    borderColor: keyof AppTheme['colors'];
-    textColor: keyof AppTheme['colors'];
-  }
-> = {
-  primary: {
-    backgroundColor: 'accent',
-    borderColor: 'accent',
-    textColor: 'accentForeground',
+// Variant definitions - similar to shadcn's cva pattern
+const variants = {
+  variant: {
+    primary: {
+      backgroundColor: 'accent',
+      borderColor: 'accent',
+      borderWidth: 1,
+    },
+    secondary: {
+      backgroundColor: 'surface',
+      borderColor: 'border',
+      borderWidth: 1,
+    },
+    outline: {
+      backgroundColor: 'transparent',
+      borderColor: 'border',
+      borderWidth: 1,
+    },
+    ghost: {
+      backgroundColor: 'transparent',
+      borderColor: 'transparent',
+      borderWidth: 0,
+    },
   },
-  secondary: {
-    backgroundColor: 'surface',
-    borderColor: 'border',
-    textColor: 'textPrimary',
+  size: {
+    sm: {
+      paddingHorizontal: 3,
+      paddingVertical: 2,
+      borderRadius: 'xl',
+      columnGap: 1,
+    },
+    md: {
+      paddingHorizontal: 5,
+      paddingVertical: 3,
+      borderRadius: '2xl',
+      columnGap: 2,
+    },
+    lg: {
+      paddingHorizontal: 6,
+      paddingVertical: 4,
+      borderRadius: '2xl',
+      columnGap: 2,
+    },
   },
-  outline: {
-    backgroundColor: 'transparent',
-    borderColor: 'border',
-    textColor: 'textPrimary',
-  },
-  ghost: {
-    backgroundColor: 'transparent',
-    borderColor: 'transparent',
-    textColor: 'textSecondary',
-  },
+};
+
+const textColorMap: Record<ButtonVariant, keyof AppTheme['colors']> = {
+  primary: 'accentForeground',
+  secondary: 'textPrimary',
+  outline: 'textPrimary',
+  ghost: 'textSecondary',
 };
 
 const Button = React.forwardRef<React.ElementRef<typeof TouchableOpacity>, ButtonProps>(
@@ -51,59 +76,53 @@ const Button = React.forwardRef<React.ElementRef<typeof TouchableOpacity>, Butto
     {
       children,
       variant = 'primary',
+      size = 'md',
       loading = false,
       disabled = false,
+      highlighted = false,
+      icon,
       textProps,
       sx,
-      style,
       ...props
     },
     ref,
   ) => {
     const { theme } = useDripsyTheme();
     const typedTheme = theme as AppTheme;
-    const current = variantStyles[variant] ?? variantStyles.primary;
+    const sxToStyle = useSx();
     const isDisabled = disabled || loading;
-    const borderWidth = current.borderColor === 'transparent' ? 0 : 1;
 
-    const baseStyle: ViewStyle = {
+    // Compute base styles from variants
+    const baseStyles: SxProp = {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor:
-        current.backgroundColor === 'transparent'
-          ? 'transparent'
-          : typedTheme.colors[current.backgroundColor],
-      borderColor:
-        current.borderColor === 'transparent'
-          ? 'transparent'
-          : typedTheme.colors[current.borderColor],
-      borderWidth,
-      borderRadius: typedTheme.radii?.['2xl'] ?? 24,
-      paddingHorizontal: typedTheme.space?.['5'] ?? 20,
-      paddingVertical: typedTheme.space?.['3'] ?? 12,
+      ...variants.variant[variant],
+      ...variants.size[size],
       opacity: isDisabled ? 0.6 : 1,
-      columnGap: typedTheme.space?.['2'] ?? 8,
     };
-
-    const combinedStyle: ViewStyle[] = [baseStyle];
-
-    if (style) {
-      if (Array.isArray(style)) {
-        combinedStyle.push(...style);
-      } else {
-        combinedStyle.push(style as ViewStyle);
-      }
+    if (highlighted) {
+      baseStyles.borderColor = "accent"
     }
 
-    const contentColor = typedTheme.colors[current.textColor] ?? '#ffffff';
+    // Merge with custom sx prop
+    const mergedSx: SxProp = {
+      ...baseStyles,
+      ...sx,
+    };
+
+    // Transform sx to React Native style
+    const computedStyle = sxToStyle(mergedSx);
+
+    const textColor = textColorMap[variant];
+    const contentColor = typedTheme.colors[textColor] ?? '#ffffff';
     const { sx: sxTextProps, ...restTextProps } = textProps || {};
 
     return (
       <TouchableOpacity
         ref={ref}
         activeOpacity={0.85}
-        style={combinedStyle}
+        style={computedStyle}
         disabled={isDisabled}
         {...props}
       >
@@ -112,7 +131,7 @@ const Button = React.forwardRef<React.ElementRef<typeof TouchableOpacity>, Butto
           <Text
             variant="body"
             tone="default"
-            sx={{ color: current.textColor, ...sxTextProps, padding: 0 }}
+            sx={{ color: textColor, ...sxTextProps, padding: 0 }}
             {...restTextProps}
           >
             {children}

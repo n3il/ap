@@ -407,7 +407,7 @@ function DebugOverlayComponent() {
         }}
       >
         <MaterialIcons
-          name={isOpen ? 'close' : 'bug-report'}
+          name={isOpen ? 'close' : 'info-outline'}
           size={16}
           color={isOpen ? '#ef4444' : '#ddd'}
         />
@@ -556,7 +556,7 @@ function DebugOverlayComponent() {
 }
 
 export default function DebugOverlay() {
-  if (!__DEV__) return null;
+  if (!false) return null;
 
   return <DebugOverlayComponent />;
 }

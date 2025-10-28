@@ -1,5 +1,5 @@
 import React from 'react';
-import { View } from 'dripsy';
+import View from './View';
 import type { SxProp } from 'dripsy';
 import { GlassView } from 'expo-glass-effect';
 import { useDripsyTheme } from 'dripsy';
@@ -55,7 +55,6 @@ const Card: React.FC<CardProps> = ({
         tintColor={defaultTintColor}
         glassEffectStyle="clear"
         isInteractive
-        intensity={glassIntensity}
         style={{
           borderRadius,
           paddingHorizontal: 6,

@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, StyleSheet } from 'react-native';
+import { View, Animated, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'dripsy';
 import theme from '@/theme/base';
@@ -50,8 +50,7 @@ export default function SplashScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-      {/* Glassy orb effect */}
-      <View style={styles.orbContainer}>
+      {/* <View style={styles.orbContainer}>
         <Animated.View
           style={[
             styles.orb,
@@ -60,7 +59,7 @@ export default function SplashScreen() {
             },
           ]}
         />
-      </View>
+      </View> */}
 
       {/* Main content */}
       <Animated.View

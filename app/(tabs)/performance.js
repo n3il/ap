@@ -54,156 +54,154 @@ export default function AssessmentsScreen() {
 
   return (
     <ContainerView>
-      <SafeAreaView style={{ flex: 1 }}>
-        <ScrollView
-          sx={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isLoading}
-              onRefresh={refetch}
-              tintColor="#fff"
-            />
-          }
-        >
-          <View sx={{ paddingHorizontal: 6, paddingTop: 6, paddingBottom: 6 }}>
-            <Text sx={{ color: '#94a3b8', fontSize: 12, textTransform: 'uppercase', fontWeight: '600', letterSpacing: 2 }}>
-              Performance
-            </Text>
-            <Text sx={{ color: '#f1f5f9', fontSize: 30, fontWeight: '400', marginTop: 2 }}>All Activity</Text>
-          </View>
+      <ScrollView
+        sx={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isLoading}
+            onRefresh={refetch}
+            tintColor="#fff"
+          />
+        }
+      >
+        <View sx={{ paddingHorizontal: 6, paddingTop: 6, paddingBottom: 6 }}>
+          <Text sx={{ color: '#94a3b8', fontSize: 12, textTransform: 'uppercase', fontWeight: '600', letterSpacing: 2 }}>
+            Performance
+          </Text>
+          <Text sx={{ color: '#f1f5f9', fontSize: 30, fontWeight: '400', marginTop: 2, lineHeight: 36 }}>All Activity</Text>
+        </View>
 
 
-          {/* Stats Cards */}
-          {stats && (
-            <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} sx={{ marginBottom: 4 }}>
-                <StatCard
-                  label="Total"
-                  value={stats.totalAssessments}
-                  trend="Assessments"
-                  trendColor="#c084fc"
-                />
-                <StatCard
-                  label="Market Scans"
-                  value={stats.marketScans}
-                  trend="Searches"
-                  trendColor="#c084fc"
-                />
-                <StatCard
-                  label="Reviews"
-                  value={stats.positionReviews}
-                  trend="Positions"
-                  trendColor="#4ade80"
-                />
-                <StatCard
-                  label="Actions"
-                  value={stats.actionsTriggered}
-                  trend="Triggered"
-                  trendColor="#fb923c"
-                />
-              </ScrollView>
-            </View>
-          )}
-
-          {/* Filter Buttons */}
+        {/* Stats Cards */}
+        {stats && (
           <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
-            <View sx={{ flexDirection: 'row', gap: 2 }}>
-              <TouchableOpacity
-                onPress={() => setFilter('all')}
-                sx={{
-                  flex: 1,
-                  paddingVertical: 3,
-                  borderRadius: 'xl',
-                  borderWidth: 1,
-                  ...(filter === 'all'
-                    ? { backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#c084fc' }
-                    : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
-                }}
-              >
-                <Text sx={{
-                  textAlign: 'center',
-                  fontWeight: '600',
-                  fontSize: 12,
-                  color: filter === 'all' ? '#c084fc' : '#94a3b8'
-                }}>
-                  All
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setFilter('market_scan')}
-                sx={{
-                  flex: 1,
-                  paddingVertical: 3,
-                  borderRadius: 'xl',
-                  borderWidth: 1,
-                  ...(filter === 'market_scan'
-                    ? { backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#c084fc' }
-                    : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
-                }}
-              >
-                <Text sx={{
-                  textAlign: 'center',
-                  fontWeight: '600',
-                  fontSize: 12,
-                  color: filter === 'market_scan' ? '#c084fc' : '#94a3b8'
-                }}>
-                  Market Scan
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={() => setFilter('position_review')}
-                sx={{
-                  flex: 1,
-                  paddingVertical: 3,
-                  borderRadius: 'xl',
-                  borderWidth: 1,
-                  ...(filter === 'position_review'
-                    ? { backgroundColor: 'rgba(34, 197, 94, 0.2)', borderColor: '#4ade80' }
-                    : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
-                }}
-              >
-                <Text sx={{
-                  textAlign: 'center',
-                  fontWeight: '600',
-                  fontSize: 12,
-                  color: filter === 'position_review' ? '#4ade80' : '#94a3b8'
-                }}>
-                  Position Review
-                </Text>
-              </TouchableOpacity>
-            </View>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} sx={{ marginBottom: 4 }}>
+              <StatCard
+                label="Total"
+                value={stats.totalAssessments}
+                trend="Assessments"
+                trendColor="#c084fc"
+              />
+              <StatCard
+                label="Market Scans"
+                value={stats.marketScans}
+                trend="Searches"
+                trendColor="#c084fc"
+              />
+              <StatCard
+                label="Reviews"
+                value={stats.positionReviews}
+                trend="Positions"
+                trendColor="#4ade80"
+              />
+              <StatCard
+                label="Actions"
+                value={stats.actionsTriggered}
+                trend="Triggered"
+                trendColor="#fb923c"
+              />
+            </ScrollView>
           </View>
+        )}
 
-          {/* Assessments List */}
-          <View sx={{ paddingHorizontal: 6 }}>
-            {filteredAssessments.length === 0 ? (
-              <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-                <Text sx={{ color: '#94a3b8', fontSize: 18, textAlign: 'center', marginBottom: 2 }}>No assessments yet</Text>
-                <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
-                  Assessments will appear as your agents analyze the market
-                </Text>
-              </View>
-            ) : (
-              <>
-                <Text sx={{ color: '#f1f5f9', fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
-                  Timeline ({filteredAssessments.length})
-                </Text>
-                {filteredAssessments.map((assessment) => (
-                  <View key={assessment.id} sx={{ marginBottom: 2 }}>
-                    {assessment.agents && (
-                      <Text sx={{ color: '#94a3b8', fontSize: 12, marginBottom: 1, marginLeft: 1 }}>
-                        {assessment.agents.name} • {assessment.agents.model_name}
-                      </Text>
-                    )}
-                    <AssessmentCard assessment={assessment} />
-                  </View>
-                ))}
-              </>
-            )}
+        {/* Filter Buttons */}
+        <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
+          <View sx={{ flexDirection: 'row', gap: 2 }}>
+            <TouchableOpacity
+              onPress={() => setFilter('all')}
+              sx={{
+                flex: 1,
+                paddingVertical: 3,
+                borderRadius: 'xl',
+                borderWidth: 1,
+                ...(filter === 'all'
+                  ? { backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#c084fc' }
+                  : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+              }}
+            >
+              <Text sx={{
+                textAlign: 'center',
+                fontWeight: '600',
+                fontSize: 12,
+                color: filter === 'all' ? '#c084fc' : '#94a3b8'
+              }}>
+                All
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setFilter('market_scan')}
+              sx={{
+                flex: 1,
+                paddingVertical: 3,
+                borderRadius: 'xl',
+                borderWidth: 1,
+                ...(filter === 'market_scan'
+                  ? { backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#c084fc' }
+                  : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+              }}
+            >
+              <Text sx={{
+                textAlign: 'center',
+                fontWeight: '600',
+                fontSize: 12,
+                color: filter === 'market_scan' ? '#c084fc' : '#94a3b8'
+              }}>
+                Market Scan
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => setFilter('position_review')}
+              sx={{
+                flex: 1,
+                paddingVertical: 3,
+                borderRadius: 'xl',
+                borderWidth: 1,
+                ...(filter === 'position_review'
+                  ? { backgroundColor: 'rgba(34, 197, 94, 0.2)', borderColor: '#4ade80' }
+                  : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+              }}
+            >
+              <Text sx={{
+                textAlign: 'center',
+                fontWeight: '600',
+                fontSize: 12,
+                color: filter === 'position_review' ? '#4ade80' : '#94a3b8'
+              }}>
+                Position Review
+              </Text>
+            </TouchableOpacity>
           </View>
-      </ScrollView>
-      </SafeAreaView>
+        </View>
+
+        {/* Assessments List */}
+        <View sx={{ paddingHorizontal: 6 }}>
+          {filteredAssessments.length === 0 ? (
+            <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+              <Text sx={{ color: '#94a3b8', fontSize: 18, textAlign: 'center', marginBottom: 2 }}>No assessments yet</Text>
+              <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+                Assessments will appear as your agents analyze the market
+              </Text>
+            </View>
+          ) : (
+            <>
+              <Text sx={{ color: '#f1f5f9', fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
+                Timeline ({filteredAssessments.length})
+              </Text>
+              {filteredAssessments.map((assessment) => (
+                <View key={assessment.id} sx={{ marginBottom: 2 }}>
+                  {assessment.agents && (
+                    <Text sx={{ color: '#94a3b8', fontSize: 12, marginBottom: 1, marginLeft: 1 }}>
+                      {assessment.agents.name} • {assessment.agents.model_name}
+                    </Text>
+                  )}
+                  <AssessmentCard assessment={assessment} />
+                </View>
+              ))}
+            </>
+          )}
+        </View>
+    </ScrollView>
     </ContainerView>
   );
 }
