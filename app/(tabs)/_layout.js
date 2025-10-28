@@ -38,6 +38,7 @@ export default function TabsLayout() {
 
   return (
     <NativeTabs
+      minimizeBehavior='automatic'
       tintColor={theme.colors.accent}
       backgroundColor={theme.colors.tabBackground}
       badgeBackgroundColor={theme.colors.info.DEFAULT}

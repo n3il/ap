@@ -324,13 +324,13 @@ export default function AccountSettingsScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 3,
-                      backgroundColor: 'rgba(99, 102, 241, 0.15)'
+                      backgroundColor: 'rgba(168, 85, 247, 0.15)'
                     }}
                   >
                     <Ionicons
                       name={activeThemeOption.icon}
                       size={20}
-                      color={theme.colors.purple[400]}
+                      color={theme.colors.accent}
                     />
                   </View>
                   <View sx={{ flex: 1 }}>
