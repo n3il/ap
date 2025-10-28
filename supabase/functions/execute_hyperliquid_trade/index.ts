@@ -58,12 +58,16 @@ Deno.serve(async (req) => {
 
     console.log('Parsed action:', actionResult)
 
+    // Determine execution mode based on presence of private key
+    const hasPrivateKey = Boolean(Deno.env.get('HYPERLIQUID_PRIVATE_KEY'))
+    const mode: TradingRecordType = hasPrivateKey ? 'real' : 'paper'
+
     const ledgerAccount = await ensureTradingAccount({
       supabase,
       userId: agent.user_id,
       agentId: agent.id,
       agentName: agent.name,
-      type: 'real',
+      type: mode,
     })
 
     // Handle different action types
@@ -131,9 +135,10 @@ Deno.serve(async (req) => {
           action,
           hyperliquidOrderId: tradeResult.orderId,
           message: tradeResult.message,
-          mode: 'real',
+          mode,
         },
         description: `Opened ${actionResult.side} ${actionResult.asset}`,
+        type: mode,
       })
 
       console.log('Trade opened:', trade.id, 'Order ID:', tradeResult.orderId)
@@ -146,6 +151,7 @@ Deno.serve(async (req) => {
             orderId: tradeResult.orderId,
             price: tradeResult.price,
             message: tradeResult.message,
+            mode,
           },
           ledger: ledgerRecords,
         }),
@@ -241,11 +247,12 @@ Deno.serve(async (req) => {
           action,
           hyperliquidOrderId: closeResult.orderId,
           message: closeResult.message,
-          mode: 'real',
+          mode,
           entry_price: existingTrade.entry_price,
           exit_price: closeResult.price,
         },
         description: `Closed ${existingTrade.side} ${actionResult.asset}`,
+        type: mode,
       })
 
       console.log('Trade closed:', updatedTrade.id, 'P&L:', pnl, 'Order ID:', closeResult.orderId)
@@ -258,6 +265,7 @@ Deno.serve(async (req) => {
             orderId: closeResult.orderId,
             price: closeResult.price,
             message: closeResult.message,
+            mode,
           },
           pnl,
           ledger: ledgerRecords,

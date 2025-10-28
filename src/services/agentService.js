@@ -78,7 +78,8 @@ export const agentService = {
           {
             ...agentData,
             user_id: user.id,
-            is_active: new Date().toISOString(),
+            // Start paused by default; user can activate explicitly
+            is_active: null,
             published_at: null,
             hyperliquid_address: hyperliquidAddress,
           }

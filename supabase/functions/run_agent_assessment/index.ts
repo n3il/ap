@@ -65,37 +65,46 @@ Deno.serve(async (req)=>{
       open_positions: openPositions || []
     };
     // 6. Resolve prompt template + build LLM prompt
-    const { template: promptTemplate } = await resolvePromptTemplate(supabase, agent, promptType);
+    const { template: promptTemplate, promptId } = await resolvePromptTemplate(supabase, agent, promptType);
     const prompt = buildPrompt(promptTemplate, {
       promptType,
       marketData,
       openPositions: openPositions || []
     });
-    // 7. Call provider-specific LLM
+    // 7. Call provider-specific LLM (with fault-tolerance)
     const provider = (agent.llm_provider || 'google').toLowerCase();
     const modelName = typeof agent.model_name === 'string' ? agent.model_name : undefined;
-    let llmResponse;
-    switch (provider) {
-      case 'deepseek':
-        console.log('Calling DeepSeek API...');
-        llmResponse = await callDeepseekAPI(prompt, modelName);
-        break;
-      case 'openai':
-        console.log('Calling OpenAI API...');
-        llmResponse = await callOpenAIAPI(prompt, modelName);
-        break;
-      case 'anthropic':
-        console.log('Calling Anthropic API...');
-        llmResponse = await callAnthropicAPI(prompt, modelName);
-        break;
-      case 'google':
-        console.log('Calling Gemini API...');
-        llmResponse = await callGeminiAPI(prompt, modelName);
-        break;
-      default:
-        console.warn(`LLM provider "${agent.llm_provider}" not yet supported. Falling back to Gemini.`);
-        llmResponse = await callGeminiAPI(prompt);
-        break;
+    let llmResponse: { text: string; action: string };
+    try {
+      switch (provider) {
+        case 'deepseek':
+          console.log('Calling DeepSeek API...');
+          llmResponse = await callDeepseekAPI(prompt, modelName);
+          break;
+        case 'openai':
+          console.log('Calling OpenAI API...');
+          llmResponse = await callOpenAIAPI(prompt, modelName);
+          break;
+        case 'anthropic':
+          console.log('Calling Anthropic API...');
+          llmResponse = await callAnthropicAPI(prompt, modelName);
+          break;
+        case 'google':
+          console.log('Calling Gemini API...');
+          llmResponse = await callGeminiAPI(prompt, modelName);
+          break;
+        default:
+          console.warn(`LLM provider "${agent.llm_provider}" not yet supported. Falling back to Gemini.`);
+          llmResponse = await callGeminiAPI(prompt);
+          break;
+      }
+    } catch (providerError) {
+      console.error('LLM provider call failed:', providerError);
+      // Persist assessment as NO_ACTION with error context; do not execute
+      llmResponse = {
+        text: `ERROR: ${(providerError as Error)?.message || String(providerError)}`,
+        action: 'NO_ACTION',
+      } as any;
     }
     console.log('LLM response received, action:', llmResponse.action);
     // 8. Log assessment to database
@@ -107,7 +116,8 @@ Deno.serve(async (req)=>{
         market_data_snapshot: marketDataSnapshot,
         llm_prompt_used: `${prompt.systemInstruction}\n\n${prompt.userQuery}`,
         llm_response_text: llmResponse.text,
-        trade_action_taken: llmResponse.action
+        trade_action_taken: llmResponse.action,
+        prompt_id: promptId ?? null,
       }
     ]).select().single();
     if (assessmentError) {
