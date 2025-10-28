@@ -6,11 +6,11 @@ export default function useInfoSlides() {
       {
         id: 'slide-1',
         titleSlide: true,
-        title: 'AI Trading Agents',
+        title: 'Puppet AI',
         subtitle: 'Autonomous. Intelligent. Profitable.',
         description:
           'Deploy advanced AI agents that trade crypto 24/7 with sophisticated algorithms',
-        gradient: ['#0f0f23', '#1a1a3e', '#2d2d5f'],
+        gradient: ['rgba(0, 0, 0, 0.7)', 'rgba(0, 0, 0, 0.7)', 'rgba(0, 0, 0, 0.7)'],
         statusBarStyle: 'light-content',
       },
       {

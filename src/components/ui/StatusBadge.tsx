@@ -1,42 +1,52 @@
 import React from 'react';
-import { View } from 'dripsy';
-import type { SxProp } from 'dripsy';
+import View, { type ViewProps } from '@/components/ui/View';
 
 import Text from './Text';
 import type { AppTheme } from '@/theme/dripsy';
+import { withOpacity } from '@/theme';
 
 type BadgeVariant = 'success' | 'error' | 'warning' | 'info' | 'accent' | 'muted';
+type BadgeSize = 'small' | 'regular';
 
 export interface StatusBadgeProps {
   children: React.ReactNode;
   variant?: BadgeVariant;
-  sx?: SxProp;
+  size?: BadgeSize;
+  sx?: ViewProps['sx'];
 }
 
-const badgeStyles: Record<BadgeVariant, { bg: keyof AppTheme['colors']; color: keyof AppTheme['colors'] }> = {
-  success: { bg: 'success', color: 'successForeground' },
-  error: { bg: 'error', color: 'errorForeground' },
-  warning: { bg: 'warning', color: 'warningForeground' },
-  info: { bg: 'info', color: 'infoForeground' },
-  accent: { bg: 'accent', color: 'accentForeground' },
-  muted: { bg: 'muted', color: 'mutedForeground' },
+const badgeStyles: Record<BadgeVariant, { bg: keyof AppTheme['colors'] }> = {
+  success: { bg: 'success' },
+  error: { bg: 'error' },
+  warning: { bg: 'warning' },
+  info: { bg: 'info' },
+  accent: { bg: 'accent' },
+  muted: { bg: 'muted' },
 };
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent', sx }) => {
+const sizeStyles: Record<BadgeSize, { paddingHorizontal: number; paddingVertical: number; textVariant: 'xs' | 'caption' }> = {
+  small: { paddingHorizontal: 2, paddingVertical: 0.5, textVariant: 'xs' },
+  regular: { paddingHorizontal: 3, paddingVertical: 1, textVariant: 'xs' },
+};
+
+const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent', size = 'regular', sx }) => {
   const styles = badgeStyles[variant];
+  const sizeStyle = sizeStyles[size];
 
   return (
     <View
       sx={{
-        paddingHorizontal: 3,
-        paddingVertical: 1,
-        borderRadius: 'full',
-        backgroundColor: styles.bg,
+        paddingHorizontal: sizeStyle.paddingHorizontal,
+        paddingVertical: sizeStyle.paddingVertical,
+        borderRadius: 6,
+        // backgroundColor: withOpacity(styles.bg, 0.3),
+        borderColor: styles.bg,
+        borderWidth: 0.5,
         alignSelf: 'flex-start',
         ...sx,
       }}
     >
-      <Text variant="xs" sx={{ color: styles.color, fontWeight: '600' }}>
+      <Text variant={sizeStyle.textVariant} sx={{ color: styles.bg, fontWeight: '300' }}>
         {children}
       </Text>
     </View>

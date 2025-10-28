@@ -1,6 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Stack, StatusBadge, LabelValue, Divider } from '@/components/ui';
-import { GlassView } from 'expo-glass-effect';
+import { View, Text, TouchableOpacity, Stack, StatusBadge, LabelValue, Divider, Card } from '@/components/ui';
 
 export default function AgentCard({ agent, latestAssessment, isOwnAgent = false, onPress }) {
   const calculatePnL = () => {
@@ -9,8 +8,8 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
   };
 
   const pnl = calculatePnL();
-  const pnlColor = pnl >= 0 ? 'success' : 'error';
-  const pnlSign = pnl >= 0 ? '+' : '';
+  const pnlColor = pnl > 0 ? 'success' : pnl < 0 ? 'error' : 'foreground';
+  const pnlSign = pnl > 0 ? '+' : '';
   const providerLabel = agent.llm_provider ? agent.llm_provider.toUpperCase() : 'AGENT';
   const initialCapital = parseFloat(agent.initial_capital) || 0;
   const isPublished = Boolean(agent.published_at);
@@ -97,61 +96,77 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
     });
   };
 
+  const getActiveDuration = () => {
+    if (!agent.is_active) return null;
+
+    const activeDate = new Date(agent.is_active);
+    const diffMs = Date.now() - activeDate.getTime();
+    const diffMinutes = Math.floor(diffMs / (60 * 1000));
+
+    if (diffMinutes < 60) {
+      return `${diffMinutes}m`;
+    }
+
+    const diffHours = Math.floor(diffMinutes / 60);
+    if (diffHours < 24) {
+      return `${diffHours}h`;
+    }
+
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 30) {
+      return `${diffDays}d`;
+    }
+
+    const diffMonths = Math.floor(diffDays / 30);
+    return `${diffMonths}mo`;
+  };
+
+  const isActive = Boolean(agent.is_active);
+  const activeDuration = getActiveDuration();
+
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <GlassView
-        glassEffectStyle="dark"
-        style={{
-          padding: 16,
-          borderRadius: 12,
-          borderWidth: 1,
-        }}
-        isInteractive
+      <Card
+        variant="glass"
       >
-        <Stack direction="row" justify="space-between" align="flex-start" sx={{ marginBottom: 3 }}>
+        <View sx={{ marginBottom: 3, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <View sx={{ flex: 1 }}>
-            <Text
-              variant="xs"
-              tone="subtle"
-              sx={{ fontWeight: '600', textTransform: 'uppercase', marginBottom: 1 }}
-            >
-              {providerLabel}
-            </Text>
-            <Text variant="lg" sx={{ fontWeight: '700', marginBottom: 1 }}>
-              {agent.name}
-            </Text>
-            <Text variant="sm" tone="subtle">
-              {agent.model_name}
+            <View sx={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
+              <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                <Text variant="lg" sx={{ fontWeight: '700' }}>
+                  {agent.name}
+                </Text>
+                <Text variant="xs" sx={{ fontWeight: '300', color: 'success' }}>
+                  active {activeDuration}
+                </Text>
+             </View>
+               <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'}>
+                {isPublished ? 'PUBLIC' : 'PRIVATE'}
+              </StatusBadge>
+            </View>
+            <Text variant="sm" tone="subtle" sx={{ flex: 1 }}>
+              {providerLabel} ({agent.model_name})
             </Text>
           </View>
-          <Stack spacing={2} sx={{ alignItems: 'flex-end' }}>
-            <StatusBadge variant={agent.is_active ? 'accent' : 'muted'}>
-              {agent.is_active ? 'ACTIVE' : 'PAUSED'}
-            </StatusBadge>
-            <StatusBadge variant={isPublished ? 'success' : 'muted'}>
-              {isPublished ? 'SHARED' : 'PRIVATE'}
-            </StatusBadge>
-          </Stack>
-        </Stack>
+        </View>
 
         <Stack direction="row" justify="space-between" align="center">
           <LabelValue
-            label="Initial Capital"
+            label="Capital"
             value={`$${initialCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
           />
           <View sx={{ alignItems: 'flex-end' }}>
-            <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-              P&L
-            </Text>
-            <Text variant="body" sx={{ fontWeight: '700', color: pnlColor }}>
-              {pnlSign}${Math.abs(pnl).toLocaleString()}
-            </Text>
+            <LabelValue
+              label="P&L"
+              value={`${pnlSign}${'$'}${Math.abs(pnl).toLocaleString()}`}
+              sx={{ color: pnlColor }}
+            />
           </View>
         </Stack>
 
-        <Divider sx={{ marginTop: 3 }} />
+        <Divider sx={{ marginTop: 3, opacity: 1 }} />
 
-        <View sx={{ paddingTop: 3 }}>
+        <View sx={{  }}>
           {isOwnAgent ? (
             latestAssessment ? (
               <>
@@ -204,11 +219,11 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
             </View>
           )}
 
-          <Text variant="xs" tone="subtle" sx={{ marginTop: 3, fontFamily: 'monospace' }}>
+          <Text variant="xs" tone="subtle" sx={{ marginTop: 3, fontFamily: 'monospace', opacity: 0.5, textAlign: 'right' }}>
             {shortAddress}
           </Text>
         </View>
-      </GlassView>
+      </Card>
     </TouchableOpacity>
   );
 }

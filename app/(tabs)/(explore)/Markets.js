@@ -25,6 +25,7 @@ import {
 } from '@/components/trading';
 import { useTheme } from '@/contexts/ThemeContext';
 import { withOpacity } from '@/theme/utils';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -470,7 +471,9 @@ export default function MarketsScreen() {
             onPress={() => router.back()}
             style={styles.closeButton}
           >
-            <Text style={styles.closeButtonText}>✕</Text>
+            <Text style={styles.closeButtonText}>
+              <MaterialCommunityIcons name="arrow-down" size={24} color={theme.colors.foreground} />
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -723,7 +726,7 @@ const createStyles = (theme) => {
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
+      alignItems: 'start',
       paddingHorizontal: 20,
       paddingVertical: 16,
       borderBottomWidth: 1,
@@ -746,13 +749,14 @@ const createStyles = (theme) => {
       width: 36,
       height: 36,
       borderRadius: 18,
-      backgroundColor: withOpacity(colors.error.DEFAULT, 0.12),
+      borderColor: colors.backgroundSecondary,
+      borderWidth: 2,
       justifyContent: 'center',
       alignItems: 'center',
     },
     closeButtonText: {
       fontSize: 20,
-      color: colors.error.DEFAULT,
+      color: withOpacity(colors.foreground, 0.6),
       fontWeight: '600',
     },
     tabBar: {

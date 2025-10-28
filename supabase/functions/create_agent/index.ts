@@ -50,7 +50,7 @@ Deno.serve(async (req) => {
       throw new Error('initial_capital must be a positive number')
     }
 
-    // Insert new agent
+    // Insert new agent (is_active set to current timestamp = active)
     const { data: agent, error: insertError } = await supabase
       .from('agents')
       .insert([
@@ -61,7 +61,7 @@ Deno.serve(async (req) => {
           model_name,
           hyperliquid_address,
           initial_capital,
-          is_active: true,
+          is_active: new Date().toISOString(),
           market_prompt_id: market_prompt_id ?? null,
           position_prompt_id: position_prompt_id ?? null,
         },

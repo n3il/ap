@@ -39,7 +39,7 @@ export default function TabsLayout() {
   return (
     <NativeTabs
       tintColor={theme.colors.accent}
-      backgroundColor={theme.colors.background}
+      backgroundColor={theme.colors.tabBackground}
       badgeBackgroundColor={theme.colors.info.DEFAULT}
       labelStyle={{
         default: theme.colors.text.secondary,

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity } from '@/components/ui';
+import { View, Text, ActivityIndicator, TouchableOpacity, Button } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import Svg, { Polyline } from 'react-native-svg';
 import { useMarketSnapshot } from '@/hooks/useMarketSnapshot';
@@ -9,6 +9,7 @@ import {
   formatPercent,
 } from '@/utils/marketFormatting';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AgentComparisonLineChart from './AgentComparisonLineChart';
 
 const SPARKLINE_WIDTH = 88;
 const SPARKLINE_HEIGHT = 32;
@@ -255,35 +256,36 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
           {TIMEFRAME_OPTIONS.map((option) => {
             const isSelected = timeframe === option.id;
             return (
-              <TouchableOpacity
+              <Button
                 key={option.id}
+                variant="outline"
                 onPress={() => setTimeframe(option.id)}
-                sx={{
+                style={{
                   paddingHorizontal: 2,
                   paddingVertical: 1,
-                  borderRadius: 'full',
                   borderWidth: 1,
-                  borderColor: isSelected ? 'primary400' : 'rgba(255, 255, 255, 0.2)',
+                  borderColor: isSelected ? 'accent' : 'rgba(255, 255, 255, 0.2)',
                   backgroundColor: isSelected ? 'rgba(107, 114, 128, 0.2)' : 'rgba(255, 255, 255, 0.1)',
                   marginRight: 2
                 }}
                 accessibilityRole="button"
                 accessibilityLabel={`Set timeframe to ${option.label}`}
-              >
-                <Text
-                  sx={{
+                textProps={{
+                  sx: {
                     fontSize: 11,
                     fontWeight: '600',
                     textTransform: 'uppercase',
-                    color: isSelected ? 'foreground' : 'rgba(248, 250, 252, 0.3)'
-                  }}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
+                    color: isSelected ? 'accent' : 'rgba(248, 250, 252, 0.3)'
+                  }
+                }}
+              >
+                {option.label}
+              </Button>
             );
           })}
         </View>
+
+        <AgentComparisonLineChart timeframe={timeframe} />
       </View>
     </View>
   );

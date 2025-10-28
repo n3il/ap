@@ -78,7 +78,7 @@ export const agentService = {
           {
             ...agentData,
             user_id: user.id,
-            is_active: true,
+            is_active: new Date().toISOString(),
             published_at: null,
             hyperliquid_address: hyperliquidAddress,
           }
@@ -95,11 +95,12 @@ export const agentService = {
   },
 
   // Update agent status (active/inactive)
+  // isActive: true -> set to current timestamp, false -> set to null
   async updateAgentStatus(agentId, isActive) {
     try {
       const { data, error } = await supabase
         .from('agents')
-        .update({ is_active: isActive })
+        .update({ is_active: isActive ? new Date().toISOString() : null })
         .eq('id', agentId)
         .select()
         .single();
@@ -225,7 +226,7 @@ export const agentService = {
             hyperliquid_address: hyperliquidAddress,
             initial_capital: sourceAgent.initial_capital,
             user_id: user.id,
-            is_active: false,
+            is_active: null,
             published_at: null,
           }
         ])

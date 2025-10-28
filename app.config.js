@@ -6,7 +6,7 @@ export default {
     version: "1.0.0",
     orientation: "default",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
-    userInterfaceStyle: "automatic",
+    userInterfaceStyle: "dark",
     newArchEnabled: true,
     splash: {
       image: "./assets/icons/Icon-App-iTunes.png",

@@ -17,7 +17,7 @@ import { ROUTES } from '@/config/routes';
 
 const { width, height } = Dimensions.get('window');
 
-const DEFAULT_GRADIENT = ['#0f0f23', '#1a1a3e', '#2d2d5f'];
+const DEFAULT_GRADIENT = ['rgba(0, 0, 0, 0.4)', 'rgba(255, 255, 255, 0.1)', 'rgba(0, 0, 0, 0.2)'];
 
 export default function GetStartedScreen() {
   const [currentSlide, setCurrentSlide] = useState(null);
@@ -65,7 +65,7 @@ export default function GetStartedScreen() {
   }, []);
 
   return (
-    <View sx={{ flex: 1, backgroundColor: 'black' }}>
+    <View sx={{ flex: 1, backgroundColor: 'black', }}>
       <StatusBar barStyle={currentSlide?.statusBarStyle || 'light-content'} />
 
       {/* Background Video */}

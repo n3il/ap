@@ -8,11 +8,11 @@ Deno.serve(async (req) => {
 
     const supabase = createSupabaseServiceClient()
 
-    // Fetch all active agents
+    // Fetch all active agents (is_active timestamp IS NOT NULL means active)
     const { data: activeAgents, error: agentsError } = await supabase
       .from('agents')
       .select('id, name, is_active')
-      .eq('is_active', true)
+      .not('is_active', 'is', null)
 
     if (agentsError) {
       console.error('Error fetching active agents:', agentsError)

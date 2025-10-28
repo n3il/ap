@@ -64,41 +64,42 @@ const darkTheme = {
       900: '#111827',
       950: '#030712',
     },
-        // Purplish accent
-        brand: {
-          ...purplePalette,
-          DEFAULT: purplePalette[500],
-          foreground: '#faf5ff',
-        },
-        purple: purplePalette,
-        accent: accentPalette.DEFAULT,
-        accentPalette,
-        accentForeground: accentPalette.foreground,
-        // Semantic colors for dark mode
-        background: '#0f172a',
-        backgroundSecondary: '#101a2c',
-        surface: '#0f172a',
-        foreground: '#f8fafc',
-        text: {
-          primary: '#f8fafc',
-          secondary: '#cbd5f5',
-          tertiary: '#94a3b8',
-        },
-        card: {
-          DEFAULT: '#1e293b',
-          foreground: '#f8fafc',
-        },
-        popover: {
-          DEFAULT: '#1e293b',
-          foreground: '#f8fafc',
-        },
-        muted: {
-          DEFAULT: '#334155',
-          foreground: '#94a3b8',
-        },
-        border: '#334155',
-        input: '#334155',
-        ring: purplePalette[400],
+    // Purplish accent
+    brand: {
+      ...purplePalette,
+      DEFAULT: purplePalette[500],
+      foreground: '#faf5ff',
+    },
+    purple: purplePalette,
+    accent: accentPalette.DEFAULT,
+    accentPalette,
+    accentForeground: accentPalette.foreground,
+    // Semantic colors for dark mode
+    background: '#040404ff',
+    backgroundSecondary: '#101a2c',
+    surface: '#0f172a',
+    tabBackground: '#000',
+    foreground: '#f8fafc',
+    text: {
+      primary: '#f8fafc',
+      secondary: '#cbd5f5',
+      tertiary: '#94a3b8',
+    },
+    card: {
+      DEFAULT: '#1e293b',
+      foreground: '#f8fafc',
+    },
+    popover: {
+      DEFAULT: '#1e293b',
+      foreground: '#f8fafc',
+    },
+    muted: {
+      DEFAULT: '#334155',
+      foreground: '#94a3b8',
+    },
+    border: '#1f2835ff',
+    input: '#334155',
+    ring: purplePalette[400],
     // Status colors
     success: {
       DEFAULT: '#22c55e',

@@ -1,9 +1,11 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated } from 'react-native';
+import { View, Text, Animated, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Image } from 'dripsy';
+import theme from '@/theme/base';
 
 export default function SplashScreen() {
-  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const fadeAnim = useRef(new Animated.Value(1)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
@@ -42,10 +44,11 @@ export default function SplashScreen() {
 
   return (
     <LinearGradient
-      colors={['#0f0f23', '#1a1a3e', '#2d2d5f']}
+      colors={['#000000', '#000000', '#0a0a0a']}
+      locations={[0, 0.9, 1]}
       style={styles.container}
       start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
+      end={{ x: 0, y: 1 }}
     >
       {/* Glassy orb effect */}
       <View style={styles.orbContainer}>
@@ -72,33 +75,18 @@ export default function SplashScreen() {
         {/* Logo/Brand */}
         <View style={styles.logoContainer}>
           <View style={styles.logoGlass}>
-            <Text style={styles.logoText}>{''}</Text>
+            <Image
+              source={require('@assets/icons/Icon-App-iTunes.png')}
+              style={styles.logoImage}
+            />
           </View>
         </View>
-
-        {/* Loading indicator */}
-        <View style={styles.loadingContainer}>
-          <Animated.View
-            style={[
-              styles.loadingDot,
-              {
-                opacity: pulseAnim,
-              },
-            ]}
-          />
-        </View>
       </Animated.View>
-
-      {/* Bottom gradient overlay */}
-      <LinearGradient
-        colors={['transparent', 'rgba(15, 15, 35, 0.8)']}
-        style={styles.bottomGradient}
-      />
     </LinearGradient>
   );
 }
 
-const styles = {
+const styles = StyleSheet.create({
   container: {
     flex: 1,
     justifyContent: 'center',
@@ -116,11 +104,11 @@ const styles = {
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(99, 102, 241, 0.15)',
-    shadowColor: '#6366f1',
+    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    shadowColor: theme.colors.accent,
     shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 40,
+    shadowOpacity: 0.6,
+    shadowRadius: 50,
     elevation: 10,
   },
   content: {
@@ -128,68 +116,26 @@ const styles = {
     zIndex: 10,
   },
   logoContainer: {
-    marginBottom: 24,
+    marginBottom: theme.layout.sectionSpacing * 2,
   },
   logoGlass: {
     width: 100,
     height: 100,
-    borderRadius: 28,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: parseInt(theme.borderRadius['2xl']),
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    borderColor: `${theme.colors.accent}26`,
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
+    shadowColor: theme.colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.2,
+    shadowRadius: 12,
     elevation: 8,
   },
-  logoText: {
-    fontSize: 56,
-    fontWeight: '700',
-    color: '#ffffff',
-    textShadowColor: 'rgba(99, 102, 241, 0.8)',
-    textShadowOffset: { width: 0, height: 0 },
-    textShadowRadius: 20,
+  logoImage: {
+    width: 100,
+    height: 100,
+    borderRadius: parseInt(theme.borderRadius.lg),
   },
-  appName: {
-    fontSize: 32,
-    fontWeight: '700',
-    color: '#ffffff',
-    marginBottom: 8,
-    letterSpacing: 1,
-  },
-  tagline: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.7)',
-    letterSpacing: 2,
-    textTransform: 'uppercase',
-    marginBottom: 40,
-  },
-  loadingContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    height: 24,
-  },
-  loadingDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#6366f1',
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.8,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  bottomGradient: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 150,
-  },
-};
+});

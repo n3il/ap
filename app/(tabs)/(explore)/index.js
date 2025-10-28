@@ -2,7 +2,6 @@ import React, { useCallback, useMemo } from 'react';
 import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import { useQuery } from '@tanstack/react-query';
-import { SafeAreaView } from '@/components/ui';
 import ContainerView from '@/components/ContainerView';
 import AgentList from '@/components/AgentList';
 import MarketPricesWidget from '@/components/MarketPricesWidget';
@@ -73,94 +72,74 @@ export default function ExploreScreen() {
 
   return (
     <ContainerView>
-      <SafeAreaView sx={{ flex: 1 }}>
-        <ScrollView
-          sx={{ flex: 1 }}
-          contentContainerStyle={{ paddingBottom: 100 }}
-          refreshControl={
-            <RefreshControl
-              refreshing={isFetching}
-              onRefresh={handleRefresh}
-              tintColor="#fff"
-            />
-          }
-        >
-          <View sx={{ paddingHorizontal: 6, paddingTop: 6, paddingBottom: 4 }}>
-            <Text
-              variant="xs"
-              tone="muted"
-              sx={{
-                textTransform: 'uppercase',
-                fontWeight: '600',
-                letterSpacing: 2
-              }}
-            >
-              Explore
-            </Text>
-            <Text
-              sx={{
-                fontSize: 30,
-                fontWeight: '400',
-                color: 'textPrimary',
-                marginTop: 2
-              }}
-            >
-              Discover Public Agents
-            </Text>
-            <Text
-              variant="sm"
-              tone="muted"
-              sx={{
-                marginTop: 3,
-                lineHeight: 20
-              }}
-            >
-              Explore community-published LLM trading agents. Tap any card to inspect the configuration
-              and copy it into your own desk.
-            </Text>
-          </View>
+      <ScrollView
+        sx={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching}
+            onRefresh={handleRefresh}
+            tintColor="#fff"
+            size="small"
+          />
+        }
+      >
+        <View sx={{ paddingHorizontal: 6, paddingTop: 6, paddingBottom: 4 }}>
+          <Text
+            variant="xs"
+            tone="muted"
+            sx={{
+              textTransform: 'uppercase',
+              fontWeight: '600',
+              letterSpacing: 2
+            }}
+          >
+            Explore Agents
+          </Text>
+        </View>
 
-          <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
-            <MarketPricesWidget tickers={['BTC', 'ETH', 'SOL']} sx={{ borderTopWidth: 1, borderColor: 'border', paddingTop: 4 }} />
-          </View>
+        <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
+          <MarketPricesWidget tickers={['BTC', 'ETH', 'SOL']} sx={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: 'border', paddingTop: 4 }} />
+        </View>
 
-          <View sx={{ paddingHorizontal: 6 }}>
-            <Text
-              variant="xs"
-              tone="muted"
-              sx={{
-                textTransform: 'uppercase',
-                fontWeight: '600'
-              }}
-            >
-              The Agents
-            </Text>
-            <AgentList
-              agents={publishedAgents}
-              onAgentPress={handleAgentPress}
-              ownedAgentIds={ownedAgentIds}
-              emptyState={(
-                <View sx={{ alignItems: 'flex-start', justifyContent: 'center', paddingVertical: 12 }}>
-                  <Text
-                    variant="lg"
-                    tone="subtle"
-                    sx={{
-                      fontWeight: '600',
-                      textAlign: 'center',
-                      marginBottom: 2
-                    }}
-                  >
-                    No agents yet.
-                  </Text>
-                  <Text variant="sm" tone="muted">
-                    When agents are published, they will appear here for you to use or remix.
-                  </Text>
-                </View>
-              )}
-            />
-          </View>
-        </ScrollView>
-      </SafeAreaView>
+        <View sx={{ paddingHorizontal: 6 }}>
+          <Text
+            variant="xs"
+            tone="muted"
+            sx={{
+              textTransform: 'uppercase',
+              fontWeight: '600',
+              letterSpacing: 2,
+              marginBottom: 4
+            }}
+          >
+            Agents
+          </Text>
+          <AgentList
+            agents={publishedAgents}
+            onAgentPress={handleAgentPress}
+            ownedAgentIds={ownedAgentIds}
+            emptyState={(
+              <View sx={{ alignItems: 'flex-start', justifyContent: 'center', paddingVertical: 12 }}>
+                <Text
+                  variant="lg"
+                  tone="subtle"
+                  sx={{
+                    fontWeight: '600',
+                    textAlign: 'center',
+                    marginBottom: 2
+                  }}
+                >
+                  No agents yet.
+                </Text>
+                <Text variant="sm" tone="muted">
+                  When agents are published, they will appear here for you to use or remix.
+                </Text>
+              </View>
+            )}
+          />
+        </View>
+      </ScrollView>
     </ContainerView>
   );
 }

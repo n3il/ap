@@ -97,6 +97,7 @@ const Button = React.forwardRef<React.ElementRef<typeof TouchableOpacity>, Butto
     }
 
     const contentColor = typedTheme.colors[current.textColor] ?? '#ffffff';
+    const { sx: sxTextProps, ...restTextProps } = textProps || {};
 
     return (
       <TouchableOpacity
@@ -111,8 +112,8 @@ const Button = React.forwardRef<React.ElementRef<typeof TouchableOpacity>, Butto
           <Text
             variant="body"
             tone="default"
-            sx={{ color: current.textColor }}
-            {...textProps}
+            sx={{ color: current.textColor, ...sxTextProps, padding: 0 }}
+            {...restTextProps}
           >
             {children}
           </Text>
