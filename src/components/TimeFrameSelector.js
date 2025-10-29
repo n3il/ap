@@ -23,7 +23,7 @@ export default function TimeFrameSelector({ timeframe, onTimeframeChange }) {
             onPress={() => onTimeframeChange(option.id)}
             sx={{
               borderRadius: 'full',
-              borderColor: isSelected ? 'muted[foreground]' : 'muted',
+              borderColor: isSelected ? 'accent' : 'muted',
               marginRight: 1,
               paddingHorizontal: 2
             }}

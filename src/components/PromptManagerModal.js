@@ -9,11 +9,13 @@ import {
   Alert,
   KeyboardAvoidingView,
   Platform,
+  ActivityIndicator,
 } from '@/components/ui';
 import { BlurView } from 'expo-blur';
 import { useMutation } from '@tanstack/react-query';
 import GlassCard from './GlassCard';
 import { promptService, PROMPT_TYPES, PROMPT_PLACEHOLDERS } from '@/services';
+import { supabase } from '@/config/supabase';
 
 const defaultFormState = {
   name: '',
@@ -30,6 +32,8 @@ export default function PromptManagerModal({
   onPromptCreated,
 }) {
   const [form, setForm] = useState(defaultFormState);
+  const [testingPromptId, setTestingPromptId] = useState(null);
+  const [testResults, setTestResults] = useState({});
 
   const createPromptMutation = useMutation({
     mutationFn: promptService.createPrompt,
@@ -40,6 +44,30 @@ export default function PromptManagerModal({
     },
     onError: (error) => {
       Alert.alert('Error', error.message || 'Failed to save prompt.');
+    },
+  });
+
+  const testPromptMutation = useMutation({
+    mutationFn: async (prompt) => {
+      const { data, error } = await supabase.functions.invoke('run-assessment', {
+        body: {
+          prompt_id: prompt.id,
+          prompt_type: prompt.prompt_type,
+          system_instruction: prompt.system_instruction,
+          user_template: prompt.user_template,
+        },
+      });
+
+      if (error) throw error;
+      return { promptId: prompt.id, result: data };
+    },
+    onSuccess: ({ promptId, result }) => {
+      setTestResults((prev) => ({ ...prev, [promptId]: result }));
+      setTestingPromptId(null);
+    },
+    onError: (error) => {
+      setTestingPromptId(null);
+      Alert.alert('Test Failed', error.message || 'Failed to run prompt test.');
     },
   });
 
@@ -68,6 +96,21 @@ export default function PromptManagerModal({
     createPromptMutation.mutate(form);
   };
 
+  const handleTestPrompt = (prompt) => {
+    setTestingPromptId(prompt.id);
+    testPromptMutation.mutate(prompt);
+  };
+
+  const toggleTestResult = (promptId) => {
+    if (testResults[promptId]) {
+      setTestResults((prev) => {
+        const updated = { ...prev };
+        delete updated[promptId];
+        return updated;
+      });
+    }
+  };
+
   const renderPromptList = (title, data) => (
     <View sx={{ marginBottom: 6 }}>
       <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', letterSpacing: 1, marginBottom: 2 }}>
@@ -80,22 +123,82 @@ export default function PromptManagerModal({
           </Text>
         </GlassCard>
       ) : (
-        data.map((prompt) => (
-          <GlassCard
-            key={prompt.id}
-            sx={{ padding: 3, marginBottom: 3, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)', backgroundColor: 'rgba(255, 255, 255, 0.04)' }}
-          >
-            <Text sx={{ fontWeight: '600' }}>{prompt.name}</Text>
-            {prompt.description ? (
-              <Text variant="xs" tone="muted" sx={{ marginTop: 1 }}>
-                {prompt.description}
+        data.map((prompt) => {
+          const isTesting = testingPromptId === prompt.id;
+          const hasResult = testResults[prompt.id];
+
+          return (
+            <GlassCard
+              key={prompt.id}
+              sx={{ padding: 3, marginBottom: 3, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)', backgroundColor: 'rgba(255, 255, 255, 0.04)' }}
+            >
+              <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
+                <View sx={{ flex: 1, paddingRight: 3 }}>
+                  <Text sx={{ fontWeight: '600' }}>{prompt.name}</Text>
+                  {prompt.description ? (
+                    <Text variant="xs" tone="muted" sx={{ marginTop: 1 }}>
+                      {prompt.description}
+                    </Text>
+                  ) : null}
+                </View>
+                <TouchableOpacity
+                  onPress={() => handleTestPrompt(prompt)}
+                  disabled={isTesting}
+                  sx={{
+                    paddingHorizontal: 3,
+                    paddingVertical: 2,
+                    borderRadius: 'lg',
+                    backgroundColor: isTesting ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.2)',
+                    borderWidth: 1,
+                    borderColor: 'rgba(59, 130, 246, 0.5)',
+                    minWidth: 70,
+                    alignItems: 'center',
+                  }}
+                >
+                  {isTesting ? (
+                    <ActivityIndicator size="small" color="#60a5fa" />
+                  ) : (
+                    <Text variant="xs" sx={{ fontWeight: '600', color: '#60a5fa' }}>
+                      Run
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </View>
+
+              <Text variant="xs" sx={{ color: 'rgba(148, 163, 184, 0.7)', marginTop: 2, fontFamily: 'monospace', lineHeight: 16 }}>
+                {prompt.system_instruction}
               </Text>
-            ) : null}
-            <Text variant="xs" sx={{ color: 'rgba(148, 163, 184, 0.7)', marginTop: 2, fontFamily: 'monospace', lineHeight: 16 }}>
-              {prompt.system_instruction}
-            </Text>
-          </GlassCard>
-        ))
+
+              {hasResult && (
+                <View sx={{ marginTop: 3, paddingTop: 3, borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.08)' }}>
+                  <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                    <Text variant="xs" sx={{ fontWeight: '600', color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: 1 }}>
+                      Test Result
+                    </Text>
+                    <TouchableOpacity onPress={() => toggleTestResult(prompt.id)}>
+                      <Text variant="xs" sx={{ color: '#94a3b8' }}>✕</Text>
+                    </TouchableOpacity>
+                  </View>
+                  <ScrollView
+                    horizontal
+                    sx={{
+                      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                      borderRadius: 'lg',
+                      padding: 3,
+                      maxHeight: 200,
+                    }}
+                  >
+                    <Text variant="xs" sx={{ fontFamily: 'monospace', color: '#cbd5e1', lineHeight: 18 }}>
+                      {typeof testResults[prompt.id] === 'string'
+                        ? testResults[prompt.id]
+                        : JSON.stringify(testResults[prompt.id], null, 2)}
+                    </Text>
+                  </ScrollView>
+                </View>
+              )}
+            </GlassCard>
+          );
+        })
       )}
     </View>
   );

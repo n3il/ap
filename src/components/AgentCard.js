@@ -1,6 +1,8 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Stack, StatusBadge, LabelValue, Divider, Card } from '@/components/ui';
-import { isLiquidGlassAvailable } from 'expo-glass-effect';
+import { LLM_PROVIDERS } from './CreateAgentModal';
+import ActiveDurationBadge from './ActiveDurationBadge';
+import WalletAddressCard from './WalletAddressCard';
 
 export default function AgentCard({ agent, latestAssessment, isOwnAgent = false, onPress }) {
   const calculatePnL = () => {
@@ -10,13 +12,10 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
   const pnl = calculatePnL();
   const pnlColor = pnl > 0 ? 'success' : pnl < 0 ? 'error' : 'foreground';
   const pnlSign = pnl > 0 ? '+' : '';
-  const providerLabel = agent.llm_provider ? agent.llm_provider.toUpperCase() : 'AGENT';
+  const providerLabel = LLM_PROVIDERS[agent.llm_provider] || 'Unknown';
   const initialCapital = parseFloat(agent.initial_capital) || 0;
   const isPublished = Boolean(agent.published_at);
 
-  const shortAddress = agent.hyperliquid_address
-    ? `${agent.hyperliquid_address.slice(0, 8)}...${agent.hyperliquid_address.slice(-6)}`
-    : 'Hyperliquid wallet not linked';
 
   const formatRelativeTime = (timestamp) => {
     if (!timestamp) return 'Awaiting first loop';
@@ -96,33 +95,7 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
     });
   };
 
-  const getActiveDuration = () => {
-    if (!agent.is_active) return null;
-
-    const activeDate = new Date(agent.is_active);
-    const diffMs = Date.now() - activeDate.getTime();
-    const diffMinutes = Math.floor(diffMs / (60 * 1000));
-
-    if (diffMinutes < 60) {
-      return `${diffMinutes}m`;
-    }
-
-    const diffHours = Math.floor(diffMinutes / 60);
-    if (diffHours < 24) {
-      return `${diffHours}h`;
-    }
-
-    const diffDays = Math.floor(diffHours / 24);
-    if (diffDays < 30) {
-      return `${diffDays}d`;
-    }
-
-    const diffMonths = Math.floor(diffDays / 30);
-    return `${diffMonths}mo`;
-  };
-
   const isActive = Boolean(agent.is_active);
-  const activeDuration = getActiveDuration();
 
   return (
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
@@ -134,9 +107,7 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
                 <Text variant="lg" sx={{ fontWeight: '700' }}>
                   {agent.name}
                 </Text>
-                <Text variant="xs" sx={{ fontWeight: '300', color: 'success' }}>
-                  active {activeDuration}
-                </Text>
+                <ActiveDurationBadge isActive={agent.is_active} variant="small" />
              </View>
                <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'}>
                 {isPublished ? 'PUBLIC' : 'PRIVATE'}
@@ -217,9 +188,9 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
             </View>
           )}
 
-          <Text variant="xs" tone="subtle" sx={{ marginTop: 3, fontFamily: 'monospace', opacity: 0.5, textAlign: 'right' }}>
-            {shortAddress}
-          </Text>
+          <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
+            <WalletAddressCard address={agent.hyperliquid_address} variant="short" />
+          </View>
         </View>
       </Card>
     </TouchableOpacity>

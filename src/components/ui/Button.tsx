@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, TouchableOpacity } from 'react-native';
+import { ActivityIndicator, Pressable } from 'react-native';
 import type { TouchableOpacityProps, ViewStyle } from 'react-native';
 import { useDripsyTheme, useSx } from 'dripsy';
 import type { SxProp } from 'dripsy';
@@ -119,7 +119,7 @@ const Button = React.forwardRef<React.ElementRef<typeof TouchableOpacity>, Butto
     const { sx: sxTextProps, ...restTextProps } = textProps || {};
 
     return (
-      <TouchableOpacity
+      <Pressable
         ref={ref}
         activeOpacity={0.85}
         style={computedStyle}
@@ -139,7 +139,7 @@ const Button = React.forwardRef<React.ElementRef<typeof TouchableOpacity>, Butto
         ) : (
           children
         )}
-      </TouchableOpacity>
+      </Pressable>
     );
   },
 );

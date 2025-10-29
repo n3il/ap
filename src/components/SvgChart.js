@@ -1,191 +1,56 @@
 import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, Button, ActivityIndicator } from '@/components/ui';
-import { Animated } from 'react-native';
+import { Animated, PanResponder } from 'react-native';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
-import SectionTitle from '@/components/SectionTitle';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMultiAgentSnapshots } from '@/hooks/useAgentSnapshots';
 import { agentSnapshotService } from '@/services/agentSnapshotService';
+import { getProviderColor, getMockAgentsForSvgChart } from '@/factories/mockAgentData';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const CHART_WIDTH = 350;
 const CHART_HEIGHT = 180;
-const PADDING = { top: 20, right: 40, bottom: 0, left: 0 };
+const PADDING = { top: 20, right: 50, bottom: 0, left: 12 };
 const PLOT_WIDTH = CHART_WIDTH - PADDING.left - PADDING.right;
 const PLOT_HEIGHT = CHART_HEIGHT - PADDING.top - PADDING.bottom;
 
-// Provider brand colors - neon versions
-const PROVIDER_COLORS = {
-  openai: '#00ff9f',
-  anthropic: '#ff6b35',
-  deepseek: '#00d4ff',
-  google: '#0099ff',
-  gemini: '#0099ff',
-  meta: '#0080ff',
-  llama: '#0080ff',
-  mistral: '#ffaa00',
-  cohere: '#00ffcc',
-  default: '#94a3b8',
+// Interpolate y value for a given x position in the data
+const interpolateValue = (data, targetX) => {
+  if (!data || data.length === 0) return 0;
+  if (data.length === 1) return data[0].percent;
+
+  // Find the two points to interpolate between
+  let leftPoint = data[0];
+  let rightPoint = data[data.length - 1];
+
+  for (let i = 0; i < data.length - 1; i++) {
+    if (data[i].time <= targetX && data[i + 1].time >= targetX) {
+      leftPoint = data[i];
+      rightPoint = data[i + 1];
+      break;
+    }
+  }
+
+  // Handle edge cases
+  if (targetX <= data[0].time) return data[0].percent;
+  if (targetX >= data[data.length - 1].time) return data[data.length - 1].percent;
+
+  // Linear interpolation
+  const xRange = rightPoint.time - leftPoint.time;
+  const yRange = rightPoint.percent - leftPoint.percent;
+  const xOffset = targetX - leftPoint.time;
+  const ratio = xRange === 0 ? 0 : xOffset / xRange;
+
+  return leftPoint.percent + yRange * ratio;
 };
 
-const getProviderColor = (llmProvider) => {
-  if (!llmProvider) return PROVIDER_COLORS.default;
-  const provider = llmProvider.toLowerCase();
-  return PROVIDER_COLORS[provider] || PROVIDER_COLORS.default;
-};
-
-// Mock data for 3 agents
-const MOCK_AGENTS = [
-  {
-    id: '1',
-    name: 'Quantum Trader',
-    llm_provider: 'openai',
-    data: [
-      { time: 0, percent: 0 },
-      { time: 0.025, percent: 0.4 },
-      { time: 0.05, percent: 1.1 },
-      { time: 0.075, percent: 0.9 },
-      { time: 0.1, percent: 1.7 },
-      { time: 0.125, percent: 2.0 },
-      { time: 0.15, percent: 2.5 },
-      { time: 0.175, percent: 2.2 },
-      { time: 0.2, percent: 1.9 },
-      { time: 0.225, percent: 1.5 },
-      { time: 0.25, percent: 2.1 },
-      { time: 0.275, percent: 2.4 },
-      { time: 0.3, percent: 2.8 },
-      { time: 0.325, percent: 3.1 },
-      { time: 0.35, percent: 3.5 },
-      { time: 0.375, percent: 3.3 },
-      { time: 0.4, percent: 3.9 },
-      { time: 0.425, percent: 4.2 },
-      { time: 0.45, percent: 3.8 },
-      { time: 0.475, percent: 4.4 },
-      { time: 0.5, percent: 4.7 },
-      { time: 0.525, percent: 4.5 },
-      { time: 0.55, percent: 4.1 },
-      { time: 0.575, percent: 3.7 },
-      { time: 0.6, percent: 4.0 },
-      { time: 0.625, percent: 4.4 },
-      { time: 0.65, percent: 4.8 },
-      { time: 0.675, percent: 4.6 },
-      { time: 0.7, percent: 5.0 },
-      { time: 0.725, percent: 5.3 },
-      { time: 0.75, percent: 5.1 },
-      { time: 0.775, percent: 4.8 },
-      { time: 0.8, percent: 5.2 },
-      { time: 0.825, percent: 4.9 },
-      { time: 0.85, percent: 5.4 },
-      { time: 0.875, percent: 5.6 },
-      { time: 0.9, percent: 5.3 },
-      { time: 0.925, percent: 5.5 },
-      { time: 0.95, percent: 5.8 },
-      { time: 0.975, percent: 5.6 },
-      { time: 1, percent: 6.0 },
-    ],
-  },
-  {
-    id: '2',
-    name: 'Neural Alpha',
-    llm_provider: 'anthropic',
-    data: [
-      { time: 0, percent: 0 },
-      { time: 0.025, percent: -0.3 },
-      { time: 0.05, percent: -0.7 },
-      { time: 0.075, percent: -1.0 },
-      { time: 0.1, percent: -1.5 },
-      { time: 0.125, percent: -1.2 },
-      { time: 0.15, percent: -0.9 },
-      { time: 0.175, percent: -0.6 },
-      { time: 0.2, percent: -0.2 },
-      { time: 0.225, percent: 0.1 },
-      { time: 0.25, percent: 0.4 },
-      { time: 0.275, percent: 0.3 },
-      { time: 0.3, percent: 0.7 },
-      { time: 0.325, percent: 0.8 },
-      { time: 0.35, percent: 1.1 },
-      { time: 0.375, percent: 0.9 },
-      { time: 0.4, percent: 1.3 },
-      { time: 0.425, percent: 1.4 },
-      { time: 0.45, percent: 1.7 },
-      { time: 0.475, percent: 1.6 },
-      { time: 0.5, percent: 2.0 },
-      { time: 0.525, percent: 1.9 },
-      { time: 0.55, percent: 2.2 },
-      { time: 0.575, percent: 2.4 },
-      { time: 0.6, percent: 2.5 },
-      { time: 0.625, percent: 2.7 },
-      { time: 0.65, percent: 2.9 },
-      { time: 0.675, percent: 2.7 },
-      { time: 0.7, percent: 3.0 },
-      { time: 0.725, percent: 2.8 },
-      { time: 0.75, percent: 2.6 },
-      { time: 0.775, percent: 2.9 },
-      { time: 0.8, percent: 3.2 },
-      { time: 0.825, percent: 3.1 },
-      { time: 0.85, percent: 3.4 },
-      { time: 0.875, percent: 3.3 },
-      { time: 0.9, percent: 3.5 },
-      { time: 0.925, percent: 3.6 },
-      { time: 0.95, percent: 3.8 },
-      { time: 0.975, percent: 3.9 },
-      { time: 1, percent: 4.1 },
-    ],
-  },
-  {
-    id: '3',
-    name: 'DeepSeek Pro',
-    llm_provider: 'deepseek',
-    data: [
-      { time: 0, percent: 0 },
-      { time: 0.025, percent: 0.5 },
-      { time: 0.05, percent: 0.9 },
-      { time: 0.075, percent: 1.3 },
-      { time: 0.1, percent: 1.7 },
-      { time: 0.125, percent: 1.4 },
-      { time: 0.15, percent: 1.1 },
-      { time: 0.175, percent: 0.9 },
-      { time: 0.2, percent: 0.6 },
-      { time: 0.225, percent: 0.4 },
-      { time: 0.25, percent: 0.1 },
-      { time: 0.275, percent: -0.2 },
-      { time: 0.3, percent: -0.7 },
-      { time: 0.325, percent: -0.9 },
-      { time: 0.35, percent: -1.1 },
-      { time: 0.375, percent: -1.3 },
-      { time: 0.4, percent: -1.6 },
-      { time: 0.425, percent: -1.9 },
-      { time: 0.45, percent: -2.3 },
-      { time: 0.475, percent: -2.5 },
-      { time: 0.5, percent: -2.6 },
-      { time: 0.525, percent: -2.4 },
-      { time: 0.55, percent: -2.1 },
-      { time: 0.575, percent: -1.8 },
-      { time: 0.6, percent: -1.6 },
-      { time: 0.625, percent: -1.4 },
-      { time: 0.65, percent: -1.1 },
-      { time: 0.675, percent: -0.9 },
-      { time: 0.7, percent: -0.6 },
-      { time: 0.725, percent: -0.5 },
-      { time: 0.75, percent: -0.2 },
-      { time: 0.775, percent: 0.0 },
-      { time: 0.8, percent: 0.3 },
-      { time: 0.825, percent: 0.4 },
-      { time: 0.85, percent: 0.7 },
-      { time: 0.875, percent: 0.8 },
-      { time: 0.9, percent: 1.0 },
-      { time: 0.925, percent: 1.2 },
-      { time: 0.95, percent: 1.4 },
-      { time: 0.975, percent: 1.5 },
-      { time: 1, percent: 1.7 },
-    ],
-  },
-];
-
-const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
+const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
   const [expanded, setExpanded] = useState(false);
+  const [touchActive, setTouchActive] = useState(false);
+  const [touchX, setTouchX] = useState(0); // Normalized 0-1
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const chartRef = useRef(null);
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -206,18 +71,43 @@ const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) =>
     return () => pulse.stop();
   }, [pulseAnim]);
 
+  // Pan responder for touch interaction
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: () => true,
+      onPanResponderGrant: (evt) => {
+        const locationX = evt.nativeEvent.locationX;
+        const normalizedX = Math.max(0, Math.min(1, (locationX - PADDING.left) / PLOT_WIDTH));
+        setTouchX(normalizedX);
+        setTouchActive(true);
+      },
+      onPanResponderMove: (evt) => {
+        const locationX = evt.nativeEvent.locationX;
+        const normalizedX = Math.max(0, Math.min(1, (locationX - PADDING.left) / PLOT_WIDTH));
+        setTouchX(normalizedX);
+      },
+      onPanResponderRelease: () => {
+        setTouchActive(false);
+      },
+      onPanResponderTerminate: () => {
+        setTouchActive(false);
+      },
+    })
+  ).current;
+
   const agentIds = useMemo(() => agentConfigs?.map(a => a.id) || [], [agentConfigs]);
   const { data: snapshotsData, isLoading, error } = useMultiAgentSnapshots(agentIds, timeframe);
 
   const chartData = useMemo(() => {
     // Use mock data if no agents configured or error
     if (!agentConfigs || agentConfigs.length === 0 || error) {
-      return { agents: MOCK_AGENTS, useMockData: true };
+      return { agents: getMockAgentsForSvgChart(), useMockData: true };
     }
 
     // If still loading or no data, use mock
     if (isLoading || !snapshotsData) {
-      return { agents: MOCK_AGENTS, useMockData: true };
+      return { agents: getMockAgentsForSvgChart(), useMockData: true };
     }
 
     // Transform real snapshot data
@@ -259,6 +149,15 @@ const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) =>
   }, [agentConfigs, snapshotsData, isLoading, error]);
 
   const { agents } = chartData;
+
+  // Calculate interpolated values at touch position
+  const touchValues = useMemo(() => {
+    if (!touchActive) return [];
+    return agents.map((agent) => ({
+      ...agent,
+      value: interpolateValue(agent.data, touchX),
+    }));
+  }, [touchActive, touchX, agents]);
 
   const { yMin, yMax, yTicks, timeLabels } = useMemo(() => {
     // Calculate y-axis range
@@ -325,37 +224,9 @@ const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) =>
   }
 
   return (
-    <View sx={{ marginTop: 4 }}>
-      <SectionTitle title="Top Agents" />
-      <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-        <Text
-          sx={{
-            fontSize: 12,
-            textTransform: 'uppercase',
-            letterSpacing: 1.5,
-            color: '#94a3b8',
-          }}
-        >
-          Agent Performance {chartData.useMockData && '(Demo)'}
-        </Text>
-        <View sx={{ flexDirection: 'row', gap: 3 }}>
-          {agents.map((agent) => (
-            <View key={agent.id} sx={{ flexDirection: 'row', alignItems: 'center', gap: 1 }}>
-              <View
-                sx={{
-                  width: 8,
-                  height: 8,
-                  borderRadius: 4,
-                  backgroundColor: agent.color,
-                }}
-              />
-              <Text sx={{ fontSize: 10, color: '#94a3b8' }}>{agent.name}</Text>
-            </View>
-          ))}
-        </View>
-      </View>
-
-      <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
+    <>
+      <View {...panResponder.panHandlers} sx={{ position: 'relative' }}>
+        <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
         {/* Y-axis grid lines */}
         {yTicks.map((tick, i) => {
           const y = scaleY(tick);
@@ -378,10 +249,10 @@ const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) =>
           return (
             <SvgText
               key={`y-label-${i}`}
-              x={PADDING.left + PLOT_WIDTH + 8}
+              x={PADDING.left + PLOT_WIDTH + 6}
               y={y + 4}
               fontSize={10}
-              fill="#64748b"
+              fill="#94a3b8"
               textAnchor="start"
             >
               {tick.toFixed(1)}%
@@ -423,7 +294,7 @@ const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) =>
                 opacity={0.9}
               />
               {/* End point circle */}
-              {agent.data.length > 0 && (
+              {!touchActive && agent.data.length > 0 && (
                 <AnimatedCircle
                   cx={scaleX(agent.data[agent.data.length - 1].time)}
                   cy={scaleY(agent.data[agent.data.length - 1].percent)}
@@ -441,7 +312,110 @@ const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) =>
             </React.Fragment>
           );
         })}
-      </Svg>
+
+        {/* Crosshair and intersection points when touching */}
+        {touchActive && (
+          <>
+            {/* Vertical crosshair line */}
+            <Line
+              x1={scaleX(touchX)}
+              y1={PADDING.top}
+              x2={scaleX(touchX)}
+              y2={PADDING.top + PLOT_HEIGHT}
+              stroke="rgba(226, 232, 240, 0.6)"
+              strokeWidth={1.5}
+              strokeDasharray="4,4"
+            />
+            {/* Intersection circles */}
+            {touchValues.map((agent) => (
+              <Circle
+                key={agent.id}
+                cx={scaleX(touchX)}
+                cy={scaleY(agent.value)}
+                r={5}
+                fill={agent.color}
+                stroke="rgba(15, 23, 42, 0.8)"
+                strokeWidth={2}
+              />
+            ))}
+          </>
+        )}
+        </Svg>
+
+        {/* Tooltip when touching */}
+        {touchActive && (
+          <View
+            sx={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              backgroundColor: 'rgba(15, 23, 42, 0.95)',
+              borderRadius: 'lg',
+              padding: 3,
+              borderWidth: 1,
+              borderColor: 'rgba(148, 163, 184, 0.3)',
+              minWidth: 160,
+            }}
+          >
+            {/* Time label */}
+            <Text sx={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>
+              {(() => {
+                const now = new Date();
+                const date = new Date(now);
+                if (timeframe === '1h') {
+                  date.setMinutes(date.getMinutes() - 60 + (touchX * 60));
+                  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                } else if (timeframe === '24h') {
+                  date.setHours(date.getHours() - 24 + (touchX * 24));
+                  return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+                } else if (timeframe === '7d') {
+                  date.setDate(date.getDate() - 7 + (touchX * 7));
+                  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric' });
+                }
+                return '';
+              })()}
+            </Text>
+
+            {/* Agent values */}
+            {touchValues.map((agent) => {
+              const isPositive = agent.value >= 0;
+              return (
+                <View
+                  key={agent.id}
+                  sx={{
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginVertical: 1,
+                  }}
+                >
+                  <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                    <View
+                      sx={{
+                        width: 8,
+                        height: 8,
+                        borderRadius: 'full',
+                        backgroundColor: agent.color,
+                      }}
+                    />
+                    <Text sx={{ fontSize: 12, color: '#e2e8f0' }}>{agent.name}</Text>
+                  </View>
+                  <Text
+                    sx={{
+                      fontSize: 13,
+                      fontWeight: '600',
+                      color: isPositive ? '#34d399' : '#f87171',
+                      marginLeft: 3,
+                    }}
+                  >
+                    {isPositive ? '+' : ''}{agent.value.toFixed(2)}%
+                  </Text>
+                </View>
+              );
+            })}
+          </View>
+        )}
+      </View>
 
       {/* X-axis time labels */}
       <View
@@ -524,8 +498,8 @@ const AgentComparisonLineChart = ({ agents: agentConfigs, timeframe = '1h' }) =>
           })}
         </View>
       )}
-    </View>
+    </>
   );
 };
 
-export default AgentComparisonLineChart;
+export default SvgChart;

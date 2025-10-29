@@ -6,7 +6,7 @@ import GlassCard from './GlassCard';
 import PromptPickerModal from './PromptPickerModal';
 import { PROMPT_TYPES } from '@/services';
 
-const LLM_PROVIDERS = [
+export const LLM_PROVIDERS = [
   { id: 'google', name: 'Google', models: ['gemini-2.5-flash-preview-09-2025', 'gemini-1.5-pro'] },
   { id: 'openai', name: 'OpenAI', models: ['gpt-4o', 'gpt-4-turbo', 'gpt-3.5-turbo'] },
   { id: 'anthropic', name: 'Anthropic', models: ['claude-3-opus', 'claude-3-sonnet', 'claude-3-haiku'] },

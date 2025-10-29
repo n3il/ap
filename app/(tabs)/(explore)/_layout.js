@@ -20,13 +20,15 @@ export default function ExploreStackLayout() {
       <Stack.Screen
         name="agent/[id]/index"
         options={{
-          headerShown: true,
-          headerTransparent: true,
-          headerBlurEffect: 'dark',
-          headerTintColor: '#fff',
-          headerTitle: '',
-          headerBackTitleVisible: false,
-          headerShadowVisible: false,
+          headerShown: false,
+          // headerShown: true,
+          // headerTransparent: true,
+          // headerBlurEffect: 'dark',
+          // headerTintColor: '#fff',
+          // headerTitle: '',
+          // headerBackTitleVisible: false,
+          // headerShadowVisible: false,
+          // headerBackButtonDisplayMode: 'minimal',
         }}
       />
       <Stack.Screen name="agent/[id]/manage" options={{ headerShown: false }} />

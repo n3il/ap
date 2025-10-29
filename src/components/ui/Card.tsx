@@ -1,5 +1,5 @@
 import React from 'react';
-import View from './View';
+import View, { type ViewProps } from './View';
 import type { SxProp } from 'dripsy';
 import { GlassView } from 'expo-glass-effect';
 import { useDripsyTheme } from 'dripsy';

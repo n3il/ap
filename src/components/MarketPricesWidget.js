@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect, useRef } from 'react';
 import { View, Text, ActivityIndicator, TouchableOpacity, Button } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import Svg, { Polyline } from 'react-native-svg';
@@ -9,10 +9,18 @@ import {
   formatPercent,
 } from '@/utils/marketFormatting';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AgentComparisonLineChart from './AgentComparisonLineChart';
+import GiftedChart from './GiftedChart';
 import SectionTitle from '@/components/SectionTitle';
 import { useSx } from 'dripsy';
 import TimeFrameSelector from '@/components/TimeFrameSelector';
+import SvgChart from './SvgChart';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withSequence,
+  withTiming,
+} from 'react-native-reanimated';
+import { useColors } from '@/theme';
 
 const SPARKLINE_WIDTH = 88;
 const SPARKLINE_HEIGHT = 32;
@@ -71,6 +79,25 @@ const PriceColumn = ({
       : '#f87171'
     : '#94a3b8';
 
+  // Animated opacity for price flash effect
+  const priceOpacity = useSharedValue(0.8);
+  const prevPrice = useRef(asset?.price);
+
+  useEffect(() => {
+    // Flash when price changes
+    if (prevPrice.current !== asset?.price && Number.isFinite(asset?.price)) {
+      priceOpacity.value = withSequence(
+        withTiming(1, { duration: 150 }),
+        withTiming(0.8, { duration: 300 })
+      );
+    }
+    prevPrice.current = asset?.price;
+  }, [asset?.price]);
+
+  const priceAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: priceOpacity.value,
+  }));
+
   return (
     <View sx={{ flex: 1 }}>
       <Text
@@ -84,16 +111,19 @@ const PriceColumn = ({
       >
         {asset?.symbol ?? '—'}
       </Text>
-      <Text
-        sx={{
-          color: '#f8fafc',
-          fontSize: 16,
-          fontWeight: '300'
-        }}
+      <Animated.Text
+        style={[
+          {
+            color: '#f8fafc',
+            fontSize: 16,
+            fontWeight: '300',
+          },
+          priceAnimatedStyle,
+        ]}
         numberOfLines={1}
       >
         {formatCurrency(asset?.price)}
-      </Text>
+      </Animated.Text>
       <View sx={{ marginTop: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
           {hasChange ? formatPercent(rangePercent) : '—'}
@@ -112,7 +142,7 @@ const PriceColumn = ({
 };
 
 export default function MarketPricesWidget({ tickers, sx: customSx }) {
-  const sxToStyle = useSx();
+  const colors = useColors();
   const [timeframe, setTimeframe] = useState('1h');
   const router = useRouter();
   const {
@@ -170,8 +200,8 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
         <SectionTitle
           title="Live Markets"
           error={error}
-          successIcon={<MaterialCommunityIcons name="signal" size={16} color={"green"} />}
-          errorIcon={<MaterialCommunityIcons name="alert-circle-outline" size={16} color={"red"} />}
+          successIcon={<MaterialCommunityIcons name="signal" size={16} color={colors.success} />}
+          errorIcon={<MaterialCommunityIcons name="alert-circle-outline" size={16} color={colors.warning} />}
         />
 
         <View sx={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
@@ -198,9 +228,9 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
             <MaterialCommunityIcons
               name="lightning-bolt"
               size={12}
-              style={sxToStyle({ color: 'primary' })}
-              />
-            <Text sx={{ fontSize: 11, fontWeight: '600', color: 'primary' }}>
+              style={colors.primary}
+            />
+            <Text sx={{ fontSize: 11, fontWeight: '600', color: colors.primary }}>
               Buy / Sell
             </Text>
           </Button>
@@ -248,7 +278,11 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
       <View sx={{ marginTop: 4, alignItems: 'flex-end' }}>
         <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
 
-        <AgentComparisonLineChart timeframe={timeframe} />
+
+      </View>
+      <View sx={{ marginTop: 4 }}>
+        <SectionTitle title="Top Agents" />
+        <SvgChart timeframe={timeframe} />
       </View>
     </View>
   );

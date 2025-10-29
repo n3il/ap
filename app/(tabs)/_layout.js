@@ -39,20 +39,20 @@ export default function TabsLayout() {
   return (
     <NativeTabs
       minimizeBehavior='automatic'
-      tintColor={theme.colors.accent}
       backgroundColor={theme.colors.tabBackground}
       badgeBackgroundColor={theme.colors.info.DEFAULT}
       labelStyle={{
-        default: theme.colors.text.secondary,
-        selected: theme.colors.accent,
+        default: {color: theme.colors.tabLabel},
+        selected: {color: theme.colors.tabLabelSelected},
       }}
       iconColor={{
-        default: theme.colors.text.tertiary,
-        selected: theme.colors.accent,
+        default: theme.colors.tabIcon,
+        selected: theme.colors.tabIconSelected,
       }}
       blurEffect={isDark ? 'dark' : 'extraLight'}
     >
       <NativeTabs.Trigger
+        hidden={!canAccessExplore}
         name="(explore)"
         options={{
           title: 'Explore',
@@ -60,10 +60,11 @@ export default function TabsLayout() {
         }}
         disabled={!canAccessExplore}
       >
-        <Label>{canAccessExplore ? 'Explore' : 'Explore 🔒'}</Label>
+        <Label>Explore</Label>
         <Icon sf="network" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
+        hidden={!canAccessAgents}
         name="agents"
         options={{
           title: 'Agents',
@@ -71,11 +72,12 @@ export default function TabsLayout() {
         }}
         disabled={!canAccessAgents}
       >
-        <Label>{canAccessAgents ? 'Agents' : 'Agents 🔒'}</Label>
+        <Label>Agents</Label>
         <Icon sf="doc.text.magnifyingglass" drawable="custom_android_drawable" />
-        {canAccessAgents && <Badge>1</Badge>}
+        {/* <Badge>1</Badge> */}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
+        hidden={!canAccessPerformance}
         name="performance"
         options={{
           title: 'Performance',
@@ -83,10 +85,11 @@ export default function TabsLayout() {
         }}
         disabled={!canAccessPerformance}
       >
-        <Label>{canAccessPerformance ? 'Performance' : 'Performance 🔒'}</Label>
+        <Label>Performance</Label>
         <Icon sf="chart.line.uptrend.xyaxis" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
+        hidden={!canAccessProfile}
         name="(profile)"
         options={{
           title: 'Settings',
@@ -94,8 +97,8 @@ export default function TabsLayout() {
         }}
         disabled={!canAccessProfile}
       >
-        <Label>{canAccessProfile ? 'Settings' : 'Settings 🔒'}</Label>
-        <Icon sf="gear" drawable="custom_android_drawable" />
+        <Label>Account</Label>
+        <Icon sf="wallet.bifold.fill" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );

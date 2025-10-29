@@ -184,7 +184,7 @@ const AgentReadScreen = () => {
   return (
     <ScrollView
       style={{ flex: 1, backgroundColor: background }}
-      contentContainerStyle={{ paddingTop: 100, paddingBottom: 100 }}
+      contentContainerStyle={{ paddingTop: 24, paddingBottom: 100 }}
       contentInsetAdjustmentBehavior="automatic"
     >
       <View sx={{ paddingHorizontal: 4, paddingBottom: 4 }}>

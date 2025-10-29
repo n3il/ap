@@ -78,7 +78,6 @@ const darkTheme = {
     background: '#040404ff',
     backgroundSecondary: '#101a2c',
     surface: '#0f172a',
-    tabBackground: '#000',
     foreground: '#f8fafc',
     text: {
       primary: '#f8fafc',
@@ -134,6 +133,12 @@ const darkTheme = {
       DEFAULT: '#ef4444',
       foreground: '#fef2f2',
     },
+
+    tabBackground: '#000',
+    tabIcon: '#111',
+    tabIconSelected: '#7CFFAA',
+    tabLabel: '#94a3b8',
+    tabLabelSelected: '#ffffffff',
   },
   fontFamily: {
     sans: ['System'],

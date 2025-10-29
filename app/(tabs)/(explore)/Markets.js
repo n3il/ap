@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,8 +7,8 @@ import {
   Dimensions,
   Alert,
   ActivityIndicator,
+  Button,
 } from '@/components/ui';
-import { SafeAreaView } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import ContainerView from '@/components/ContainerView';
 import { useMarketSnapshot } from '@/hooks/useMarketSnapshot';
@@ -25,7 +25,8 @@ import {
 } from '@/components/trading';
 import { useTheme } from '@/contexts/ThemeContext';
 import { withOpacity } from '@/theme/utils';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+import SectionTitle from '@/components/SectionTitle';
+import PagerView from 'react-native-pager-view';
 
 const { width } = Dimensions.get('window');
 
@@ -327,7 +328,8 @@ export default function MarketsScreen() {
   const [selectedSymbol, setSelectedSymbol] = useState('BTC');
   const [ledgerType, setLedgerType] = useState('paper');
   const [selectedLedgerAccount, setSelectedLedgerAccount] = useState('ALL');
-
+  const [page, setPage] = useState(0);
+  const pagerRef = useRef(null);
   const { assets, isLoading: pricesLoading } = useMarketSnapshot();
   const {
     trades,
@@ -461,48 +463,58 @@ export default function MarketsScreen() {
 
   return (
     <ContainerView>
-      <SafeAreaView style={{ flex: 1 }}>
-        <View style={styles.header}>
-          <View style={styles.headerLeft}>
-            <Text style={styles.headerTitle}>Trading Terminal</Text>
-            <Text style={styles.headerSubtitle}>Hyperliquid DEX</Text>
-          </View>
+      <View sx={{ paddingHorizontal: 4, paddingTop: 6, alignSelf: 'flex-start', marginBottom: 3 }}>
+        <SectionTitle>Trade</SectionTitle>
+      </View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ maxHeight: 30, marginBottom: 3, marginHorizontal: 4 }}
+        contentContainerStyle={{
+          flex: 1,
+          paddingHorizontal: 10,
+          alignItems: 'flex-start',
+
+        }}
+      >
+        {TABS.map((title) => (
           <TouchableOpacity
-            onPress={() => router.back()}
-            style={styles.closeButton}
+            key={title}
+            onPress={() => handleTitlePress(title)}
+            style={{
+              alignSelf: 'flex-start',
+              paddingHorizontal: 2,
+              borderRadius: 'xl',
+              borderColor: 'border',
+              backgroundColor: 'card',
+              marginRight: 8,
+            }}
+            activeOpacity={0.8}
           >
-            <Text style={styles.closeButtonText}>
-              <MaterialCommunityIcons name="arrow-down" size={24} color={theme.colors.foreground} />
+            <Text sx={{
+              color: selectedTab === title ? 'accent' : 'muted',
+              fontSize: 12,
+              fontWeight: '600',
+              textTransform: 'uppercase',
+              letterSpacing: 1.5
+            }}>
+              {title}
             </Text>
           </TouchableOpacity>
-        </View>
-
-        <View style={styles.tabBar}>
-          {TABS.map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              onPress={() => setSelectedTab(tab)}
-              style={[styles.tab, selectedTab === tab && styles.tabActive]}
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  selectedTab === tab && styles.tabTextActive,
-                ]}
-              >
-                {tab}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
+        ))}
+      </ScrollView>
+      <PagerView
+        style={{ flex: 1}}
+        initialPage={0}
+        ref={pagerRef}
+        onPageSelected={e => setPage(e.nativeEvent.position)}
+      >
         <ScrollView
           style={styles.content}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-          {selectedTab === 'Trade' && (
-            <>
+            <View sx={{ flex: 1 }} key="Trade">
               <View style={styles.section}>
                 <TickerSelector
                   selectedSymbol={selectedSymbol}
@@ -512,7 +524,6 @@ export default function MarketsScreen() {
               </View>
 
               <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Chart</Text>
                 <TradingViewChart
                   symbol={selectedSymbol}
                   theme={isDark ? 'dark' : 'light'}
@@ -538,27 +549,21 @@ export default function MarketsScreen() {
                   />
                 </View>
               </View>
-            </>
-          )}
+            </View>
 
-          {selectedTab === 'Positions' && (
-            <View style={styles.section}>
+            <View style={styles.section} key="Positions">
               <PositionTracker
                 positions={positions}
                 onClosePosition={handleClosePosition}
                 isLoading={isClosingPosition}
               />
             </View>
-          )}
 
-          {selectedTab === 'History' && (
-            <View style={styles.section}>
+            <View style={styles.section} key="History">
               <TradeHistory trades={trades} isLoading={false} />
             </View>
-          )}
 
-          {selectedTab === 'Account' && (
-            <View style={styles.section}>
+            <View style={styles.section} key="Account">
               <AccountBalance
                 balance={accountBalance.wallet}
                 equity={accountBalance.equity}
@@ -712,10 +717,9 @@ export default function MarketsScreen() {
                 mode={ledgerType}
               />
             </View>
-          )}
-        </ScrollView>
-      </SafeAreaView>
-    </ContainerView>
+          </ScrollView>
+        </PagerView>
+      </ContainerView>
   );
 }
 

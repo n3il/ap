@@ -64,7 +64,7 @@ export default function TradingViewChart({
                 "width": "100%",
                 "height": "100%",
                 "symbol": "BINANCE:${tradingViewSymbol}",
-                "interval": "15",
+                "interval": "1",
                 "timezone": "Etc/UTC",
                 "theme": "${isDark ? 'dark' : 'light'}",
                 "style": "1",
@@ -75,12 +75,9 @@ export default function TradingViewChart({
                 "hide_legend": false,
                 "save_image": false,
                 "container_id": "tradingview-widget",
-                "backgroundColor": "${background}",
+                "backgroundColor": "transparent",
                 "gridColor": "${gridColor}",
                 "allow_symbol_change": false,
-                "studies": [
-                  // "Volume@tv-basicstudies"
-                ],
                 "disabled_features": [
                   "use_localstorage_for_settings",
                   "header_symbol_search",
@@ -140,32 +137,26 @@ export default function TradingViewChart({
 }
 
 const createStyles = (theme, isDark) => ({
-    container: {
-      width: '100%',
-      borderRadius: 16,
-      overflow: 'hidden',
-      backgroundColor: withOpacity(
-        isDark ? theme.colors.background : theme.colors.surface,
-        1,
-      ),
-      borderWidth: 1,
-      borderColor: withOpacity(theme.colors.border, 0.18),
-    },
-    webview: {
-      flex: 1,
-      backgroundColor: 'transparent',
-    },
-    loading: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      justifyContent: 'center',
-      alignItems: 'center',
-      backgroundColor: withOpacity(
-        isDark ? theme.colors.background : theme.colors.surface,
-        0.9,
-      ),
-    },
-  });
+  container: {
+    width: '100%',
+    borderRadius: 0,
+    overflow: 'hidden',
+  },
+  webview: {
+    flex: 1,
+    backgroundColor: 'transparent',
+  },
+  loading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: withOpacity(
+      isDark ? theme.colors.background : theme.colors.surface,
+      0.9,
+    ),
+  },
+});
