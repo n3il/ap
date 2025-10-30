@@ -18,15 +18,10 @@ function AuthNavigator() {
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
 
+  // Handle onboarding redirect for authenticated users
   useEffect(() => {
-    if (!loading && appIsReady) {
-      if (!user) {
-        router.replace('/');
-      } else if (!hasCompletedOnboarding) {
-        router.replace('/(auth)/onboarding');
-      } else if (hasCompletedOnboarding) {
-        router.replace('/(tabs)');
-      }
+    if (!loading && appIsReady && user && !hasCompletedOnboarding) {
+      router.replace('/(auth)/onboarding');
     }
   }, [user, loading, hasCompletedOnboarding, appIsReady]);
 
@@ -65,15 +60,17 @@ function AuthNavigator() {
         screenOptions={{
           headerShown: false,
           gestureEnabled: true,
-          animation: 'slide_from_right',
           presentation: 'card',
         }}
       >
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen name="(agents)/[id]/index" />
-        <Stack.Screen name="(agents)/[id]/manage" />
+        <Stack.Protected
+          isProtected={user && hasCompletedOnboarding}
+          redirect="/"
+        >
+          <Stack.Screen name="(tabs)" />
+        </Stack.Protected>
       </Stack>
       <DebugOverlay />
     </>

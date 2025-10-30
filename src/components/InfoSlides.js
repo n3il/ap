@@ -1,9 +1,9 @@
-import { BlurView } from 'expo-blur';
-import { Animated, View, Text} from '@/components/ui';
+import { Animated, View, Text, Card} from '@/components/ui';
 import { useMemo, useRef, useState, useEffect } from 'react';
 import useInfoSlides from '@/hooks/useInfoSlides';
 import { Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import Image from './ui/Image';
 
 const { width } = Dimensions.get('window');
 
@@ -38,7 +38,7 @@ export default function InfoSlides({ onSlideChange }) {
             width * index,
             width * (index + 1),
           ],
-          outputRange: [50, 0, -50],
+          outputRange: [-50, 0, -50],
           extrapolate: 'clamp',
         }),
         scale: scrollX.interpolate({
@@ -86,7 +86,7 @@ export default function InfoSlides({ onSlideChange }) {
         decelerationRate="fast"
       >
         {slides.map((slide, index) => (
-          <View key={slide.id} style={{ width, justifyContent: 'center', paddingHorizontal: 32 }}>
+          <View key={slide.id} style={{ width, paddingHorizontal: 32, flex: 1 }}>
             <Animated.View
               style={{
                 opacity: slideAnimations[index]?.opacity,
@@ -94,91 +94,101 @@ export default function InfoSlides({ onSlideChange }) {
                   { translateY: slideAnimations[index]?.translateY },
                   { scale: slideAnimations[index]?.scale },
                 ],
+                flex: 1,
+                flexDirection: 'column',
+                alignItems: 'center',
+                justifyContent: 'center',
               }}
             >
               {slide.titleSlide ? (
                 // Title Slide
-                <View sx={{ alignItems: 'center', paddingVertical: 12 }}>
-                  {/* Logo/Icon */}
-                  <View
-                    style={{
-                      width: 120,
-                      height: 120,
-                      borderRadius: 32,
-                      backgroundColor: 'rgba(99, 102, 241, 0.15)',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                      marginBottom: 32,
-                      shadowColor: '#6366f1',
-                      shadowOffset: { width: 0, height: 8 },
-                      shadowOpacity: 0.3,
-                      shadowRadius: 24,
-                    }}
-                  >
-                    <Text
-                      style={{
-                        fontSize: 64,
-                        fontWeight: '700',
-                        color: '#6366f1',
-                      }}
-                    >
-                     {'[]'}
-                    </Text>
-                  </View>
-
+                <View sx={{ paddingVertical: 12 }}>
                   <Text
-                    variant="display"
                     style={{
-                      fontSize: 56,
-                      fontWeight: '800',
-                      color: '#ffffff',
-                      textAlign: 'center',
+                      fontWeight: '500',
+                      letterSpacing: 3,
+                      color: '#fff',
                       marginBottom: 16,
-                      letterSpacing: -1,
+                      fontSize: 30,
+                      lineHeight: 36,
+                      textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                      textShadowOffset: { width: 2, height: 2 },
+                      textShadowRadius: 2,
                     }}
                   >
                     {slide.title}
                   </Text>
 
                   <Text
-                    variant="xl"
-                    style={{
-                      fontSize: 24,
-                      fontWeight: '600',
-                      color: '#7CFFAA',
-                      textAlign: 'center',
-                      marginBottom: 24,
-                      letterSpacing: 0.5,
+                    variant="h2"
+                    sx={{
+                      fontWeight: '300',
+                      color: 'accent',
+                      textShadowColor: 'rgba(0, 0, 0, 1)',
+                      textShadowOffsetWidth: 0,
+                      textShadowOffsetHeight: 0,
+                      textShadowRadius: 20,
                     }}
                   >
                     {slide.subtitle}
                   </Text>
 
-                  <Text
-                    variant="lg"
+                  <View
                     style={{
-                      fontSize: 18,
-                      fontWeight: '400',
-                      color: 'rgba(255, 255, 255, 0.7)',
-                      textAlign: 'center',
-                      lineHeight: 28,
-                      maxWidth: 320,
+                      display: 'none',
+                      flex: 1,
+                      justifyContent: 'flex-end',
+                      alignItems: 'flex-end',
+                      marginBottom: 0,
+                      width: '100%',
+                      zIndex: -1,
+                      position: 'fixed',
+                      bottom: 30,
+                      height: '100%',
                     }}
                   >
-                    {slide.description}
-                  </Text>
+                   <Image
+                    source={require('@assets/puppet-bare-icon.png')}
+                    style={{
+                      width: 120,
+                      height: 120,
+                      opacity: .9,
+                      position: 'relative',
+                      transform: [{ translateX: -40 }, { scale: 4 }],
+                    }}
+                   />
+                   <Image
+                    source={require('@assets/puppet-bare-icon-w.png')}
+                    style={{
+                      width: 120,
+                      height: 120,
+                      opacity: .4,
+                      position: 'relative',
+                      transform: [{ translateX: 0 }, { scale: 4 }],
+                    }}
+                   />
+                   <Image
+                    source={require('@assets/puppet-bare-icon.png')}
+                    style={{
+                      width: 120,
+                      height: 120,
+                      opacity: .3,
+                      position: 'relative',
+                      transform: [{ translateX: 40 }, { scale: 4 }],
+                    }}
+                   />
+                  </View>
                 </View>
               ) : (
                 // Feature Slides
-                <BlurView
-                  intensity={20}
-                  tint="dark"
+                <Card
+                  variant="glass"
+                  glassEffectStyle="clear"
                   style={{
                     borderRadius: 24,
                     padding: 32,
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                    borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.1)',
+                    margin: 'auto',
+                    alignItems: 'center',
                   }}
                 >
                   {/* Icon */}
@@ -258,7 +268,7 @@ export default function InfoSlides({ onSlideChange }) {
                       ))}
                     </View>
                   )}
-                </BlurView>
+                </Card>
               )}
             </Animated.View>
           </View>

@@ -7,8 +7,8 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  SafeAreaView,
 } from '@/components/ui';
+import ContainerView from '@/components/ContainerView';
 import { TextInput } from '@/components/ui';
 import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
 import { AnimatedBox } from '@/components/ui/animated';
@@ -109,12 +109,7 @@ export default function Auth({ type = "login" }) {
   };
 
   return (
-    <SafeAreaView
-      sx={{
-        flex: 1,
-        backgroundColor: '#111827',
-      }}
-    >
+    <ContainerView>
       <View sx={{ justifyContent: 'center', padding: 6 }}>
         <View sx={{ alignItems: 'center' }}>
           <Text
@@ -363,6 +358,6 @@ export default function Auth({ type = "login" }) {
           </View>
         </AnimatedBox>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ContainerView>
   );
 }

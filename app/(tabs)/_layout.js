@@ -2,25 +2,15 @@ import { NativeTabs, Icon, Label, VectorIcon, Badge } from 'expo-router/unstable
 import { Platform } from '@/components/ui';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEffect } from 'react';
-import { useRouter } from 'expo-router';
 import { View, ActivityIndicator } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';
 import useRouteAuth from '@/hooks/useRouteAuth';
 import { ROUTES } from '@/config/routes';
 
 export default function TabsLayout() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const { loading } = useAuth();
   const { theme, isDark } = useTheme();
-  const { canAccessRoute, requireAuth } = useRouteAuth();
-
-  useEffect(() => {
-    // Only redirect if auth is required and user is not authenticated
-    if (!user && !loading && requireAuth) {
-      router.replace('/');
-    }
-  }, [user, loading, requireAuth]);
+  const { canAccessRoute } = useRouteAuth();
 
   if (loading) {
     return (

@@ -16,6 +16,7 @@ export interface CardProps {
 const Card: React.FC<CardProps> = ({
   children,
   variant = 'default',
+  glassEffectStyle = 'clear',
   sx,
   style,
   glassIntensity = 20,
@@ -53,7 +54,7 @@ const Card: React.FC<CardProps> = ({
     return (
       <GlassView
         tintColor={defaultTintColor}
-        glassEffectStyle="clear"
+        glassEffectStyle={glassEffectStyle}
         isInteractive
         style={{
           borderRadius,

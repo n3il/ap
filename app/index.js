@@ -7,6 +7,7 @@ import {
   StatusBar,
   Animated,
   SafeAreaView,
+  Button,
 } from '@/components/ui';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -17,7 +18,9 @@ import { ROUTES } from '@/config/routes';
 
 const { width, height } = Dimensions.get('window');
 
-const DEFAULT_GRADIENT = ['rgba(0, 0, 0, 0.4)', 'rgba(255, 255, 255, 0.1)', 'rgba(0, 0, 0, 0.2)'];
+// const DEFAULT_GRADIENT = ['rgba(0, 0, 0, 0.9)', 'rgba(255, 255, 255, 0.7)', 'rgba(0, 0, 0, 0.9)'];
+const DEFAULT_GRADIENT = ['rgba(0, 0, 0, 1)', 'rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 1)'];
+// const DEFAULT_GRADIENT = ['rgba(255, 255, 255, 0.7)', 'rgba(0, 0, 0, 0.9', 'rgba(255, 255, 255, 0.7)'];
 
 export default function GetStartedScreen() {
   const [currentSlide, setCurrentSlide] = useState(null);
@@ -87,7 +90,7 @@ export default function GetStartedScreen() {
 
       {/* Gradient Overlay */}
       <LinearGradient
-        colors={currentSlide?.gradient || DEFAULT_GRADIENT}
+        colors={DEFAULT_GRADIENT}
         style={{
           position: 'absolute',
           top: 0,
@@ -116,69 +119,41 @@ export default function GetStartedScreen() {
           {/* Bottom Section */}
           <View sx={{ paddingHorizontal: 8, paddingBottom: 4 }}>
             {/* CTA Buttons */}
-            <View sx={{ flexDirection: 'row', gap: 3 }}>
-              <TouchableOpacity
-                sx={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: 56,
-                  borderRadius: 'full',
-                }}
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
-                  borderWidth: 1.5,
-                  borderColor: 'rgba(255, 255, 255, 0.2)',
-                }}
+            <View sx={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', gap: 3 }}>
+              <Button
+                variant="secondary"
                 onPress={() => handleAuth('login')}
                 activeOpacity={0.8}
+                sx={{
+                  borderColor: 'black',
+                  borderRadius: 'full',
+                  flex: 1,
+                }}
               >
-                <Text
-                  variant="body"
-                  style={{
-                    fontSize: 17,
-                    fontWeight: '600',
-                    color: '#ffffff',
-                  }}
-                >
+                <Text variant="lg" sx={{ fontWeight: 300, color: '#fff' }}>
                   Log in
                 </Text>
-              </TouchableOpacity>
+              </Button>
 
-              <TouchableOpacity
-                sx={{
-                  flex: 1,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  height: 56,
-                  borderRadius: 'full',
-                }}
-                style={{
-                  backgroundColor: '#7CFFAA',
-                  shadowColor: '#7CFFAA',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.3,
-                  shadowRadius: 12,
-                }}
+              <Button
+                variant="primary"
                 onPress={() => handleAuth('signup')}
                 activeOpacity={0.8}
+                sx={{
+                  borderColor: 'black',
+                  borderRadius: 'full',
+                  flex: 1,
+                }}
               >
-                <Text
-                  variant="body"
-                  style={{
-                    fontSize: 17,
-                    fontWeight: '700',
-                    color: '#0f0f23',
-                  }}
-                >
+                <Text variant="lg" sx={{ fontWeight: 500, color: '#000' }}>
                   Get Started
                 </Text>
-              </TouchableOpacity>
+              </Button>
             </View>
 
             {/* Skip Auth Button - Only show if REQUIRE_AUTH=false */}
             {!requireAuth && (
-              <TouchableOpacity
+              <Button
                 sx={{
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -199,7 +174,7 @@ export default function GetStartedScreen() {
                 >
                   Continue without account
                 </Text>
-              </TouchableOpacity>
+              </Button>
             )}
           </View>
         </SafeAreaView>
