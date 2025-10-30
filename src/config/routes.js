@@ -47,15 +47,10 @@ export const ROUTES = {
   },
 
   // Tabs Routes - Some optional, some always require auth
-  TABS_AGENTS: {
-    path: '/(tabs)/agents',
-    requiresAuthentication: 'optional',
-  },
   TABS_INDEX: {
     path: '/(tabs)/index',
     requiresAuthentication: 'optional',
   },
-
   // Explore Routes - Always require auth
   TABS_EXPLORE_INDEX: {
     path: '/(tabs)/(explore)/index',
@@ -69,16 +64,20 @@ export const ROUTES = {
     path: '/(tabs)/(explore)/agent',
     requiresAuthentication: true,
   },
+  TABS_AGENTS: {
+    path: '/(tabs)/(agents)/index',
+    requiresAuthentication: 'optional',
+  },
   TABS_EXPLORE_AGENT_ID: {
-    path: '/(tabs)/(explore)/agent/[id]',
+    path: '/(tabs)/(agents)/[id]',
     requiresAuthentication: true,
   },
   TABS_EXPLORE_AGENT_ID_INDEX: {
-    path: '/(tabs)/(explore)/agent/[id]/index',
+    path: '/(tabs)/(agents)/[id]/index',
     requiresAuthentication: true,
   },
   TABS_EXPLORE_AGENT_ID_MANAGE: {
-    path: '/(tabs)/(explore)/agent/[id]/manage',
+    path: '/(tabs)/(agents)/[id]/manage',
     requiresAuthentication: true,
   },
 

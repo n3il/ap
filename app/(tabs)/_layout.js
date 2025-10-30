@@ -58,19 +58,17 @@ export default function TabsLayout() {
           title: 'Explore',
           headerShown: false,
         }}
-        disabled={!canAccessExplore}
       >
         <Label>Explore</Label>
         <Icon sf="network" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
         hidden={!canAccessAgents}
-        name="agents"
+        name="(agents)"
         options={{
           title: 'Agents',
           headerShown: false,
         }}
-        disabled={!canAccessAgents}
       >
         <Label>Agents</Label>
         <Icon sf="doc.text.magnifyingglass" drawable="custom_android_drawable" />
@@ -83,7 +81,6 @@ export default function TabsLayout() {
           title: 'Performance',
           headerShown: false,
         }}
-        disabled={!canAccessPerformance}
       >
         <Label>Performance</Label>
         <Icon sf="chart.line.uptrend.xyaxis" drawable="custom_android_drawable" />
@@ -95,7 +92,6 @@ export default function TabsLayout() {
           title: 'Settings',
           headerShown: false,
         }}
-        disabled={!canAccessProfile}
       >
         <Label>Account</Label>
         <Icon sf="wallet.bifold.fill" drawable="custom_android_drawable" />

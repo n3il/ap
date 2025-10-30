@@ -30,7 +30,7 @@ export default function ExploreScreen() {
   const handleAgentPress = useCallback(
     (agent) => {
       router.push({
-        pathname: '/(tabs)/(explore)/agent/[id]',
+        pathname: '/(tabs)/(agents)/[id]',
         params: { id: agent.id, name: agent.name },
       });
     },

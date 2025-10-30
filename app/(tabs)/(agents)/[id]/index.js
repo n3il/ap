@@ -1,10 +1,8 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { View, Text } from '@/components/ui';
 import { useRouter } from 'expo-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import ContainerView from '@/components/ContainerView';
-import CreateAgentModal from '@/components/CreateAgentModal';
-import PromptManagerModal from '@/components/PromptManagerModal';
 import { agentService } from '@/services/agentService';
 import AgentList from '@/components/AgentList';
 import { StyleSheet } from 'react-native';
@@ -50,7 +48,7 @@ export default function AgentsScreen() {
 
   const handleAgentPress = (agent) => {
     router.push({
-      pathname: '/(tabs)/(explore)/agent/[id]',
+      pathname: '/(tabs)/(agents)/[id]',
       params: { id: agent.id },
     });
   };

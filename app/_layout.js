@@ -72,6 +72,8 @@ function AuthNavigator() {
         <Stack.Screen name="index" />
         <Stack.Screen name="(auth)" />
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="(agents)/[id]/index" />
+        <Stack.Screen name="(agents)/[id]/manage" />
       </Stack>
       <DebugOverlay />
     </>

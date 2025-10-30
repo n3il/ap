@@ -10,7 +10,6 @@ import { agentService } from '@/services/agentService';
 import { tradeService } from '@/services/tradeService';
 import { assessmentService } from '@/services/assessmentService';
 import { promptService } from '@/services';
-import GlassCard from '@/components/GlassCard';
 import AgentList from '@/components/AgentList';
 
 export default function Metrics() {
@@ -103,68 +102,33 @@ export default function Metrics() {
 
   return (
     <>
-      <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
-        <GlassCard>
-          <View sx={{ flexDirection: 'row', paddingBottom: 4, marginBottom: 4, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' }}>
-            <View sx={{ flex: 1, paddingRight: 3 }}>
-              <Text sx={{ color: '#94a3b8', fontSize: 12, textTransform: 'uppercase' }}>Active Agents</Text>
-              <Text sx={{ color: '#f1f5f9', fontSize: 24, fontWeight: '700', marginTop: 1 }}>
-                {overviewMetrics.activeAgents}
-              </Text>
-              <Text sx={{ color: '#64748b', fontSize: 12, marginTop: 1 }}>
-                {overviewMetrics.projectedDailyRuns} loops scheduled per day
-              </Text>
-            </View>
-            <View sx={{ flex: 1, paddingLeft: 3 }}>
-              <Text sx={{ color: '#94a3b8', fontSize: 12, textTransform: 'uppercase' }}>Capital Deployed</Text>
-              <Text sx={{ color: '#f1f5f9', fontSize: 24, fontWeight: '700', marginTop: 1 }}>
-                ${overviewMetrics.totalCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-              </Text>
-              <Text sx={{ color: '#64748b', fontSize: 12, marginTop: 1 }}>
-                Across {overviewMetrics.totalAgents} agent{overviewMetrics.totalAgents === 1 ? '' : 's'}
-              </Text>
-            </View>
+      <View sx={{ paddingHorizontal: 4, marginBottom: 3 }}>
+        <View sx={{ flexDirection: 'row', marginBottom: 2 }}>
+          <View sx={{ flex: 1, paddingRight: 2 }}>
+            <Text sx={{ color: '#64748b', fontSize: 11, textTransform: 'uppercase' }}>Active</Text>
+            <Text sx={{ color: '#f1f5f9', fontSize: 20, fontWeight: '700' }}>
+              {overviewMetrics.activeAgents}
+            </Text>
           </View>
-          <View>
-            <Text sx={{ color: '#94a3b8', fontSize: 12, textTransform: 'uppercase', marginBottom: 3 }}>LLM Observability</Text>
-            <View sx={{ flexDirection: 'row' }}>
-              <View sx={{ flex: 1, paddingRight: 3 }}>
-                <Text sx={{ color: '#f1f5f9', fontSize: 18, fontWeight: '600' }}>
-                  {overviewMetrics.totalAssessments}
-                </Text>
-                <Text sx={{ color: '#64748b', fontSize: 12, marginTop: 1 }}>Assessments logged</Text>
-              </View>
-              <View sx={{ flex: 1, paddingLeft: 3 }}>
-                <Text sx={{ color: '#f1f5f9', fontSize: 18, fontWeight: '600' }}>
-                  {overviewMetrics.actionsTriggered}
-                </Text>
-                <Text sx={{ color: '#64748b', fontSize: 12, marginTop: 1 }}>Actions executed on Hyperliquid</Text>
-              </View>
-            </View>
+          <View sx={{ flex: 1, paddingHorizontal: 2 }}>
+            <Text sx={{ color: '#64748b', fontSize: 11, textTransform: 'uppercase' }}>Capital</Text>
+            <Text sx={{ color: '#f1f5f9', fontSize: 20, fontWeight: '700' }}>
+              ${overviewMetrics.totalCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            </Text>
           </View>
-        </GlassCard>
+        </View>
       </View>
-      <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
-        <Text sx={{ color: '#94a3b8', fontSize: 12, textTransform: 'uppercase', fontWeight: '600', marginBottom: 3 }}>
-          Performance Snapshot
-        </Text>
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={{ paddingRight: 24 }}
-          sx={{ marginBottom: 2 }}
-        >
-          {statCards.map((card) => (
-            <View key={card.label} sx={{ marginRight: 4, width: 100 }}>
-              <StatCard
-                label={card.label}
-                value={card.value}
-                trend={card.trend}
-                trendColor={card.trendColor}
-              />
-            </View>
-          ))}
-        </ScrollView>
+      <View sx={{ flex: 1, paddingHorizontal: 4, marginBottom: 3 }}>
+        {statCards.map((card) => (
+          <View key={card.label} sx={{ marginRight: 3, width: 100 }}>
+            <StatCard
+              label={card.label}
+              value={card.value}
+              trend={card.trend}
+              trendColor={card.trendColor}
+            />
+          </View>
+        ))}
       </View>
     </>
   );
