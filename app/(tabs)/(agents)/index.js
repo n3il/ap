@@ -1,15 +1,12 @@
 import React, { useState, useMemo, useRef } from 'react';
 import { View, Text } from '@/components/ui';
 import { useRouter } from 'expo-router';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
 import ContainerView from '@/components/ContainerView';
-import CreateAgentModal from '@/components/CreateAgentModal';
-import PromptManagerModal from '@/components/PromptManagerModal';
 import { agentService } from '@/services/agentService';
 import AgentList from '@/components/AgentList';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import Metrics from '@/components/agents/Metrics';
 import { useQuery } from '@tanstack/react-query';
 import { ActivityIndicator } from '@/components/ui';
 import { TouchableOpacity } from 'react-native';
@@ -23,7 +20,9 @@ export default function AgentsScreen() {
   const titles = ['Overview', 'Agents', 'Settings'];
 
   const handleTitlePress = (index) => {
-    pagerRef.current?.setPage(index);
+    if (Platform.OS !== 'web') {
+      pagerRef.current?.setPage(index);
+    }
     setPage(index);
   };
 
@@ -149,41 +148,82 @@ export default function AgentsScreen() {
           </TouchableOpacity>
         ))}
       </ScrollView>
-      <PagerView
-        style={{ flex: 1}}
-        initialPage={0}
-        ref={pagerRef}
-        onPageSelected={e => setPage(e.nativeEvent.position)}
-      >
-        <View style={styles.page} key="1">
-          {/* <Metrics /> */}
-          <AgentList
-            agents={agents}
-            latestAssessmentByAgent={latestAssessmentByAgent}
-            onAgentPress={handleAgentPress}
-            emptyState={(
-              <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-                <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
-                  No agents on desk yet
-                </Text>
-                <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
-                  Spin up your first LLM trader to run MARKET_SCAN → POSITION_REVIEW loops and push orders to Hyperliquid.
-                </Text>
-                <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center', marginTop: 2 }}>
-                  Every run logs an assessment, emits ACTION_JSON, and updates your trading ledger automatically.
-                </Text>
-              </View>
-            )}
-            ownedAgentIds={new Set(agents.map(agent => agent.id))}
-          />
+      {Platform.OS === 'web' ? (
+        // Web fallback - simple conditional rendering
+        <View style={{ flex: 1 }}>
+          {page === 0 && (
+            <View style={styles.page}>
+              {/* <Metrics /> */}
+              <AgentList
+                agents={agents}
+                latestAssessmentByAgent={latestAssessmentByAgent}
+                onAgentPress={handleAgentPress}
+                emptyState={(
+                  <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+                    <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+                      No agents on desk yet
+                    </Text>
+                    <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+                      Spin up your first LLM trader to run MARKET_SCAN → POSITION_REVIEW loops and push orders to Hyperliquid.
+                    </Text>
+                    <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center', marginTop: 2 }}>
+                      Every run logs an assessment, emits ACTION_JSON, and updates your trading ledger automatically.
+                    </Text>
+                  </View>
+                )}
+                ownedAgentIds={new Set(agents.map(agent => agent.id))}
+              />
+            </View>
+          )}
+          {page === 1 && (
+            <View style={styles.page}>
+              <Text sx={{ color: "muted" }}>Second page</Text>
+            </View>
+          )}
+          {page === 2 && (
+            <View style={styles.page}>
+              <Text sx={{ color: "muted" }}>Third page</Text>
+            </View>
+          )}
         </View>
-        <View style={styles.page} key="2">
-          <Text sx={{ color: "muted" }}>Second page</Text>
-        </View>
-        <View style={styles.page} key="3">
-          <Text sx={{ color: "muted" }}>Third page</Text>
-        </View>
-      </PagerView>
+      ) : (
+        // Native - use PagerView
+        <PagerView
+          style={{ flex: 1}}
+          initialPage={0}
+          ref={pagerRef}
+          onPageSelected={e => setPage(e.nativeEvent.position)}
+        >
+          <View style={styles.page} key="1">
+            {/* <Metrics /> */}
+            <AgentList
+              agents={agents}
+              latestAssessmentByAgent={latestAssessmentByAgent}
+              onAgentPress={handleAgentPress}
+              emptyState={(
+                <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+                  <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+                    No agents on desk yet
+                  </Text>
+                  <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+                    Spin up your first LLM trader to run MARKET_SCAN → POSITION_REVIEW loops and push orders to Hyperliquid.
+                  </Text>
+                  <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center', marginTop: 2 }}>
+                    Every run logs an assessment, emits ACTION_JSON, and updates your trading ledger automatically.
+                  </Text>
+                </View>
+              )}
+              ownedAgentIds={new Set(agents.map(agent => agent.id))}
+            />
+          </View>
+          <View style={styles.page} key="2">
+            <Text sx={{ color: "muted" }}>Second page</Text>
+          </View>
+          <View style={styles.page} key="3">
+            <Text sx={{ color: "muted" }}>Third page</Text>
+          </View>
+        </PagerView>
+      )}
 
       {/* <CreateAgentModal
         visible={modalVisible}

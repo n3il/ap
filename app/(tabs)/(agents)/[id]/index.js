@@ -18,7 +18,7 @@ export default function AgentsScreen() {
   const [page, setPage] = useState(0);
   const pagerRef = useRef(null);
 
-  const titles = ['Overview', 'Agents', 'Settings'];
+  const titles = ['All', 'Active', 'Mine', 'Published'];
 
   const handleTitlePress = (index) => {
     pagerRef.current?.setPage(index);
@@ -52,25 +52,6 @@ export default function AgentsScreen() {
       params: { id: agent.id },
     });
   };
-
-  // Fetch latest assessments for each agent
-  const { data: latestAssessments = [], isFetching: assessmentsFetching } = useQuery({
-    queryKey: ['assessments', 'latest'],
-    queryFn: () => assessmentService.getAllAssessments(),
-  });
-
-  const latestAssessmentByAgent = useMemo(() => {
-    if (!latestAssessments?.length) {
-      return {};
-    }
-
-    return latestAssessments.reduce((acc, assessment) => {
-      if (!acc[assessment.agent_id]) {
-        acc[assessment.agent_id] = assessment;
-      }
-      return acc;
-    }, {});
-  }, [latestAssessments]);
 
   if (isLoading) {
     return (
@@ -156,9 +137,6 @@ export default function AgentsScreen() {
         <View style={styles.page} key="1">
           <Metrics />
           <AgentList
-            agents={agents}
-            latestAssessmentByAgent={latestAssessmentByAgent}
-            onAgentPress={handleAgentPress}
             emptyState={(
               <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
                 <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
@@ -172,7 +150,6 @@ export default function AgentsScreen() {
                 </Text>
               </View>
             )}
-            ownedAgentIds={new Set(agents.map(agent => agent.id))}
           />
         </View>
         <View style={styles.page} key="2">

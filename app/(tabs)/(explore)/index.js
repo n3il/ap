@@ -1,74 +1,19 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from '@/components/ui';
-import { useRouter } from 'expo-router';
-import { useQuery } from '@tanstack/react-query';
 import ContainerView from '@/components/ContainerView';
 import AgentList from '@/components/AgentList';
 import MarketPricesWidget from '@/components/MarketPricesWidget';
-import { agentService } from '@/services/agentService';
-import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 
 export default function ExploreScreen() {
-  const router = useRouter();
-  const { user } = useAuth();
+  const [isFetching, setIsFetching] = React.useState(false);
+  const queryClient = useQueryClient();
 
-  const {
-    data: publishedAgents = [],
-    isLoading,
-    isFetching,
-    error,
-    refetch,
-  } = useQuery({
-    queryKey: ['published-agents'],
-    queryFn: agentService.getPublishedAgents,
-  });
-
-  const handleRefresh = useCallback(() => {
-    refetch();
-  }, [refetch]);
-
-  const handleAgentPress = useCallback(
-    (agent) => {
-      router.push({
-        pathname: '/(tabs)/(agents)/[id]',
-        params: { id: agent.id, name: agent.name },
-      });
-    },
-    [router]
-  );
-
-  const ownedAgentIds = useMemo(() => {
-    if (!user) return undefined;
-    const owned = publishedAgents
-      .filter((agent) => agent.user_id === user.id)
-      .map((agent) => agent.id);
-    return owned.length ? new Set(owned) : undefined;
-  }, [publishedAgents, user]);
-
-  if (isLoading) {
-    return (
-      <ContainerView>
-        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#fff" />
-        </View>
-      </ContainerView>
-    );
-  }
-
-  if (error) {
-    return (
-      <ContainerView>
-        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
-          <Text tone="muted" sx={{ textAlign: 'center', marginBottom: 4, color: 'error' }}>
-            Error loading published agents
-          </Text>
-          <Text variant="sm" tone="subtle" sx={{ textAlign: 'center' }}>
-            Pull down to retry or return later while the desk syncs.
-          </Text>
-        </View>
-      </ContainerView>
-    );
-  }
+  const handleRefresh = useCallback(async () => {
+    setIsFetching(true);
+    await queryClient.invalidateQueries({ queryKey: ['explore-agents'] });
+    setIsFetching(false);
+  }, []);
 
   return (
     <ContainerView>
@@ -119,9 +64,7 @@ export default function ExploreScreen() {
             Agents
           </Text>
           <AgentList
-            agents={publishedAgents}
-            onAgentPress={handleAgentPress}
-            ownedAgentIds={ownedAgentIds}
+            queryKey={['explore-agents']}
             emptyState={(
               <View sx={{ alignItems: 'flex-start', justifyContent: 'center', paddingVertical: 12 }}>
                 <Text

@@ -6,15 +6,14 @@ export default function AuthLayout() {
       screenOptions={{
         headerShown: false,
         gestureEnabled: true,
-        presentation: 'card',
+        animation: 'slide_from_bottom',
+        presentation: 'modal',
       }}
     >
-      <Stack.Screen name="auth" />
+      <Stack.Screen name="index" />
       <Stack.Screen name="verify-otp" />
       <Stack.Screen name="forgot-password" />
       <Stack.Screen name="onboarding" />
     </Stack>
   );
 }
-
-

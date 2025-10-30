@@ -2,23 +2,24 @@ import React, { useState } from 'react';
 import {
   View,
   Text,
-  TouchableOpacity,
+  Button,
   Alert,
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  SafeAreaView,
 } from '@/components/ui';
+import ContainerView from '@/components/ContainerView';
 import { TextInput } from '@/components/ui';
-import Animated, { FadeIn, FadeOut, Layout } from 'react-native-reanimated';
+import { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { AnimatedBox } from '@/components/ui/animated';
-import { useRouter } from 'expo-router';
+import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useLocalization } from '@/hooks/useLocalization';
 
-export default function Auth({ type = "login" }) {
-  const [authMode, setAuthMode] = useState('email'); // 'phone' or 'email'
+export default function Auth() {
+  const { type = "login" } = useLocalSearchParams();
+  const [authMode, setAuthMode] = useState('phone'); // 'phone' or 'email'
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -108,62 +109,20 @@ export default function Auth({ type = "login" }) {
     }
   };
 
-  return (
-    <SafeAreaView
-      sx={{
-        flex: 1,
-        backgroundColor: '#111827',
-      }}
-    >
-      <View sx={{ justifyContent: 'center', padding: 6 }}>
-        <View sx={{ alignItems: 'center' }}>
-          <Text
-            sx={{ fontSize: 32, fontWeight: '700', marginBottom: 2 }}
-            style={{
-              color: '#fff',
-              textShadowColor: 'rgba(0, 0, 0, 0.3)',
-              textShadowOffset: { width: 0, height: 2 },
-              textShadowRadius: 4,
-            }}
-          >
-            {t(`${type}.title`)}
-          </Text>
-          <Text
-            variant="body"
-            sx={{ opacity: 0.9 }}
-            style={{
-              color: '#fff',
-              textShadowColor: 'rgba(0, 0, 0, 0.3)',
-              textShadowOffset: { width: 0, height: 1 },
-              textShadowRadius: 2,
-            }}
-          >
-            {t(`${type}.subtitle`)}
-          </Text>
-        </View>
-      </View>
+  console.log({ authMode })
 
+  return (
+    <ContainerView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{
           flex: 1,
+          paddingHorizontal: 16,
         }}
       >
         <AnimatedBox
-          layout={Layout.duration(300).springify()}
-          sx={{
-            borderRadius: '2xl',
-            padding: 6,
-            margin: 4,
-          }}
-          style={{
-            backgroundColor: 'hsla(222, 25%, 12%, 0.95)',
-            shadowColor: '#000',
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.1,
-            shadowRadius: 12,
-            elevation: 5,
-          }}
+          layout={LinearTransition.duration(300).springify()}
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}
         >
           {/* Phone Input Mode */}
           {authMode === 'phone' && (
@@ -171,19 +130,21 @@ export default function Auth({ type = "login" }) {
               key="phone-mode"
               entering={FadeIn.duration(300)}
               exiting={FadeOut.duration(200)}
-              layout={Layout.duration(300)}
+              style={{ gap: 8 }}
             >
-              <View sx={{ marginBottom: 5 }}>
-                <Text variant="sm" sx={{ fontWeight: '600', color: 'textPrimary', marginBottom: 2 }}>
+              <View sx={{ marginBottom: 4 }}>
+                <Text variant="h3" sx={{ fontWeight: 300 }} tone="muted">
                   {t('login.phoneNumber')}
                 </Text>
                 <TextInput
+                  style={{ marginTop: 12,paddingVertical: 12, fontSize: 30, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1 }}
+                  sx={{borderBottomColor: 'foreground'}}
                   autoFocus
+                  selectionColor="#fff"
                   textContentType="telephoneNumber"
+                  placeholder={t('login.phonePlaceholder')}
                   value={phoneNumber}
                   onChangeText={setPhoneNumber}
-                  placeholder={t('login.phonePlaceholder')}
-                  placeholderTextColor="rgb(148, 163, 184)"
                   keyboardType="phone-pad"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -191,29 +152,23 @@ export default function Auth({ type = "login" }) {
                 />
               </View>
 
-              <TouchableOpacity
-                sx={{
-                  padding: 4,
-                  borderRadius: 'lg',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 4,
-                  opacity: loading ? 0.6 : 1,
-                }}
-                style={{
-                  backgroundColor: '#2da44e',
-                }}
+              <Button
+                variant="surface"
+                sx={{ borderColor: 'primary', borderRadius: 'full' }}
+                textProps={{ style: { fontWeight: '600' } }}
                 onPress={handlePhoneSubmit}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text variant="body" sx={{ fontWeight: '600' }} style={{ color: '#fff' }}>
-                    {t('login.sendCode')}
-                  </Text>
+                  t('login.sendCode')
                 )}
-              </TouchableOpacity>
+              </Button>
+
+              <Text variant="xs" tone="subtle" sx={{ textAlign: 'center', paddingHorizontal: 14, marginTop: 2 }}>
+                {t('login.smsLegal')}
+              </Text>
             </AnimatedBox>
           )}
 
@@ -223,19 +178,21 @@ export default function Auth({ type = "login" }) {
               key="email-mode"
               entering={FadeIn.duration(300)}
               exiting={FadeOut.duration(200)}
-              layout={Layout.duration(300)}
+              style={{ gap: 8 }}
             >
-              <View sx={{ marginBottom: 5 }}>
-                <Text variant="sm" sx={{ fontWeight: '600', color: 'textPrimary', marginBottom: 2 }}>
+              <View sx={{ marginBottom: 4 }}>
+                <Text variant="h3" sx={{ fontWeight: 300 }} tone="muted">
                   {t('login.email')}
                 </Text>
                 <TextInput
+                  style={{ marginTop: 12,paddingVertical: 12, fontSize: 30, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1 }}
+                  sx={{borderBottomColor: 'foreground'}}
+                  selectionColor="#fff"
                   textContentType="emailAddress"
+                  placeholder={t('login.emailPlaceholder')}
                   autoFocus
                   value={email}
                   onChangeText={setEmail}
-                  placeholder={t('login.emailPlaceholder')}
-                  placeholderTextColor="rgb(148, 163, 184)"
                   keyboardType="email-address"
                   autoCapitalize="none"
                   autoCorrect={false}
@@ -243,33 +200,21 @@ export default function Auth({ type = "login" }) {
                 />
               </View>
 
-              <TouchableOpacity
-                sx={{
-                  padding: 4,
-                  borderRadius: 'lg',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 4,
-                  opacity: loading ? 0.6 : 1,
-                }}
-                style={{
-                  backgroundColor: '#2da44e',
-                }}
+              <Button
+                variant="surface"
+                sx={{ borderColor: 'primary', borderRadius: 'full' }}
+                textProps={{ style: { fontWeight: '600' } }}
                 onPress={handleEmailSubmit}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text variant="body" sx={{ fontWeight: '600' }} style={{ color: '#fff' }}>
-                    {t('login.sendCode')}
-                  </Text>
+                  t('login.sendCode')
                 )}
-              </TouchableOpacity>
+              </Button>
             </AnimatedBox>
           )}
-
-
 
           {/* Divider */}
           <View sx={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
@@ -281,22 +226,11 @@ export default function Auth({ type = "login" }) {
           {/* OAuth Buttons */}
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 3, marginBottom: 3 }}>
             {/* Toggle Button */}
-            <TouchableOpacity
-              sx={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 3.5,
-                paddingHorizontal: 3.5,
-                borderRadius: 'lg',
-                borderWidth: 1,
-                borderColor: 'border',
-                backgroundColor: '#000',
-                opacity: loading ? 0.6 : 1,
-              }}
+            <Button
+              variant="surface"
               onPress={toggleAuthMode}
               disabled={loading}
+              sx={{ flex: 1, borderRadius: 'full' }}
             >
               {authMode === 'phone' ? (
                 <AnimatedBox
@@ -305,7 +239,7 @@ export default function Auth({ type = "login" }) {
                   exiting={FadeOut.duration(150)}
                   sx={{ flexDirection: 'row', alignItems: 'center' }}
                 >
-                  <MaterialIcons name="email" size={20} color="#fff" />
+                  <MaterialIcons name="email" size={22} color="#fff" />
                 </AnimatedBox>
               ) : (
                 <AnimatedBox
@@ -314,55 +248,31 @@ export default function Auth({ type = "login" }) {
                   exiting={FadeOut.duration(150)}
                   sx={{ flexDirection: 'row', alignItems: 'center' }}
                 >
-                  <MaterialIcons name="phonelink-ring" size={20} color="#fff" />
+                  <MaterialIcons name="phonelink-ring" size={22} color="#fff" />
                 </AnimatedBox>
               )}
-            </TouchableOpacity>
+            </Button>
 
-            <TouchableOpacity
-              sx={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 3.5,
-                paddingHorizontal: 3.5,
-                borderRadius: 'lg',
-                borderWidth: 1,
-                borderColor: 'border',
-                backgroundColor: '#fff',
-                opacity: loading ? 0.6 : 1,
-              }}
+            <Button
+              variant="secondary"
               onPress={handleGoogleSignIn}
               disabled={loading}
+              sx={{ flex: 1, borderRadius: 'full' }}
             >
-              <AntDesign name="google" size={20} color="#DB4437" />
-            </TouchableOpacity>
+              <AntDesign name="google" size={22} color="#DB4437" />
+            </Button>
 
-            <TouchableOpacity
-              sx={{
-                flex: 1,
-                flexDirection: 'row',
-                alignItems: 'center',
-                justifyContent: 'center',
-                paddingVertical: 3.5,
-                paddingHorizontal: 3.5,
-                borderRadius: 'lg',
-                borderWidth: 1,
-                opacity: loading ? 0.6 : 1,
-              }}
-              style={{
-                borderColor: '#374151',
-                backgroundColor: '#1f2937',
-              }}
+            <Button
+              variant="secondary"
               onPress={handleAppleSignIn}
               disabled={loading}
+              sx={{ flex: 1, borderRadius: 'full' }}
             >
-              <AntDesign name="apple" size={20} color="#fff" />
-            </TouchableOpacity>
+              <AntDesign name="apple" size={22} color="#fff" />
+            </Button>
           </View>
         </AnimatedBox>
       </KeyboardAvoidingView>
-    </SafeAreaView>
+    </ContainerView>
   );
 }

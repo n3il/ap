@@ -3,14 +3,15 @@
     "title": "Welcome Back",
     "subtitle": "Sign in to continue",
     "phoneNumber": "Phone Number",
-    "phonePlaceholder": "+1 (555) 000-0000",
+    "phonePlaceholder": "+1 (000) 000-0000",
     "sendCode": "Send Code",
+    "smsLegal": "You will receive a text with a verification code. Message and data rates may apply.",
     "verificationCode": "Verification Code",
     "codePlaceholder": "Enter 6-digit code",
     "verify": "Verify & Sign In",
     "resendCode": "Resend Code",
     "changeNumber": "Change Number",
-    "email": "Email",
+    "email": "Email address",
     "password": "Password",
     "emailPlaceholder": "your@email.com",
     "passwordPlaceholder": "Enter your password",
@@ -120,5 +121,6 @@
     "loading": "Loading...",
     "cancel": "Cancel",
     "save": "Save"
-  }
+  },
+  "legalNote": "By continuing, you confirm that you have read and agree to our [Terms of Service] and [Privacy Policy]."
 }

@@ -30,7 +30,7 @@ const toneTokens: Record<TextTone, keyof AppTheme['colors']> = {
   muted: 'textSecondary',
   subtle: 'textTertiary',
   inverse: 'background',
-  accent: 'accentForeground',
+  accent: 'accent',
 };
 
 const Text = React.forwardRef<React.ComponentRef<typeof RNText>, TextProps>(

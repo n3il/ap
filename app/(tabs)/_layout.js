@@ -42,7 +42,6 @@ export default function TabsLayout() {
       blurEffect={isDark ? 'dark' : 'extraLight'}
     >
       <NativeTabs.Trigger
-        hidden={!canAccessExplore}
         name="(explore)"
         options={{
           title: 'Explore',
@@ -53,7 +52,6 @@ export default function TabsLayout() {
         <Icon sf="network" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
-        hidden={!canAccessAgents}
         name="(agents)"
         options={{
           title: 'Agents',
@@ -65,7 +63,6 @@ export default function TabsLayout() {
         {/* <Badge>1</Badge> */}
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
-        hidden={!canAccessPerformance}
         name="performance"
         options={{
           title: 'Performance',
@@ -76,7 +73,6 @@ export default function TabsLayout() {
         <Icon sf="chart.line.uptrend.xyaxis" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
-        hidden={!canAccessProfile}
         name="(profile)"
         options={{
           title: 'Settings',

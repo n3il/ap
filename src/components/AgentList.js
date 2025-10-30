@@ -1,15 +1,67 @@
 import React from 'react';
 import { View, Text } from '@/components/ui';
 import AgentCard from './AgentCard';
+import { ROUTES } from '@/config/routes';
+import { useQuery } from '@tanstack/react-query';
+import { agentService } from '@/services/agentService';
+import { assessmentService } from '@/services/assessmentService';
+import { useRouter } from 'expo-router';
+import { useCallback, useMemo } from 'react';
 
 export default function AgentList({
-  agents = [],
-  latestAssessmentByAgent = {},
-  onAgentPress,
-  listTitle,
+  queryKey,
   emptyState,
-  ownedAgentIds,
+  userId = undefined,
+  published = true,
+  listTitle = undefined,
 }) {
+  const router = useRouter();
+  const {
+    data: agents = [],
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: [queryKey, 'agents', [userId, published]],
+    queryFn: () => {
+      if (userId) {
+        return agentService.getAgents(userId);
+      } else {
+        return agentService.getPublishedAgents();
+      }
+    },
+  });
+
+  // Fetch latest assessments for each agent
+  const { data: latestAssessments = [], isFetching: assessmentsFetching } = useQuery({
+    queryKey: [queryKey, 'assessments', { userId, published }],
+    queryFn: () => assessmentService.getAllAssessments(),
+  });
+
+  const latestAssessmentByAgent = useMemo(() => {
+    if (!latestAssessments?.length) {
+      return {};
+    }
+
+    return latestAssessments.reduce((acc, assessment) => {
+      if (!acc[assessment.agent_id]) {
+        acc[assessment.agent_id] = assessment;
+      }
+      return acc;
+    }, {});
+  }, [latestAssessments]);
+
+  const onAgentPress = useCallback(
+    (agent) => {
+      router.push({
+        pathname: ROUTES.TABS_EXPLORE_AGENT_ID.path,
+        params: { id: agent.id, name: agent.name },
+      });
+    },
+    [router]
+  );
+
   if (!agents.length) {
     return (
       emptyState || (
@@ -37,7 +89,6 @@ export default function AgentList({
           key={agent.id}
           agent={agent}
           latestAssessment={latestAssessmentByAgent[agent.id]}
-          isOwnAgent={ownedAgentIds ? ownedAgentIds.has(agent.id) : false}
           onPress={() => onAgentPress?.(agent)}
         />
       ))}

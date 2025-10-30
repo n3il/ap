@@ -41,6 +41,11 @@ const variants = {
       borderColor: 'transparent',
       borderWidth: 0,
     },
+    surface: {
+      backgroundColor: 'surface',
+      borderColor: 'border',
+      borderWidth: 1,
+    },
   },
   size: {
     sm: {

@@ -27,12 +27,8 @@ export const ROUTES = {
     path: '/(auth)/forgot-password',
     requiresAuthentication: false,
   },
-  AUTH_LOGIN: {
-    path: '/(auth)/auth',
-    requiresAuthentication: false,
-  },
   AUTH_INDEX: {
-    path: '/(auth)/index',
+    path: '/(auth)',
     requiresAuthentication: false,
   },
 
@@ -54,15 +50,15 @@ export const ROUTES = {
   // Explore Routes - Always require auth
   TABS_EXPLORE_INDEX: {
     path: '/(tabs)/(explore)/index',
-    requiresAuthentication: true,
+    requiresAuthentication: 'optional',
   },
   TABS_EXPLORE_MARKETS: {
     path: '/(tabs)/(explore)/Markets',
-    requiresAuthentication: true,
+    requiresAuthentication: 'optional',
   },
   TABS_EXPLORE_AGENT: {
     path: '/(tabs)/(explore)/agent',
-    requiresAuthentication: true,
+    requiresAuthentication: 'optional',
   },
   TABS_AGENTS: {
     path: '/(tabs)/(agents)/index',
@@ -70,11 +66,11 @@ export const ROUTES = {
   },
   TABS_EXPLORE_AGENT_ID: {
     path: '/(tabs)/(agents)/[id]',
-    requiresAuthentication: true,
+    requiresAuthentication: 'optional',
   },
   TABS_EXPLORE_AGENT_ID_INDEX: {
     path: '/(tabs)/(agents)/[id]/index',
-    requiresAuthentication: true,
+    requiresAuthentication: 'optional',
   },
   TABS_EXPLORE_AGENT_ID_MANAGE: {
     path: '/(tabs)/(agents)/[id]/manage',

@@ -45,7 +45,10 @@ export default function GetStartedScreen() {
   }, []);
 
   const handleAuth = (type) => {
-    router.push('auth', { type });
+    router.push({
+      pathname: ROUTES.AUTH_INDEX.path,
+      params: { type }
+    });
   };
 
   const handleContinueWithoutAuth = () => {
@@ -152,8 +155,9 @@ export default function GetStartedScreen() {
             </View>
 
             {/* Skip Auth Button - Only show if REQUIRE_AUTH=false */}
-            {!requireAuth && (
+            {true && (
               <Button
+                variant="ghost"
                 sx={{
                   alignItems: 'center',
                   justifyContent: 'center',
@@ -163,17 +167,8 @@ export default function GetStartedScreen() {
                 onPress={handleContinueWithoutAuth}
                 activeOpacity={0.8}
               >
-                <Text
-                  variant="body"
-                  style={{
-                    fontSize: 15,
-                    fontWeight: '500',
-                    color: 'rgba(255, 255, 255, 0.7)',
-                    textDecorationLine: 'underline',
-                  }}
-                >
-                  Continue without account
-                </Text>
+
+                Continue without account
               </Button>
             )}
           </View>
