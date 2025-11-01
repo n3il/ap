@@ -1,7 +1,7 @@
 export default {
   expo: {
     name: "Puppet",
-    slug: "ap-vimana",
+    slug: "puppet-ai",
     scheme: "ap",
     version: "1.0.0",
     orientation: "portrait",
@@ -15,9 +15,10 @@ export default {
     },
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.aifinanceportfolio.app",
+      bundleIdentifier: "com.puppetai.app",
       deploymentTarget: "16.0",
       infoPlist: {
+        ITSAppUsesNonExemptEncryption: false,
         NSAppTransportSecurity: {
           NSAllowsArbitraryLoads: false,
           NSExceptionDomains: {
@@ -44,7 +45,7 @@ export default {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      package: "com.vimana.ap",
+      package: "com.puppetai.app",
       usesCleartextTraffic: true
     },
     web: {
@@ -53,6 +54,7 @@ export default {
     },
     plugins: [
       "expo-router",
+      "expo-dev-client",
       [
         "expo-video",
         {
@@ -67,6 +69,10 @@ export default {
     extra: {
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
-    }
+      eas: {
+        projectId: "5f885227-49e3-4a41-be3b-9571706c061e",
+      }
+    },
+    owner: "neildesh-vimana"
   }
 };
