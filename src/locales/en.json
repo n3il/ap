@@ -35,7 +35,10 @@
       "appleSignInFailed": "Apple Sign-In Failed"
     },
     "success": {
-      "codeSent": "Verification code sent to your phone"
+      "codeSent": {
+        "phone": "Verification code sent to your phone",
+        "email": "Verification code sent to your email"
+      }
     }
   },
   "signup": {

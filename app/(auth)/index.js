@@ -109,8 +109,6 @@ export default function Auth() {
     }
   };
 
-  console.log({ authMode })
-
   return (
     <ContainerView>
       <KeyboardAvoidingView

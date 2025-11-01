@@ -7,6 +7,7 @@ import { agentService } from '@/services/agentService';
 import { assessmentService } from '@/services/assessmentService';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
+import { GlassContainer } from 'expo-glass-effect';
 
 export default function AgentList({
   queryKey,
@@ -84,14 +85,17 @@ export default function AgentList({
           {listTitle}
         </Text>
       )}
-      {agents.map((agent) => (
-        <AgentCard
-          key={agent.id}
-          agent={agent}
-          latestAssessment={latestAssessmentByAgent[agent.id]}
-          onPress={() => onAgentPress?.(agent)}
-        />
-      ))}
+      <GlassContainer spacing={8} style={{ flexDirection: 'column', gap: 8 }}>
+        {agents.map((agent) => (
+          <AgentCard
+            key={agent.id}
+            agent={agent}
+            latestAssessment={latestAssessmentByAgent[agent.id]}
+            onPress={() => onAgentPress?.(agent)}
+          />
+        ))}
+      </GlassContainer>
+
     </View>
   );
 }

@@ -227,8 +227,8 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
           >
             <MaterialCommunityIcons
               name="lightning-bolt"
-              size={12}
-              style={colors.primary}
+              size={14}
+              color={colors.primary}
             />
             <Text sx={{ fontSize: 11, fontWeight: '600', color: colors.primary }}>
               Buy / Sell
@@ -277,11 +277,9 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
       </View>
       <View sx={{ marginTop: 4, alignItems: 'flex-end' }}>
         <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
-
-
       </View>
       <View sx={{ marginTop: 4 }}>
-        <SectionTitle title="Top Agents" />
+        <SectionTitle title="Top Agents" sx={{ color: 'foreground', fontWeight: '500' }} />
         <SvgChart timeframe={timeframe} />
       </View>
     </View>

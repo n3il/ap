@@ -240,4 +240,34 @@ export const agentService = {
       throw error;
     }
   },
+
+  // Trigger an agent assessment directly
+  async triggerAssessment(agentId) {
+    try {
+      // Get the current session to include auth token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Not authenticated');
+
+      console.log('Triggering assessment for agent:', agentId);
+
+      // Call run_agent_assessment directly for this specific agent
+      const { data, error } = await supabase.functions.invoke('run_agent_assessment', {
+        body: { agent_id: agentId },
+        headers: {
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      });
+
+      if (error) {
+        console.error('Function invocation error:', error);
+        throw error;
+      }
+
+      console.log('Assessment triggered successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error triggering assessment:', error);
+      throw error;
+    }
+  },
 };

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StatusBadge, Divider, Stack } from '@/components/ui';
-import GlassCard from './GlassCard';
+import { View, Text, TouchableOpacity, StatusBadge, Divider, Stack, Card } from '@/components/ui';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 export default function AssessmentCard({ assessment }) {
   const [expanded, setExpanded] = useState(false);
@@ -17,7 +17,7 @@ export default function AssessmentCard({ assessment }) {
   const typeLabel = assessment.type === 'MARKET_SCAN' ? 'Market Scan' : 'Position Review';
 
   return (
-    <GlassCard sx={{ marginBottom: 3 }}>
+    <Card variant="glass" sx={{ marginBottom: 3 }}>
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
         <Stack direction="row" justify="space-between" align="flex-start" sx={{ marginBottom: 2 }}>
           <View sx={{ flex: 1 }}>
@@ -26,26 +26,46 @@ export default function AssessmentCard({ assessment }) {
               {formatDate(assessment.timestamp)}
             </Text>
           </View>
-          <Text variant="lg" tone="muted">
-            {expanded ? '▼' : '▶'}
-          </Text>
+          {expanded ? (
+            <MaterialCommunityIcons name="chevron-up" size={24} color="#ddd" />
+          ) : (
+            <MaterialCommunityIcons name="chevron-down" size={24} color="#ddd" />
+          )}
         </Stack>
 
         {assessment.trade_action_taken && (
-          <View sx={{ marginTop: 2, marginBottom: 2 }}>
-            <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-              Action Taken
-            </Text>
+          <View sx={{ flexDirection: 'column', gap: 2, marginTop: 2, marginBottom: 2 }}>
             <Text sx={{ color: 'success', fontWeight: '600' }}>
-              {assessment.trade_action_taken}
+              {assessment.trade_action_taken.replace('_', ' ').toLocaleLowerCase()}
             </Text>
           </View>
         )}
 
-        {expanded && (
+
+        {!expanded ? (
+          <Text variant="sm" tone="primary" sx={{ marginTop: 2 }}>
+            {assessment.llm_response_text.split("\n")[0].slice(0, 800) || 'No analysis available'}
+          </Text>
+        ) : (
           <>
             <Divider sx={{ marginTop: 3 }} />
             <View sx={{ paddingTop: 3 }}>
+              <View sx={{ marginBottom: 3 }}>
+                <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
+                  LLM Analysis
+                </Text>
+                <View
+                  sx={{
+                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                    borderRadius: 'lg',
+                    padding: 3,
+                  }}
+                >
+                  <Text variant="sm" tone="subtle">
+                    {assessment.llm_response_text || 'No analysis available'}
+                  </Text>
+                </View>
+              </View>
               <View sx={{ marginBottom: 3 }}>
                 <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
                   Market Data Snapshot
@@ -62,24 +82,6 @@ export default function AssessmentCard({ assessment }) {
                   </Text>
                 </View>
               </View>
-
-              <View sx={{ marginBottom: 3 }}>
-                <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
-                  LLM Analysis
-                </Text>
-                <View
-                  sx={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                    borderRadius: 'lg',
-                    padding: 3,
-                  }}
-                >
-                  <Text variant="sm" tone="subtle">
-                    {assessment.llm_response_text}
-                  </Text>
-                </View>
-              </View>
-
               <TouchableOpacity
                 onPress={() => setExpanded(!expanded)}
                 style={{
@@ -105,6 +107,6 @@ export default function AssessmentCard({ assessment }) {
           </View>
         )}
       </TouchableOpacity>
-    </GlassCard>
+    </Card>
   );
 }

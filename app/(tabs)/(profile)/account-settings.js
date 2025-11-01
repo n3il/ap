@@ -140,9 +140,8 @@ export default function AccountSettingsScreen() {
   );
 
   return (
-    <ContainerView>
+    <ContainerView style={{ flex: 1, paddingBottom: 120 }}>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         sx={{ flex: 1 }}
       >
         {/* Header */}
@@ -214,7 +213,7 @@ export default function AccountSettingsScreen() {
 
         <ScrollView sx={{ flex: 1 }} showsVerticalScrollIndicator={false}>
           {/* Profile Section */}
-          <AnimatedBox entering={FadeInDown.delay(100).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
+          <AnimatedBox entering={FadeInDown.delay(100).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6, flex: 1 }}>
             <GlassView
               glassEffectStyle="clear"
               tintColor={isDark ? "rgba(0, 0, 0, .9)" : "rgba(255, 255, 255, .9)"}

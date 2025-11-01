@@ -1,16 +1,10 @@
-import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, RefreshControl, ActivityIndicator } from '@/components/ui';
-import { useRouter } from 'expo-router';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import ContainerView from '@/components/ContainerView';
+import React, { useMemo } from 'react';
+import { View, Text } from '@/components/ui';
+import { useQuery } from '@tanstack/react-query';
 import StatCard from '@/components/StatCard';
-import CreateAgentModal from '@/components/CreateAgentModal';
-import PromptManagerModal from '@/components/PromptManagerModal';
 import { agentService } from '@/services/agentService';
 import { tradeService } from '@/services/tradeService';
 import { assessmentService } from '@/services/assessmentService';
-import { promptService } from '@/services';
-import AgentList from '@/components/AgentList';
 
 export default function Metrics() {
   // Fetch agents

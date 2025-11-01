@@ -4,7 +4,7 @@ export default {
     slug: "ap-vimana",
     scheme: "ap",
     version: "1.0.0",
-    orientation: "default",
+    orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,

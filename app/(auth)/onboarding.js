@@ -3,7 +3,7 @@ import {
   View,
   Text,
   TextInput,
-  TouchableOpacity,
+  Button,
   Alert,
   KeyboardAvoidingView,
   Platform,
@@ -15,6 +15,8 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import ContainerView from '@/components/ContainerView';
 import { useLocalization } from '@/hooks/useLocalization';
+import { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
+import { AnimatedBox } from '@/components/ui/animated';
 
 export default function OnboardingScreen() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -115,100 +117,92 @@ export default function OnboardingScreen() {
     switch (step.id) {
       case 'welcome':
         return (
-          <View sx={{ width: '100%' }}>
+          <AnimatedBox
+            key="welcome-step"
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(200)}
+            style={{ gap: 8 }}
+          >
             <Text sx={{ fontSize: 60, textAlign: 'center', marginBottom: 5 }}>👾</Text>
             <Text variant="body" tone="muted" sx={{ textAlign: 'center', lineHeight: 24, marginBottom: 8 }}>
               {t('onboarding.steps.welcome.description')}
             </Text>
-            <TouchableOpacity
-              sx={{
-                flex: 1,
-                padding: 4,
-                borderRadius: 'lg',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-              style={{
-                backgroundColor: '#2da44e',
-              }}
+            <Button
+              variant="surface"
+              sx={{ borderColor: 'primary', borderRadius: 'full' }}
+              textProps={{ style: { fontWeight: '600' } }}
               onPress={handleNext}
             >
-              <Text variant="body" sx={{ fontWeight: '600' }} style={{ color: '#fff' }}>
-                {t('onboarding.steps.welcome.getStarted')}
-              </Text>
-            </TouchableOpacity>
-          </View>
+              {t('onboarding.steps.welcome.getStarted')}
+            </Button>
+          </AnimatedBox>
         );
 
       case 'profile':
         return (
-          <View sx={{ width: '100%' }}>
-            <View sx={{ marginBottom: 5 }}>
-              <Text variant="sm" sx={{ fontWeight: '600', color: 'textPrimary', marginBottom: 2 }}>
+          <AnimatedBox
+            key="profile-step"
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(200)}
+            style={{ gap: 8 }}
+          >
+            <View sx={{ marginBottom: 4 }}>
+              <Text variant="h3" sx={{ fontWeight: 300 }} tone="muted">
                 {t('onboarding.steps.profile.displayName')}
               </Text>
               <TextInput
+                style={{ marginTop: 12, paddingVertical: 12, fontSize: 30, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1 }}
+                sx={{ borderBottomColor: 'foreground' }}
+                selectionColor="#fff"
                 value={displayName}
                 onChangeText={setDisplayName}
                 placeholder={t('onboarding.steps.profile.displayNamePlaceholder')}
-                placeholderTextColor="rgb(148, 163, 184)"
                 autoCapitalize="words"
                 textContentType="name"
+                autoFocus
               />
             </View>
 
             <View sx={{ flexDirection: 'row', gap: 3, marginTop: 6 }}>
-              <TouchableOpacity
-                sx={{
-                  flex: 1,
-                  padding: 4,
-                  borderRadius: 'lg',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderWidth: 1,
-                  borderColor: 'border',
-                  backgroundColor: 'surface',
-                }}
+              <Button
+                variant="secondary"
+                sx={{ flex: 1, borderRadius: 'full' }}
+                textProps={{ style: { fontWeight: '600' } }}
                 onPress={handleBack}
               >
-                <Text variant="body" sx={{ fontWeight: '600', color: 'textPrimary' }}>
-                  {t('onboarding.steps.profile.back')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                sx={{
-                  flex: 1,
-                  padding: 4,
-                  borderRadius: 'lg',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                }}
-                style={{
-                  backgroundColor: '#2da44e',
-                }}
+                {t('onboarding.steps.profile.back')}
+              </Button>
+              <Button
+                variant="surface"
+                sx={{ flex: 1, borderColor: 'primary', borderRadius: 'full' }}
+                textProps={{ style: { fontWeight: '600' } }}
                 onPress={handleNext}
               >
-                <Text variant="body" sx={{ fontWeight: '600' }} style={{ color: '#fff' }}>
-                  {t('onboarding.steps.profile.next')}
-                </Text>
-              </TouchableOpacity>
+                {t('onboarding.steps.profile.next')}
+              </Button>
             </View>
-          </View>
+          </AnimatedBox>
         );
 
       case 'preferences':
         return (
-          <View sx={{ width: '100%' }}>
+          <AnimatedBox
+            key="preferences-step"
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(200)}
+            style={{ gap: 8 }}
+          >
             <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: 'border' }}>
-              <View>
-                <Text variant="body" sx={{ fontWeight: '600', color: 'textPrimary' }}>
+              <View sx={{ flex: 1, marginRight: 4 }}>
+                <Text variant="body" sx={{ fontWeight: '600' }}>
                   {t('onboarding.steps.preferences.enableNotifications')}
                 </Text>
                 <Text variant="sm" tone="muted" sx={{ marginTop: 1 }}>
                   {t('onboarding.steps.preferences.notificationsDescription')}
                 </Text>
               </View>
-              <TouchableOpacity
+              <Button
+                variant="ghost"
                 sx={{ padding: 1 }}
                 onPress={() => setNotificationsEnabled(!notificationsEnabled)}
               >
@@ -221,7 +215,7 @@ export default function OnboardingScreen() {
                     paddingHorizontal: 0.5,
                   }}
                   style={{
-                    backgroundColor: notificationsEnabled ? '#2da44e' : '#d1d5db',
+                    backgroundColor: notificationsEnabled ? '#2da44e' : '#666',
                   }}
                 >
                   <View
@@ -236,106 +230,59 @@ export default function OnboardingScreen() {
                     }}
                   />
                 </View>
-              </TouchableOpacity>
+              </Button>
             </View>
 
-            <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: 'border' }}>
-              <Text variant="body" sx={{ fontWeight: '600', color: 'textPrimary' }}>
+            <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 4, borderBottomWidth: 1, borderBottomColor: 'border', marginBottom: 4 }}>
+              <Text variant="body" sx={{ fontWeight: '600' }}>
                 {t('onboarding.steps.preferences.theme')}
               </Text>
               <View sx={{ flexDirection: 'row', gap: 2 }}>
-                <TouchableOpacity
-                  sx={{
-                    paddingVertical: 2,
-                    paddingHorizontal: 4,
-                    borderRadius: 'md',
-                    borderWidth: 1,
-                  }}
-                  style={{
-                    backgroundColor: theme === 'light' ? '#2da44e' : 'transparent',
-                    borderColor: theme === 'light' ? '#2da44e' : '#d1d5db',
-                  }}
+                <Button
+                  variant={theme === 'light' ? 'surface' : 'secondary'}
+                  sx={{ paddingVertical: 2, paddingHorizontal: 4, borderRadius: 'full' }}
                   onPress={() => setTheme('light')}
                 >
-                  <Text
-                    variant="sm"
-                    sx={{ fontWeight: '500' }}
-                    style={{
-                      color: theme === 'light' ? '#fff' : '#000',
-                    }}
-                  >
+                  <Text variant="sm" sx={{ fontWeight: '500' }}>
                     {t('onboarding.steps.preferences.light')}
                   </Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  sx={{
-                    paddingVertical: 2,
-                    paddingHorizontal: 4,
-                    borderRadius: 'md',
-                    borderWidth: 1,
-                  }}
-                  style={{
-                    backgroundColor: theme === 'dark' ? '#2da44e' : 'transparent',
-                    borderColor: theme === 'dark' ? '#2da44e' : '#d1d5db',
-                  }}
+                </Button>
+                <Button
+                  variant={theme === 'dark' ? 'surface' : 'secondary'}
+                  sx={{ paddingVertical: 2, paddingHorizontal: 4, borderRadius: 'full' }}
                   onPress={() => setTheme('dark')}
                 >
-                  <Text
-                    variant="sm"
-                    sx={{ fontWeight: '500' }}
-                    style={{
-                      color: theme === 'dark' ? '#fff' : '#000',
-                    }}
-                  >
+                  <Text variant="sm" sx={{ fontWeight: '500' }}>
                     {t('onboarding.steps.preferences.dark')}
                   </Text>
-                </TouchableOpacity>
+                </Button>
               </View>
             </View>
 
-            <View sx={{ flexDirection: 'row', gap: 3, marginTop: 6 }}>
-              <TouchableOpacity
-                sx={{
-                  flex: 1,
-                  padding: 4,
-                  borderRadius: 'lg',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderWidth: 1,
-                  borderColor: 'border',
-                  backgroundColor: 'surface',
-                }}
+            <View sx={{ flexDirection: 'row', gap: 3, marginTop: 2 }}>
+              <Button
+                variant="secondary"
+                sx={{ flex: 1, borderRadius: 'full' }}
+                textProps={{ style: { fontWeight: '600' } }}
                 onPress={handleBack}
               >
-                <Text variant="body" sx={{ fontWeight: '600', color: 'textPrimary' }}>
-                  {t('onboarding.steps.preferences.back')}
-                </Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                sx={{
-                  flex: 1,
-                  padding: 4,
-                  borderRadius: 'lg',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  opacity: loading ? 0.6 : 1,
-                }}
-                style={{
-                  backgroundColor: '#2da44e',
-                }}
+                {t('onboarding.steps.preferences.back')}
+              </Button>
+              <Button
+                variant="surface"
+                sx={{ flex: 1, borderColor: 'primary', borderRadius: 'full' }}
+                textProps={{ style: { fontWeight: '600' } }}
                 onPress={handleComplete}
                 disabled={loading}
               >
                 {loading ? (
                   <ActivityIndicator color="white" />
                 ) : (
-                  <Text variant="body" sx={{ fontWeight: '600' }} style={{ color: '#fff' }}>
-                    {t('onboarding.steps.preferences.complete')}
-                  </Text>
+                  t('onboarding.steps.preferences.complete')
                 )}
-              </TouchableOpacity>
+              </Button>
             </View>
-          </View>
+          </AnimatedBox>
         );
 
       default:
@@ -349,37 +296,27 @@ export default function OnboardingScreen() {
     <ContainerView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        sx={{ flex: 1, top: 56 }}
+        style={{
+          flex: 1,
+          paddingHorizontal: 16,
+        }}
       >
-        <SafeAreaView>
+        <SafeAreaView style={{ flex: 1 }}>
           <ScrollView
             contentContainerStyle={{ flexGrow: 1 }}
             keyboardShouldPersistTaps="handled"
           >
-            <View sx={{ flex: 1, justifyContent: 'center', padding: 6, paddingVertical: 15 }}>
-              <View sx={{ marginBottom: 10, alignItems: 'center' }}>
-                <Text
-                  sx={{ fontSize: 30, fontWeight: '700', marginBottom: 2 }}
-                  style={{
-                    color: '#fff',
-                    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-                    textShadowOffset: { width: 0, height: 2 },
-                    textShadowRadius: 4,
-                  }}
-                >
+            <AnimatedBox
+              layout={LinearTransition.duration(300).springify()}
+              style={{ flex: 1, justifyContent: 'center', paddingVertical: 20 }}
+            >
+              {/* Header */}
+              <View sx={{ marginBottom: 8, alignItems: 'center' }}>
+                <Text variant="h1" sx={{ fontWeight: 300, marginBottom: 2, textAlign: 'center' }}>
                   {step.title}
                 </Text>
 
-                <Text
-                  variant="xl"
-                  sx={{ opacity: 0.9, marginBottom: 5 }}
-                  style={{
-                    color: '#fff',
-                    textShadowColor: 'rgba(0, 0, 0, 0.3)',
-                    textShadowOffset: { width: 0, height: 1 },
-                    textShadowRadius: 2,
-                  }}
-                >
+                <Text variant="body" tone="muted" sx={{ marginBottom: 5, textAlign: 'center' }}>
                   {step.subtitle}
                 </Text>
 
@@ -405,39 +342,32 @@ export default function OnboardingScreen() {
                 </View>
               </View>
 
-              <View
-                sx={{
-                  borderRadius: '2xl',
-                  padding: 6,
-                }}
-                style={{
-                  backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                  shadowColor: '#000',
-                  shadowOffset: { width: 0, height: 4 },
-                  shadowOpacity: 0.1,
-                  shadowRadius: 12,
-                  elevation: 5,
-                }}
-              >
-                {renderStep()}
-              </View>
+              {/* Step Content */}
+              {renderStep()}
 
+              {/* Sign Out Link */}
               {currentStep < STEPS.length - 1 && (
-                <View sx={{ marginTop: 6, alignItems: 'center' }}>
-                  <Text variant="xs" sx={{ textAlign: 'center' }} style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
+                <View sx={{ marginTop: 8, alignItems: 'center' }}>
+                  <Text variant="xs" tone="subtle" sx={{ textAlign: 'center' }}>
                     {`Signed in as ${getUserIdentifier()}.`}
                   </Text>
-                  <TouchableOpacity onPress={handleSignOut} sx={{ marginTop: 1, flexDirection: 'row', alignItems: 'center' }}>
-                    <Text variant="xs" sx={{ textAlign: 'center' }} style={{ color: 'rgba(255, 255, 255, 0.7)' }}>
-                      Not you?&nbsp;
-                    </Text>
-                    <Text variant="xs" sx={{ textAlign: 'center', textDecorationLine: 'underline', color: 'accent' }}>
-                      Sign out
-                    </Text>
-                  </TouchableOpacity>
+                  <Button
+                    variant="ghost"
+                    onPress={handleSignOut}
+                    sx={{ marginTop: 1, padding: 1 }}
+                  >
+                    <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+                      <Text variant="xs" tone="muted">
+                        Not you?&nbsp;
+                      </Text>
+                      <Text variant="xs" sx={{ textDecorationLine: 'underline', color: 'info' }}>
+                        Sign out
+                      </Text>
+                    </View>
+                  </Button>
                 </View>
               )}
-            </View>
+            </AnimatedBox>
           </ScrollView>
         </SafeAreaView>
       </KeyboardAvoidingView>

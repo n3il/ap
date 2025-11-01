@@ -4,7 +4,14 @@ import { LLM_PROVIDERS } from './CreateAgentModal';
 import ActiveDurationBadge from './ActiveDurationBadge';
 import WalletAddressCard from './WalletAddressCard';
 
-export default function AgentCard({ agent, latestAssessment, isOwnAgent = false, onPress }) {
+export default function AgentCard({
+  agent,
+  latestAssessment,
+  isOwnAgent = false,
+  onPress,
+  shortView = false,
+  ...props
+}) {
   const calculatePnL = () => {
     // This would be calculated from trades data
     return 0;
@@ -98,8 +105,13 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
   const isActive = Boolean(agent.is_active);
 
   return (
-    <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
-      <Card variant="glass" glassIntensity={100} glassTintColor="rgba(0, 0, 0, 0.9)">
+    <Card
+      variant="glass"
+      glassIntensity={100}
+      glassTintColor="rgba(0, 0, 0, 0.9)"
+      {...props}
+    >
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
         <View sx={{ marginBottom: 3, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <View sx={{ flex: 1 }}>
             <View sx={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
@@ -133,66 +145,75 @@ export default function AgentCard({ agent, latestAssessment, isOwnAgent = false,
           </View>
         </Stack>
 
-        <Divider sx={{ marginTop: 3, opacity: 1 }} />
+        {!shortView && (
+          <>
+            <Divider sx={{ marginTop: 3, opacity: 1 }} />
 
-        <View sx={{  }}>
-          {isOwnAgent ? (
-            latestAssessment ? (
-              <>
-                <Stack direction="row" justify="space-between" align="flex-start">
-                  <View sx={{ flex: 1, paddingRight: 3 }}>
+            <View sx={{  }}>
+              {isOwnAgent ? (
+                latestAssessment ? (
+                  <>
+                    <Stack direction="row" justify="space-between" align="flex-start">
+                      <View sx={{ flex: 1, paddingRight: 3 }}>
+                        <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
+                          Last Assessment
+                        </Text>
+                        <Text variant="sm" sx={{ fontWeight: '600' }}>
+                          {latestTypeLabel}
+                        </Text>
+                        <Text variant="xs" tone="subtle" sx={{ marginTop: 1 }}>
+                          {formatRelativeTime(latestAssessment.timestamp)}
+                        </Text>
+                      </View>
+                      <View sx={{ alignItems: 'flex-end', flex: 1 }}>
+                        <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
+                          Action
+                        </Text>
+                        <Text variant="xs" sx={{ fontWeight: '600', color: actionColor, textAlign: 'right' }}>
+                          {actionLabel}
+                        </Text>
+                      </View>
+                    </Stack>
+                    <Text variant="xs" tone="subtle" sx={{ marginTop: 2 }}>
+                      {getNextRunLabel(latestAssessment.timestamp)}
+                    </Text>
+                  </>
+                ) : (
+                  <View>
                     <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-                      Last Assessment
+                      Assessments
                     </Text>
-                    <Text variant="sm" sx={{ fontWeight: '600' }}>
-                      {latestTypeLabel}
-                    </Text>
-                    <Text variant="xs" tone="subtle" sx={{ marginTop: 1 }}>
-                      {formatRelativeTime(latestAssessment.timestamp)}
+                    <Text variant="xs" tone="subtle">
+                      Awaiting first MARKET_SCAN loop from the scheduler.
                     </Text>
                   </View>
-                  <View sx={{ alignItems: 'flex-end', flex: 1 }}>
-                    <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-                      Action
-                    </Text>
-                    <Text variant="xs" sx={{ fontWeight: '600', color: actionColor, textAlign: 'right' }}>
-                      {actionLabel}
-                    </Text>
-                  </View>
-                </Stack>
-                <Text variant="xs" tone="subtle" sx={{ marginTop: 2 }}>
-                  {getNextRunLabel(latestAssessment.timestamp)}
-                </Text>
-              </>
-            ) : (
-              <View>
-                <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-                  Assessments
-                </Text>
-                <Text variant="xs" tone="subtle">
-                  Awaiting first MARKET_SCAN loop from the scheduler.
-                </Text>
+                )
+              ) : (
+                <View>
+                  <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
+                    Published
+                  </Text>
+                  <Text variant="xs" tone="subtle">
+                    {isPublished ? formatPublishedOn() : 'Creator has not shared this agent yet.'}
+                  </Text>
+                  <Text variant="xs" tone="subtle" sx={{ marginTop: 2 }}>
+                    Inspect the detail view to clone this agent into your own desk.
+                  </Text>
+                </View>
+              )}
+
+              <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
+                <WalletAddressCard address={agent.hyperliquid_address} variant="short" />
               </View>
-            )
-          ) : (
-            <View>
-              <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-                Published
-              </Text>
-              <Text variant="xs" tone="subtle">
-                {isPublished ? formatPublishedOn() : 'Creator has not shared this agent yet.'}
-              </Text>
-              <Text variant="xs" tone="subtle" sx={{ marginTop: 2 }}>
-                Inspect the detail view to clone this agent into your own desk.
-              </Text>
             </View>
-          )}
-
+          </>
+        )}
+        {shortView &&
           <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
             <WalletAddressCard address={agent.hyperliquid_address} variant="short" />
           </View>
-        </View>
-      </Card>
-    </TouchableOpacity>
+        }
+      </TouchableOpacity>
+    </Card>
   );
 }

@@ -136,9 +136,9 @@ const darkTheme = {
 
     tabBackground: '#000',
     tabIcon: '#111',
-    tabIconSelected: '#7CFFAA',
     tabLabel: '#94a3b8',
-    tabLabelSelected: '#ffffffff',
+    tabIconSelected: '#7CFFAA',
+    tabLabelSelected: '#55c77dff',
   },
   fontFamily: {
     sans: ['System'],

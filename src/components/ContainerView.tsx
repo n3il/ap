@@ -14,12 +14,12 @@ export default function ContainerView({ children, style, noSafeArea, ...props }:
 
   return (
     <View
-      sx={{ flex: 1 }}
+      sx={{ flex: 1, backgroundColor: 'background' }}
       {...props}
       style={style}
     >
       <LinearGradient
-        colors={['#0a0f1e', '#050a14', '#000000']}
+        colors={['#01040eff', '#050a14', '#02081bff']}
         locations={[0, 0.5, 1]}
         style={{ flex: 1 }}
       >

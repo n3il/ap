@@ -4,7 +4,7 @@ import { SPACING } from '@/theme';
 
 export default function StatCard({ label, value, trend, trendColor = 'textTertiary' }) {
   return (
-    <View sx={{ flex: 1, marginHorizontal: SPACING.XS }}>
+    <View sx={{ flex: 1, marginHorizontal: SPACING.lg }}>
       <Stack direction="column" spacing={SPACING.XS}>
         <Text variant="xs" tone="muted">
           {label}
@@ -13,7 +13,7 @@ export default function StatCard({ label, value, trend, trendColor = 'textTertia
           {value}
         </Text>
         {trend && (
-          <Text variant="xs" sx={{ color: trendColor }}>
+          <Text variant="xs" sx={{ color: trendColor, textAlign: 'center' }}>
             {trend}
           </Text>
         )}

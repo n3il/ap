@@ -7,7 +7,6 @@ export default function AuthLayout() {
         headerShown: false,
         gestureEnabled: true,
         animation: 'slide_from_bottom',
-        presentation: 'modal',
       }}
     >
       <Stack.Screen name="index" />

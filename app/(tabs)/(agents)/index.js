@@ -1,23 +1,53 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import { View, Text } from '@/components/ui';
-import { useRouter } from 'expo-router';
-import { useMutation } from '@tanstack/react-query';
+import { useAuth } from '@/contexts/AuthContext';
 import ContainerView from '@/components/ContainerView';
-import { agentService } from '@/services/agentService';
 import AgentList from '@/components/AgentList';
 import { StyleSheet, Platform } from 'react-native';
 import PagerView from 'react-native-pager-view';
-import { useQuery } from '@tanstack/react-query';
-import { ActivityIndicator } from '@/components/ui';
 import { TouchableOpacity } from 'react-native';
 import { ScrollView } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { agentService, promptService } from '@/services';
+import CreateAgentModal from '@/components/CreateAgentModal';
+import { router } from 'expo-router';
 
 export default function AgentsScreen() {
-  const router = useRouter();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const pagerRef = useRef(null);
+  const [modalVisible, setModalVisible] = useState(false);
 
-  const titles = ['Overview', 'Agents', 'Settings'];
+  const titles = ['Active', 'Shared', 'All'];
+
+  // Fetch prompts for the modal
+  const { data: prompts = [] } = useQuery({
+    queryKey: ['prompts'],
+    queryFn: () => promptService.listPrompts(),
+  });
+
+  // Create agent mutation
+  const createAgentMutation = useMutation({
+    mutationFn: (agentData) => agentService.createAgent(agentData),
+    onSuccess: (newAgent) => {
+      // Invalidate and refetch agent lists
+      queryClient.invalidateQueries(['active-agents']);
+      queryClient.invalidateQueries(['all-agents']);
+      queryClient.invalidateQueries(['agents']);
+
+      // Close modal
+      setModalVisible(false);
+
+      // Navigate to the new agent's detail page
+      router.push(`/(tabs)/(agents)/${newAgent.id}`);
+    },
+    onError: (error) => {
+      console.error('Error creating agent:', error);
+      alert('Failed to create agent. Please try again.');
+    },
+  });
 
   const handleTitlePress = (index) => {
     if (Platform.OS !== 'web') {
@@ -26,79 +56,24 @@ export default function AgentsScreen() {
     setPage(index);
   };
 
-  const { data: agents = [], isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ['agents'],
-    queryFn: agentService.getAgents,
-  });
+  const handleCreateAgent = () => {
+    setModalVisible(true);
+  };
 
-  // Create agent mutation
-  const createAgentMutation = useMutation({
-    mutationFn: agentService.createAgent,
-    onSuccess: () => {
-      invalidateAgentData();
-      // setModalVisible(false);
-    },
-    onError: (error) => {
-      alert('Failed to create agent: ' + error.message);
-    },
-  });
-
-  const handleCreateAgent = (agentData) => {
+  const handleSubmitAgent = (agentData) => {
     createAgentMutation.mutate(agentData);
   };
 
-  const handleAgentPress = (agent) => {
-    router.push({
-      pathname: '/(tabs)/(explore)/agent/[id]',
-      params: { id: agent.id },
-    });
-  };
-
-  // Fetch latest assessments for each agent
-  const { data: latestAssessments = [], isFetching: assessmentsFetching } = useQuery({
-    queryKey: ['assessments', 'latest'],
-    queryFn: () => assessmentService.getAllAssessments(),
-  });
-
-  const latestAssessmentByAgent = useMemo(() => {
-    if (!latestAssessments?.length) {
-      return {};
-    }
-
-    return latestAssessments.reduce((acc, assessment) => {
-      if (!acc[assessment.agent_id]) {
-        acc[assessment.agent_id] = assessment;
-      }
-      return acc;
-    }, {});
-  }, [latestAssessments]);
-
-  if (isLoading) {
-    return (
-      <ContainerView>
-        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#fff" />
-        </View>
-      </ContainerView>
-    );
-  }
-
-  if (error) {
-    return (
-      <ContainerView>
-        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
-          <Text sx={{ color: '#f87171', textAlign: 'center', marginBottom: 4 }}>Error loading agents</Text>
-          <TouchableOpacity onPress={refetch} sx={{ backgroundColor: '#3b82f6', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 'xl' }}>
-            <Text sx={{ color: 'white', fontWeight: '600' }}>Retry</Text>
-          </TouchableOpacity>
-        </View>
-      </ContainerView>
-    );
-  }
-
   return (
     <ContainerView>
-      <View sx={{ paddingHorizontal: 4, paddingTop: 6, alignSelf: 'flex-start', marginBottom: 3 }}>
+      <View sx={{
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 4,
+        paddingTop: 6,
+        marginBottom: 3
+      }}>
         <Text
           variant="xs"
           tone="muted"
@@ -110,6 +85,20 @@ export default function AgentsScreen() {
         >
           Agent Dashboard
         </Text>
+        <TouchableOpacity
+          onPress={handleCreateAgent}
+          sx={{
+            width: 32,
+            height: 32,
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderRadius: 'lg',
+            backgroundColor: 'primary',
+          }}
+          activeOpacity={0.8}
+        >
+          <Ionicons name="add" size={20} color="#fff" />
+        </TouchableOpacity>
       </View>
       <ScrollView
         horizontal
@@ -153,36 +142,57 @@ export default function AgentsScreen() {
         <View style={{ flex: 1 }}>
           {page === 0 && (
             <View style={styles.page}>
-              {/* <Metrics /> */}
               <AgentList
-                agents={agents}
-                latestAssessmentByAgent={latestAssessmentByAgent}
-                onAgentPress={handleAgentPress}
+                queryKey="active-agents"
+                userId={user?.id}
+                published={false}
                 emptyState={(
                   <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
                     <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
-                      No agents on desk yet
+                      No active agents yet
                     </Text>
                     <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
-                      Spin up your first LLM trader to run MARKET_SCAN → POSITION_REVIEW loops and push orders to Hyperliquid.
-                    </Text>
-                    <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center', marginTop: 2 }}>
-                      Every run logs an assessment, emits ACTION_JSON, and updates your trading ledger automatically.
+                      Create your first agent to get started.
                     </Text>
                   </View>
                 )}
-                ownedAgentIds={new Set(agents.map(agent => agent.id))}
               />
             </View>
           )}
           {page === 1 && (
             <View style={styles.page}>
-              <Text sx={{ color: "muted" }}>Second page</Text>
+              <AgentList
+                queryKey="shared-agents"
+                published={true}
+                emptyState={(
+                  <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+                    <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+                      No shared agents available
+                    </Text>
+                    <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+                      Check back later for community-shared agents.
+                    </Text>
+                  </View>
+                )}
+              />
             </View>
           )}
           {page === 2 && (
             <View style={styles.page}>
-              <Text sx={{ color: "muted" }}>Third page</Text>
+              <AgentList
+                queryKey="all-agents"
+                userId={user?.id}
+                emptyState={(
+                  <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+                    <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+                      No agents found
+                    </Text>
+                    <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+                      Create or explore agents to see them here.
+                    </Text>
+                  </View>
+                )}
+              />
             </View>
           )}
         </View>
@@ -195,63 +205,68 @@ export default function AgentsScreen() {
           onPageSelected={e => setPage(e.nativeEvent.position)}
         >
           <View style={styles.page} key="1">
-            {/* <Metrics /> */}
             <AgentList
-              agents={agents}
-              latestAssessmentByAgent={latestAssessmentByAgent}
-              onAgentPress={handleAgentPress}
+              queryKey="active-agents"
+              userId={user?.id}
+              published={false}
               emptyState={(
                 <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
                   <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
-                    No agents on desk yet
+                    No active agents yet
                   </Text>
                   <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
-                    Spin up your first LLM trader to run MARKET_SCAN → POSITION_REVIEW loops and push orders to Hyperliquid.
-                  </Text>
-                  <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center', marginTop: 2 }}>
-                    Every run logs an assessment, emits ACTION_JSON, and updates your trading ledger automatically.
+                    Create your first agent to get started.
                   </Text>
                 </View>
               )}
-              ownedAgentIds={new Set(agents.map(agent => agent.id))}
             />
           </View>
           <View style={styles.page} key="2">
-            <Text sx={{ color: "muted" }}>Second page</Text>
+            <AgentList
+              queryKey="shared-agents"
+              published={true}
+              emptyState={(
+                <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+                  <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+                    No shared agents available
+                  </Text>
+                  <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+                    Check back later for community-shared agents.
+                  </Text>
+                </View>
+              )}
+            />
           </View>
           <View style={styles.page} key="3">
-            <Text sx={{ color: "muted" }}>Third page</Text>
+            <AgentList
+              queryKey="all-agents"
+              userId={user?.id}
+              emptyState={(
+                <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
+                  <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+                    No agents found
+                  </Text>
+                  <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+                    Create or explore agents to see them here.
+                  </Text>
+                </View>
+              )}
+            />
           </View>
         </PagerView>
       )}
 
-      {/* <CreateAgentModal
+      <CreateAgentModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        onSubmit={handleCreateAgent}
+        onSubmit={handleSubmitAgent}
         promptOptions={prompts}
         onManagePrompts={() => {
           setModalVisible(false);
-          setPromptManagerVisible(true);
-          setResumeAgentModal(true);
+          // TODO: Implement prompt manager navigation
+          router.push('/(tabs)/(profile)/prompts');
         }}
       />
-
-      <PromptManagerModal
-        visible={promptManagerVisible}
-        onClose={() => {
-          setPromptManagerVisible(false);
-          if (resumeAgentModal) {
-            setModalVisible(true);
-            setResumeAgentModal(false);
-          }
-        }}
-        prompts={prompts}
-        onPromptCreated={() => {
-          refetchPrompts();
-          queryClient.invalidateQueries(['prompts']);
-        }}
-      /> */}
     </ContainerView>
   );
 }
