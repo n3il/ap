@@ -98,8 +98,8 @@ export default function AgentCard({
       month: 'short',
       day: 'numeric',
       year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
+      // hour: '2-digit',
+      // minute: '2-digit',
     });
   };
 
@@ -110,7 +110,8 @@ export default function AgentCard({
       variant="glass"
       glassEffectStyle="regular"
       style={{
-        padding: 12,
+        paddingVertical: 18,
+        paddingHorizontal: 18,
         borderRadius: 16,
       }}
       {...props}
@@ -118,9 +119,9 @@ export default function AgentCard({
       <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
         <View sx={{ marginBottom: 3, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <View sx={{ flex: 1 }}>
-            <View sx={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center', marginBottom: 3 }}>
+            <View sx={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' }}>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                <Text variant="lg" sx={{ fontWeight: '700' }}>
+                <Text variant="lg" sx={{ fontWeight: '500' }}>
                   {agent.name}
                 </Text>
                 <ActiveDurationBadge isActive={agent.is_active} variant="small" />
@@ -192,16 +193,13 @@ export default function AgentCard({
                     </Text>
                   </View>
                 )
-              ) : (
+              ) : (isPublished &&
                 <View>
-                  <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
+                  <Text variant="xs" tone="muted" sx={{ marginBottom: 1, flex: 1 }}>
                     Published
                   </Text>
-                  <Text variant="xs" tone="subtle">
-                    {isPublished ? formatPublishedOn() : 'Creator has not shared this agent yet.'}
-                  </Text>
-                  <Text variant="xs" tone="subtle" sx={{ marginTop: 2 }}>
-                    Inspect the detail view to clone this agent into your own desk.
+                  <Text variant="xs" tone="muted">
+                    {formatPublishedOn()}
                   </Text>
                 </View>
               )}

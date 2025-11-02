@@ -9,9 +9,10 @@ export interface LabelValueProps {
   value: string | number;
   orientation?: 'vertical' | 'horizontal';
   sx?: SxProp;
+  textStyle?: SxProp;
 }
 
-const LabelValue: React.FC<LabelValueProps> = ({ label, value, orientation = 'vertical', sx }) => {
+const LabelValue: React.FC<LabelValueProps> = ({ label, value, orientation = 'vertical', sx, textStyle }) => {
   return (
     <View
       sx={{
@@ -24,7 +25,7 @@ const LabelValue: React.FC<LabelValueProps> = ({ label, value, orientation = 've
       <Text variant="xs" tone="muted">
         {label}
       </Text>
-      <Text variant="body" sx={{ fontWeight: '600' }}>
+      <Text variant="body" sx={{ fontWeight: '300', ...textStyle }}>
         {value}
       </Text>
     </View>

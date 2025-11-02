@@ -9,7 +9,7 @@ export default function WalletAddressCard({ address, isOwnAgent = false, variant
 
   if (variant === 'short') {
     return (
-      <Text variant="xs" tone="subtle" sx={{ fontFamily: 'monospace', opacity: 0.5 }}>
+      <Text variant="xs" tone="muted" sx={{ fontFamily: 'monospace', opacity: 0.5 }}>
         {shortAddress}
       </Text>
     );
@@ -23,7 +23,7 @@ export default function WalletAddressCard({ address, isOwnAgent = false, variant
       <Text
         variant="sm"
         sx={{
-          color: '#f8fafc',
+          color: 'textTertiary',
           fontFamily: 'monospace',
           fontSize: 11,
         }}
@@ -31,7 +31,7 @@ export default function WalletAddressCard({ address, isOwnAgent = false, variant
         {address || 'Not linked'}
       </Text>
       {!isOwnAgent && (
-        <Text variant="xs" sx={{ color: '#64748b', marginTop: 1.5, fontSize: 10, lineHeight: 14 }}>
+        <Text variant="xs" sx={{ color: 'textSecondary', marginTop: 1.5, fontSize: 10, lineHeight: 14 }}>
           Wallet metadata is shared by the creator. Clone this agent to supply your own Hyperliquid
           address before activating trades.
         </Text>

@@ -17,6 +17,10 @@ export default function AgentList({
   listTitle = undefined,
 }) {
   const router = useRouter();
+
+  // Extract category from queryKey if it exists (e.g., ['explore-agents', 'top'])
+  const category = Array.isArray(queryKey) ? queryKey[queryKey.length - 1] : null;
+
   const {
     data: agents = [],
     isLoading,
@@ -24,7 +28,7 @@ export default function AgentList({
     error,
     refetch,
   } = useQuery({
-    queryKey: [queryKey, 'agents', [userId, published]],
+    queryKey: Array.isArray(queryKey) ? [...queryKey, 'agents', userId, published] : [queryKey, 'agents', userId, published],
     queryFn: () => {
       if (userId) {
         return agentService.getAgents(userId);
@@ -35,8 +39,12 @@ export default function AgentList({
   });
 
   // Fetch latest assessments for each agent
+  const assessmentQueryKey = Array.isArray(queryKey)
+    ? [...queryKey, 'assessments', userId, published]
+    : [queryKey, 'assessments', userId, published];
+
   const { data: latestAssessments = [], isFetching: assessmentsFetching } = useQuery({
-    queryKey: [queryKey, 'assessments', { userId, published }],
+    queryKey: assessmentQueryKey,
     queryFn: () => assessmentService.getAllAssessments(),
   });
 
@@ -53,6 +61,56 @@ export default function AgentList({
     }, {});
   }, [latestAssessments]);
 
+  // Sort agents based on category
+  const sortedAgents = useMemo(() => {
+    if (!agents?.length) return [];
+
+    let sorted = [...agents];
+
+    switch (category) {
+      case 'top':
+        // Sort by number of assessments (most active agents)
+        sorted.sort((a, b) => {
+          const aAssessmentCount = latestAssessments.filter(
+            (assessment) => assessment.agent_id === a.id
+          ).length;
+          const bAssessmentCount = latestAssessments.filter(
+            (assessment) => assessment.agent_id === b.id
+          ).length;
+          return bAssessmentCount - aAssessmentCount;
+        });
+        break;
+
+      case 'popular':
+        // Sort by published date (most recently published first)
+        sorted.sort((a, b) => {
+          const aDate = a.published_at ? new Date(a.published_at) : new Date(0);
+          const bDate = b.published_at ? new Date(b.published_at) : new Date(0);
+          return bDate - aDate;
+        });
+        break;
+
+      case 'new':
+        // Sort by creation date (newest first)
+        sorted.sort((a, b) => {
+          const aDate = new Date(a.created_at);
+          const bDate = new Date(b.created_at);
+          return bDate - aDate;
+        });
+        break;
+
+      default:
+        // Default sort by created_at descending
+        sorted.sort((a, b) => {
+          const aDate = new Date(a.created_at);
+          const bDate = new Date(b.created_at);
+          return bDate - aDate;
+        });
+    }
+
+    return sorted;
+  }, [agents, category, latestAssessments]);
+
   const onAgentPress = useCallback(
     (agent) => {
       router.push({
@@ -63,7 +121,7 @@ export default function AgentList({
     [router]
   );
 
-  if (!agents.length) {
+  if (!sortedAgents.length) {
     return (
       emptyState || (
         <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
@@ -81,9 +139,9 @@ export default function AgentList({
   return (
     <GlassContainer
       spacing={8}
-      style={{ flexDirection: 'column', gap: 8 }}
+      style={{ flexDirection: 'column', gap: 16 }}
     >
-      {agents.map((agent) => (
+      {sortedAgents.map((agent) => (
         <AgentCard
           key={agent.id}
           agent={agent}

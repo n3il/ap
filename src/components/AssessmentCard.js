@@ -1,14 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { View, Text, TouchableOpacity, StatusBadge, Divider, Stack, Card, Avatar } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { formatRelative } from 'date-fns';
 import { formatRelativeDate } from '@/utils/date';
 import { PROVIDER_COLORS } from '@/factories/mockAgentData';
-import { useLocalization } from '@/hooks/useLocalization';
+import { formatTradeActionLabel, getTradeActionVariant } from '@/utils/tradeActions';
+import TradeActionDisplay from './TradeActionDisplay';
 
 export default function AssessmentCard({ assessment }) {
   const [expanded, setExpanded] = useState(false);
-  const { t } = useLocalization();
+
+  const extractedAction = useMemo(() => {
+    if (!assessment.llm_response_text) return null;
+
+    try {
+      const actionJsonMatch = assessment.llm_response_text.match(/\*\*ACTION_JSON:\*\*\s*(\{[^}]+\})/);
+      if (actionJsonMatch && actionJsonMatch[1]) {
+        return JSON.parse(actionJsonMatch[1]);
+      }
+    } catch (error) {
+      console.error('Error parsing action JSON:', error);
+    }
+
+    return null;
+  }, [assessment.llm_response_text]);
+
+  const cleanedResponseText = useMemo(() => {
+    if (!assessment.llm_response_text) return '';
+    return assessment.llm_response_text.replace(/\*\*ACTION_JSON:\*\*\s*\{[^}]+\}/g, '').trim();
+  }, [assessment.llm_response_text]);
 
   const typeLabel = assessment.type === 'MARKET_SCAN' ? 'Market Scan' : 'Position Review';
 
@@ -19,7 +39,7 @@ export default function AssessmentCard({ assessment }) {
           <Avatar
             backgroundColor={PROVIDER_COLORS[assessment.agent?.llm_provider]}
             name={assessment.agent?.name}
-            email={assessment.agent?.email}
+            email={assessment.agent?.model_name}
             size="sm"
           />
           <Text variant="xs" tone="muted">
@@ -38,11 +58,18 @@ export default function AssessmentCard({ assessment }) {
             <StatusBadge variant="info">
               {typeLabel}
             </StatusBadge>
-            <StatusBadge variant="muted">
-              {t(`tradeActionTaken.${assessment.trade_action_taken}`)}
+            <StatusBadge variant={getTradeActionVariant(assessment.trade_action_taken)}>
+              {formatTradeActionLabel(assessment.trade_action_taken)}
             </StatusBadge>
           </View>
         )}
+
+        {extractedAction && (
+          <View sx={{ marginVertical: 3 }}>
+            <TradeActionDisplay actionData={extractedAction} />
+          </View>
+        )}
+
         <View
           sx={{
             borderRadius: 'lg',
@@ -53,7 +80,7 @@ export default function AssessmentCard({ assessment }) {
           {!expanded ? (
             <>
               <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
-                {assessment.llm_response_text.split("\n")[0].slice(0, 800) || 'No analysis available'}
+                {cleanedResponseText.split("\n")[0].slice(0, 800) || 'No analysis available'}
               </Text>
 
               <Text variant="xs" tone="muted">
@@ -63,7 +90,7 @@ export default function AssessmentCard({ assessment }) {
           ) : (
             <>
             <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
-              {assessment.llm_response_text || 'No analysis available'}
+              {cleanedResponseText || 'No analysis available'}
             </Text>
             <TouchableOpacity
               onPress={() => setExpanded(!expanded)}

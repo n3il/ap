@@ -17,6 +17,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useColors } from '@/theme';
+import { Pressable } from 'react-native';
 
 const SPARKLINE_WIDTH = 88;
 const SPARKLINE_HEIGHT = 32;
@@ -247,7 +248,7 @@ export default function MarketPricesWidget({
   };
 
   return (
-    <View sx={customSx}>
+    <Pressable onPress={handleMore} sx={customSx}>
       <View
         sx={{
           flexDirection: 'row',
@@ -256,8 +257,6 @@ export default function MarketPricesWidget({
           marginBottom: compact ? 1 : 2,
         }}
       >
-
-
         {compact ? (
           <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
             {isLoading ? (
@@ -363,6 +362,6 @@ export default function MarketPricesWidget({
           </View>
         )}
       </View>
-    </View>
+    </Pressable>
   );
 }

@@ -263,6 +263,9 @@ const AgentReadScreen = () => {
     setPage(index);
   };
 
+  // poke
+  // chat
+
   return (
     <ContainerView style={{ flex: 1, paddingTop: 60 }}>
       <ScrollView style={{ flex: 1, paddingTop: 24 }}>
@@ -284,7 +287,7 @@ const AgentReadScreen = () => {
               alignItems: 'flex-start',
             }}
           >
-            <GlassContainer style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+            <GlassContainer style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingTop: 12 }}>
               {TABS.map(({ title, icon }, index) => (
                 <GlassView
                   key={title}

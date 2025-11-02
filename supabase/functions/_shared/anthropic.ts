@@ -1,7 +1,7 @@
 import type { GeminiPrompt, LLMResponse } from './gemini.ts'
 import { parseActionFromText } from './gemini.ts'
 
-const DEFAULT_MODEL = 'claude-3-haiku'
+const DEFAULT_MODEL = 'claude-3-5-haiku-20241022'
 const API_URL = 'https://api.anthropic.com/v1/messages'
 const API_VERSION = '2023-06-01'
 

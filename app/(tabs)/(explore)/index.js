@@ -34,7 +34,7 @@ export default function ExploreScreen() {
       </View>
       <ScrollView
         sx={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 100 }}
+        contentContainerStyle={{ paddingBottom: 100, flex: 1 }}
         refreshControl={
           <RefreshControl
             refreshing={isFetching}

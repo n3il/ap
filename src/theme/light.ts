@@ -6,7 +6,7 @@ const lightTheme = {
   isDark: false,
   colors: {
     ...base.colors,
-    background: '#ffffff',
+    background: '#d9d9d9ff',
     backgroundSecondary: '#f8fafc',
     surface: '#ffffff',
     foreground: '#0f172a',

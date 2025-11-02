@@ -12,7 +12,7 @@ type ContainerViewProps = ViewProps & {
 
 export default function ContainerView({ children, style, noSafeArea, ...props }: ContainerViewProps) {
   const { background } = useColors();
-  const { isDark } = useTheme()
+  const { isDark, theme: { colors } } = useTheme()
 
   return (
     <View
@@ -23,7 +23,7 @@ export default function ContainerView({ children, style, noSafeArea, ...props }:
       <LinearGradient
         colors={isDark ?
           ['#090e1eff', '#0e1729ff', '#090e1eff']
-          : ['#fff', '#fff', '#fff']}
+          : [colors.background, colors.backgroundSecondary, colors.background]}
         locations={[0, 0.5, 1]}
         style={{ flex: 1 }}
       >
