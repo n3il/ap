@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { ScrollView, ActivityIndicator, StyleSheet } from 'react-native';
 import { View, Text, Stack } from '@/components/ui';
 import { supabase } from '@/config/supabase';
@@ -20,6 +20,25 @@ export default function TradeHistoryTable({ userId, agentId }) {
   const { theme } = useTheme();
   const scrollViewRef = useRef(null);
   const headerScrollRef = useRef(null);
+  const styles = useMemo(() => StyleSheet.create({
+    headerRow: {
+      flexDirection: 'row',
+      paddingVertical: 12,
+      alignItems: 'center',
+    },
+    dataRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+    },
+    stickyColumn: {
+      paddingHorizontal: 12,
+      borderRightWidth: 1,
+      borderRightColor: theme.colors.border ?? theme.colors.muted?.DEFAULT ?? theme.colors.surface,
+    },
+    scrollableHeader: {
+      flex: 1,
+    },
+  }), [theme.colors]);
 
   useEffect(() => {
     fetchTrades();
@@ -264,23 +283,3 @@ export default function TradeHistoryTable({ userId, agentId }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  headerRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    alignItems: 'center',
-  },
-  dataRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stickyColumn: {
-    paddingHorizontal: 12,
-    borderRightWidth: 1,
-    borderRightColor: 'rgba(255, 255, 255, 0.05)',
-  },
-  scrollableHeader: {
-    flex: 1,
-  },
-});

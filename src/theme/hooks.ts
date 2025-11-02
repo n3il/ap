@@ -2,12 +2,14 @@ import { useDripsyTheme } from 'dripsy';
 import { useMemo } from 'react';
 import { hexToRgba, withOpacity, blendColors } from './utils';
 import type { AppTheme } from './dripsy';
+import darkTheme from './base';
 
 /**
  * Hook to access color utilities with theme colors
  */
 export const useColors = () => {
   const { theme } = useDripsyTheme<AppTheme>();
+  const fallbackColors = darkTheme.colors;
 
   return useMemo(() => ({
     colors: theme.colors,
@@ -15,19 +17,19 @@ export const useColors = () => {
     hexToRgba: (hex: string, alpha?: number) => hexToRgba(hex, alpha),
     blendColors: (base: string, overlay: string, alpha?: number) => blendColors(base, overlay, alpha),
     // Quick access to common colors
-    primary: theme.colors?.primary ?? '#1565ff',
-    secondary: theme.colors?.secondary ?? '#6b7280',
-    accent: theme.colors?.accent ?? '#7CFFAA',
-    success: theme.colors?.success ?? '#22c55e',
-    error: theme.colors?.error ?? '#ef4444',
-    warning: theme.colors?.warning ?? '#f59e0b',
-    info: theme.colors?.info ?? '#3b82f6',
-    background: theme.colors?.background ?? '#0f172a',
-    surface: theme.colors?.surface ?? '#0f172a',
-    border: theme.colors?.border ?? '#334155',
-    textPrimary: theme.colors?.textPrimary ?? '#f8fafc',
-    textSecondary: theme.colors?.textSecondary ?? '#cbd5f5',
-    textTertiary: theme.colors?.textTertiary ?? '#94a3b8',
+    primary: theme.colors?.primary ?? fallbackColors.primary?.DEFAULT ?? fallbackColors.primary,
+    secondary: theme.colors?.secondary ?? fallbackColors.secondary?.DEFAULT ?? fallbackColors.secondary,
+    accent: theme.colors?.accent ?? fallbackColors.accent ?? fallbackColors.accentPalette?.DEFAULT,
+    success: theme.colors?.success ?? fallbackColors.success?.DEFAULT ?? fallbackColors.long?.DEFAULT,
+    error: theme.colors?.error ?? fallbackColors.error?.DEFAULT ?? fallbackColors.short?.DEFAULT,
+    warning: theme.colors?.warning ?? fallbackColors.warning?.DEFAULT,
+    info: theme.colors?.info ?? fallbackColors.info?.DEFAULT ?? fallbackColors.brand?.DEFAULT,
+    background: theme.colors?.background ?? fallbackColors.background,
+    surface: theme.colors?.surface ?? fallbackColors.surface,
+    border: theme.colors?.border ?? fallbackColors.border,
+    textPrimary: theme.colors?.textPrimary ?? fallbackColors.text.primary,
+    textSecondary: theme.colors?.textSecondary ?? fallbackColors.text.secondary,
+    textTertiary: theme.colors?.textTertiary ?? fallbackColors.text.tertiary,
   }), [theme.colors]);
 };
 
@@ -72,7 +74,7 @@ export const useGlassEffect = () => {
     // For now, return sensible defaults that match our theme
     return {
       intensity: 20,
-      tintColor: 'rgba(0, 0, 0, 0.9)',
+      tintColor: theme.glass?.tintColor ?? darkTheme.glass.tintColor,
       effectStyle: 'clear' as const,
       borderRadius: theme.radii?.xl ?? 16,
     };

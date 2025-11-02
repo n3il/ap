@@ -1,5 +1,5 @@
 import React from 'react';
-import { withOpacity } from '@/theme';
+import { withOpacity, useColors } from '@/theme';
 import Image from './Image';
 import View from './View';
 import Text from './Text';
@@ -28,7 +28,7 @@ const AVATAR_SIZES = {
  *
  * @example
  * <Avatar name="John Doe" email="john@example.com" size="sm" />
- * <Avatar imgSrc="https://..." backgroundColor="#34d399" size="lg" />
+ * <Avatar imgSrc="https://..." backgroundColor="success" size="lg" />
  * <Avatar name="Jane" size="xs" showDetails={false} />
  */
 export default function Avatar({
@@ -42,6 +42,9 @@ export default function Avatar({
   // Get size configuration
   const sizeConfig = AVATAR_SIZES[size] || AVATAR_SIZES.lg;
   const { size: avatarSize, fontSize, lineHeight, nameSize, emailSize } = sizeConfig;
+  const { colors: palette } = useColors();
+  const fallbackColor = palette.brand500 ?? palette.primary ?? palette.accent ?? palette.surfaceSecondary;
+  const resolvedBackground = backgroundColor ?? fallbackColor;
 
   const getInitials = (name, email) => {
     if (name) {
@@ -66,9 +69,9 @@ export default function Avatar({
           borderRadius: 'full',
           alignItems: 'center',
           justifyContent: 'center',
-          backgroundColor: withOpacity(backgroundColor, 0.7) || 'rgba(99, 102, 241, 0.2)',
+          backgroundColor: withOpacity(resolvedBackground, 0.7),
           borderWidth: 0,
-          borderColor: backgroundColor || 'rgba(99, 102, 241, 0.5)',
+          borderColor: resolvedBackground,
         }}
       >
         {imgSrc ? (
@@ -78,7 +81,7 @@ export default function Avatar({
           />
         ) : (
           (name || email) ? (
-            <Text sx={{ fontSize, fontWeight: '700', color: '#fff', lineHeight }}>
+            <Text sx={{ fontSize, fontWeight: '700', color: 'foreground', lineHeight }}>
               {getInitials(name, email)}
             </Text>
           ) : null

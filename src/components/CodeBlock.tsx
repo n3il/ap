@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 
 import { View, Text } from '@/components/ui';
+import { useColors } from '@/theme';
 
 type TokenType =
   | 'comment'
@@ -84,17 +85,6 @@ const tokenize = (code: string): Token[] => {
   return tokens;
 };
 
-const tokenStyles: Record<TokenType, { color?: string; fontWeight?: 'bold'; fontStyle?: 'italic' }> = {
-  comment: { color: '#6a737d', fontStyle: 'italic' },
-  string: { color: '#032f62' },
-  keyword: { color: '#d73a49', fontWeight: 'bold' },
-  number: { color: '#005cc5' },
-  operator: { color: '#d73a49' },
-  function: { color: '#6f42c1' },
-  punctuation: { color: '#24292e' },
-  plain: { color: '#24292e' },
-};
-
 interface CodeBlockProps {
   code: string;
   language?: string;
@@ -102,6 +92,26 @@ interface CodeBlockProps {
 
 export default function CodeBlock({ code, language }: CodeBlockProps) {
   const tokens = tokenize(code ?? '');
+  const {
+    colors: palette,
+    primary,
+    secondary,
+    error,
+    info,
+  } = useColors();
+  const tokenStyles = useMemo<Record<TokenType, { color?: string; fontWeight?: 'bold'; fontStyle?: 'italic' }>>(
+    () => ({
+      comment: { color: palette.mutedForeground ?? secondary, fontStyle: 'italic' },
+      string: { color: palette.primary800 ?? primary },
+      keyword: { color: error, fontWeight: 'bold' },
+      number: { color: info },
+      operator: { color: error },
+      function: { color: palette.brand500 ?? primary },
+      punctuation: { color: palette.secondary800 ?? palette.textSecondary ?? secondary },
+      plain: { color: palette.secondary800 ?? palette.textSecondary ?? secondary },
+    }),
+    [error, info, palette, primary, secondary],
+  );
 
   return (
     <View

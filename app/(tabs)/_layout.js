@@ -4,6 +4,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { useAuth } from '@/contexts/AuthContext';
 import { View, ActivityIndicator } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useColors } from '@/theme';
 import useRouteAuth from '@/hooks/useRouteAuth';
 import { ROUTES } from '@/config/routes';
 
@@ -11,11 +12,12 @@ export default function TabsLayout() {
   const { loading } = useAuth();
   const { theme, isDark } = useTheme();
   const { canAccessRoute } = useRouteAuth();
+  const colors = useColors();
 
   if (loading) {
     return (
       <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'background' }}>
-        <ActivityIndicator size="large" color="#2da44e" />
+        <ActivityIndicator size="large" color={colors.success} />
       </View>
     );
   }

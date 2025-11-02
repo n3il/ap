@@ -202,7 +202,7 @@ const createStyles = (theme) => {
     },
     modalOverlay: {
       flex: 1,
-      backgroundColor: 'rgba(0, 0, 0, 0.85)',
+      backgroundColor: withOpacity(colors.background, 0.85),
       justifyContent: 'flex-end',
     },
     modalContent: {

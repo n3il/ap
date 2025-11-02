@@ -27,6 +27,8 @@ const FALLBACK_PROMPTS: Record<PromptType, PromptRecord> = {
       `ACTION_JSON: {"action": "OPEN_LONG_BTC" or "OPEN_SHORT_ETH" or "NO_ACTION", "asset": "BTC-PERP", "size": 0.1, "reasoning": "brief reason"}\n\n` +
       `If no trade is warranted, use: ACTION_JSON: {"action": "NO_ACTION"}`,
     user_template:
+      `Account Value: {{ACCOUNT_VALUE}}\n` +
+      `Available Cash: {{REMAINING_CASH}}\n\n` +
       `Current Market State: {{MARKET_PRICES}}.\n\n` +
       `Open Positions: {{OPEN_POSITIONS}}.\n\n` +
       `Based on this data and the most relevant news/macro trends from your web search, perform a comprehensive market assessment. ` +
@@ -42,6 +44,8 @@ const FALLBACK_PROMPTS: Record<PromptType, PromptRecord> = {
       `ACTION_JSON: {"action": "CLOSE_BTC" or "HOLD" or "NO_ACTION", "asset": "BTC-PERP", "reasoning": "brief reason"}\n\n` +
       `If no change is needed, use: ACTION_JSON: {"action": "NO_ACTION"}`,
     user_template:
+      `Account Value: {{ACCOUNT_VALUE}}\n` +
+      `Available Cash: {{REMAINING_CASH}}\n\n` +
       `Current Market State: {{MARKET_PRICES}}.\n\n` +
       `Open Positions: {{OPEN_POSITIONS}}.\n\n` +
       `Provide a position management assessment for each open trade. Use ACTION_JSON to communicate your decision, or default to NO_ACTION when holding is preferred.`,
@@ -125,5 +129,7 @@ export function listPromptPlaceholders(): Record<string, string> {
     OPEN_POSITIONS_JSON: 'JSON payload of current open positions',
     PROMPT_TYPE: 'The prompt type being executed (MARKET_SCAN or POSITION_REVIEW)',
     TIMESTAMP: 'ISO timestamp when the prompt was generated',
+    ACCOUNT_VALUE: 'Total account value (initial capital + realized PnL + unrealized PnL)',
+    REMAINING_CASH: 'Available cash for trading (account value - margin used)',
   }
 }

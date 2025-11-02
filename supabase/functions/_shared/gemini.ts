@@ -14,6 +14,8 @@ interface BuildPromptContext {
   promptType: 'MARKET_SCAN' | 'POSITION_REVIEW'
   marketData: any[]
   openPositions: any[]
+  accountValue?: number
+  remainingCash?: number
 }
 
 export interface GeminiResponse {
@@ -155,6 +157,12 @@ export function buildPrompt(
     OPEN_POSITIONS_JSON: openPositionsJson,
     PROMPT_TYPE: promptType,
     TIMESTAMP: new Date().toISOString(),
+    ACCOUNT_VALUE: context.accountValue !== undefined
+      ? `$${context.accountValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : 'N/A',
+    REMAINING_CASH: context.remainingCash !== undefined
+      ? `$${context.remainingCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : 'N/A',
   }
 
   let userQuery = template.user_template ?? ''

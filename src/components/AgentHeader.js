@@ -4,9 +4,11 @@ import { BlurView } from 'expo-blur';
 import { useRouter } from 'expo-router';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StyleSheet, Platform } from 'react-native';
+import { useColors } from '@/theme';
 
 const AgentHeader = ({ isOwnAgent = false, onManagePress }) => {
   const router = useRouter();
+  const { colors: palette } = useColors();
 
   return (
     <BlurView
@@ -19,7 +21,7 @@ const AgentHeader = ({ isOwnAgent = false, onManagePress }) => {
           onPress={() => router.back()}
           style={styles.backButton}
         >
-          <MaterialCommunityIcons name="chevron-left" size={28} color="#fff" />
+          <MaterialCommunityIcons name="chevron-left" size={28} color={palette.foreground} />
         </TouchableOpacity>
 
         <View style={styles.spacer} />
@@ -29,7 +31,7 @@ const AgentHeader = ({ isOwnAgent = false, onManagePress }) => {
             onPress={onManagePress}
             style={styles.manageButton}
           >
-            <MaterialCommunityIcons name="dots-horizontal" size={22} color="#d8b4fe" />
+            <MaterialCommunityIcons name="dots-horizontal" size={22} color={palette.brand300 ?? palette.brand400 ?? palette.primary} />
           </TouchableOpacity>
         )}
       </View>

@@ -3,6 +3,7 @@ import { View, Animated, StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Image } from 'dripsy';
 import theme from '@/theme/base';
+import { withOpacity } from '@/theme/utils';
 
 export default function SplashScreen() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
@@ -44,7 +45,11 @@ export default function SplashScreen() {
 
   return (
     <LinearGradient
-      colors={['#000000', '#000000', '#0a0a0a']}
+      colors={[
+        theme.colors.background,
+        theme.colors.background,
+        theme.colors.backgroundSecondary ?? theme.colors.surface,
+      ]}
       locations={[0, 0.9, 1]}
       style={styles.container}
       start={{ x: 0, y: 0 }}
@@ -103,7 +108,7 @@ const styles = StyleSheet.create({
     width: 200,
     height: 200,
     borderRadius: 100,
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+    backgroundColor: withOpacity(theme.colors.background, 0.3),
     shadowColor: theme.colors.accent,
     shadowOffset: { width: 0, height: 0 },
     shadowOpacity: 0.6,
@@ -121,9 +126,9 @@ const styles = StyleSheet.create({
     width: 100,
     height: 100,
     borderRadius: parseInt(theme.borderRadius['2xl']),
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    backgroundColor: withOpacity(theme.colors.background, 0.4),
     borderWidth: 1,
-    borderColor: `${theme.colors.accent}26`,
+    borderColor: withOpacity(theme.colors.accent, 0.15),
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: theme.colors.accent,

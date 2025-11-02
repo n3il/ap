@@ -106,11 +106,44 @@ Deno.serve(async (req) => {
       open_positions: openPositions || [],
     };
 
+    // --- CALCULATE ACCOUNT VALUE AND REMAINING CASH ---
+    const { data: closedTrades } = await serviceClient
+      .from('trades')
+      .select('realized_pnl')
+      .eq('agent_id', agent_id)
+      .eq('status', 'CLOSED');
+
+    const realizedPnl = (closedTrades || []).reduce((sum, t) => sum + (parseFloat(t.realized_pnl) || 0), 0);
+    const priceMap = new Map(marketData.map((a) => [a.symbol, a.price]));
+
+    const unrealizedPnl = (openPositions || []).reduce((sum, p) => {
+      const price = priceMap.get(p.asset);
+      if (!price || !p.entry_price || !p.size) return sum;
+      const entryValue = parseFloat(p.entry_price) * parseFloat(p.size);
+      const currentValue = price * parseFloat(p.size);
+      const pnl = p.side === 'LONG' ? currentValue - entryValue : entryValue - currentValue;
+      return sum + pnl;
+    }, 0);
+
+    const initialCapital = parseFloat(agent.initial_capital) || 0;
+    const accountValue = initialCapital + realizedPnl + unrealizedPnl;
+
+    // Calculate margin used (assuming positions use full value as margin)
+    const marginUsed = (openPositions || []).reduce((sum, p) => {
+      const price = priceMap.get(p.asset);
+      if (!price || !p.size) return sum;
+      return sum + (price * parseFloat(p.size));
+    }, 0);
+
+    const remainingCash = accountValue - marginUsed;
+
     const { template: promptTemplate } = await resolvePromptTemplate(serviceClient, agent, promptType);
     const prompt = buildPrompt(promptTemplate, {
       promptType,
       marketData,
       openPositions: openPositions || [],
+      accountValue,
+      remainingCash,
     });
 
     // --- CALL LLM PROVIDER ---
@@ -146,42 +179,21 @@ Deno.serve(async (req) => {
 
     // --- PNL SNAPSHOT ---
     try {
-      const { data: closedTrades } = await serviceClient
-        .from('trades')
-        .select('realized_pnl')
-        .eq('agent_id', agent_id)
-        .eq('status', 'CLOSED');
-
-      const realizedPnl = (closedTrades || []).reduce((sum, t) => sum + (parseFloat(t.realized_pnl) || 0), 0);
-      const priceMap = new Map(marketData.map((a) => [a.symbol, a.price]));
-
-      const unrealizedPnl = (openPositions || []).reduce((sum, p) => {
-        const price = priceMap.get(p.asset);
-        if (!price || !p.entry_price || !p.size) return sum;
-        const entryValue = parseFloat(p.entry_price) * parseFloat(p.size);
-        const currentValue = price * parseFloat(p.size);
-        const pnl = p.side === 'LONG' ? currentValue - entryValue : entryValue - currentValue;
-        return sum + pnl;
-      }, 0);
-
-      const initialCapital = parseFloat(agent.initial_capital) || 0;
-      const equity = initialCapital + realizedPnl + unrealizedPnl;
-
       const { error: snapshotError } = await serviceClient
         .from('agent_pnl_snapshots')
         .insert([{
           agent_id,
           timestamp: new Date().toISOString(),
-          equity,
+          equity: accountValue,
           realized_pnl: realizedPnl,
           unrealized_pnl: unrealizedPnl,
           open_positions_count: openPositions?.length || 0,
-          margin_used: 0,
+          margin_used: marginUsed,
           assessment_id: assessment.id,
         }]);
 
       if (snapshotError) console.error('PnL snapshot save error:', snapshotError);
-      else console.log('PnL snapshot saved:', { equity, realizedPnl, unrealizedPnl });
+      else console.log('PnL snapshot saved:', { equity: accountValue, realizedPnl, unrealizedPnl, marginUsed });
     } catch (err) {
       console.error('PnL snapshot error:', err);
     }

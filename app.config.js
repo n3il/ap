@@ -20,22 +20,7 @@ export default {
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSAppTransportSecurity: {
-          NSAllowsArbitraryLoads: false,
-          NSExceptionDomains: {
-            "pexels.com": {
-              NSExceptionAllowsInsecureHTTPLoads: true,
-              NSIncludesSubdomains: true
-            },
-            "videos.pexels.com": {
-              NSExceptionAllowsInsecureHTTPLoads: true,
-              NSIncludesSubdomains: true
-            },
-            "api.hyperliquid.xyz": {
-              NSExceptionAllowsInsecureHTTPLoads: true,
-              NSExceptionRequiresForwardSecrecy: false,
-              NSIncludesSubdomains: true
-            }
-          }
+          NSAllowsArbitraryLoads: true
         }
       }
     },

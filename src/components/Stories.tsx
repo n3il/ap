@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { View, TouchableOpacity, Image, Text } from '@/components/ui';
 import { AnimatedBox } from '@/components/ui/animated';
+import { useColors } from '@/theme';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -146,7 +147,7 @@ export default function Stories({
   };
 
   return (
-    <View sx={{ flex: 1, backgroundColor: '#000000', width: '100%', height: '100%' }}>
+    <View sx={{ flex: 1, backgroundColor: 'background', width: '100%', height: '100%' }}>
       {/* Progress Bars */}
       <View sx={{ position: 'absolute', top: 48, left: 0, right: 0, zIndex: 10, flexDirection: 'row', gap: 1, paddingHorizontal: 2 }}>
         {stories.map((story, index) => (
@@ -203,6 +204,7 @@ interface ProgressBarProps {
 }
 
 function ProgressBar({ progress, isActive, isCompleted }: ProgressBarProps) {
+  const { colors: palette, withOpacity } = useColors();
   const animatedStyle = useAnimatedStyle(() => {
     if (isCompleted) {
       return { width: '100%' };
@@ -214,10 +216,18 @@ function ProgressBar({ progress, isActive, isCompleted }: ProgressBarProps) {
   });
 
   return (
-    <View sx={{ flex: 1, height: 2, backgroundColor: 'rgba(255, 255, 255, 0.3)', borderRadius: 'full', overflow: 'hidden' }}>
+    <View
+      sx={{
+        flex: 1,
+        height: 2,
+        backgroundColor: withOpacity(palette.foreground, 0.3),
+        borderRadius: 'full',
+        overflow: 'hidden',
+      }}
+    >
       <AnimatedBox
         style={animatedStyle}
-        sx={{ height: '100%', backgroundColor: '#ffffff', borderRadius: 'full' }}
+        sx={{ height: '100%', backgroundColor: 'foreground', borderRadius: 'full' }}
       />
     </View>
   );

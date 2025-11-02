@@ -7,12 +7,15 @@ import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { FadeInDown } from 'react-native-reanimated';
 import SectionTitle from '@/components/SectionTitle';
+import { useColors } from '@/theme';
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
+  const colors = useColors();
+  const palette = colors.colors;
 
   const handleLogout = async () => {
     Alert.alert(
@@ -70,7 +73,7 @@ export default function ProfileScreen() {
       <ScrollView
         sx={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 1, paddingTop: 6 }}
+        contentContainerStyle={{ paddingHorizontal: 1, paddingTop: 6, paddingBottom: 150 }}
       >
         {/* Header */}
         <SectionTitle title="Profile" sx={{ fontSize: 16, padding: 6 }} />
@@ -124,10 +127,10 @@ export default function ProfileScreen() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginRight: 4,
-                        backgroundColor: 'rgba(99, 102, 241, 0.15)'
+                        backgroundColor: colors.withOpacity(palette.brand500 ?? palette.info, 0.15)
                       }}
                     >
-                      <Ionicons name={item.icon} size={24} color="rgb(129, 140, 248)" />
+                      <Ionicons name={item.icon} size={24} color={palette.brand500 ?? colors.info} />
                     </View>
                     <View sx={{ flex: 1 }}>
                       <Text sx={{ fontSize: 16, fontWeight: '600', color: 'textPrimary', marginBottom: 1 }}>
@@ -137,7 +140,7 @@ export default function ProfileScreen() {
                         {item.subtitle}
                       </Text>
                     </View>
-                    <Feather name="chevron-right" size={20} color="rgb(156, 163, 175)" />
+                    <Feather name="chevron-right" size={20} color={palette.mutedForeground} />
                   </View>
                 </View>
               </TouchableOpacity>
@@ -180,14 +183,14 @@ export default function ProfileScreen() {
               borderRadius: 'xl',
               overflow: 'hidden',
               marginBottom: 24,
-              backgroundColor: 'rgba(239, 68, 68, 0.15)',
+              backgroundColor: colors.withOpacity(colors.error, 0.15),
               borderWidth: 1,
-              borderColor: 'rgba(239, 68, 68, 0.3)'
+              borderColor: colors.withOpacity(colors.error, 0.3)
             }}
           >
             <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 4, paddingHorizontal: 6 }}>
-              <MaterialIcons name="logout" size={22} color="rgb(248, 113, 113)" />
-              <Text sx={{ fontSize: 16, fontWeight: '600', color: '#f87171', marginLeft: 2 }}>
+              <MaterialIcons name="logout" size={22} color={colors.errorLight} />
+              <Text sx={{ fontSize: 16, fontWeight: '600', color: 'errorLight', marginLeft: 2 }}>
                 Sign Out
               </Text>
             </View>

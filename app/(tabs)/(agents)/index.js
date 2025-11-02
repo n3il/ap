@@ -9,12 +9,15 @@ import { agentService, promptService } from '@/services';
 import CreateAgentModal from '@/components/CreateAgentModal';
 import { router } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useColors } from '@/theme';
 
 export default function AgentsScreen() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
   const [modalVisible, setModalVisible] = useState(false);
   const { theme } = useTheme();
+  const colorUtils = useColors();
+  const palette = colorUtils.colors;
 
   // Fetch prompts for the modal
   const { data: prompts = [] } = useQuery({
@@ -63,10 +66,10 @@ export default function AgentsScreen() {
           published={false}
           emptyState={(
             <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-              <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+              <Text sx={{ color: 'textSecondary', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
                 No active agents yet
               </Text>
-              <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+              <Text sx={{ color: 'secondary500', fontSize: 14, textAlign: 'center' }}>
                 Create your first agent to get started.
               </Text>
             </View>
@@ -83,10 +86,10 @@ export default function AgentsScreen() {
           published={true}
           emptyState={(
             <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-              <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+              <Text sx={{ color: 'textSecondary', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
                 No shared agents available
               </Text>
-              <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+              <Text sx={{ color: 'secondary500', fontSize: 14, textAlign: 'center' }}>
                 Check back later for community-shared agents.
               </Text>
             </View>
@@ -103,10 +106,10 @@ export default function AgentsScreen() {
           userId={user?.id}
           emptyState={(
             <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-              <Text sx={{ color: '#cbd5e1', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
+              <Text sx={{ color: 'textSecondary', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
                 No agents found
               </Text>
-              <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+              <Text sx={{ color: 'secondary500', fontSize: 14, textAlign: 'center' }}>
                 Create or explore agents to see them here.
               </Text>
             </View>
@@ -149,7 +152,7 @@ export default function AgentsScreen() {
           }}
           activeOpacity={0.8}
         >
-          <Ionicons name="add" size={20} color="#fff" />
+          <Ionicons name="add" size={20} color={palette.foreground} />
         </TouchableOpacity>
       </View>
 

@@ -16,6 +16,7 @@ import { useMutation } from '@tanstack/react-query';
 import GlassCard from './GlassCard';
 import { promptService, PROMPT_TYPES, PROMPT_PLACEHOLDERS } from '@/services';
 import { supabase } from '@/config/supabase';
+import { useColors } from '@/theme';
 
 const defaultFormState = {
   name: '',
@@ -34,6 +35,11 @@ export default function PromptManagerModal({
   const [form, setForm] = useState(defaultFormState);
   const [testingPromptId, setTestingPromptId] = useState(null);
   const [testResults, setTestResults] = useState({});
+  const {
+    colors: palette,
+    info,
+    withOpacity,
+  } = useColors();
 
   const createPromptMutation = useMutation({
     mutationFn: promptService.createPrompt,
@@ -117,7 +123,14 @@ export default function PromptManagerModal({
         {title}
       </Text>
       {data.length === 0 ? (
-        <GlassCard sx={{ padding: 3, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)', backgroundColor: 'rgba(255, 255, 255, 0.04)' }}>
+        <GlassCard
+          sx={{
+            padding: 3,
+            borderWidth: 1,
+            borderColor: withOpacity(palette.foreground, 0.1),
+            backgroundColor: withOpacity(palette.foreground, 0.04),
+          }}
+        >
           <Text variant="sm" tone="muted">
             No prompts yet. Create one below.
           </Text>
@@ -130,7 +143,13 @@ export default function PromptManagerModal({
           return (
             <GlassCard
               key={prompt.id}
-              sx={{ padding: 3, marginBottom: 3, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)', backgroundColor: 'rgba(255, 255, 255, 0.04)' }}
+              sx={{
+                padding: 3,
+                marginBottom: 3,
+                borderWidth: 1,
+                borderColor: withOpacity(palette.foreground, 0.08),
+                backgroundColor: withOpacity(palette.foreground, 0.04),
+              }}
             >
               <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 2 }}>
                 <View sx={{ flex: 1, paddingRight: 3 }}>
@@ -148,47 +167,55 @@ export default function PromptManagerModal({
                     paddingHorizontal: 3,
                     paddingVertical: 2,
                     borderRadius: 'lg',
-                    backgroundColor: isTesting ? 'rgba(59, 130, 246, 0.4)' : 'rgba(59, 130, 246, 0.2)',
+                    backgroundColor: isTesting ? withOpacity(info, 0.4) : withOpacity(info, 0.2),
                     borderWidth: 1,
-                    borderColor: 'rgba(59, 130, 246, 0.5)',
+                    borderColor: withOpacity(info, 0.5),
                     minWidth: 70,
                     alignItems: 'center',
                   }}
                 >
                   {isTesting ? (
-                    <ActivityIndicator size="small" color="#60a5fa" />
+                    <ActivityIndicator size="small" color={info} />
                   ) : (
-                    <Text variant="xs" sx={{ fontWeight: '600', color: '#60a5fa' }}>
+                    <Text variant="xs" sx={{ fontWeight: '600', color: 'info' }}>
                       Run
                     </Text>
                   )}
                 </TouchableOpacity>
               </View>
 
-              <Text variant="xs" sx={{ color: 'rgba(148, 163, 184, 0.7)', marginTop: 2, fontFamily: 'monospace', lineHeight: 16 }}>
+              <Text
+                variant="xs"
+                sx={{
+                  color: withOpacity(palette.mutedForeground, 0.7),
+                  marginTop: 2,
+                  fontFamily: 'monospace',
+                  lineHeight: 16,
+                }}
+              >
                 {prompt.system_instruction}
               </Text>
 
               {hasResult && (
-                <View sx={{ marginTop: 3, paddingTop: 3, borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.08)' }}>
+                <View sx={{ marginTop: 3, paddingTop: 3, borderTopWidth: 1, borderTopColor: withOpacity(palette.foreground, 0.08) }}>
                   <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                    <Text variant="xs" sx={{ fontWeight: '600', color: '#6ee7b7', textTransform: 'uppercase', letterSpacing: 1 }}>
+                    <Text variant="xs" sx={{ fontWeight: '600', color: 'accent300', textTransform: 'uppercase', letterSpacing: 1 }}>
                       Test Result
                     </Text>
                     <TouchableOpacity onPress={() => toggleTestResult(prompt.id)}>
-                      <Text variant="xs" sx={{ color: '#94a3b8' }}>✕</Text>
+                      <Text variant="xs" sx={{ color: 'mutedForeground' }}>✕</Text>
                     </TouchableOpacity>
                   </View>
                   <ScrollView
                     horizontal
                     sx={{
-                      backgroundColor: 'rgba(0, 0, 0, 0.3)',
+                      backgroundColor: withOpacity(palette.background, 0.3),
                       borderRadius: 'lg',
                       padding: 3,
                       maxHeight: 200,
                     }}
                   >
-                    <Text variant="xs" sx={{ fontFamily: 'monospace', color: '#cbd5e1', lineHeight: 18 }}>
+                    <Text variant="xs" sx={{ fontFamily: 'monospace', color: 'textSecondary', lineHeight: 18 }}>
                       {typeof testResults[prompt.id] === 'string'
                         ? testResults[prompt.id]
                         : JSON.stringify(testResults[prompt.id], null, 2)}
@@ -215,8 +242,16 @@ export default function PromptManagerModal({
           behavior={Platform.OS === 'ios' ? 'padding' : undefined}
           style={{ flex: 1 }}
         >
-          <View sx={{ flex: 1, backgroundColor: 'rgba(15, 23, 42, 0.95)' }}>
-            <View sx={{ paddingHorizontal: 6, paddingTop: 14, paddingBottom: 4, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.08)' }}>
+          <View sx={{ flex: 1, backgroundColor: withOpacity(palette.surface ?? palette.background, 0.95) }}>
+            <View
+              sx={{
+                paddingHorizontal: 6,
+                paddingTop: 14,
+                paddingBottom: 4,
+                borderBottomWidth: 1,
+                borderBottomColor: withOpacity(palette.foreground, 0.08),
+              }}
+            >
               <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text variant="xl" sx={{ fontWeight: 'bold' }}>Prompt Library</Text>
                 <TouchableOpacity onPress={onClose}>
@@ -235,7 +270,13 @@ export default function PromptManagerModal({
               {renderPromptList('Market Scan Prompts', marketScanPrompts)}
               {renderPromptList('Position Review Prompts', positionPrompts)}
 
-              <GlassCard sx={{ padding: 4, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)' }}>
+              <GlassCard
+                sx={{
+                  padding: 4,
+                  borderWidth: 1,
+                  borderColor: withOpacity(palette.foreground, 0.08),
+                }}
+              >
                 <Text variant="lg" sx={{ fontWeight: '600', marginBottom: 3 }}>
                   Create New Prompt
                 </Text>
@@ -248,11 +289,11 @@ export default function PromptManagerModal({
                     value={form.name}
                     onChangeText={(text) => setForm((prev) => ({ ...prev, name: text }))}
                     placeholder="Morning Market Sweep"
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
                     sx={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      backgroundColor: withOpacity(palette.foreground, 0.04),
                       borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.08)',
+                      borderColor: withOpacity(palette.foreground, 0.08),
                       borderRadius: 'xl',
                       paddingHorizontal: 3,
                       paddingVertical: 2,
@@ -279,8 +320,8 @@ export default function PromptManagerModal({
                             paddingVertical: 2,
                             borderRadius: 'lg',
                             borderWidth: 1,
-                            borderColor: isSelected ? 'accent' : 'rgba(255, 255, 255, 0.08)',
-                            backgroundColor: isSelected ? 'rgba(59, 130, 246, 0.2)' : 'rgba(255, 255, 255, 0.04)'
+                            borderColor: isSelected ? 'accent' : withOpacity(palette.foreground, 0.08),
+                            backgroundColor: isSelected ? withOpacity(info, 0.2) : withOpacity(palette.foreground, 0.04)
                           }}
                         >
                           <Text
@@ -308,11 +349,11 @@ export default function PromptManagerModal({
                       setForm((prev) => ({ ...prev, description: text }))
                     }
                     placeholder="How this prompt guides the model"
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
                     sx={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      backgroundColor: withOpacity(palette.foreground, 0.04),
                       borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.08)',
+                      borderColor: withOpacity(palette.foreground, 0.08),
                       borderRadius: 'xl',
                       paddingHorizontal: 3,
                       paddingVertical: 2,
@@ -331,14 +372,14 @@ export default function PromptManagerModal({
                       setForm((prev) => ({ ...prev, system_instruction: text }))
                     }
                     placeholder="System prompt for the model"
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
                     multiline
                     numberOfLines={6}
                     textAlignVertical="top"
                     sx={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      backgroundColor: withOpacity(palette.foreground, 0.04),
                       borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.08)',
+                      borderColor: withOpacity(palette.foreground, 0.08),
                       borderRadius: 'xl',
                       paddingHorizontal: 3,
                       paddingVertical: 3,
@@ -357,14 +398,14 @@ export default function PromptManagerModal({
                       setForm((prev) => ({ ...prev, user_template: text }))
                     }
                     placeholder="Prompt content with placeholders like {{MARKET_PRICES}}"
-                    placeholderTextColor="#64748b"
+                    placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
                     multiline
                     numberOfLines={8}
                     textAlignVertical="top"
                     sx={{
-                      backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                      backgroundColor: withOpacity(palette.foreground, 0.04),
                       borderWidth: 1,
-                      borderColor: 'rgba(255, 255, 255, 0.08)',
+                      borderColor: withOpacity(palette.foreground, 0.08),
                       borderRadius: 'xl',
                       paddingHorizontal: 3,
                       paddingVertical: 3,
@@ -373,7 +414,16 @@ export default function PromptManagerModal({
                   />
                 </View>
 
-                <View sx={{ marginBottom: 4, padding: 3, borderRadius: 'xl', backgroundColor: 'rgba(255, 255, 255, 0.03)', borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.1)' }}>
+                <View
+                  sx={{
+                    marginBottom: 4,
+                    padding: 3,
+                    borderRadius: 'xl',
+                    backgroundColor: withOpacity(palette.foreground, 0.03),
+                    borderWidth: 1,
+                    borderColor: withOpacity(palette.foreground, 0.1),
+                  }}
+                >
                   <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', marginBottom: 2 }}>
                     Available Placeholders
                   </Text>
@@ -393,7 +443,7 @@ export default function PromptManagerModal({
                   sx={{
                     borderRadius: 'xl',
                     paddingVertical: 4,
-                    backgroundColor: createPromptMutation.isLoading ? 'rgba(59, 130, 246, 0.4)' : 'accent'
+                    backgroundColor: createPromptMutation.isLoading ? withOpacity(info, 0.4) : 'accent'
                   }}
                 >
                   <Text sx={{ color: 'accentForeground', textAlign: 'center', fontWeight: 'bold', fontSize: 16 }}>

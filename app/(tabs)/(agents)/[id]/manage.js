@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert } from '@/components/ui';
+import { View, Text, ScrollView, TouchableOpacity, ActivityIndicator, Alert, StatusBadge } from '@/components/ui';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ContainerView from '@/components/ContainerView';
@@ -8,6 +8,7 @@ import GlassCard from '@/components/GlassCard';
 import { agentService } from '@/services/agentService';
 import { promptService, PROMPT_TYPES } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
+import { useColors } from '@/theme';
 
 const AgentManageScreen = () => {
   const router = useRouter();
@@ -15,6 +16,7 @@ const AgentManageScreen = () => {
   const agentId = Array.isArray(id) ? id[0] : id;
   const queryClient = useQueryClient();
   const { user } = useAuth();
+  const colors = useColors();
 
   const {
     data: agent,
@@ -206,7 +208,7 @@ const AgentManageScreen = () => {
     return (
       <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#fff" />
+          <ActivityIndicator size="large" color={colors.colors.foreground} />
         </View>
       </ContainerView>
     );
@@ -228,7 +230,7 @@ const AgentManageScreen = () => {
               borderRadius: 'xl'
             }}
           >
-            <Text sx={{ color: '#f8fafc', fontWeight: '600' }}>Go Back</Text>
+            <Text sx={{ color: 'textPrimary', fontWeight: '600' }}>Go Back</Text>
           </TouchableOpacity>
         </View>
       </ContainerView>
@@ -251,7 +253,7 @@ const AgentManageScreen = () => {
               borderRadius: 'xl'
             }}
           >
-            <Text sx={{ color: '#f8fafc', fontWeight: '600' }}>Return</Text>
+            <Text sx={{ color: 'textPrimary', fontWeight: '600' }}>Return</Text>
           </TouchableOpacity>
         </View>
       </ContainerView>
@@ -261,74 +263,40 @@ const AgentManageScreen = () => {
   return (
     <ContainerView>
       <ScrollView sx={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
-        <View sx={{ paddingHorizontal: 6, paddingTop: 16, paddingBottom: 6 }}>
-          <TouchableOpacity onPress={handleGoBack} sx={{ marginBottom: 4 }}>
-            <Text variant="lg" sx={{ color: 'purple400' }}>← Back</Text>
-          </TouchableOpacity>
+        <View sx={{  paddingTop: 16, paddingBottom: 6 }}>
+
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
             <View sx={{ flex: 1, paddingRight: 4 }}>
               <Text
                 sx={{
-                  color: '#f8fafc',
+                  color: 'textPrimary',
                   fontSize: 30,
                   fontWeight: '700',
-                  marginBottom: 2
+                  marginBottom: 2,
+                  lineHeight: 36
                 }}
               >
                 {agent.name}
               </Text>
-              <Text variant="lg" sx={{ color: '#94a3b8', marginBottom: 1 }}>
+              <Text variant="lg" sx={{ color: 'mutedForeground', marginBottom: 1 }}>
                 {agent.model_name}
               </Text>
-              <Text variant="sm" sx={{ color: '#64748b' }}>
+              <Text variant="sm" sx={{ color: 'secondary500' }}>
                 {agent.llm_provider}
               </Text>
             </View>
             <View sx={{ alignItems: 'flex-end', gap: 2 }}>
-              <View
-                sx={{
-                  paddingHorizontal: 4,
-                  paddingVertical: 2,
-                  borderRadius: 'full',
-                  backgroundColor: agent.is_active ? 'rgba(34, 197, 94, 0.2)' : 'rgba(100, 116, 139, 0.2)'
-                }}
-              >
-                <Text
-                  sx={{
-                    fontWeight: '600',
-                    color: agent.is_active ? '#4ade80' : '#94a3b8'
-                  }}
-                >
-                  {agent.is_active ? 'ACTIVE' : 'PAUSED'}
-                </Text>
-              </View>
-              <View
-                sx={{
-                  paddingHorizontal: 4,
-                  paddingVertical: 2,
-                  borderRadius: 'full',
-                  backgroundColor: agent.published_at ? 'rgba(16, 185, 129, 0.2)' : 'rgba(100, 116, 139, 0.2)'
-                }}
-              >
-                <Text
-                  sx={{
-                    fontWeight: '600',
-                    color: agent.published_at ? '#34d399' : '#94a3b8'
-                  }}
-                >
-                  {agent.published_at ? 'SHARED' : 'PRIVATE'}
-                </Text>
-              </View>
+              <StatusBadge>
+                {agent.is_active ? 'ACTIVE' : 'PAUSED'}
+              </StatusBadge>
+              <StatusBadge variant="info">
+                {agent.published_at ? 'SHARED' : 'PRIVATE'}
+              </StatusBadge>
             </View>
           </View>
-          <GlassCard sx={{ padding: 4 }}>
-            <Text variant="sm" sx={{ color: '#cbd5e1' }}>
-              These settings control how the agent appears in Explore and which prompts it runs.
-            </Text>
-          </GlassCard>
         </View>
 
-        <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
+        <View sx={{ marginBottom: 6 }}>
           <PromptAssignmentsCard
             selectedMarketPrompt={selectedMarketPrompt}
             selectedPositionPrompt={selectedPositionPrompt}
@@ -347,12 +315,12 @@ const AgentManageScreen = () => {
                 borderRadius: 'xl',
                 paddingVertical: 3,
                 backgroundColor: agent.published_at
-                  ? 'rgba(30, 41, 59, 0.6)'
-                  : 'rgba(16, 185, 129, 0.2)',
+                  ? colors.withOpacity(colors.colors.secondary800 ?? colors.surface, 0.6)
+                  : colors.withOpacity(colors.success, 0.2),
                 borderWidth: 1,
                 borderColor: agent.published_at
-                  ? 'rgba(71, 85, 105, 0.6)'
-                  : 'rgba(16, 185, 129, 0.3)'
+                  ? colors.withOpacity(colors.colors.secondary700 ?? colors.border, 0.6)
+                  : colors.withOpacity(colors.success, 0.3)
               }}
               disabled={publishAgentMutation.isLoading || unpublishAgentMutation.isLoading}
             >
@@ -360,7 +328,7 @@ const AgentManageScreen = () => {
                 sx={{
                   textAlign: 'center',
                   fontWeight: '600',
-                  color: agent.published_at ? '#cbd5e1' : '#6ee7b7'
+                  color: agent.published_at ? 'textSecondary' : 'accent300'
                 }}
               >
                 {agent.published_at ? 'Make Agent Private' : 'Share Agent to Explore'}
@@ -369,9 +337,9 @@ const AgentManageScreen = () => {
             <TouchableOpacity
               onPress={handleDelete}
               sx={{
-                backgroundColor: 'rgba(239, 68, 68, 0.2)',
+                backgroundColor: colors.withOpacity(colors.error, 0.2),
                 borderWidth: 1,
-                borderColor: 'rgba(239, 68, 68, 0.4)',
+                borderColor: colors.withOpacity(colors.error, 0.4),
                 borderRadius: 'xl',
                 paddingVertical: 3
               }}
@@ -379,7 +347,7 @@ const AgentManageScreen = () => {
             >
               <Text
                 sx={{
-                  color: '#fca5a5',
+                  color: 'errorLight',
                   textAlign: 'center',
                   fontWeight: '600'
                 }}

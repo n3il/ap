@@ -17,25 +17,25 @@ export default function PositionsTab({ agent, trades = [], stats, isOwnAgent }) 
                 stats.totalPnL >= 0 ? '+' : ''
               }$${Math.abs(stats.totalPnL).toLocaleString()}`}
               trend={`${stats.totalTrades} trades`}
-              trendColor="text-green-400"
+              trendColor="successLight"
             />
             <StatCard
               label="Win Rate"
               value={`${stats.winRate.toFixed(1)}%`}
               trend={`${stats.closedTrades} closed`}
-              trendColor="text-purple-400"
+              trendColor="brand300"
             />
             <StatCard
               label="Open"
               value={stats.openPositions}
               trend="Positions"
-              trendColor="text-purple-400"
+              trendColor="brand300"
             />
             <StatCard
               label="Capital"
               value={`$${parseFloat(agent.initial_capital).toLocaleString()}`}
               trend="Initial"
-              trendColor="text-slate-400"
+              trendColor="mutedForeground"
             />
           </ScrollView>
         </View>
@@ -46,7 +46,7 @@ export default function PositionsTab({ agent, trades = [], stats, isOwnAgent }) 
           <>
             <Text
               sx={{
-                color: '#f8fafc',
+                color: 'textPrimary',
                 fontSize: 16,
                 fontWeight: '700',
                 marginBottom: 2,
@@ -57,7 +57,7 @@ export default function PositionsTab({ agent, trades = [], stats, isOwnAgent }) 
               Open Positions ({openTrades.length})
             </Text>
             {openTrades.length === 0 ? (
-              <Text sx={{ color: '#94a3b8', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
+              <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
                 No open positions
               </Text>
             ) : (
@@ -65,7 +65,7 @@ export default function PositionsTab({ agent, trades = [], stats, isOwnAgent }) 
             )}
           </>
         ) : (
-          <Text variant="sm" sx={{ color: '#64748b', fontSize: 12, lineHeight: 18 }}>
+          <Text variant="sm" sx={{ color: 'secondary500', fontSize: 12, lineHeight: 18 }}>
             The creator's trading telemetry stays private. Clone this agent to run MARKET_SCAN → POSITION_REVIEW
             loops under your credentials and generate your own stats.
           </Text>

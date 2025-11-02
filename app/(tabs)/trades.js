@@ -5,9 +5,11 @@ import ContainerView from '@/components/ContainerView';
 import TradeCard from '@/components/TradeCard';
 import StatCard from '@/components/StatCard';
 import { tradeService } from '@/services/tradeService';
+import { useColors } from '@/theme';
 
 export default function TradesScreen() {
   const [filter, setFilter] = useState('all'); // 'all', 'open', 'closed'
+  const { colors: palette, success, withOpacity, info } = useColors();
 
   // Fetch all trades
   const { data: allTrades = [], isLoading, error, refetch } = useQuery({
@@ -32,7 +34,7 @@ export default function TradesScreen() {
     return (
       <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#fff" />
+          <ActivityIndicator size="large" color={palette.foreground} />
         </View>
       </ContainerView>
     );
@@ -42,9 +44,12 @@ export default function TradesScreen() {
     return (
       <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
-          <Text sx={{ color: '#f87171', textAlign: 'center', marginBottom: 4 }}>Error loading trades</Text>
-          <TouchableOpacity onPress={refetch} sx={{ backgroundColor: '#a855f7', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 'xl' }}>
-            <Text sx={{ color: '#f1f5f9', fontWeight: '600' }}>Retry</Text>
+          <Text sx={{ color: 'errorLight', textAlign: 'center', marginBottom: 4 }}>Error loading trades</Text>
+          <TouchableOpacity
+            onPress={refetch}
+            sx={{ backgroundColor: 'brand300', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 'xl' }}
+          >
+            <Text sx={{ color: 'textPrimary', fontWeight: '600' }}>Retry</Text>
           </TouchableOpacity>
         </View>
       </ContainerView>
@@ -60,14 +65,14 @@ export default function TradesScreen() {
           <RefreshControl
             refreshing={isLoading}
             onRefresh={refetch}
-            tintColor="#fff"
+            tintColor={palette.foreground}
           />
         }
       >
         {/* Header */}
         <View sx={{ paddingHorizontal: 6, paddingTop: 16, paddingBottom: 6 }}>
-          <Text sx={{ color: '#f1f5f9', fontSize: 36, fontWeight: '700', marginBottom: 2 }}>Trades</Text>
-          <Text sx={{ color: '#94a3b8', fontSize: 18 }}>Trading History</Text>
+          <Text sx={{ color: 'textPrimary', fontSize: 36, fontWeight: '700', marginBottom: 2 }}>Trades</Text>
+          <Text sx={{ color: 'mutedForeground', fontSize: 18 }}>Trading History</Text>
         </View>
 
         {/* Stats Cards */}
@@ -78,19 +83,19 @@ export default function TradesScreen() {
                 label="Total P&L"
                 value={`${stats.totalPnL >= 0 ? '+' : ''}$${Math.abs(stats.totalPnL).toLocaleString()}`}
                 trend={`${stats.totalTrades} trades`}
-                trendColor={stats.totalPnL >= 0 ? '#4ade80' : '#f87171'}
+                trendColor={stats.totalPnL >= 0 ? 'successLight' : 'errorLight'}
               />
               <StatCard
                 label="Win Rate"
                 value={`${stats.winRate.toFixed(1)}%`}
                 trend="Success rate"
-                trendColor="#c084fc"
+                trendColor="brand300"
               />
               <StatCard
                 label="Open"
                 value={stats.openPositions}
                 trend="Positions"
-                trendColor="#c084fc"
+                trendColor="brand300"
               />
             </ScrollView>
           </View>
@@ -107,14 +112,20 @@ export default function TradesScreen() {
                 borderRadius: 'xl',
                 borderWidth: 1,
                 ...(filter === 'all'
-                  ? { backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#c084fc' }
-                  : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+                  ? {
+                      backgroundColor: withOpacity(palette.brand500 ?? info, 0.2),
+                      borderColor: 'brand300',
+                    }
+                  : {
+                      backgroundColor: withOpacity(palette.secondary800 ?? palette.surfaceSecondary, 0.5),
+                      borderColor: withOpacity(palette.secondary700 ?? palette.border, 0.3),
+                    })
               }}
             >
               <Text sx={{
                 textAlign: 'center',
                 fontWeight: '600',
-                color: filter === 'all' ? '#c084fc' : '#94a3b8'
+                color: filter === 'all' ? 'brand300' : 'mutedForeground'
               }}>
                 All ({allTrades.length})
               </Text>
@@ -127,14 +138,20 @@ export default function TradesScreen() {
                 borderRadius: 'xl',
                 borderWidth: 1,
                 ...(filter === 'open'
-                  ? { backgroundColor: 'rgba(34, 197, 94, 0.2)', borderColor: '#4ade80' }
-                  : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+                  ? {
+                      backgroundColor: withOpacity(success, 0.2),
+                      borderColor: 'success',
+                    }
+                  : {
+                      backgroundColor: withOpacity(palette.secondary800 ?? palette.surfaceSecondary, 0.5),
+                      borderColor: withOpacity(palette.secondary700 ?? palette.border, 0.3),
+                    })
               }}
             >
               <Text sx={{
                 textAlign: 'center',
                 fontWeight: '600',
-                color: filter === 'open' ? '#4ade80' : '#94a3b8'
+                color: filter === 'open' ? 'success' : 'mutedForeground'
               }}>
                 Open ({allTrades.filter(t => t.status === 'OPEN').length})
               </Text>
@@ -147,14 +164,20 @@ export default function TradesScreen() {
                 borderRadius: 'xl',
                 borderWidth: 1,
                 ...(filter === 'closed'
-                  ? { backgroundColor: 'rgba(100, 116, 139, 0.2)', borderColor: '#94a3b8' }
-                  : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+                  ? {
+                      backgroundColor: withOpacity(palette.secondary500 ?? palette.muted, 0.2),
+                      borderColor: 'mutedForeground',
+                    }
+                  : {
+                      backgroundColor: withOpacity(palette.secondary800 ?? palette.surfaceSecondary, 0.5),
+                      borderColor: withOpacity(palette.secondary700 ?? palette.border, 0.3),
+                    })
               }}
             >
               <Text sx={{
                 textAlign: 'center',
                 fontWeight: '600',
-                color: filter === 'closed' ? '#cbd5e1' : '#94a3b8'
+                color: filter === 'closed' ? 'textSecondary' : 'mutedForeground'
               }}>
                 Closed ({allTrades.filter(t => t.status === 'CLOSED').length})
               </Text>
@@ -166,10 +189,10 @@ export default function TradesScreen() {
         <View sx={{ paddingHorizontal: 6 }}>
           {filteredTrades.length === 0 ? (
             <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-              <Text sx={{ color: '#94a3b8', fontSize: 18, textAlign: 'center', marginBottom: 2 }}>
+              <Text sx={{ color: 'mutedForeground', fontSize: 18, textAlign: 'center', marginBottom: 2 }}>
                 {filter === 'all' ? 'No trades yet' : `No ${filter} trades`}
               </Text>
-              <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+              <Text sx={{ color: 'secondary500', fontSize: 14, textAlign: 'center' }}>
                 {filter === 'all'
                   ? 'Your agents will execute trades automatically'
                   : `Switch filter to view ${filter === 'open' ? 'closed' : 'open'} trades`}
@@ -177,13 +200,13 @@ export default function TradesScreen() {
             </View>
           ) : (
             <>
-              <Text sx={{ color: '#f1f5f9', fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
+              <Text sx={{ color: 'textPrimary', fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
                 {filter === 'all' ? 'All Trades' : filter === 'open' ? 'Open Positions' : 'Closed Trades'} ({filteredTrades.length})
               </Text>
               {filteredTrades.map((trade) => (
                 <View key={trade.id} sx={{ marginBottom: 2 }}>
                   {trade.agents && (
-                    <Text sx={{ color: '#94a3b8', fontSize: 12, marginBottom: 1, marginLeft: 1 }}>
+                    <Text sx={{ color: 'mutedForeground', fontSize: 12, marginBottom: 1, marginLeft: 1 }}>
                       {trade.agents.name} • {trade.agents.model_name}
                     </Text>
                   )}

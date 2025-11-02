@@ -16,6 +16,7 @@ import { useLocalization } from '@/hooks/useLocalization';
 import { OtpInput } from "react-native-otp-entry";
 import { FadeIn, LinearTransition } from 'react-native-reanimated';
 import { AnimatedBox } from '@/components/ui/animated';
+import { useColors } from '@/theme';
 
 const RESEND_COUNTDOWN = 60; // seconds
 
@@ -28,6 +29,8 @@ export default function VerifyOTPScreen() {
   const params = useLocalSearchParams();
   const { verifyPhoneCode, signInWithPhone, verifyEmailOtp, signInWithEmailOtp } = useAuth();
   const { t } = useLocalization();
+  const colors = useColors();
+  const palette = colors.colors;
 
   const { phoneNumber, email, type } = params;
 
@@ -140,7 +143,7 @@ export default function VerifyOTPScreen() {
               disabled={loading}
               sx={{ width: 60, height: 60, padding: 0 }}
             >
-              <MaterialIcons name="arrow-back" size={30} color="#fff" />
+              <MaterialIcons name="arrow-back" size={30} color={palette.foreground} />
             </Button>
           </View>
 
@@ -160,7 +163,7 @@ export default function VerifyOTPScreen() {
           <View sx={{ marginBottom: 8 }}>
             <OtpInput
               numberOfDigits={6}
-              focusColor="#2da44e"
+              focusColor={colors.success}
               autoFocus={true}
               hideStick={true}
               placeholder=""
@@ -183,21 +186,21 @@ export default function VerifyOTPScreen() {
                 containerStyle: { gap: 8 },
                 pinCodeContainerStyle: {
                   borderWidth: 0,
-                  borderColor: "#666",
+                  borderColor: palette.secondary700 ?? colors.secondary,
                   borderBottomWidth: 1,
                   borderRadius: 0,
                   width: 48,
                   height: 56,
                 },
                 pinCodeTextStyle: {
-                  color: "#fff",
+                  color: palette.foreground,
                   fontSize: 24,
                 },
                 focusStickStyle: {
-                  backgroundColor: "#fff",
+                  backgroundColor: palette.foreground,
                 },
                 focusedPinCodeContainerStyle: {
-                  borderBottomColor: "#fff",
+                  borderBottomColor: palette.foreground,
                   borderBottomWidth: 2,
                 },
               }}
@@ -213,7 +216,7 @@ export default function VerifyOTPScreen() {
             disabled={loading || verificationCode.length !== 6}
           >
             {loading ? (
-              <ActivityIndicator color="white" />
+              <ActivityIndicator color={palette.foreground} />
             ) : (
               t('login.verify')
             )}

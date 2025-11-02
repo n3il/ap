@@ -3,6 +3,7 @@ import { View, Text, ActivityIndicator } from '@/components/ui';
 import type { ViewStyle } from 'react-native';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import Stories, { Story } from './Stories';
+import { useColors } from '@/theme';
 
 const PEXELS_API_KEY = 'u03eDyG6T1Lj7b5POx7yRurFAhmL0A2Vkvqp0BIAr3phL9if54SXweIg';
 const SEARCH_TERM = 'aerial view travel destinations';
@@ -43,6 +44,7 @@ function VideoStory({ videoUrl }: { videoUrl: string }) {
     player.muted = true;
     player.play();
   });
+  const { colors: palette, withOpacity } = useColors();
 
   return (
     <View style={absoluteFill}>
@@ -54,7 +56,7 @@ function VideoStory({ videoUrl }: { videoUrl: string }) {
       />
       <View
         style={absoluteFill}
-        sx={{ backgroundColor: 'rgba(0, 0, 0, 0.2)' }}
+        sx={{ backgroundColor: withOpacity(palette.background ?? palette.surface, 0.2) }}
       />
     </View>
   );
@@ -67,6 +69,7 @@ export default function StoriesExample() {
   const [stories, setStories] = useState<Story[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { colors: palette } = useColors();
 
   useEffect(() => {
     fetchPexelsVideos();
@@ -147,17 +150,17 @@ export default function StoriesExample() {
 
   if (loading) {
     return (
-      <View sx={{ flex: 1, backgroundColor: '#0f172a', justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#ffffff" />
-        <Text sx={{ color: '#ffffff', marginTop: 4, opacity: 0.7 }}>Loading...</Text>
+      <View sx={{ flex: 1, backgroundColor: 'surface', justifyContent: 'center', alignItems: 'center' }}>
+        <ActivityIndicator size="large" color={palette.foreground} />
+        <Text sx={{ color: 'foreground', marginTop: 4, opacity: 0.7 }}>Loading...</Text>
       </View>
     );
   }
 
   if (error || stories.length === 0) {
     return (
-      <View sx={{ flex: 1, backgroundColor: '#0f172a', justifyContent: 'center', alignItems: 'center', padding: 8 }}>
-        <Text sx={{ color: '#ffffff', fontSize: 18, textAlign: 'center', opacity: 0.7 }}>
+      <View sx={{ flex: 1, backgroundColor: 'surface', justifyContent: 'center', alignItems: 'center', padding: 8 }}>
+        <Text sx={{ color: 'foreground', fontSize: 18, textAlign: 'center', opacity: 0.7 }}>
           Unable to load content
         </Text>
       </View>

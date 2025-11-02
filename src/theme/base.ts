@@ -28,6 +28,19 @@ const accentPalette = {
   950: '#03281f',
 };
 
+export const PROVIDER_COLORS = {
+  openai: '#04fcbaff',
+  anthropic: '#ff009dff',
+  deepseek: '#1af4ffff',
+  google: '#22e200ff',
+  gemini: '#9400FF',
+  meta: '#FF3131',
+  llama: '#FFFF33',
+  mistral: '#FFB347',
+  cohere: '#00BFFF',
+  default: '#FFFFFF',
+};
+
 const darkTheme = {
   mode: 'dark' as const,
   isDark: true,
@@ -139,6 +152,11 @@ const darkTheme = {
     tabLabel: '#94a3b8',
     tabIconSelected: '#7CFFAA',
     tabLabelSelected: '#55c77dff',
+
+    providers: {
+      ...PROVIDER_COLORS,
+      DEFAULT: PROVIDER_COLORS.default,
+    }
   },
   fontFamily: {
     sans: ['System'],

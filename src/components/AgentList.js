@@ -8,6 +8,7 @@ import { assessmentService } from '@/services/assessmentService';
 import { useRouter } from 'expo-router';
 import { useCallback, useMemo } from 'react';
 import { GlassContainer } from 'expo-glass-effect';
+import { ActivityIndicator } from 'dripsy';
 
 export default function AgentList({
   queryKey,
@@ -15,6 +16,7 @@ export default function AgentList({
   userId = undefined,
   published = true,
   listTitle = undefined,
+  showOpenPositions = false,
 }) {
   const router = useRouter();
 
@@ -121,6 +123,14 @@ export default function AgentList({
     [router]
   );
 
+  if (isLoading || isFetching) {
+    return (
+      <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
+        <ActivityIndicator size="small" color="#fff" />
+      </View>
+    );
+  }
+
   if (!sortedAgents.length) {
     return (
       emptyState || (
@@ -145,6 +155,7 @@ export default function AgentList({
         <AgentCard
           key={agent.id}
           agent={agent}
+          showOpenPositions={showOpenPositions}
           latestAssessment={latestAssessmentByAgent[agent.id]}
           onPress={() => onAgentPress?.(agent)}
         />

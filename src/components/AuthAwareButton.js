@@ -3,6 +3,7 @@ import { TouchableOpacity, Text, View } from '@/components/ui';
 import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import useRouteAuth from '@/hooks/useRouteAuth';
+import { useColors } from '@/theme';
 
 /**
  * Button component that handles route authentication
@@ -32,6 +33,7 @@ export default function AuthAwareButton({
   ...props
 }) {
   const { canAccessRoute } = useRouteAuth();
+  const { colors: palette, withOpacity } = useColors();
 
   // Determine if button should be disabled
   const isAccessible = allowUnauthenticated || !href || canAccessRoute(href);
@@ -70,7 +72,11 @@ export default function AuthAwareButton({
       >
         {children}
         {showLockIcon && !isAccessible && (
-          <Ionicons name="lock-closed" size={16} color="rgba(255, 255, 255, 0.7)" />
+          <Ionicons
+            name="lock-closed"
+            size={16}
+            color={withOpacity(palette.foreground ?? palette.textPrimary, 0.7)}
+          />
         )}
       </View>
     </TouchableOpacity>

@@ -52,7 +52,7 @@ export default function BasePagerView({
   };
 
   return (
-    <View style={{ flex: 1 }}>
+    <>
       {/* Tab Bar */}
       <ScrollView
         horizontal
@@ -113,13 +113,13 @@ export default function BasePagerView({
           </View>
         ))}
       </PagerView>
-    </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   tabBarContainer: {
-    maxHeight: 24
+    maxHeight: 24,
   },
   tabBarContent: {
     flex: 1,
@@ -145,6 +145,7 @@ const styles = StyleSheet.create({
   },
   page: {
     flex: 1,
+    minHeight: 1000,
     paddingVertical: 24,
     justifyContent: 'flex-start',
   },

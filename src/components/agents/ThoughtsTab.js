@@ -4,8 +4,11 @@ import AssessmentCard from '@/components/AssessmentCard';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GlassContainer } from 'expo-glass-effect';
 import SectionTitle from '../SectionTitle';
+import { useColors } from '@/theme';
 
 export default function ThoughtsTab({ assessments = [], isOwnAgent, pendingAssessment = false }) {
+  const { info, withOpacity } = useColors();
+
   return (
     <View
     style={{ flex: 1}}
@@ -22,20 +25,20 @@ export default function ThoughtsTab({ assessments = [], isOwnAgent, pendingAsses
               <Card
                 variant="glass"
                 sx={{
-                  backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                  backgroundColor: withOpacity(info, 0.1),
                   borderWidth: 1,
-                  borderColor: 'rgba(59, 130, 246, 0.3)',
+                  borderColor: withOpacity(info, 0.3),
                   borderRadius: 'lg',
                   padding: 4,
                   marginBottom: 2,
                 }}
               >
                 <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
-                  <ActivityIndicator size="small" color="#3b82f6" />
+                  <ActivityIndicator size="small" color={info} />
                   <View sx={{ flex: 1 }}>
                     <Text
                       sx={{
-                        color: '#93c5fd',
+                        color: 'infoLight',
                         fontWeight: '600',
                         fontSize: 14,
                         marginBottom: 1,
@@ -45,7 +48,7 @@ export default function ThoughtsTab({ assessments = [], isOwnAgent, pendingAsses
                     </Text>
                     <Text
                       sx={{
-                        color: '#64748b',
+                        color: 'secondary500',
                         fontSize: 12,
                       }}
                     >
@@ -55,14 +58,14 @@ export default function ThoughtsTab({ assessments = [], isOwnAgent, pendingAsses
                   <MaterialCommunityIcons
                     name="timer-sand"
                     size={24}
-                    color="#3b82f6"
+                    color={info}
                   />
                 </View>
               </Card>
             )}
 
             {assessments.length === 0 && !pendingAssessment ? (
-              <Text sx={{ color: '#94a3b8', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
+              <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
                 No assessments yet
               </Text>
             ) : (
@@ -73,7 +76,7 @@ export default function ThoughtsTab({ assessments = [], isOwnAgent, pendingAsses
           </GlassContainer>
         </>
       ) : (
-        <Text variant="sm" sx={{ color: '#64748b', fontSize: 12, lineHeight: 18 }}>
+        <Text variant="sm" sx={{ color: 'secondary500', fontSize: 12, lineHeight: 18 }}>
           Assessment logs stay private to protect alpha. Clone the agent to produce your own ACTION_JSON telemetry.
         </Text>
       )}

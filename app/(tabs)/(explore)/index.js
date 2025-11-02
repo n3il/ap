@@ -8,10 +8,13 @@ import SvgChart from '@/components/SvgChart';
 import SectionTitle from '@/components/SectionTitle';
 import TimeFrameSelector from '@/components/TimeFrameSelector';
 import CategoryAgentsListPager from '@/components/explore/CategoryAgentsListPager';
+import { useColors } from '@/theme';
 
 export default function ExploreScreen() {
   const [isFetching, setIsFetching] = useState(false);
   const queryClient = useQueryClient();
+  const colors = useColors();
+  const palette = colors.colors;
 
   const handleRefresh = useCallback(async () => {
     setIsFetching(true);
@@ -19,27 +22,24 @@ export default function ExploreScreen() {
     setIsFetching(false);
   }, []);
 
-    const [timeframe, setTimeframe] = useState('1h');
-
+  const [timeframe, setTimeframe] = useState('1h');
 
   return (
     <ContainerView>
       <View sx={{ marginBottom: 6 }}>
         <MarketPricesWidget
-          compact
           tickers={['BTC', 'ETH', 'SOL']}
           sx={{ borderBottomWidth: 1, borderColor: 'border', paddingTop: 0, paddingBottom: 4 }}
           timeframe={timeframe}
         />
       </View>
       <ScrollView
-        sx={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 100, flex: 1 }}
+        contentContainerStyle={{ flex: 1 }}
         refreshControl={
           <RefreshControl
             refreshing={isFetching}
             onRefresh={handleRefresh}
-            tintColor="#fff"
+            tintColor={palette.foreground}
             size="small"
           />
         }
@@ -58,15 +58,15 @@ export default function ExploreScreen() {
           </Text>
         </View>
 
-
-
         <View sx={{ alignItems: 'flex-end' }}>
           <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
         </View>
         <View sx={{ marginTop: 4 }}>
           <SvgChart timeframe={timeframe} />
         </View>
-        <CategoryAgentsListPager />
+        <View style={{ flex: 1 }}>
+          <CategoryAgentsListPager />
+        </View>
       </ScrollView>
     </ContainerView>
   );

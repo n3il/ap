@@ -6,6 +6,7 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useMultiAgentSnapshots } from '@/hooks/useAgentSnapshots';
 import { agentSnapshotService } from '@/services/agentSnapshotService';
 import { getProviderColor, getMockAgentsForSvgChart } from '@/factories/mockAgentData';
+import { useColors } from '@/theme';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -115,6 +116,16 @@ const SvgChart = ({
   const [touchX, setTouchX] = useState(0); // Normalized 0-1
   const pulseAnim = useRef(new Animated.Value(1)).current;
   const [chartWidth, setChartWidth] = useState(DEFAULT_CHART_WIDTH);
+  const {
+    colors: palette,
+    success,
+    error: errorColor,
+    withOpacity,
+  } = useColors();
+  const positiveColor = palette.successLight ?? success;
+  const negativeColor = palette.errorLight ?? errorColor;
+  const mutedColor = palette.mutedForeground;
+  const secondaryTextColor = palette.textSecondary;
 
   const chartHeight = useMemo(() => {
     const calculatedHeight = chartWidth * CHART_ASPECT_RATIO;
@@ -143,12 +154,12 @@ const SvgChart = ({
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.5,
-          duration: 1000,
+          duration: 418,
           useNativeDriver: false,
         }),
         Animated.timing(pulseAnim, {
           toValue: 1,
-          duration: 1000,
+          duration: 418,
           useNativeDriver: false,
         }),
       ])
@@ -194,6 +205,8 @@ const SvgChart = ({
     { enabled: dataSource === CHART_DATA_SOURCE.AGENTS && agentIds.length > 0 }
   );
 
+  console.log({ snapshotsData })
+
   // Transform data based on source
   const chartData = useMemo(() => {
     // ACCOUNT BALANCE DATA SOURCE
@@ -204,7 +217,7 @@ const SvgChart = ({
           lines: [{
             id: 'account-balance',
             name: 'Account Balance',
-            color: '#34d399',
+            color: positiveColor,
             data: [
               { time: 0, value: 0 },
               { time: 0.2, value: 2.5 },
@@ -234,7 +247,7 @@ const SvgChart = ({
         lines: [{
           id: 'account-balance',
           name: 'Account Balance',
-          color: '#34d399',
+          color: positiveColor,
           data: normalizedData,
         }],
         useMockData: false,
@@ -400,7 +413,7 @@ const SvgChart = ({
     return (
       <View sx={{ marginTop: 4, alignItems: 'center', paddingVertical: 8 }}>
         <ActivityIndicator size="small" />
-        <Text sx={{ fontSize: 12, color: '#64748b', marginTop: 2 }}>
+        <Text sx={{ fontSize: 12, color: 'secondary500', marginTop: 2 }}>
           Loading performance data...
         </Text>
       </View>
@@ -425,7 +438,7 @@ const SvgChart = ({
               y1={y}
               x2={PADDING.left + plotWidth}
               y2={y}
-              stroke="rgba(148, 163, 184, 0.15)"
+              stroke={withOpacity(mutedColor, 0.15)}
               strokeWidth={1}
             />
           );
@@ -440,7 +453,7 @@ const SvgChart = ({
               x={PADDING.left + plotWidth + 6}
               y={y + 4}
               fontSize={10}
-              fill="#94a3b8"
+              fill={mutedColor}
               textAnchor="start"
             >
               {valueFormatter(tick)}
@@ -454,7 +467,7 @@ const SvgChart = ({
           y1={scaleY(0)}
           x2={PADDING.left + plotWidth}
           y2={scaleY(0)}
-          stroke="rgba(158, 149, 149, 0.8)"
+          stroke={withOpacity(mutedColor, 0.8)}
           strokeWidth={1.5}
           strokeDasharray="3,3"
         />
@@ -490,10 +503,10 @@ const SvgChart = ({
                 points={points}
                 fill="none"
                 stroke={line.color}
-                strokeWidth={1.5}
+                strokeWidth={2}
                 strokeLinejoin="round"
                 strokeLinecap="round"
-                strokeDasharray="4,8"
+                strokeDasharray="1,1"
                 opacity={0.9}
               />
               {/* End point circle */}
@@ -525,7 +538,7 @@ const SvgChart = ({
               y1={PADDING.top}
               x2={scaleX(touchX)}
               y2={PADDING.top + plotHeight}
-              stroke="rgba(226, 232, 240, 0.6)"
+              stroke={withOpacity(secondaryTextColor ?? mutedColor, 0.6)}
               strokeWidth={1.5}
               strokeDasharray="4,4"
             />
@@ -537,7 +550,7 @@ const SvgChart = ({
                 cy={scaleY(line.value)}
                 r={5}
                 fill={line.color}
-                stroke="rgba(15, 23, 42, 0.8)"
+                stroke={withOpacity(palette.surface ?? palette.background, 0.8)}
                 strokeWidth={2}
               />
             ))}
@@ -552,16 +565,16 @@ const SvgChart = ({
               position: 'absolute',
               top: 8,
               left: 8,
-              backgroundColor: 'rgba(15, 23, 42, 0.95)',
+              backgroundColor: withOpacity(palette.surface ?? palette.background, 0.95),
               borderRadius: 'lg',
               padding: 3,
               borderWidth: 1,
-              borderColor: 'rgba(148, 163, 184, 0.3)',
+              borderColor: withOpacity(mutedColor, 0.3),
               minWidth: 160,
             }}
           >
             {/* Time label */}
-            <Text sx={{ fontSize: 11, color: '#94a3b8', marginBottom: 2 }}>
+            <Text sx={{ fontSize: 11, color: 'mutedForeground', marginBottom: 2 }}>
               {(() => {
                 const now = new Date();
                 const date = new Date(now);
@@ -601,13 +614,13 @@ const SvgChart = ({
                         backgroundColor: line.color,
                       }}
                     />
-                    <Text sx={{ fontSize: 12, color: '#e2e8f0' }}>{line.name}</Text>
+                    <Text sx={{ fontSize: 12, color: 'textSecondary' }}>{line.name}</Text>
                   </View>
                   <Text
                     sx={{
                       fontSize: 13,
                       fontWeight: '600',
-                      color: isPositive ? '#34d399' : '#f87171',
+                      color: isPositive ? 'success' : 'errorLight',
                       marginLeft: 3,
                     }}
                   >
@@ -631,7 +644,7 @@ const SvgChart = ({
         }}
       >
         {timeLabels.map((label, i) => (
-          <Text key={i} sx={{ fontSize: 10, color: '#64748b' }}>
+          <Text key={i} sx={{ fontSize: 10, color: 'secondary500' }}>
             {label}
           </Text>
         ))}
@@ -675,14 +688,14 @@ const SvgChart = ({
                   justifyContent: 'space-between',
                   paddingVertical: 3,
                   paddingHorizontal: 4,
-                  backgroundColor: 'rgba(30, 41, 59, 0.3)',
+                  backgroundColor: withOpacity(palette.secondary800 ?? palette.surfaceSecondary, 0.3),
                   borderRadius: 'xl',
                   borderLeftWidth: 3,
                   borderLeftColor: line.color,
                 }}
               >
                 <View sx={{ flex: 1 }}>
-                  <Text sx={{ fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 1 }}>
+                  <Text sx={{ fontSize: 14, fontWeight: '600', color: 'textSecondary', marginBottom: 1 }}>
                     {line.name}
                   </Text>
                 </View>
@@ -692,13 +705,13 @@ const SvgChart = ({
                     sx={{
                       fontSize: 18,
                       fontWeight: '700',
-                      color: isPositive ? '#34d399' : '#f87171',
+                      color: isPositive ? 'success' : 'errorLight',
                       marginBottom: 1,
                     }}
                   >
                     {valueFormatter(finalValue)}
                   </Text>
-                  <Text sx={{ fontSize: 10, color: '#64748b' }}>
+                  <Text sx={{ fontSize: 10, color: 'secondary500' }}>
                     {change >= 0 ? '+' : ''}{valueFormatter(change)} {timeframe}
                   </Text>
                 </View>

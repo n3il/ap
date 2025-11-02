@@ -1,3 +1,5 @@
+import darkTheme from './base';
+
 const HEX_REGEX = /^#?([a-f\d]{6}|[a-f\d]{8}|[a-f\d]{3})$/i;
 
 const expandHex = (hex) => {
@@ -30,7 +32,7 @@ export const hexToRgba = (hex, alpha = 1) => {
 };
 
 export const withOpacity = (color, alpha) => {
-  if (!color) return `rgba(0, 0, 0, ${alpha})`;
+  if (!color) return hexToRgba(darkTheme.colors.background, alpha);
   if (color.startsWith('rgba') || color.startsWith('rgb')) {
     const parts = color.replace(/rgba?\(|\)/g, '').split(',');
     if (parts.length >= 3) {

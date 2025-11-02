@@ -11,6 +11,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import { supabase } from '@/config/supabase';
 import Constants from 'expo-constants';
 import * as SecureStore from 'expo-secure-store';
+import { useColors } from '@/theme';
 
 function DebugOverlayComponent() {
   const [isOpen, setIsOpen] = useState(false);
@@ -22,6 +23,16 @@ function DebugOverlayComponent() {
     envVars: {},
     testResults: [],
   });
+  const {
+    colors: palette,
+    success,
+    error: errorColor,
+    warning,
+    info,
+    withOpacity,
+  } = useColors();
+  const textPrimary = palette.textPrimary ?? palette.foreground;
+  const textSecondary = palette.textSecondary ?? palette.mutedForeground;
 
   const maskString = (str) => {
     if (!str) return 'NOT SET';
@@ -365,10 +376,14 @@ function DebugOverlayComponent() {
 
   const getStatusColor = (status) => {
     switch (status) {
-      case 'pass': return '#10b981';
-      case 'fail': return '#ef4444';
-      case 'warning': return '#f59e0b';
-      default: return '#6b7280';
+      case 'pass':
+        return success;
+      case 'fail':
+        return errorColor;
+      case 'warning':
+        return warning;
+      default:
+        return palette.mutedForeground ?? palette.secondary;
     }
   };
 
@@ -394,10 +409,10 @@ function DebugOverlayComponent() {
           height: 30,
           borderRadius: 28,
           borderWidth: 1,
-          borderColor: '#ddd',
+          borderColor: palette.mutedForeground,
           alignItems: 'center',
           justifyContent: 'center',
-          shadowColor: '#000',
+          shadowColor: palette.background,
           shadowOffset: { width: 0, height: 2 },
           shadowOpacity: 0.25,
           shadowRadius: 4,
@@ -409,7 +424,7 @@ function DebugOverlayComponent() {
         <MaterialIcons
           name={isOpen ? 'close' : 'info-outline'}
           size={16}
-          color={isOpen ? '#ef4444' : '#ddd'}
+          color={isOpen ? errorColor : palette.mutedForeground}
         />
       </TouchableOpacity>
 
@@ -422,7 +437,7 @@ function DebugOverlayComponent() {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            backgroundColor: withOpacity(palette.background ?? palette.surface, 0.9),
             zIndex: 9998,
           }}
         >
@@ -431,23 +446,23 @@ function DebugOverlayComponent() {
               flex: 1,
               marginTop: 60,
               marginHorizontal: 20,
-              backgroundColor: '#1f2937',
+              backgroundColor: palette.surfaceSecondary ?? palette.surface,
               borderRadius: 12,
               padding: 16,
             }}
           >
             {/* Header */}
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
-              <MaterialIcons name="bug-report" size={24} color="#3b82f6" />
-              <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'white', marginLeft: 8 }}>
+              <MaterialIcons name="bug-report" size={24} color={info} />
+              <Text style={{ fontSize: 20, fontWeight: 'bold', color: textPrimary, marginLeft: 8 }}>
                 Debug Panel
               </Text>
               <View style={{ flex: 1 }} />
               <TouchableOpacity onPress={clearStorage} style={{ marginRight: 16 }}>
-                <MaterialIcons name="delete" size={24} color="#ef4444" />
+                <MaterialIcons name="delete" size={24} color={errorColor} />
               </TouchableOpacity>
               <TouchableOpacity onPress={runDiagnostics}>
-                <MaterialIcons name="refresh" size={24} color="#3b82f6" />
+                <MaterialIcons name="refresh" size={24} color={info} />
               </TouchableOpacity>
             </View>
 
@@ -456,7 +471,9 @@ function DebugOverlayComponent() {
               style={{
                 flexDirection: 'row',
                 alignItems: 'center',
-                backgroundColor: connectionStatus.connected ? '#065f46' : '#7f1d1d',
+                backgroundColor: connectionStatus.connected
+                  ? withOpacity(success, 0.5)
+                  : withOpacity(errorColor, 0.5),
                 padding: 12,
                 borderRadius: 8,
                 marginBottom: 16,
@@ -465,9 +482,9 @@ function DebugOverlayComponent() {
               <MaterialIcons
                 name={connectionStatus.connected ? 'check-circle' : 'error'}
                 size={20}
-                color="white"
+                color={textPrimary}
               />
-              <Text style={{ color: 'white', marginLeft: 8, fontWeight: '600' }}>
+              <Text style={{ color: textPrimary, marginLeft: 8, fontWeight: '600' }}>
                 {connectionStatus.loading
                   ? 'Running diagnostics...'
                   : connectionStatus.connected
@@ -480,8 +497,8 @@ function DebugOverlayComponent() {
             <ScrollView style={{ flex: 1 }}>
               {connectionStatus.loading && (
                 <View style={{ padding: 40, alignItems: 'center' }}>
-                  <ActivityIndicator size="large" color="#3b82f6" />
-                  <Text style={{ color: '#9ca3af', marginTop: 16 }}>
+                  <ActivityIndicator size="large" color={info} />
+                  <Text style={{ color: palette.mutedForeground, marginTop: 16 }}>
                     Running diagnostics...
                   </Text>
                 </View>
@@ -491,7 +508,7 @@ function DebugOverlayComponent() {
                 <View
                   key={index}
                   style={{
-                    backgroundColor: '#374151',
+                    backgroundColor: palette.secondary700 ?? palette.surfaceSecondary,
                     borderRadius: 8,
                     padding: 12,
                     marginBottom: 12,
@@ -507,7 +524,7 @@ function DebugOverlayComponent() {
                     />
                     <Text
                       style={{
-                        color: 'white',
+                        color: textPrimary,
                         fontWeight: '600',
                         marginLeft: 8,
                         flex: 1,
@@ -527,20 +544,20 @@ function DebugOverlayComponent() {
                     </Text>
                   </View>
 
-                  <Text style={{ color: '#d1d5db', fontSize: 14 }}>
+                  <Text style={{ color: textSecondary, fontSize: 14 }}>
                     {result.message}
                   </Text>
 
                   {result.details && (
                     <View
                       style={{
-                        backgroundColor: '#1f2937',
+                        backgroundColor: palette.surfaceSecondary ?? palette.surface,
                         borderRadius: 4,
                         padding: 8,
                         marginTop: 8,
                       }}
                     >
-                      <Text style={{ color: '#9ca3af', fontSize: 12, fontFamily: 'monospace' }}>
+                      <Text style={{ color: palette.mutedForeground, fontSize: 12, fontFamily: 'monospace' }}>
                         {JSON.stringify(result.details, null, 2)}
                       </Text>
                     </View>

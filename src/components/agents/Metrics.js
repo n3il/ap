@@ -50,7 +50,7 @@ export default function Metrics() {
     const openPositions = stats?.openPositions ?? 0;
 
     const totalPnL = overviewMetrics.totalPnL;
-    const pnlTrendColor = totalPnL >= 0 ? '#4ade80' : '#f87171';
+    const pnlTrendColor = totalPnL >= 0 ? 'successLight' : 'errorLight';
 
     return [
       {
@@ -64,31 +64,31 @@ export default function Metrics() {
         label: 'Win Rate',
         value: `${overviewMetrics.winRate.toFixed(1)}%`,
         trend: `${totalTrades ? `${totalTrades} closed` : 'No closed trades yet'}`,
-        trendColor: '#c084fc',
+        trendColor: 'brand300',
       },
       {
         label: 'Open Positions',
         value: openPositions,
         trend: 'Active trades',
-        trendColor: '#60a5fa',
+        trendColor: 'info',
       },
       {
         label: 'Assessments Logged',
         value: overviewMetrics.totalAssessments,
         trend: `${overviewMetrics.actionsTriggered} resulted in actions`,
-        trendColor: '#34d399',
+        trendColor: 'successLight',
       },
       {
         label: 'Capital Deployed',
         value: `$${overviewMetrics.totalCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
         trend: `${overviewMetrics.totalAgents} agents`,
-        trendColor: '#94a3b8',
+        trendColor: 'mutedForeground',
       },
       {
         label: 'Daily Agent Loops',
         value: overviewMetrics.projectedDailyRuns,
         trend: '15 min cron cadence',
-        trendColor: '#fcd34d',
+        trendColor: 'warningLight',
       },
     ];
   }, [overviewMetrics, stats]);
@@ -99,14 +99,14 @@ export default function Metrics() {
       <View sx={{ paddingHorizontal: 4, marginBottom: 3 }}>
         <View sx={{ flexDirection: 'row', marginBottom: 2 }}>
           <View sx={{ flex: 1, paddingRight: 2 }}>
-            <Text sx={{ color: '#64748b', fontSize: 11, textTransform: 'uppercase' }}>Active</Text>
-            <Text sx={{ color: '#f1f5f9', fontSize: 20, fontWeight: '700' }}>
+            <Text sx={{ color: 'secondary500', fontSize: 11, textTransform: 'uppercase' }}>Active</Text>
+            <Text sx={{ color: 'textPrimary', fontSize: 20, fontWeight: '700' }}>
               {overviewMetrics.activeAgents}
             </Text>
           </View>
           <View sx={{ flex: 1, paddingHorizontal: 2 }}>
-            <Text sx={{ color: '#64748b', fontSize: 11, textTransform: 'uppercase' }}>Capital</Text>
-            <Text sx={{ color: '#f1f5f9', fontSize: 20, fontWeight: '700' }}>
+            <Text sx={{ color: 'secondary500', fontSize: 11, textTransform: 'uppercase' }}>Capital</Text>
+            <Text sx={{ color: 'textPrimary', fontSize: 20, fontWeight: '700' }}>
               ${overviewMetrics.totalCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}
             </Text>
           </View>

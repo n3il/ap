@@ -4,9 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import AssessmentCard from '@/components/AssessmentCard';
 import StatCard from '@/components/StatCard';
 import { assessmentService } from '@/services/assessmentService';
+import { useColors } from '@/theme';
 
 export default function AgentTab() {
   const [filter, setFilter] = useState('all'); // 'all', 'market_scan', 'position_review'
+  const {
+    colors: palette,
+    success,
+    withOpacity,
+  } = useColors();
 
   // Fetch all assessments
   const { data: allAssessments = [], isLoading, error, refetch } = useQuery({
@@ -30,7 +36,7 @@ export default function AgentTab() {
   if (isLoading) {
     return (
       <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" color="#fff" />
+        <ActivityIndicator size="large" color={palette.foreground} />
       </View>
     );
   }
@@ -38,9 +44,17 @@ export default function AgentTab() {
   if (error) {
     return (
       <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
-        <Text sx={{ color: '#f87171', textAlign: 'center', marginBottom: 4 }}>Error loading assessments</Text>
-        <TouchableOpacity onPress={refetch} sx={{ backgroundColor: '#a855f7', paddingHorizontal: 6, paddingVertical: 3, borderRadius: 'xl' }}>
-          <Text sx={{ color: '#f1f5f9', fontWeight: '600' }}>Retry</Text>
+        <Text sx={{ color: 'errorLight', textAlign: 'center', marginBottom: 4 }}>Error loading assessments</Text>
+        <TouchableOpacity
+          onPress={refetch}
+          sx={{
+            backgroundColor: 'brand300',
+            paddingHorizontal: 6,
+            paddingVertical: 3,
+            borderRadius: 'xl',
+          }}
+        >
+          <Text sx={{ color: 'textPrimary', fontWeight: '600' }}>Retry</Text>
         </TouchableOpacity>
       </View>
     );
@@ -54,7 +68,7 @@ export default function AgentTab() {
         <RefreshControl
           refreshing={isLoading}
           onRefresh={refetch}
-          tintColor="#fff"
+          tintColor={palette.foreground}
         />
       }
     >
@@ -66,25 +80,25 @@ export default function AgentTab() {
               label="Total"
               value={stats.totalAssessments}
               trend="Assessments"
-              trendColor="#c084fc"
+              trendColor="brand300"
             />
             <StatCard
               label="Market Scans"
               value={stats.marketScans}
               trend="Searches"
-              trendColor="#c084fc"
+              trendColor="brand300"
             />
             <StatCard
               label="Reviews"
               value={stats.positionReviews}
               trend="Positions"
-              trendColor="#4ade80"
+              trendColor="successLight"
             />
             <StatCard
               label="Actions"
               value={stats.actionsTriggered}
               trend="Triggered"
-              trendColor="#fb923c"
+              trendColor="warning"
             />
           </ScrollView>
         </View>
@@ -101,15 +115,21 @@ export default function AgentTab() {
               borderRadius: 'xl',
               borderWidth: 1,
               ...(filter === 'all'
-                ? { backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#c084fc' }
-                : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+                ? {
+                    backgroundColor: withOpacity(palette.brand500 ?? palette.primary, 0.2),
+                    borderColor: 'brand300',
+                  }
+                : {
+                    backgroundColor: withOpacity(palette.secondary800 ?? palette.surfaceSecondary, 0.5),
+                    borderColor: withOpacity(palette.secondary700 ?? palette.border, 0.3),
+                  })
             }}
           >
             <Text sx={{
               textAlign: 'center',
               fontWeight: '600',
               fontSize: 12,
-              color: filter === 'all' ? '#c084fc' : '#94a3b8'
+              color: filter === 'all' ? 'brand300' : 'mutedForeground'
             }}>
               All
             </Text>
@@ -122,15 +142,21 @@ export default function AgentTab() {
               borderRadius: 'xl',
               borderWidth: 1,
               ...(filter === 'market_scan'
-                ? { backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: '#c084fc' }
-                : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+                ? {
+                    backgroundColor: withOpacity(palette.brand500 ?? palette.primary, 0.2),
+                    borderColor: 'brand300',
+                  }
+                : {
+                    backgroundColor: withOpacity(palette.secondary800 ?? palette.surfaceSecondary, 0.5),
+                    borderColor: withOpacity(palette.secondary700 ?? palette.border, 0.3),
+                  })
             }}
           >
             <Text sx={{
               textAlign: 'center',
               fontWeight: '600',
               fontSize: 12,
-              color: filter === 'market_scan' ? '#c084fc' : '#94a3b8'
+              color: filter === 'market_scan' ? 'brand300' : 'mutedForeground'
             }}>
               Market Scan
             </Text>
@@ -143,15 +169,21 @@ export default function AgentTab() {
               borderRadius: 'xl',
               borderWidth: 1,
               ...(filter === 'position_review'
-                ? { backgroundColor: 'rgba(34, 197, 94, 0.2)', borderColor: '#4ade80' }
-                : { backgroundColor: 'rgba(30, 41, 59, 0.5)', borderColor: 'rgba(51, 65, 85, 0.3)' })
+                ? {
+                    backgroundColor: withOpacity(success, 0.2),
+                    borderColor: 'success',
+                  }
+                : {
+                    backgroundColor: withOpacity(palette.secondary800 ?? palette.surfaceSecondary, 0.5),
+                    borderColor: withOpacity(palette.secondary700 ?? palette.border, 0.3),
+                  })
             }}
           >
             <Text sx={{
               textAlign: 'center',
               fontWeight: '600',
               fontSize: 12,
-              color: filter === 'position_review' ? '#4ade80' : '#94a3b8'
+              color: filter === 'position_review' ? 'success' : 'mutedForeground'
             }}>
               Position Review
             </Text>
@@ -163,20 +195,20 @@ export default function AgentTab() {
       <View sx={{ paddingHorizontal: 6 }}>
         {filteredAssessments.length === 0 ? (
           <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-            <Text sx={{ color: '#94a3b8', fontSize: 18, textAlign: 'center', marginBottom: 2 }}>No assessments yet</Text>
-            <Text sx={{ color: '#64748b', fontSize: 14, textAlign: 'center' }}>
+            <Text sx={{ color: 'mutedForeground', fontSize: 18, textAlign: 'center', marginBottom: 2 }}>No assessments yet</Text>
+            <Text sx={{ color: 'secondary500', fontSize: 14, textAlign: 'center' }}>
               Assessments will appear as your agents analyze the market
             </Text>
           </View>
         ) : (
           <>
-            <Text sx={{ color: '#f1f5f9', fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
+            <Text sx={{ color: 'textPrimary', fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
               Timeline ({filteredAssessments.length})
             </Text>
             {filteredAssessments.map((assessment) => (
               <View key={assessment.id} sx={{ marginBottom: 2 }}>
                 {assessment.agents && (
-                  <Text sx={{ color: '#94a3b8', fontSize: 12, marginBottom: 1, marginLeft: 1 }}>
+                  <Text sx={{ color: 'mutedForeground', fontSize: 12, marginBottom: 1, marginLeft: 1 }}>
                     {assessment.agents.name} • {assessment.agents.model_name}
                   </Text>
                 )}

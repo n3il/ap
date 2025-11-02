@@ -13,6 +13,7 @@ import { useRouter } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import ContainerView from '@/components/ContainerView';
 import { useLocalization } from '@/hooks/useLocalization';
+import { useColors } from '@/theme';
 
 export default function ForgotPasswordScreen() {
   const [email, setEmail] = useState('');
@@ -20,6 +21,8 @@ export default function ForgotPasswordScreen() {
   const router = useRouter();
   const { resetPassword } = useAuth();
   const { t } = useLocalization();
+  const colors = useColors();
+  const palette = colors.colors;
 
   const handleResetPassword = async () => {
     if (!email) {
@@ -56,10 +59,9 @@ export default function ForgotPasswordScreen() {
         <View sx={{ flex: 1, justifyContent: 'center', padding: 6 }}>
           <View sx={{ marginBottom: 10, alignItems: 'center' }}>
             <Text
-              sx={{ fontSize: 32, fontWeight: '700', marginBottom: 2 }}
+              sx={{ fontSize: 32, fontWeight: '700', marginBottom: 2, color: 'foreground' }}
               style={{
-                color: '#fff',
-                textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                textShadowColor: colors.withOpacity(palette.background, 0.3),
                 textShadowOffset: { width: 0, height: 2 },
                 textShadowRadius: 4,
               }}
@@ -70,8 +72,8 @@ export default function ForgotPasswordScreen() {
               variant="sm"
               sx={{ opacity: 0.9, textAlign: 'center', paddingHorizontal: 5 }}
               style={{
-                color: '#fff',
-                textShadowColor: 'rgba(0, 0, 0, 0.3)',
+                color: palette.foreground,
+                textShadowColor: colors.withOpacity(palette.background, 0.3),
                 textShadowOffset: { width: 0, height: 1 },
                 textShadowRadius: 2,
               }}
@@ -86,8 +88,8 @@ export default function ForgotPasswordScreen() {
               padding: 6,
             }}
             style={{
-              backgroundColor: 'rgba(255, 255, 255, 0.95)',
-              shadowColor: '#000',
+              backgroundColor: colors.withOpacity(palette.surface ?? palette.foreground, 0.95),
+              shadowColor: palette.background,
               shadowOffset: { width: 0, height: 4 },
               shadowOpacity: 0.1,
               shadowRadius: 12,
@@ -102,7 +104,7 @@ export default function ForgotPasswordScreen() {
                 value={email}
                 onChangeText={setEmail}
                 placeholder={t('forgotPassword.emailPlaceholder')}
-                placeholderTextColor="rgb(148, 163, 184)"
+                placeholderTextColor={palette.mutedForeground}
                 keyboardType="email-address"
                 autoCapitalize="none"
                 autoCorrect={false}
@@ -120,15 +122,15 @@ export default function ForgotPasswordScreen() {
                 opacity: loading ? 0.6 : 1,
               }}
               style={{
-                backgroundColor: '#2da44e',
+                backgroundColor: colors.success,
               }}
               onPress={handleResetPassword}
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator color="white" />
+                <ActivityIndicator color={palette.foreground} />
               ) : (
-                <Text variant="body" sx={{ fontWeight: '600' }} style={{ color: '#fff' }}>
+                <Text variant="body" sx={{ fontWeight: '600', color: 'foreground' }}>
                   {t('forgotPassword.sendResetLink')}
                 </Text>
               )}

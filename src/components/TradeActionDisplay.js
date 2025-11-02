@@ -1,9 +1,23 @@
 import React from 'react';
 import { View, Text, Card } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useColors } from '@/theme';
 
 export default function TradeActionDisplay({ actionData }) {
   if (!actionData) return null;
+
+  const {
+    colors: palette,
+    success,
+    error,
+    warning,
+    withOpacity,
+  } = useColors();
+
+  const longColor = palette.long ?? success;
+  const shortColor = palette.short ?? error;
+  const closeColor = warning;
+  const neutralColor = palette.secondary ?? palette.secondary500 ?? palette.textTertiary;
 
   const getActionConfig = (action) => {
     const actionType = action.toUpperCase();
@@ -11,29 +25,29 @@ export default function TradeActionDisplay({ actionData }) {
     if (actionType.includes('LONG')) {
       return {
         icon: 'trending-up',
-        color: '#10b981',
-        bgColor: 'rgba(16, 185, 129, 0.1)',
+        color: longColor,
+        bgColor: withOpacity(longColor, 0.1),
         label: 'Long',
       };
     } else if (actionType.includes('SHORT')) {
       return {
         icon: 'trending-down',
-        color: '#ef4444',
-        bgColor: 'rgba(239, 68, 68, 0.1)',
+        color: shortColor,
+        bgColor: withOpacity(shortColor, 0.1),
         label: 'Short',
       };
     } else if (actionType.includes('CLOSE')) {
       return {
         icon: 'close-circle',
-        color: '#f59e0b',
-        bgColor: 'rgba(245, 158, 11, 0.1)',
+        color: closeColor,
+        bgColor: withOpacity(closeColor, 0.1),
         label: 'Close',
       };
     } else {
       return {
         icon: 'minus-circle',
-        color: '#6b7280',
-        bgColor: 'rgba(107, 114, 128, 0.1)',
+        color: neutralColor,
+        bgColor: withOpacity(neutralColor, 0.1),
         label: 'No Action',
       };
     }
@@ -67,7 +81,7 @@ export default function TradeActionDisplay({ actionData }) {
           <MaterialCommunityIcons
             name={config.icon}
             size={24}
-            color="white"
+            color={palette.foreground}
           />
         </View>
 
@@ -105,7 +119,7 @@ export default function TradeActionDisplay({ actionData }) {
         )}
 
         {actionData.reasoning && (
-          <View sx={{ marginTop: 2, paddingTop: 2, borderTopWidth: 1, borderTopColor: 'rgba(255, 255, 255, 0.1)' }}>
+          <View sx={{ marginTop: 2, paddingTop: 2, borderTopWidth: 1, borderTopColor: withOpacity(palette.foreground, 0.1) }}>
             <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
               Reasoning
             </Text>

@@ -3,6 +3,7 @@ import View, { type ViewProps } from './View';
 import type { SxProp } from 'dripsy';
 import { GlassView } from 'expo-glass-effect';
 import { useDripsyTheme } from 'dripsy';
+import { withOpacity } from '@/theme/utils';
 
 export interface CardProps {
   children: React.ReactNode;
@@ -33,7 +34,7 @@ const Card: React.FC<CardProps> = ({
   const variantStyles: Record<string, SxProp> = {
     default: {},
     elevated: {
-      shadowColor: '#000',
+      shadowColor: theme.colors?.background ?? theme.colors?.surface,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -49,7 +50,8 @@ const Card: React.FC<CardProps> = ({
   // Glass variant uses expo-glass-effect
   if (variant === 'glass') {
     const borderRadius = theme.radii?.xl ?? 16;
-    const defaultTintColor = glassTintColor ?? 'rgba(0, 0, 0, 0.9)';
+    const baseTint = theme.colors?.background ?? theme.colors?.surface ?? theme.colors?.backgroundSecondary;
+    const defaultTintColor = glassTintColor ?? withOpacity(baseTint, 0.9);
 
     return (
       <GlassView

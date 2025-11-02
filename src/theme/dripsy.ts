@@ -105,6 +105,7 @@ const buildColors = (legacy: LegacyTheme['colors']) => {
       typeof legacy.accentForeground === 'string'
         ? legacy.accentForeground
         : legacy.accentPalette?.foreground ?? legacy.foreground,
+    providers: legacy.providers,
   };
 
   (['primary', 'secondary', 'brand', 'purple'] as const).forEach((key) => {

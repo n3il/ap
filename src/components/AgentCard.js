@@ -4,6 +4,8 @@ import { LLM_PROVIDERS } from './CreateAgentModal';
 import ActiveDurationBadge from './ActiveDurationBadge';
 import WalletAddressCard from './WalletAddressCard';
 import { GlassView } from 'expo-glass-effect';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/config/supabase';
 
 export default function AgentCard({
   agent,
@@ -11,8 +13,26 @@ export default function AgentCard({
   isOwnAgent = false,
   onPress,
   shortView = false,
+  showOpenPositions = true,
   ...props
 }) {
+  // Fetch open positions if requested
+  const { data: openPositions } = useQuery({
+    queryKey: ['agent-positions', agent.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('positions')
+        .select('*')
+        .eq('agent_id', agent.id)
+        .eq('is_open', true)
+        .order('created_at', { ascending: false });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: showOpenPositions,
+  });
+
   const calculatePnL = () => {
     // This would be calculated from trades data
     return 0;
@@ -105,10 +125,14 @@ export default function AgentCard({
 
   const isActive = Boolean(agent.is_active);
 
+
+  console.log({ openPositions })
   return (
     <GlassView
       variant="glass"
       glassEffectStyle="regular"
+      tintColor="rgba(0, 0, 0, 1)"
+      isInteractive
       style={{
         paddingVertical: 18,
         paddingHorizontal: 18,
@@ -149,6 +173,49 @@ export default function AgentCard({
             />
           </View>
         </Stack>
+
+        {openPositions && openPositions.length > 0 && (
+          <View sx={{ marginTop: 3, flex: 1 }}>
+            <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
+              Open Positions ({openPositions.length})
+            </Text>
+            <View sx={{ gap: 2 }}>
+              {openPositions.map((position) => (
+                <View
+                  key={position.id || position.symbol}
+                  sx={{
+                    flexDirection: 'row',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    paddingVertical: 2,
+                    paddingHorizontal: 3,
+                    borderRadius: 8,
+                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                  }}
+                >
+                  <View sx={{ flex: 1 }}>
+                    <Text variant="sm" sx={{ fontWeight: '600' }}>
+                      {position.symbol || position.coin}
+                    </Text>
+                    <Text variant="xs" tone="subtle">
+                      Size: {position.szi || position.size || 'N/A'}
+                    </Text>
+                  </View>
+                  {(position.entryPx || position.entry_px || position.entry_price) && (
+                    <View sx={{ alignItems: 'flex-end' }}>
+                      <Text variant="xs" tone="muted">
+                        Entry
+                      </Text>
+                      <Text variant="xs" sx={{ fontWeight: '500' }}>
+                        ${parseFloat(position.entryPx || position.entry_px || position.entry_price).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              ))}
+            </View>
+          </View>
+        )}
 
         {!shortView && (
           <>

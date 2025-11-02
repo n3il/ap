@@ -33,10 +33,15 @@ export default function TradingViewChart({
 
     const tradingViewSymbol = symbolMap[symbol] || `${symbol}USD`;
 
-    const background = isDark ? '#0f172a' : '#ffffff';
-    const gridColor = isDark
-      ? 'rgba(148, 163, 184, 0.1)'
-      : 'rgba(148, 163, 184, 0.2)';
+    const themeColors = theme.colors;
+    const surfaceColor = themeColors.surface ?? themeColors.backgroundSecondary ?? themeColors.background;
+    const lightSurface = themeColors.background ?? themeColors.surface ?? themeColors.foreground ?? surfaceColor;
+    const background = isDark ? surfaceColor : lightSurface;
+    const toolbarBackground = isDark
+      ? surfaceColor
+      : themeColors.foreground ?? lightSurface;
+    const gridBase = themeColors.muted?.foreground ?? themeColors.border ?? surfaceColor;
+    const gridColor = withOpacity(gridBase, isDark ? 0.15 : 0.25);
 
     return `
       <!DOCTYPE html>
@@ -66,10 +71,10 @@ export default function TradingViewChart({
                 "symbol": "BINANCE:${tradingViewSymbol}",
                 "interval": "1",
                 "timezone": "Etc/UTC",
-                "theme": "${isDark ? 'dark' : 'light'}",
-                "style": "1",
-                "locale": "en",
-                "toolbar_bg": "${isDark ? '#0f172a' : '#f1f5f9'}",
+              "theme": "${isDark ? 'dark' : 'light'}",
+              "style": "1",
+              "locale": "en",
+              "toolbar_bg": "${toolbarBackground}",
                 "enable_publishing": false,
                 "hide_top_toolbar": false,
                 "hide_legend": false,
@@ -98,7 +103,7 @@ export default function TradingViewChart({
         </body>
       </html>
     `;
-  }, [symbol, chartTheme, isDark]);
+  }, [symbol, chartTheme, isDark, theme]);
 
   const styles = useMemo(() => createStyles(theme, isDark), [theme, isDark]);
 

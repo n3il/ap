@@ -1,6 +1,8 @@
 import { useMemo } from 'react';
+import { useColors } from '@/theme';
 
 export default function useInfoSlides() {
+  const { colors: palette, withOpacity } = useColors();
   return useMemo(
     () => [
       {
@@ -10,7 +12,11 @@ export default function useInfoSlides() {
         subtitle: 'Autonomous. Intelligent. Profitable.',
         description:
           'Deploy advanced AI agents that trade crypto 24/7 with sophisticated algorithms',
-        gradient: ['rgba(0, 0, 0, 0.7)', 'rgba(0, 0, 0, 0.7)', 'rgba(0, 0, 0, 0.7)'],
+        gradient: [
+          withOpacity(palette.background ?? palette.surface, 0.9),
+          withOpacity(palette.background ?? palette.surface, 0.9),
+          withOpacity(palette.background ?? palette.surface, 0.9),
+        ],
         statusBarStyle: 'light-content',
       },
       {
@@ -20,7 +26,11 @@ export default function useInfoSlides() {
         description:
           'Launch sophisticated trading agents with custom strategies, risk parameters, and market preferences in just a few taps.',
         features: ['Multiple LLM providers', 'Custom prompts', 'Real-time monitoring'],
-        gradient: ['#1a1a3e', '#2d2d5f', '#1a1a3e'],
+        gradient: [
+          palette.surfaceSecondary ?? palette.surface,
+          palette.primary700 ?? palette.primary,
+          palette.surfaceSecondary ?? palette.surface,
+        ],
         statusBarStyle: 'light-content',
       },
       {
@@ -30,7 +40,11 @@ export default function useInfoSlides() {
         description:
           'Agents analyze market data, news, and technical indicators using Claude, GPT-4, and other cutting-edge models.',
         features: ['Market scan every 15min', 'Position reviews', 'Automated execution'],
-        gradient: ['#2d2d5f', '#1a1a3e', '#0f0f23'],
+        gradient: [
+          palette.primary600 ?? palette.primary,
+          palette.surfaceSecondary ?? palette.surface,
+          palette.background ?? palette.surface,
+        ],
         statusBarStyle: 'light-content',
       },
       {
@@ -40,10 +54,14 @@ export default function useInfoSlides() {
         description:
           'Full transparency with detailed assessments, trade history, and performance metrics for every decision.',
         features: ['Complete audit trail', 'Risk management', 'Performance analytics'],
-        gradient: ['#1a1a3e', '#0f0f23', '#1a1a3e'],
+        gradient: [
+          palette.surfaceSecondary ?? palette.surface,
+          palette.background ?? palette.surface,
+          palette.surfaceSecondary ?? palette.surface,
+        ],
         statusBarStyle: 'light-content',
       },
     ],
-    [],
+    [palette, withOpacity],
   );
 }

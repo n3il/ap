@@ -3,19 +3,9 @@
  * Centralized mock data generation for agent performance charts
  */
 
-// Provider brand colors - neon versions
-export const PROVIDER_COLORS = {
-  openai: '#00ff9f',
-  anthropic: '#ff6b35',
-  deepseek: '#00d4ff',
-  google: '#0099ff',
-  gemini: '#0099ff',
-  meta: '#0080ff',
-  llama: '#0080ff',
-  mistral: '#ffaa00',
-  cohere: '#00ffcc',
-  default: '#94a3b8',
-};
+import darkTheme, { PROVIDER_COLORS } from '@/theme/base';
+
+const { colors: themeColors } = darkTheme;
 
 export const getProviderColor = (llmProvider) => {
   if (!llmProvider) return PROVIDER_COLORS.default;
@@ -120,19 +110,42 @@ export const generateMockData = (timeframe, agentConfig) => {
 export const generateNormalizedMockData = (agentConfig) => {
   const dataPoints = 40; // More points for smooth curves
   const data = [];
-  let currentPnl = 0;
+  let currentPnl = 0; // Start at 0%
+  const crossoverPoint = Math.floor(dataPoints / 3); // One-third through
 
   // Create a seed based on agent ID for consistent but different patterns
   const seed = agentConfig?.id ? parseInt(agentConfig.id.replace(/\D/g, '') || '1') : 1;
-  const trend = seed === 1 ? 1 : seed === 2 ? 0.5 : -0.3; // Different trends per agent
-  const volatility = 0.8;
+  const volatility = 0.6;
 
   for (let i = 0; i < dataPoints; i++) {
     const time = i / (dataPoints - 1); // Normalize to 0-1
 
+    // Calculate trend to ensure positive by crossover point
+    let trend;
+    if (i < crossoverPoint) {
+      // Before crossover: gentle positive trend
+      trend = 0.3;
+    } else if (i === crossoverPoint) {
+      // At crossover: ensure positive if not already
+      if (currentPnl <= 0) {
+        currentPnl = 0.2;
+      }
+      trend = 0.3;
+    } else {
+      // After crossover: maintain positive with agent-specific trend
+      trend = seed === 1 ? 0.4 : seed === 2 ? 0.35 : 0.3;
+    }
+
     // Add trend and random walk
     const change = trend * 0.15 + (Math.random() - 0.5) * volatility;
-    currentPnl = Math.max(-15, Math.min(15, currentPnl + change)); // Clamp for realistic range
+    currentPnl = currentPnl + change;
+
+    // After crossover point, ensure we stay positive
+    if (i >= crossoverPoint) {
+      currentPnl = Math.max(0.1, Math.min(15, currentPnl));
+    } else {
+      currentPnl = Math.max(-15, Math.min(15, currentPnl));
+    }
 
     data.push({
       time,

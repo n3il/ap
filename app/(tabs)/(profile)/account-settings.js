@@ -18,12 +18,15 @@ import { Ionicons, MaterialIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import Animated, { FadeInDown, FadeIn } from 'react-native-reanimated';
 import { supabase } from '@/config/supabase';
+import { useColors } from '@/theme';
 import ContainerView from '@/components/ContainerView';
 
 export default function AccountSettingsScreen() {
   const { user } = useAuth();
   const { theme, isDark, colorScheme, themePreference, setThemePreference } = useTheme();
   const router = useRouter();
+  const colors = useColors();
+  const palette = colors.colors;
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
@@ -123,8 +126,12 @@ export default function AccountSettingsScreen() {
             paddingHorizontal: 4,
             borderRadius: 'xl',
             borderWidth: 1,
-            backgroundColor: isEditing && editable ? 'rgba(99, 102, 241, 0.05)' : 'transparent',
-            borderColor: isEditing && editable ? 'rgba(99, 102, 241, 0.3)' : 'border'
+            backgroundColor: isEditing && editable
+              ? colors.withOpacity(palette.brand500 ?? palette.info, 0.05)
+              : 'transparent',
+            borderColor: isEditing && editable
+              ? colors.withOpacity(palette.brand500 ?? palette.info, 0.3)
+              : 'border'
           }}
           style={{
             fontFamily: Platform.OS === 'ios' ? 'System' : 'sans-serif',
@@ -175,7 +182,7 @@ export default function AccountSettingsScreen() {
                 paddingHorizontal: 4,
                 paddingVertical: 2,
                 borderRadius: 'full',
-                backgroundColor: 'rgba(99, 102, 241, 0.15)'
+                backgroundColor: colors.withOpacity(palette.brand500 ?? palette.info, 0.15)
               }}
             >
               <Text sx={{ color: 'accent', fontWeight: '600' }}>Edit</Text>
@@ -216,7 +223,9 @@ export default function AccountSettingsScreen() {
           <AnimatedBox entering={FadeInDown.delay(100).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6, flex: 1 }}>
             <GlassView
               glassEffectStyle="clear"
-              tintColor={isDark ? "rgba(0, 0, 0, .9)" : "rgba(255, 255, 255, .9)"}
+              tintColor={isDark
+                ? colors.withOpacity(palette.background, 0.9)
+                : colors.withOpacity(palette.foreground, 0.9)}
               style={{
                 borderRadius: 24,
                 padding: 20,
@@ -256,7 +265,9 @@ export default function AccountSettingsScreen() {
           <AnimatedBox entering={FadeInDown.delay(200).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
             <GlassView
               glassEffectStyle="clear"
-              tintColor={isDark ? "rgba(0, 0, 0, .9)" : "rgba(255, 255, 255, .9)"}
+              tintColor={isDark
+                ? colors.withOpacity(palette.background, 0.9)
+                : colors.withOpacity(palette.foreground, 0.9)}
               style={{
                 borderRadius: 24,
                 padding: 20,
@@ -280,7 +291,7 @@ export default function AccountSettingsScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 3,
-                      backgroundColor: 'rgba(99, 102, 241, 0.15)'
+                      backgroundColor: colors.withOpacity(palette.brand500 ?? palette.info, 0.15)
                     }}
                   >
                     <Ionicons name="lock-closed-outline" size={20} color={theme.colors.purple[400]} />
@@ -303,7 +314,9 @@ export default function AccountSettingsScreen() {
           <AnimatedBox entering={FadeInDown.delay(250).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
             <GlassView
               glassEffectStyle="clear"
-              tintColor={isDark ? "rgba(0, 0, 0, .9)" : "rgba(255, 255, 255, .9)"}
+              tintColor={isDark
+                ? colors.withOpacity(palette.background, 0.9)
+                : colors.withOpacity(palette.foreground, 0.9)}
               style={{
                 borderRadius: 24,
                 padding: 20,
@@ -323,7 +336,7 @@ export default function AccountSettingsScreen() {
                       alignItems: 'center',
                       justifyContent: 'center',
                       marginRight: 3,
-                      backgroundColor: 'rgba(168, 85, 247, 0.15)'
+                      backgroundColor: colors.withOpacity(palette.brand500 ?? palette.info, 0.15)
                     }}
                   >
                     <Ionicons
@@ -400,7 +413,9 @@ export default function AccountSettingsScreen() {
           <AnimatedBox entering={FadeInDown.delay(300).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
             <GlassView
               glassEffectStyle="clear"
-              tintColor={isDark ? "rgba(0, 0, 0, .9)" : "rgba(255, 255, 255, .9)"}
+              tintColor={isDark
+                ? colors.withOpacity(palette.background, 0.9)
+                : colors.withOpacity(palette.foreground, 0.9)}
               style={{
                 borderRadius: 24,
                 padding: 20,
@@ -463,14 +478,14 @@ export default function AccountSettingsScreen() {
               sx={{
                 borderRadius: 'xl',
                 overflow: 'hidden',
-                backgroundColor: 'rgba(239, 68, 68, 0.1)',
+                backgroundColor: colors.withOpacity(colors.error, 0.1),
                 borderWidth: 1,
-                borderColor: 'rgba(239, 68, 68, 0.3)'
+                borderColor: colors.withOpacity(colors.error, 0.3)
               }}
             >
               <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 4, paddingHorizontal: 6 }}>
                 <MaterialIcons name="delete-outline" size={22} color="rgb(248, 113, 113)" />
-                <Text sx={{ fontSize: 16, fontWeight: '600', color: '#f87171', marginLeft: 2 }}>
+                <Text sx={{ fontSize: 16, fontWeight: '600', color: 'errorLight', marginLeft: 2 }}>
                   Delete Account
                 </Text>
               </View>

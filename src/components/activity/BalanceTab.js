@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from '@/components/ui';
+import { useColors } from '@/theme';
 import SvgChart, { CHART_DATA_SOURCE } from '@/components/SvgChart';
 
 export default function BalanceTab() {
   const [timeframe, setTimeframe] = useState('7d'); // '1h', '24h', '7d'
+  const { success, withOpacity } = useColors();
 
   // Fetch user's account balance history (mock for now)
   // TODO: Replace with real account balance query
@@ -19,7 +21,7 @@ export default function BalanceTab() {
       <View sx={{ marginBottom: 6 }}>
         <View sx={{}}>
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
-            <Text sx={{ fontSize: 16, fontWeight: '600', color: '#f1f5f9' }}>
+            <Text sx={{ fontSize: 16, fontWeight: '600', color: 'textPrimary' }}>
               Balance
             </Text>
 
@@ -33,13 +35,13 @@ export default function BalanceTab() {
                     paddingHorizontal: 3,
                     paddingVertical: 1.5,
                     borderRadius: 'md',
-                    backgroundColor: timeframe === tf ? 'rgba(52, 211, 153, 0.2)' : 'transparent',
+                    backgroundColor: timeframe === tf ? withOpacity(success, 0.2) : 'transparent',
                   }}
                 >
                   <Text sx={{
                     fontSize: 11,
                     fontWeight: '600',
-                    color: timeframe === tf ? '#34d399' : '#64748b',
+                    color: timeframe === tf ? 'success' : 'secondary500',
                   }}>
                     {tf}
                   </Text>

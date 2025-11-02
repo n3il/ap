@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect, useRef } from 'react';
+import React, { useMemo, useEffect, useRef, useState } from 'react';
 import { View, Text, ActivityIndicator, Button } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import Svg, { Polyline } from 'react-native-svg';
@@ -22,7 +22,7 @@ import { Pressable } from 'react-native';
 const SPARKLINE_WIDTH = 88;
 const SPARKLINE_HEIGHT = 32;
 
-const Sparkline = ({ data = [] }) => {
+const Sparkline = ({ data = [], positiveColor, negativeColor, neutralColor }) => {
   const valid = data.filter((value) => Number.isFinite(value));
 
   if (valid.length < 2) {
@@ -44,14 +44,14 @@ const Sparkline = ({ data = [] }) => {
     .join(' ');
 
   const isUp = valid[valid.length - 1] >= valid[0];
-  const stroke = isUp ? '#34d399' : '#f87171';
+  const stroke = isUp ? positiveColor : negativeColor;
 
   return (
     <Svg width={SPARKLINE_WIDTH} height={SPARKLINE_HEIGHT}>
       <Polyline
         points={points}
         fill="none"
-        stroke={stroke}
+        stroke={stroke ?? neutralColor}
         strokeWidth={2}
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -69,14 +69,19 @@ const PriceColumn = ({
   isHistoryLoading,
   compact,
   isLast,
+  palette,
+  positiveColor,
+  negativeColor,
+  neutralColor,
+  withOpacity,
 }) => {
   const hasChange = Number.isFinite(rangePercent);
   const changeIsPositive = hasChange && rangePercent >= 0;
   const changeColor = hasChange
     ? changeIsPositive
-      ? '#34d399'
-      : '#f87171'
-    : '#94a3b8';
+      ? positiveColor
+      : negativeColor
+    : neutralColor;
 
   // Animated opacity for price flash effect
   const priceOpacity = useSharedValue(0.8);
@@ -102,11 +107,11 @@ const PriceColumn = ({
       <View
         sx={{
           flexDirection: 'row',
-          alignItems: 'center',
+          alignItems: 'flex-end',
           justifyContent: 'space-between',
           paddingVertical: 1,
           borderBottomWidth: isLast ? 0 : 1,
-          borderBottomColor: 'rgba(148, 163, 184, 0.12)',
+          borderBottomColor: withOpacity(neutralColor, 0.12),
         }}
       >
         <View sx={{ flexShrink: 1, paddingRight: 3 }}>
@@ -115,7 +120,7 @@ const PriceColumn = ({
               fontSize: 11,
               textTransform: 'uppercase',
               letterSpacing: 1.2,
-              color: '#94a3b8',
+              color: 'mutedForeground',
               marginBottom: 1,
             }}
           >
@@ -124,7 +129,7 @@ const PriceColumn = ({
           <Animated.Text
             style={[
               {
-                color: '#f8fafc',
+                color: palette.textPrimary,
                 fontSize: 14,
                 fontWeight: '500',
               },
@@ -135,11 +140,11 @@ const PriceColumn = ({
             {formatCurrency(asset?.price)}
           </Animated.Text>
         </View>
-        <View sx={{ alignItems: 'flex-end' }}>
+        <View sx={{ alignItems: 'flex-end', justifyContent: 'flex-end' }}>
           <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
             {hasChange ? formatPercent(rangePercent) : '—'}
           </Text>
-          <Text sx={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>
+          <Text sx={{ fontSize: 11, color: 'secondary500' }}>
             {Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'}
           </Text>
         </View>
@@ -154,7 +159,7 @@ const PriceColumn = ({
           fontSize: 12,
           textTransform: 'uppercase',
           letterSpacing: 1.5,
-          color: '#94a3b8',
+          color: 'mutedForeground',
           marginBottom: 1
         }}
       >
@@ -163,9 +168,9 @@ const PriceColumn = ({
       <Animated.Text
         style={[
           {
-            color: '#f8fafc',
+            color: palette.textPrimary,
             fontSize: 16,
-            fontWeight: '300',
+            fontWeight: '700',
           },
           priceAnimatedStyle,
         ]}
@@ -173,17 +178,22 @@ const PriceColumn = ({
       >
         {formatCurrency(asset?.price)}
       </Animated.Text>
-      <View sx={{ marginTop: 2, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View sx={{ marginTop: 2, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
         <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
           {hasChange ? formatPercent(rangePercent) : '—'}
         </Text>
-        <Text sx={{ fontSize: 11, color: '#64748b', marginLeft: 2 }}>
+        <Text sx={{ fontSize: 11, color: 'secondary500', marginLeft: 2 }}>
           ({Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'})
         </Text>
       </View>
       <View sx={{ marginTop: 3, height: SPARKLINE_HEIGHT }}>
         {!isHistoryLoading && (
-          <Sparkline data={sparklineData} />
+          <Sparkline
+            data={sparklineData}
+            positiveColor={positiveColor}
+            negativeColor={negativeColor}
+            neutralColor={neutralColor}
+          />
         )}
       </View>
     </View>
@@ -194,9 +204,17 @@ export default function MarketPricesWidget({
   tickers,
   sx: customSx,
   timeframe,
-  compact = false,
 }) {
-  const colors = useColors();
+  const [compact, setCompact] = useState(true);
+  const {
+    colors: palette,
+    success,
+    error: errorColor,
+    warning,
+    primary,
+    withOpacity,
+  } = useColors();
+  const neutralColor = palette.mutedForeground;
   const router = useRouter();
   const {
     normalizedTickers,
@@ -248,7 +266,7 @@ export default function MarketPricesWidget({
   };
 
   return (
-    <Pressable onPress={handleMore} sx={customSx}>
+    <Pressable onPress={() => setCompact(!compact)} sx={customSx}>
       <View
         sx={{
           flexDirection: 'row',
@@ -260,22 +278,22 @@ export default function MarketPricesWidget({
         {compact ? (
           <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
             {isLoading ? (
-              <ActivityIndicator size="small" color="#94a3b8" />
+              <ActivityIndicator size="small" color={neutralColor} />
             ) : (
               error ? (
-                <MaterialCommunityIcons name="alert-circle-outline" size={16} color={colors.warning} />
+                <MaterialCommunityIcons name="alert-circle-outline" size={16} color={warning} />
               ) : (
-                <MaterialCommunityIcons name="signal" size={16} color={colors.success} />
+                <MaterialCommunityIcons name="signal" size={16} color={success} />
               )
             )}
             {statusLabel ? (
-              <Text sx={{ fontSize: 11, color: '#94a3b8' }}>
+              <Text sx={{ fontSize: 11, color: 'mutedForeground' }}>
                 {statusLabel}
               </Text>
             ) : null}
           </View>
         ) : (
-          <View sx={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+          <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
             <Button
               variant="outline"
               size="xs"
@@ -299,9 +317,9 @@ export default function MarketPricesWidget({
               <MaterialCommunityIcons
                 name="lightning-bolt"
                 size={14}
-                color={colors.primary}
+                color={primary}
               />
-              <Text sx={{ fontSize: 11, fontWeight: '600', color: colors.primary }}>
+              <Text sx={{ fontSize: 11, fontWeight: '600', color: 'primary' }}>
                 Buy / Sell
               </Text>
             </Button>
@@ -342,6 +360,11 @@ export default function MarketPricesWidget({
                 isHistoryLoading={historyFetching && !history.length}
                 compact={compact}
                 isLast={index === displayAssets.length - 1}
+                palette={palette}
+                positiveColor={success}
+                negativeColor={errorColor}
+                neutralColor={neutralColor}
+                withOpacity={withOpacity}
               />
             );
           })
@@ -355,9 +378,9 @@ export default function MarketPricesWidget({
             }}
           >
             {isLoading ? (
-              <ActivityIndicator size="small" color="#fff" />
+              <ActivityIndicator size="small" color={palette.foreground} />
             ) : (
-              <Text sx={{ fontSize: 14, color: '#94a3b8' }}>No market data</Text>
+              <Text sx={{ fontSize: 14, color: 'mutedForeground' }}>No market data</Text>
             )}
           </View>
         )}

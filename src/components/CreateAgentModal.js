@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GlassCard from './GlassCard';
 import PromptPickerModal from './PromptPickerModal';
 import { PROMPT_TYPES } from '@/services';
+import { useColors } from '@/theme';
 
 export const LLM_PROVIDERS = [
   { id: 'google', name: 'Google', models: ['gemini-2.5-flash-preview-09-2025', 'gemini-1.5-pro'] },
@@ -21,6 +22,11 @@ export default function CreateAgentModal({
   onManagePrompts,
 }) {
   const insets = useSafeAreaInsets();
+  const {
+    colors: palette,
+    info,
+    withOpacity,
+  } = useColors();
   const [formData, setFormData] = useState({
     name: '',
     llm_provider: 'google',
@@ -100,8 +106,8 @@ export default function CreateAgentModal({
           style={{ flex: 1 }}
           sx={{ flex: 1 }}
         >
-          <View sx={{ backgroundColor: '#1e293b', flex: 1, paddingTop: insets.top }}>
-            <View sx={{ padding: 6, borderBottomWidth: 1, borderBottomColor: 'rgba(255, 255, 255, 0.1)' }}>
+          <View sx={{ backgroundColor: 'card', flex: 1, paddingTop: insets.top }}>
+            <View sx={{ padding: 6, borderBottomWidth: 1, borderBottomColor: withOpacity(palette.foreground, 0.1) }}>
               <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
                 <Text variant="2xl" sx={{ fontWeight: 'bold' }}>Create Agent</Text>
                 <TouchableOpacity onPress={onClose}>
@@ -115,16 +121,16 @@ export default function CreateAgentModal({
                 <Text variant="sm" tone="muted" sx={{ marginBottom: 2 }}>Agent Name *</Text>
                 <TextInput
                   sx={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    backgroundColor: withOpacity(palette.foreground, 0.05),
                     color: 'textPrimary',
                     paddingHorizontal: 4,
                     paddingVertical: 3,
                     borderRadius: 'xl',
                     borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                    borderColor: withOpacity(palette.foreground, 0.1)
                   }}
                   placeholder="e.g., AlphaQuant Pro"
-                  placeholderTextColor="#64748b"
+                  placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
                   value={formData.name}
                   onChangeText={(text) => setFormData({ ...formData, name: text })}
                 />
@@ -147,11 +153,11 @@ export default function CreateAgentModal({
                         borderRadius: 'xl',
                         borderWidth: 1,
                         backgroundColor: formData.llm_provider === provider.id
-                          ? 'rgba(59, 130, 246, 0.2)'
-                          : 'rgba(255, 255, 255, 0.05)',
+                          ? withOpacity(info, 0.2)
+                          : withOpacity(palette.foreground, 0.05),
                         borderColor: formData.llm_provider === provider.id
                           ? 'accent'
-                          : 'rgba(255, 255, 255, 0.1)'
+                          : withOpacity(palette.foreground, 0.1)
                       }}
                     >
                       <Text sx={{ color: formData.llm_provider === provider.id ? 'accent' : 'mutedForeground' }}>
@@ -175,11 +181,11 @@ export default function CreateAgentModal({
                         borderRadius: 'lg',
                         borderWidth: 1,
                         backgroundColor: formData.model_name === model
-                          ? 'rgba(59, 130, 246, 0.2)'
-                          : 'rgba(255, 255, 255, 0.05)',
+                          ? withOpacity(info, 0.2)
+                          : withOpacity(palette.foreground, 0.05),
                         borderColor: formData.model_name === model
                           ? 'accent'
-                          : 'rgba(255, 255, 255, 0.1)'
+                          : withOpacity(palette.foreground, 0.1)
                       }}
                     >
                       <Text variant="xs" sx={{ color: formData.model_name === model ? 'accent' : 'mutedForeground' }}>
@@ -194,16 +200,16 @@ export default function CreateAgentModal({
                 <Text variant="sm" tone="muted" sx={{ marginBottom: 2 }}>Initial Capital (USD) *</Text>
                 <TextInput
                   sx={{
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+                    backgroundColor: withOpacity(palette.foreground, 0.05),
                     color: 'textPrimary',
                     paddingHorizontal: 4,
                     paddingVertical: 3,
                     borderRadius: 'xl',
                     borderWidth: 1,
-                    borderColor: 'rgba(255, 255, 255, 0.1)'
+                    borderColor: withOpacity(palette.foreground, 0.1)
                   }}
                   placeholder="10000"
-                  placeholderTextColor="#64748b"
+                  placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
                   keyboardType="numeric"
                   value={formData.initial_capital}
                   onChangeText={(text) => setFormData({ ...formData, initial_capital: text })}
@@ -212,9 +218,9 @@ export default function CreateAgentModal({
 
               <View sx={{
                 marginBottom: 4,
-                backgroundColor: 'rgba(255, 255, 255, 0.04)',
+                backgroundColor: withOpacity(palette.foreground, 0.04),
                 borderWidth: 1,
-                borderColor: 'rgba(255, 255, 255, 0.08)',
+                borderColor: withOpacity(palette.foreground, 0.08),
                 borderRadius: 'xl',
                 padding: 4
               }}>
@@ -231,7 +237,14 @@ export default function CreateAgentModal({
                     <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', textTransform: 'uppercase' }}>Select</Text>
                   </TouchableOpacity>
                 </View>
-                <GlassCard sx={{ padding: 3, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)', backgroundColor: 'rgba(255, 255, 255, 0.04)' }}>
+                <GlassCard
+                  sx={{
+                    padding: 3,
+                    borderWidth: 1,
+                    borderColor: withOpacity(palette.foreground, 0.08),
+                    backgroundColor: withOpacity(palette.foreground, 0.04),
+                  }}
+                >
                   <Text variant="sm" sx={{ fontWeight: '600' }}>
                     {selectedMarketPrompt?.name || 'Default Market Scan'}
                   </Text>
@@ -249,7 +262,14 @@ export default function CreateAgentModal({
                     <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', textTransform: 'uppercase' }}>Select</Text>
                   </TouchableOpacity>
                 </View>
-                <GlassCard sx={{ padding: 3, borderWidth: 1, borderColor: 'rgba(255, 255, 255, 0.08)', backgroundColor: 'rgba(255, 255, 255, 0.04)' }}>
+                <GlassCard
+                  sx={{
+                    padding: 3,
+                    borderWidth: 1,
+                    borderColor: withOpacity(palette.foreground, 0.08),
+                    backgroundColor: withOpacity(palette.foreground, 0.04),
+                  }}
+                >
                   <Text variant="sm" sx={{ fontWeight: '600' }}>
                     {selectedPositionPrompt?.name || 'Default Position Review'}
                   </Text>
@@ -268,8 +288,8 @@ export default function CreateAgentModal({
                   paddingVertical: 3,
                   borderRadius: 'xl',
                   borderWidth: 1,
-                  borderColor: 'rgba(255, 255, 255, 0.08)',
-                  backgroundColor: 'rgba(255, 255, 255, 0.04)'
+                  borderColor: withOpacity(palette.foreground, 0.08),
+                  backgroundColor: withOpacity(palette.foreground, 0.04)
                 }}
               >
                 <Text variant="sm" sx={{ color: 'accent', textAlign: 'center', fontWeight: '600', textTransform: 'uppercase' }}>

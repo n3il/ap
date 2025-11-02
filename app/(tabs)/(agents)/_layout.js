@@ -21,7 +21,7 @@ export default function Layout() {
           headerBackButtonDisplayMode: 'minimal',
           headerTransparent: true,
           headerBlurEffect: 'dark',
-          headerTintColor: '#fff',
+          headerTintColor: colors.colors.foreground,
           headerBackTitleVisible: false,
           headerShadowVisible: false,
           headerLargeStyle: true

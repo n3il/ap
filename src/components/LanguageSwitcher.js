@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, Stack } from '@/components/ui';
 import { useLocalization } from '@/hooks/useLocalization';
+import { useColors } from '@/theme';
 
 const LANGUAGES = [
   { code: 'en', label: 'English', flag: '🇺🇸' },
@@ -10,6 +11,9 @@ const LANGUAGES = [
 
 export default function LanguageSwitcher() {
   const { locale, changeLocale } = useLocalization();
+  const { colors: palette, success } = useColors();
+  const inactiveBackground = palette.surface ?? palette.background;
+  const inactiveBorder = palette.border;
 
   return (
     <View sx={{ width: '100%' }}>
@@ -30,8 +34,8 @@ export default function LanguageSwitcher() {
                 paddingHorizontal: 16,
                 borderRadius: 8,
                 borderWidth: 1,
-                borderColor: isActive ? '#10b981' : '#333',
-                backgroundColor: isActive ? '#10b981' : '#1a1a1a',
+                borderColor: isActive ? success : inactiveBorder,
+                backgroundColor: isActive ? success : inactiveBackground,
               }}
               onPress={() => changeLocale(language.code)}
               activeOpacity={0.85}
@@ -43,7 +47,7 @@ export default function LanguageSwitcher() {
                 variant="sm"
                 sx={{
                   fontWeight: '500',
-                  color: isActive ? 'white' : 'textPrimary',
+                  color: isActive ? 'foreground' : 'textPrimary',
                 }}
               >
                 {language.label}

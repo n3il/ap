@@ -17,7 +17,7 @@ export default function WalletAddressCard({ address, isOwnAgent = false, variant
 
   return (
     <GlassCard>
-      <Text variant="xs" sx={{ color: '#94a3b8', marginBottom: 1.5, textTransform: 'uppercase', letterSpacing: 1, fontSize: 9 }}>
+      <Text variant="xs" sx={{ color: 'mutedForeground', marginBottom: 1.5, textTransform: 'uppercase', letterSpacing: 1, fontSize: 9 }}>
         Hyperliquid Wallet
       </Text>
       <Text

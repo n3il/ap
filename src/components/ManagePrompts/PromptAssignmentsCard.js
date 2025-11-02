@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from '@/components/ui';
 import GlassCard from '@/components/GlassCard';
 import { PROMPT_TYPES } from '@/services';
+import { useColors } from '@/theme';
 
 const PromptAssignmentsCard = ({
   selectedMarketPrompt,
@@ -11,18 +12,28 @@ const PromptAssignmentsCard = ({
   isFetching,
   isMutating,
 }) => {
+  const { colors: palette, withOpacity } = useColors();
   const renderPromptBlock = (label, summary, description, instruction, onPress) => (
     <TouchableOpacity onPress={onPress} sx={{ marginBottom: 3 }} activeOpacity={0.8}>
       <View sx={{ padding: 3 }}>
-        <Text variant="sm" sx={{ color: '#cbd5e1', fontWeight: '600' }}>{label}</Text>
-        <Text variant="xs" sx={{ color: '#94a3b8', textTransform: 'uppercase', marginTop: 1, letterSpacing: 1 }}>
+        <Text variant="sm" sx={{ color: 'textSecondary', fontWeight: '600' }}>{label}</Text>
+        <Text variant="xs" sx={{ color: 'mutedForeground', textTransform: 'uppercase', marginTop: 1, letterSpacing: 1 }}>
           {summary || 'Default Prompt'}
         </Text>
-        <Text variant="xs" sx={{ color: '#64748b', marginTop: 2 }}>
+        <Text variant="xs" sx={{ color: 'secondary500', marginTop: 2 }}>
           {description ||
             'Configure a custom prompt to override the default AlphaQuant instruction.'}
         </Text>
-        <Text variant="xs" sx={{ color: 'rgba(100, 116, 139, 0.7)', marginTop: 3, fontFamily: 'monospace', lineHeight: 16 }} numberOfLines={3}>
+        <Text
+          variant="xs"
+          sx={{
+            color: withOpacity(palette.secondary500 ?? palette.mutedForeground, 0.7),
+            marginTop: 3,
+            fontFamily: 'monospace',
+            lineHeight: 16,
+          }}
+          numberOfLines={3}
+        >
           {instruction || 'Uses the built-in AlphaQuant system instruction.'}
         </Text>
         <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', marginTop: 3 }}>Tap to change →</Text>
@@ -33,7 +44,7 @@ const PromptAssignmentsCard = ({
   return (
     <GlassCard sx={{ padding: 4 }}>
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 3 }}>
-        <Text sx={{ color: '#cbd5e1', fontSize: 16, fontWeight: '600' }}>Think Strat</Text>
+        <Text sx={{ color: 'textSecondary', fontSize: 16, fontWeight: '600' }}>Think Strat</Text>
         <TouchableOpacity
           onPress={onOpenLibrary}
           sx={{
@@ -41,8 +52,8 @@ const PromptAssignmentsCard = ({
             paddingVertical: 2,
             borderRadius: 'lg',
             borderWidth: 1,
-            borderColor: 'rgba(255, 255, 255, 0.08)',
-            backgroundColor: 'rgba(255, 255, 255, 0.04)'
+            borderColor: withOpacity(palette.foreground, 0.08),
+            backgroundColor: withOpacity(palette.foreground, 0.04)
           }}
           activeOpacity={0.8}
         >
@@ -52,7 +63,7 @@ const PromptAssignmentsCard = ({
         </TouchableOpacity>
       </View>
       {isFetching ? (
-        <Text variant="sm" sx={{ color: '#64748b' }}>Loading prompts...</Text>
+        <Text variant="sm" sx={{ color: 'secondary500' }}>Loading prompts...</Text>
       ) : (
         <>
           {renderPromptBlock(
@@ -72,7 +83,7 @@ const PromptAssignmentsCard = ({
         </>
       )}
       {(isMutating) ? (
-        <Text variant="xs" sx={{ color: '#64748b', marginTop: 3 }}>Updating agent prompt selection...</Text>
+        <Text variant="xs" sx={{ color: 'secondary500', marginTop: 3 }}>Updating agent prompt selection...</Text>
       ) : null}
     </GlassCard>
   );

@@ -696,7 +696,7 @@ export default function MarketsScreen() {
 
   return (
     <ContainerView>
-      <View sx={{ paddingHorizontal: 4, paddingTop: 6, alignSelf: 'flex-start', marginBottom: 3 }}>
+      <View sx={{ alignSelf: 'flex-start', marginBottom: 3 }}>
         <SectionTitle>Trade</SectionTitle>
       </View>
 
@@ -718,7 +718,6 @@ const createStyles = (theme) => {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'start',
-      paddingHorizontal: 20,
       paddingVertical: 16,
       borderBottomWidth: 1,
       borderBottomColor: divider,
@@ -752,7 +751,6 @@ const createStyles = (theme) => {
     },
     tabBar: {
       flexDirection: 'row',
-      paddingHorizontal: 20,
       paddingVertical: 12,
       gap: 8,
       borderBottomWidth: 1,
@@ -779,7 +777,6 @@ const createStyles = (theme) => {
       flex: 1,
     },
     contentContainer: {
-      padding: 20,
       paddingBottom: 100,
     },
     section: {

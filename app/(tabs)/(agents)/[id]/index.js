@@ -24,6 +24,7 @@ import TradesTab from '@/components/agents/TradesTab';
 import WalletTab from '@/components/agents/WalletTab';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
 import { useColors } from '@/theme';
+import { ROUTES } from '@/config/routes';
 
 const AgentReadScreen = () => {
   const colors = useColors();
@@ -184,7 +185,7 @@ const AgentReadScreen = () => {
   const handleOpenManageScreen = () => {
     if (!agentId) return;
     router.push({
-      pathname: '/(tabs)/(explore)/agent/[id]/manage',
+      pathname: ROUTES.TABS_EXPLORE_AGENT_ID_MANAGE.path,
       params: { id: agentId },
     });
   };
@@ -200,7 +201,11 @@ const AgentReadScreen = () => {
               paddingVertical: 8,
             }}
           >
-            <MaterialCommunityIcons name="pencil-outline" size={22} color="#d8b4fe" />
+            <MaterialCommunityIcons
+              name="pencil-outline"
+              size={22}
+              color={colors.colors.brand300 ?? colors.primary}
+            />
           </TouchableOpacity>
         ),
       });
@@ -211,7 +216,7 @@ const AgentReadScreen = () => {
     return (
       <ContainerView>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-          <ActivityIndicator size="large" color="#fff" />
+          <ActivityIndicator size="large" color={colors.colors.foreground} />
         </View>
       </ContainerView>
     );
@@ -233,7 +238,7 @@ const AgentReadScreen = () => {
               borderRadius: 'xl'
             }}
           >
-            <Text sx={{ color: '#e2e8f0', fontWeight: '600' }}>Go Back</Text>
+            <Text sx={{ color: 'textSecondary', fontWeight: '600' }}>Go Back</Text>
           </TouchableOpacity>
         </View>
       </ContainerView>
@@ -297,14 +302,13 @@ const AgentReadScreen = () => {
                     borderRadius: 100,
                     alignItems: 'center',
                     justifyContent: 'center',
-                    // backgroundColor: '#000000ff'
                   }}
                 >
                   <TouchableOpacity onPress={() => handleTabPress(index)}>
                     <MaterialCommunityIcons
                       name={icon}
                       size={22}
-                      color={page === index ? colors.accent : '#64748b'}
+                      color={page === index ? colors.accent : colors.colors.secondary500 ?? colors.secondary}
                     />
                   </TouchableOpacity>
               </GlassView>

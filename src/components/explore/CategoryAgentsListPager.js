@@ -11,28 +11,26 @@ export default function CategoryAgentsListPager() {
     {
       key: 'top',
       label: 'Top',
-      content: <AgentList queryKey={['explore-agents', 'top']} />,
+      content: <AgentList queryKey={['explore-agents']} showOpenPositions />,
     },
     {
       key: 'popular',
       label: 'Popular',
-      content: <AgentList queryKey={['explore-agents', 'popular']} />,
+      content: <AgentList queryKey={['explore-agents', 'popular']} showOpenPositions />,
     },
     {
       key: 'new',
       label: 'New',
-      content: <AgentList queryKey={['explore-agents', 'new']} />,
+      content: <AgentList queryKey={['explore-agents', 'new']} showOpenPositions />,
     },
   ];
 
   return (
-    <View style={{ flex: 1 }}>
-      <BasePagerView
-        tabs={tabs}
-        initialPage={0}
-        tabTextStyle={{ color: theme.colors.text.secondary }}
-        activeTabTextStyle={{ color: theme.colors.accent }}
-      />
-    </View>
+    <BasePagerView
+      tabs={tabs}
+      initialPage={0}
+      tabTextStyle={{ color: theme.colors.text.secondary }}
+      activeTabTextStyle={{ color: theme.colors.accent }}
+    />
   );
 }

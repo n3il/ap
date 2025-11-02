@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
+import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -15,18 +15,24 @@ import { VideoView, useVideoPlayer } from 'expo-video';
 import InfoSlides from '@/components/InfoSlides';
 import useRouteAuth from '@/hooks/useRouteAuth';
 import { ROUTES } from '@/config/routes';
+import { useColors } from '@/theme';
 
 const { width, height } = Dimensions.get('window');
-
-// const DEFAULT_GRADIENT = ['rgba(0, 0, 0, 0.9)', 'rgba(255, 255, 255, 0.7)', 'rgba(0, 0, 0, 0.9)'];
-const DEFAULT_GRADIENT = ['rgba(0, 0, 0, 1)', 'rgba(0, 0, 0, 0.1)', 'rgba(0, 0, 0, 1)'];
-// const DEFAULT_GRADIENT = ['rgba(255, 255, 255, 0.7)', 'rgba(0, 0, 0, 0.9', 'rgba(255, 255, 255, 0.7)'];
 
 export default function GetStartedScreen() {
   const [currentSlide, setCurrentSlide] = useState(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const { requireAuth } = useRouteAuth();
+  const { colors: palette, withOpacity } = useColors();
+  const gradient = useMemo(
+    () => [
+      withOpacity(palette.background, 1),
+      withOpacity(palette.background, 0.1),
+      withOpacity(palette.background, 1),
+    ],
+    [palette.background, withOpacity],
+  );
 
   useEffect(() => {
     Animated.parallel([
@@ -93,7 +99,7 @@ export default function GetStartedScreen() {
 
       {/* Gradient Overlay */}
       <LinearGradient
-        colors={DEFAULT_GRADIENT}
+      colors={gradient}
         style={{
           position: 'absolute',
           top: 0,
@@ -128,12 +134,12 @@ export default function GetStartedScreen() {
                 onPress={() => handleAuth('login')}
                 activeOpacity={0.8}
                 sx={{
-                  borderColor: 'black',
+                  borderColor: 'border',
                   borderRadius: 'full',
                   flex: 1,
                 }}
               >
-                <Text variant="lg" sx={{ fontWeight: 300, color: '#fff' }}>
+                <Text variant="lg" sx={{ fontWeight: 300, color: 'foreground' }}>
                   Log in
                 </Text>
               </Button>
@@ -143,12 +149,12 @@ export default function GetStartedScreen() {
                 onPress={() => handleAuth('signup')}
                 activeOpacity={0.8}
                 sx={{
-                  borderColor: 'black',
+                  borderColor: 'border',
                   borderRadius: 'full',
                   flex: 1,
                 }}
               >
-                <Text variant="lg" sx={{ fontWeight: 500, color: '#000' }}>
+                <Text variant="lg" sx={{ fontWeight: 500, color: 'textPrimary' }}>
                   Get Started
                 </Text>
               </Button>

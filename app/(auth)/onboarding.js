@@ -17,6 +17,7 @@ import ContainerView from '@/components/ContainerView';
 import { useLocalization } from '@/hooks/useLocalization';
 import { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { AnimatedBox } from '@/components/ui/animated';
+import { useColors } from '@/theme';
 
 export default function OnboardingScreen() {
   const [currentStep, setCurrentStep] = useState(0);
@@ -24,6 +25,7 @@ export default function OnboardingScreen() {
   const router = useRouter();
   const { completeOnboarding, user, signOut } = useAuth();
   const { t } = useLocalization();
+  const colors = useColors();
 
   const handleSignOut = async () => {
     Alert.alert(
@@ -105,7 +107,7 @@ export default function OnboardingScreen() {
       theme,
     });
     setLoading(false);
-
+    router.replace('/(tabs)/(explore)');
     if (error) {
       Alert.alert(t('common.error'), t('onboarding.errors.onboardingFailed'));
     }
@@ -153,7 +155,7 @@ export default function OnboardingScreen() {
               <TextInput
                 style={{ marginTop: 12, paddingVertical: 12, fontSize: 30, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1 }}
                 sx={{ borderBottomColor: 'foreground' }}
-                selectionColor="#fff"
+                selectionColor={colors.colors.foreground}
                 value={displayName}
                 onChangeText={setDisplayName}
                 placeholder={t('onboarding.steps.profile.displayNamePlaceholder')}
@@ -215,7 +217,9 @@ export default function OnboardingScreen() {
                     paddingHorizontal: 0.5,
                   }}
                   style={{
-                    backgroundColor: notificationsEnabled ? '#2da44e' : '#666',
+                    backgroundColor: notificationsEnabled
+                      ? colors.success
+                      : colors.colors.secondary700 ?? colors.secondary,
                   }}
                 >
                   <View
@@ -223,7 +227,7 @@ export default function OnboardingScreen() {
                       width: 24,
                       height: 24,
                       borderRadius: 'full',
-                      backgroundColor: '#fff',
+                      backgroundColor: 'foreground',
                     }}
                     style={{
                       alignSelf: notificationsEnabled ? 'flex-end' : 'flex-start',
@@ -331,11 +335,12 @@ export default function OnboardingScreen() {
                         borderRadius: 'sm',
                       }}
                       style={{
-                        backgroundColor: index === currentStep
-                          ? '#fff'
-                          : index < currentStep
-                          ? 'rgba(255, 255, 255, 0.7)'
-                          : 'rgba(255, 255, 255, 0.3)',
+                        backgroundColor:
+                          index === currentStep
+                            ? colors.colors.foreground
+                            : index < currentStep
+                              ? colors.withOpacity(colors.colors.foreground, 0.7)
+                              : colors.withOpacity(colors.colors.foreground, 0.3),
                       }}
                     />
                   ))}

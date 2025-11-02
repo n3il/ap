@@ -4,6 +4,7 @@ import useInfoSlides from '@/hooks/useInfoSlides';
 import { Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Image from './ui/Image';
+import { useColors } from '@/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -12,6 +13,15 @@ export default function InfoSlides({ onSlideChange }) {
   const scrollX = useRef(new Animated.Value(0)).current;
   const [activeSlide, setActiveSlide] = useState(0);
   const activeIndexRef = useRef(0);
+  const {
+    colors: palette,
+    accent,
+    primary,
+    withOpacity,
+  } = useColors();
+  const brandColor = palette.brand500 ?? primary;
+  const foreground = palette.foreground ?? palette.textPrimary;
+  const background = palette.background ?? palette.surface ?? palette.input;
 
   // Notify parent when slide changes
   useEffect(() => {
@@ -107,11 +117,11 @@ export default function InfoSlides({ onSlideChange }) {
                     style={{
                       fontWeight: '500',
                       letterSpacing: 3,
-                      color: '#fff',
+                      color: foreground,
                       marginBottom: 16,
                       fontSize: 30,
                       lineHeight: 36,
-                      textShadowColor: 'rgba(0, 0, 0, 0.5)',
+                      textShadowColor: withOpacity(background, 0.5),
                       textShadowOffset: { width: 2, height: 2 },
                       textShadowRadius: 2,
                     }}
@@ -124,7 +134,7 @@ export default function InfoSlides({ onSlideChange }) {
                     sx={{
                       fontWeight: '300',
                       color: 'accent',
-                      textShadowColor: 'rgba(0, 0, 0, 1)',
+                      textShadowColor: withOpacity(background, 1),
                       textShadowOffsetWidth: 0,
                       textShadowOffsetHeight: 0,
                       textShadowRadius: 20,
@@ -198,13 +208,13 @@ export default function InfoSlides({ onSlideChange }) {
                         width: 64,
                         height: 64,
                         borderRadius: 20,
-                        backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                        backgroundColor: withOpacity(brandColor, 0.2),
                         justifyContent: 'center',
                         alignItems: 'center',
                         marginBottom: 24,
                       }}
                     >
-                      <Ionicons name={slide.icon} size={32} color="#6366f1" />
+                      <Ionicons name={slide.icon} size={32} color={brandColor} />
                     </View>
                   )}
 
@@ -213,7 +223,7 @@ export default function InfoSlides({ onSlideChange }) {
                     style={{
                       fontSize: 32,
                       fontWeight: '700',
-                      color: '#ffffff',
+                      color: foreground,
                       marginBottom: 16,
                       letterSpacing: -0.5,
                     }}
@@ -226,7 +236,7 @@ export default function InfoSlides({ onSlideChange }) {
                     style={{
                       fontSize: 17,
                       fontWeight: '400',
-                      color: 'rgba(255, 255, 255, 0.8)',
+                      color: withOpacity(foreground, 0.8),
                       lineHeight: 26,
                       marginBottom: 24,
                     }}
@@ -251,7 +261,7 @@ export default function InfoSlides({ onSlideChange }) {
                               width: 6,
                               height: 6,
                               borderRadius: 3,
-                              backgroundColor: '#7CFFAA',
+                              backgroundColor: accent,
                             }}
                           />
                           <Text
@@ -259,7 +269,7 @@ export default function InfoSlides({ onSlideChange }) {
                             style={{
                               fontSize: 15,
                               fontWeight: '500',
-                              color: 'rgba(255, 255, 255, 0.9)',
+                              color: withOpacity(foreground, 0.9),
                             }}
                           >
                             {feature}
@@ -292,7 +302,7 @@ export default function InfoSlides({ onSlideChange }) {
                 width: isActive ? 32 : 8,
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: isActive ? '#7CFFAA' : 'rgba(255, 255, 255, 0.3)',
+                backgroundColor: isActive ? accent : withOpacity(foreground, 0.3),
                 transform: [{ scale: isActive ? 1 : 0.8 }],
               }}
             />

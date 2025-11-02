@@ -13,7 +13,7 @@ export default function TradesTab({ trades = [], isOwnAgent }) {
             {`All Trades (${trades.length})`}
           </SectionTitle>
           {trades.length === 0 ? (
-            <Text sx={{ color: '#94a3b8', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
+            <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
               No trades yet
             </Text>
           ) : (
@@ -21,7 +21,7 @@ export default function TradesTab({ trades = [], isOwnAgent }) {
           )}
         </>
       ) : (
-        <Text variant="sm" sx={{ color: '#64748b', fontSize: 12, lineHeight: 18 }}>
+        <Text variant="sm" sx={{ color: 'secondary500', fontSize: 12, lineHeight: 18 }}>
           Trading history is restricted to the original desk. Copy the agent to build your own ledger.
         </Text>
       )}

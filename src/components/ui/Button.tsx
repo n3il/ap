@@ -120,7 +120,9 @@ const Button = React.forwardRef<React.ElementRef<typeof TouchableOpacity>, Butto
     const computedStyle = sxToStyle(mergedSx);
 
     const textColor = textColorMap[variant];
-    const contentColor = typedTheme.colors[textColor] ?? '#ffffff';
+    const contentColor = typedTheme.colors[textColor]
+      ?? typedTheme.colors.foreground
+      ?? typedTheme.colors.textPrimary;
     const { sx: sxTextProps, ...restTextProps } = textProps || {};
 
     return (

@@ -1,20 +1,23 @@
 import React from 'react';
 import { View } from '@/components/ui';
 import { GlassView } from 'expo-glass-effect';
+import darkTheme from '@/theme/base';
+import { withOpacity } from '@/theme/utils';
 
+const palette = darkTheme.colors;
 const GLASS_VARIATIONS = [
-  'rgba(255, 99, 132, 0.3)',   // Pink
-  'rgba(54, 162, 235, 0.3)',   // Blue
-  'rgba(255, 206, 86, 0.3)',   // Yellow
-  'rgba(75, 192, 192, 0.3)',   // Teal
-  'rgba(153, 102, 255, 0.3)',  // Purple
-  'rgba(255, 159, 64, 0.3)',   // Orange
-  'rgba(46, 204, 113, 0.3)',   // Green
-  'rgba(231, 76, 60, 0.3)',    // Red
-  'rgba(52, 152, 219, 0.3)',   // Light Blue
-  'rgba(155, 89, 182, 0.3)',   // Violet
-  'rgba(241, 196, 15, 0.3)',   // Gold
-  'rgba(26, 188, 156, 0.3)',   // Turquoise
+  withOpacity(palette.accentPalette[300], 0.3),
+  withOpacity(palette.primary[400], 0.3),
+  withOpacity(palette.warning.light, 0.3),
+  withOpacity(palette.success.light, 0.3),
+  withOpacity(palette.brand[500], 0.3),
+  withOpacity(palette.warning.DEFAULT, 0.3),
+  withOpacity(palette.success.DEFAULT, 0.3),
+  withOpacity(palette.error.DEFAULT, 0.3),
+  withOpacity(palette.info.DEFAULT, 0.3),
+  withOpacity(palette.purple[400], 0.3),
+  withOpacity(palette.warning.dark, 0.3),
+  withOpacity(palette.accentPalette[500], 0.3),
 ];
 
 export default function GlassVariations({ style, sx }) {

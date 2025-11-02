@@ -6,9 +6,11 @@ import { formatRelativeDate } from '@/utils/date';
 import { PROVIDER_COLORS } from '@/factories/mockAgentData';
 import { formatTradeActionLabel, getTradeActionVariant } from '@/utils/tradeActions';
 import TradeActionDisplay from './TradeActionDisplay';
+import { useColors } from '@/theme';
 
 export default function AssessmentCard({ assessment }) {
   const [expanded, setExpanded] = useState(false);
+  const { colors: palette, withOpacity } = useColors();
 
   const extractedAction = useMemo(() => {
     if (!assessment.llm_response_text) return null;
@@ -32,12 +34,13 @@ export default function AssessmentCard({ assessment }) {
 
   const typeLabel = assessment.type === 'MARKET_SCAN' ? 'Market Scan' : 'Position Review';
 
+  console.log({ palette })
   return (
     <Card glassEffectStyle="clear" variant="glass" sx={{ marginBottom: 3 }}>
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
         <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           <Avatar
-            backgroundColor={PROVIDER_COLORS[assessment.agent?.llm_provider]}
+            backgroundColor={palette.providers[assessment.agent?.llm_provider]}
             name={assessment.agent?.name}
             email={assessment.agent?.model_name}
             size="sm"
@@ -95,7 +98,7 @@ export default function AssessmentCard({ assessment }) {
             <TouchableOpacity
               onPress={() => setExpanded(!expanded)}
               style={{
-                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                backgroundColor: withOpacity(palette.background ?? palette.surface, 0.2),
                 borderRadius: 8,
                 padding: 8,
                 marginTop: 8,

@@ -12,6 +12,7 @@ import ContainerView from '@/components/ContainerView';
 import { TextInput } from '@/components/ui';
 import { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { AnimatedBox } from '@/components/ui/animated';
+import { useColors } from '@/theme';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
@@ -26,6 +27,8 @@ export default function Auth() {
   const router = useRouter();
   const { signInWithGoogle, signInWithApple, signInWithPhone, signInWithEmailOtp } = useAuth();
   const { t } = useLocalization();
+  const colors = useColors();
+  const palette = colors.colors;
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -138,7 +141,7 @@ export default function Auth() {
                   style={{ marginTop: 12,paddingVertical: 12, fontSize: 30, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1 }}
                   sx={{borderBottomColor: 'foreground'}}
                   autoFocus
-                  selectionColor="#fff"
+                  selectionColor={palette.foreground}
                   textContentType="telephoneNumber"
                   placeholder={t('login.phonePlaceholder')}
                   value={phoneNumber}
@@ -185,7 +188,7 @@ export default function Auth() {
                 <TextInput
                   style={{ marginTop: 12,paddingVertical: 12, fontSize: 30, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1 }}
                   sx={{borderBottomColor: 'foreground'}}
-                  selectionColor="#fff"
+                  selectionColor={palette.foreground}
                   textContentType="emailAddress"
                   placeholder={t('login.emailPlaceholder')}
                   autoFocus
@@ -237,7 +240,7 @@ export default function Auth() {
                   exiting={FadeOut.duration(150)}
                   sx={{ flexDirection: 'row', alignItems: 'center' }}
                 >
-                  <MaterialIcons name="email" size={22} color="#fff" />
+                  <MaterialIcons name="email" size={22} color={palette.foreground} />
                 </AnimatedBox>
               ) : (
                 <AnimatedBox
@@ -246,7 +249,7 @@ export default function Auth() {
                   exiting={FadeOut.duration(150)}
                   sx={{ flexDirection: 'row', alignItems: 'center' }}
                 >
-                  <MaterialIcons name="phonelink-ring" size={22} color="#fff" />
+                  <MaterialIcons name="phonelink-ring" size={22} color={palette.foreground} />
                 </AnimatedBox>
               )}
             </Button>
@@ -257,7 +260,7 @@ export default function Auth() {
               disabled={loading}
               sx={{ flex: 1, borderRadius: 'full' }}
             >
-              <AntDesign name="google" size={22} color="#DB4437" />
+              <AntDesign name="google" size={22} color={colors.error} />
             </Button>
 
             <Button
@@ -266,7 +269,7 @@ export default function Auth() {
               disabled={loading}
               sx={{ flex: 1, borderRadius: 'full' }}
             >
-              <AntDesign name="apple" size={22} color="#fff" />
+              <AntDesign name="apple" size={22} color={palette.foreground} />
             </Button>
           </View>
         </AnimatedBox>
