@@ -144,19 +144,6 @@ export const generateNormalizedMockData = (agentConfig) => {
 };
 
 /**
- * Get mock agents with generated data for GiftedChart
- */
-export const getMockAgentsForGiftedChart = (timeframe = '1h') => {
-  return FACTORY_AGENTS.map(agent => ({
-    id: agent.id,
-    name: agent.name,
-    llm_provider: agent.llm_provider,
-    color: getProviderColor(agent.llm_provider),
-    data: generateMockData(timeframe, agent),
-  }));
-};
-
-/**
  * Get mock agents with normalized data for SvgChart
  */
 export const getMockAgentsForSvgChart = () => {

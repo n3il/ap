@@ -26,11 +26,8 @@ export default function AssessmentCard({ assessment }) {
               {formatDate(assessment.timestamp)}
             </Text>
           </View>
-          {expanded ? (
-            <MaterialCommunityIcons name="chevron-up" size={24} color="#ddd" />
-          ) : (
-            <MaterialCommunityIcons name="chevron-down" size={24} color="#ddd" />
-          )}
+
+
         </Stack>
 
         {assessment.trade_action_taken && (
@@ -40,7 +37,6 @@ export default function AssessmentCard({ assessment }) {
             </Text>
           </View>
         )}
-
 
         {!expanded ? (
           <Text variant="sm" tone="primary" sx={{ marginTop: 2 }}>

@@ -9,7 +9,6 @@ import {
   formatPercent,
 } from '@/utils/marketFormatting';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import GiftedChart from './GiftedChart';
 import SectionTitle from '@/components/SectionTitle';
 import { useSx } from 'dripsy';
 import TimeFrameSelector from '@/components/TimeFrameSelector';
