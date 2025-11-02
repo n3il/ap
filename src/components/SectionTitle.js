@@ -10,7 +10,7 @@ export default function SectionTitle({ title, error, successIcon, errorIcon, sx 
           fontSize: 12,
           textTransform: 'uppercase',
           letterSpacing: 1.5,
-          color: '#94a3b8',
+          color: 'textTertiary',
           ...sx
         }}
       >

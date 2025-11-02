@@ -264,22 +264,21 @@ const AgentReadScreen = () => {
   };
 
   return (
-    <ContainerView style={{ flex: 1, paddingHorizontal: 12, paddingTop: 60 }}>
+    <ContainerView style={{ flex: 1, paddingTop: 60 }}>
       <ScrollView style={{ flex: 1, paddingTop: 24 }}>
         {/* Header section with AgentCard and Tabs */}
-        <View style={{ paddingBottom: 12 }} key={pendingAssessment}>
+        <View key={pendingAssessment}>
           <AgentCard
             agent={agent}
             isOwnAgent={isOwnAgent}
             onPress={null}
             shortView
-            glassEffectStyle="clear"
           />
 
           <View
             horizontal
             showsHorizontalScrollIndicator={false}
-            style={{ maxHeight: 60, marginBottom: 3, marginHorizontal: 4, marginVertical: 12 }}
+            style={{ maxHeight: 60,  marginHorizontal: 24, marginVertical: 0 }}
             contentContainerStyle={{
               paddingHorizontal: 10,
               alignItems: 'flex-start',
@@ -289,7 +288,7 @@ const AgentReadScreen = () => {
               {TABS.map(({ title, icon }, index) => (
                 <GlassView
                   key={title}
-                  glassEffectStyle='clear'
+                  glassEffectStyle='regular'
                   style={{
                     padding: 12,
                     borderRadius: 100,
@@ -308,7 +307,7 @@ const AgentReadScreen = () => {
               </GlassView>
               ))}
                 <GlassView
-                  glassEffectStyle='clear'
+                  glassEffectStyle='regular'
                   style={{
                     padding: 12,
                     borderRadius: 20,
@@ -324,7 +323,7 @@ const AgentReadScreen = () => {
                       <ActivityIndicator size="small" color={colors.primary} />
                     ) : (
                       <MaterialCommunityIcons
-                        name={"lightning-bolt-outline"}
+                        name={"gesture-tap-button"}
                         size={22}
                         color={colors.primary}
                       />

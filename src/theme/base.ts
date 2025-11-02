@@ -82,7 +82,7 @@ const darkTheme = {
     text: {
       primary: '#f8fafc',
       secondary: '#cbd5f5',
-      tertiary: '#94a3b8',
+      tertiary: '#363b41ff',
     },
     card: {
       DEFAULT: '#1e293b',

@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Stack, StatusBadge, LabelValue, Divider, 
 import { LLM_PROVIDERS } from './CreateAgentModal';
 import ActiveDurationBadge from './ActiveDurationBadge';
 import WalletAddressCard from './WalletAddressCard';
+import { GlassView } from 'expo-glass-effect';
 
 export default function AgentCard({
   agent,
@@ -105,10 +106,13 @@ export default function AgentCard({
   const isActive = Boolean(agent.is_active);
 
   return (
-    <Card
+    <GlassView
       variant="glass"
-      glassIntensity={100}
-      glassTintColor="rgba(0, 0, 0, 0.9)"
+      glassEffectStyle="regular"
+      style={{
+        padding: 12,
+        borderRadius: 16,
+      }}
       {...props}
     >
       <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
@@ -214,6 +218,6 @@ export default function AgentCard({
           </View>
         }
       </TouchableOpacity>
-    </Card>
+    </GlassView>
   );
 }

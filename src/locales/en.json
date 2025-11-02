@@ -125,5 +125,11 @@
     "cancel": "Cancel",
     "save": "Save"
   },
-  "legalNote": "By continuing, you confirm that you have read and agree to our [Terms of Service] and [Privacy Policy]."
+  "legalNote": "By continuing, you confirm that you have read and agree to our [Terms of Service] and [Privacy Policy].",
+  "tradeActionTaken": {
+    "BUY": "Buy",
+    "SELL": "Sell",
+    "HOLD": "Hold",
+    "NO_ACTION": "No Trades"
+  }
 }

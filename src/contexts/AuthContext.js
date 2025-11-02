@@ -293,6 +293,8 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  console.log(hasCompletedOnboarding)
+
   const value = {
     user,
     session,

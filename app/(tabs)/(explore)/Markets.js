@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Alert,
   ActivityIndicator,
   Button,
+  BasePagerView,
 } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import ContainerView from '@/components/ContainerView';
@@ -26,11 +27,8 @@ import {
 import { useTheme } from '@/contexts/ThemeContext';
 import { withOpacity } from '@/theme/utils';
 import SectionTitle from '@/components/SectionTitle';
-import PagerView from 'react-native-pager-view';
 
 const { width } = Dimensions.get('window');
-
-const TABS = ['Trade', 'Positions', 'History', 'Account'];
 
 const LEDGER_TABLE_CONFIG = {
   positions: {
@@ -324,12 +322,9 @@ export default function MarketsScreen() {
   const router = useRouter();
   const { theme, isDark } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const [selectedTab, setSelectedTab] = useState('Trade');
   const [selectedSymbol, setSelectedSymbol] = useState('BTC');
   const [ledgerType, setLedgerType] = useState('paper');
   const [selectedLedgerAccount, setSelectedLedgerAccount] = useState('ALL');
-  const [page, setPage] = useState(0);
-  const pagerRef = useRef(null);
   const { assets, isLoading: pricesLoading } = useMarketSnapshot();
   const {
     trades,
@@ -461,265 +456,257 @@ export default function MarketsScreen() {
     );
   };
 
-  return (
-    <ContainerView>
-      <View sx={{ paddingHorizontal: 4, paddingTop: 6, alignSelf: 'flex-start', marginBottom: 3 }}>
-        <SectionTitle>Trade</SectionTitle>
-      </View>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ maxHeight: 30, marginBottom: 3, marginHorizontal: 4 }}
-        contentContainerStyle={{
-          flex: 1,
-          paddingHorizontal: 10,
-          alignItems: 'flex-start',
-
-        }}
-      >
-        {TABS.map((title) => (
-          <TouchableOpacity
-            key={title}
-            onPress={() => handleTitlePress(title)}
-            style={{
-              alignSelf: 'flex-start',
-              paddingHorizontal: 2,
-              borderRadius: 'xl',
-              borderColor: 'border',
-              backgroundColor: 'card',
-              marginRight: 8,
-            }}
-            activeOpacity={0.8}
-          >
-            <Text sx={{
-              color: selectedTab === title ? 'accent' : 'muted',
-              fontSize: 12,
-              fontWeight: '600',
-              textTransform: 'uppercase',
-              letterSpacing: 1.5
-            }}>
-              {title}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
-      <PagerView
-        style={{ flex: 1}}
-        initialPage={0}
-        ref={pagerRef}
-        onPageSelected={e => setPage(e.nativeEvent.position)}
-      >
+  // Define tabs with their content
+  const tabs = [
+    {
+      key: 'trade',
+      label: 'Trade',
+      content: (
         <ScrollView
           style={styles.content}
           contentContainerStyle={styles.contentContainer}
           showsVerticalScrollIndicator={false}
         >
-            <View sx={{ flex: 1 }} key="Trade">
-              <View style={styles.section}>
-                <TickerSelector
-                  selectedSymbol={selectedSymbol}
-                  onSelectSymbol={setSelectedSymbol}
-                  prices={prices}
-                />
-              </View>
+          <View style={styles.section}>
+            <TickerSelector
+              selectedSymbol={selectedSymbol}
+              onSelectSymbol={setSelectedSymbol}
+              prices={prices}
+            />
+          </View>
 
-              <View style={styles.section}>
-                <TradingViewChart
-                  symbol={selectedSymbol}
-                  theme={isDark ? 'dark' : 'light'}
-                  height={400}
-                />
-              </View>
+          <View style={styles.section}>
+            <TradingViewChart
+              symbol={selectedSymbol}
+              theme={isDark ? 'dark' : 'light'}
+              height={400}
+            />
+          </View>
 
-              <View style={styles.twoColumnRow}>
-                <View style={styles.column}>
-                  <Text style={styles.sectionTitle}>Place Order</Text>
-                  <OrderEntry
-                    symbol={selectedSymbol}
-                    currentPrice={currentPrice}
-                    onPlaceOrder={handlePlaceOrder}
-                    isLoading={isPlacingOrder}
-                  />
-                </View>
-                <View style={styles.column}>
-                  <Text style={styles.sectionTitle}>Order Book</Text>
-                  <OrderBook
-                    currentPrice={currentPrice}
-                    isLoading={pricesLoading}
-                  />
-                </View>
-              </View>
-            </View>
-
-            <View style={styles.section} key="Positions">
-              <PositionTracker
-                positions={positions}
-                onClosePosition={handleClosePosition}
-                isLoading={isClosingPosition}
+          <View style={styles.twoColumnRow}>
+            <View style={styles.column}>
+              <Text style={styles.sectionTitle}>Place Order</Text>
+              <OrderEntry
+                symbol={selectedSymbol}
+                currentPrice={currentPrice}
+                onPlaceOrder={handlePlaceOrder}
+                isLoading={isPlacingOrder}
               />
             </View>
-
-            <View style={styles.section} key="History">
-              <TradeHistory trades={trades} isLoading={false} />
-            </View>
-
-            <View style={styles.section} key="Account">
-              <AccountBalance
-                balance={accountBalance.wallet}
-                equity={accountBalance.equity}
-                margin={accountBalance.margin}
-                availableMargin={accountBalance.availableMargin}
-                unrealizedPnl={accountBalance.unrealizedPnl}
-                onDeposit={handleDeposit}
-                onWithdraw={handleWithdraw}
+            <View style={styles.column}>
+              <Text style={styles.sectionTitle}>Order Book</Text>
+              <OrderBook
+                currentPrice={currentPrice}
+                isLoading={pricesLoading}
               />
+            </View>
+          </View>
+        </ScrollView>
+      ),
+    },
+    {
+      key: 'positions',
+      label: 'Positions',
+      content: (
+        <View style={styles.content}>
+          <PositionTracker
+            positions={positions}
+            onClosePosition={handleClosePosition}
+            isLoading={isClosingPosition}
+          />
+        </View>
+      ),
+    },
+    {
+      key: 'history',
+      label: 'History',
+      content: (
+        <View style={styles.content}>
+          <TradeHistory trades={trades} isLoading={false} />
+        </View>
+      ),
+    },
+    {
+      key: 'account',
+      label: 'Account',
+      content: (
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.section}>
+            <AccountBalance
+              balance={accountBalance.wallet}
+              equity={accountBalance.equity}
+              margin={accountBalance.margin}
+              availableMargin={accountBalance.availableMargin}
+              unrealizedPnl={accountBalance.unrealizedPnl}
+              onDeposit={handleDeposit}
+              onWithdraw={handleWithdraw}
+            />
 
-              <View style={styles.statsCard}>
-                <Text style={styles.statsTitle}>Trading Statistics</Text>
-                <View style={styles.statsGrid}>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>Total Trades</Text>
-                    <Text style={styles.statValue}>{stats.totalTrades}</Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>Win Rate</Text>
-                    <Text
-                      style={[
-                        styles.statValue,
-                        {
-                          color:
-                            stats.winRate >= 50
-                              ? theme.colors.success.DEFAULT
-                              : theme.colors.error.DEFAULT,
-                        },
-                      ]}
-                    >
-                      {stats.winRate.toFixed(1)}%
-                    </Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>Total P&L</Text>
-                    <Text
-                      style={[
-                        styles.statValue,
-                        {
-                          color:
-                            stats.totalPnL >= 0
-                              ? theme.colors.success.DEFAULT
-                              : theme.colors.error.DEFAULT,
-                        },
-                      ]}
-                    >
-                      {stats.totalPnL >= 0 ? '+' : '-'}$
-                      {Math.abs(stats.totalPnL).toFixed(2)}
-                    </Text>
-                  </View>
-                  <View style={styles.statItem}>
-                    <Text style={styles.statLabel}>Open Positions</Text>
-                    <Text style={styles.statValue}>{stats.openPositions}</Text>
-                  </View>
+            <View style={styles.statsCard}>
+              <Text style={styles.statsTitle}>Trading Statistics</Text>
+              <View style={styles.statsGrid}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>Total Trades</Text>
+                  <Text style={styles.statValue}>{stats.totalTrades}</Text>
                 </View>
-              </View>
-
-              <View style={styles.paperFilters}>
-                <View style={styles.paperFilterRow}>
-                  <Text style={styles.paperFilterLabel}>Mode</Text>
-                  <View style={styles.paperToggleGroup}>
-                    {['paper', 'real'].map((type) => {
-                      const isActive = ledgerType === type;
-                      return (
-                        <TouchableOpacity
-                          key={type}
-                          onPress={() => {
-                            setLedgerType(type);
-                            setSelectedLedgerAccount('ALL');
-                          }}
-                          style={[
-                            styles.paperToggleChip,
-                            isActive && styles.paperToggleChipActive,
-                          ]}
-                        >
-                          <Text
-                            style={[
-                              styles.paperToggleText,
-                              isActive && {
-                                color: theme.colors.primary.DEFAULT,
-                              },
-                            ]}
-                          >
-                            {type === 'paper' ? 'Paper' : 'Real'}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
-                </View>
-
-                <View style={styles.paperFilterRow}>
-                  <Text style={styles.paperFilterLabel}>Accounts</Text>
-                  <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    contentContainerStyle={styles.paperAccountScroll}
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>Win Rate</Text>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      {
+                        color:
+                          stats.winRate >= 50
+                            ? theme.colors.success.DEFAULT
+                            : theme.colors.error.DEFAULT,
+                      },
+                    ]}
                   >
-                    <TouchableOpacity
-                      onPress={() => setSelectedLedgerAccount('ALL')}
-                      style={[
-                        styles.paperAccountChip,
-                        selectedLedgerAccount === 'ALL' &&
-                          styles.paperAccountChipActive,
-                      ]}
-                    >
-                      <Text
+                    {stats.winRate.toFixed(1)}%
+                  </Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>Total P&L</Text>
+                  <Text
+                    style={[
+                      styles.statValue,
+                      {
+                        color:
+                          stats.totalPnL >= 0
+                            ? theme.colors.success.DEFAULT
+                            : theme.colors.error.DEFAULT,
+                      },
+                    ]}
+                  >
+                    {stats.totalPnL >= 0 ? '+' : '-'}$
+                    {Math.abs(stats.totalPnL).toFixed(2)}
+                  </Text>
+                </View>
+                <View style={styles.statItem}>
+                  <Text style={styles.statLabel}>Open Positions</Text>
+                  <Text style={styles.statValue}>{stats.openPositions}</Text>
+                </View>
+              </View>
+            </View>
+
+            <View style={styles.paperFilters}>
+              <View style={styles.paperFilterRow}>
+                <Text style={styles.paperFilterLabel}>Mode</Text>
+                <View style={styles.paperToggleGroup}>
+                  {['paper', 'real'].map((type) => {
+                    const isActive = ledgerType === type;
+                    return (
+                      <TouchableOpacity
+                        key={type}
+                        onPress={() => {
+                          setLedgerType(type);
+                          setSelectedLedgerAccount('ALL');
+                        }}
                         style={[
-                          styles.paperAccountText,
-                          selectedLedgerAccount === 'ALL' && {
-                            color: theme.colors.primary.DEFAULT,
-                          },
+                          styles.paperToggleChip,
+                          isActive && styles.paperToggleChipActive,
                         ]}
                       >
-                        All accounts
-                      </Text>
-                    </TouchableOpacity>
-                    {ledgerAccounts.map((account) => {
-                      const isActive = selectedLedgerAccount === account.id;
-                      return (
-                        <TouchableOpacity
-                          key={account.id}
-                          onPress={() => setSelectedLedgerAccount(account.id)}
+                        <Text
                           style={[
-                            styles.paperAccountChip,
-                            isActive && styles.paperAccountChipActive,
+                            styles.paperToggleText,
+                            isActive && {
+                              color: theme.colors.primary.DEFAULT,
+                            },
                           ]}
                         >
-                          <Text
-                            style={[
-                              styles.paperAccountText,
-                              isActive && {
-                                color: theme.colors.primary.DEFAULT,
-                              },
-                            ]}
-                          >
-                            {account.label || 'Account'}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </ScrollView>
+                          {type === 'paper' ? 'Paper' : 'Real'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
                 </View>
               </View>
 
-              <TradingLedgerWidget
-                data={ledgerTableData}
-                styles={styles}
-                theme={theme}
-                isLoading={ledger?.isLoading}
-                mode={ledgerType}
-              />
+              <View style={styles.paperFilterRow}>
+                <Text style={styles.paperFilterLabel}>Accounts</Text>
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.paperAccountScroll}
+                >
+                  <TouchableOpacity
+                    onPress={() => setSelectedLedgerAccount('ALL')}
+                    style={[
+                      styles.paperAccountChip,
+                      selectedLedgerAccount === 'ALL' &&
+                        styles.paperAccountChipActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.paperAccountText,
+                        selectedLedgerAccount === 'ALL' && {
+                          color: theme.colors.primary.DEFAULT,
+                        },
+                      ]}
+                    >
+                      All accounts
+                    </Text>
+                  </TouchableOpacity>
+                  {ledgerAccounts.map((account) => {
+                    const isActive = selectedLedgerAccount === account.id;
+                    return (
+                      <TouchableOpacity
+                        key={account.id}
+                        onPress={() => setSelectedLedgerAccount(account.id)}
+                        style={[
+                          styles.paperAccountChip,
+                          isActive && styles.paperAccountChipActive,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.paperAccountText,
+                            isActive && {
+                              color: theme.colors.primary.DEFAULT,
+                            },
+                          ]}
+                        >
+                          {account.label || 'Account'}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </ScrollView>
+              </View>
             </View>
-          </ScrollView>
-        </PagerView>
-      </ContainerView>
+
+            <TradingLedgerWidget
+              data={ledgerTableData}
+              styles={styles}
+              theme={theme}
+              isLoading={ledger?.isLoading}
+              mode={ledgerType}
+            />
+          </View>
+        </ScrollView>
+      ),
+    },
+  ];
+
+  return (
+    <ContainerView>
+      <View sx={{ paddingHorizontal: 4, paddingTop: 6, alignSelf: 'flex-start', marginBottom: 3 }}>
+        <SectionTitle>Trade</SectionTitle>
+      </View>
+
+      <BasePagerView
+        tabs={tabs}
+        initialPage={0}
+        tabTextStyle={{ color: theme.colors.text.secondary }}
+        activeTabTextStyle={{ color: theme.colors.accent }}
+      />
+    </ContainerView>
   );
 }
 

@@ -1,12 +1,16 @@
-import React, { useCallback } from 'react';
-import { View, Text, ScrollView, RefreshControl, ActivityIndicator } from '@/components/ui';
+import React, { useCallback, useState } from 'react';
+import { View, Text, ScrollView, RefreshControl } from '@/components/ui';
 import ContainerView from '@/components/ContainerView';
 import AgentList from '@/components/AgentList';
 import MarketPricesWidget from '@/components/MarketPricesWidget';
 import { useQueryClient } from '@tanstack/react-query';
+import SvgChart from '@/components/SvgChart';
+import SectionTitle from '@/components/SectionTitle';
+import TimeFrameSelector from '@/components/TimeFrameSelector';
+import CategoryAgentsListPager from '@/components/explore/CategoryAgentsListPager';
 
 export default function ExploreScreen() {
-  const [isFetching, setIsFetching] = React.useState(false);
+  const [isFetching, setIsFetching] = useState(false);
   const queryClient = useQueryClient();
 
   const handleRefresh = useCallback(async () => {
@@ -15,8 +19,19 @@ export default function ExploreScreen() {
     setIsFetching(false);
   }, []);
 
+    const [timeframe, setTimeframe] = useState('1h');
+
+
   return (
     <ContainerView>
+      <View sx={{ marginBottom: 6 }}>
+        <MarketPricesWidget
+          compact
+          tickers={['BTC', 'ETH', 'SOL']}
+          sx={{ borderBottomWidth: 1, borderColor: 'border', paddingTop: 0, paddingBottom: 4 }}
+          timeframe={timeframe}
+        />
+      </View>
       <ScrollView
         sx={{ flex: 1 }}
         contentContainerStyle={{ paddingBottom: 100 }}
@@ -29,7 +44,7 @@ export default function ExploreScreen() {
           />
         }
       >
-        <View sx={{ paddingHorizontal: 6, paddingTop: 6, paddingBottom: 4 }}>
+        <View sx={{ }}>
           <Text
             variant="xs"
             tone="muted"
@@ -43,48 +58,15 @@ export default function ExploreScreen() {
           </Text>
         </View>
 
-        <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
-          <MarketPricesWidget
-            tickers={['BTC', 'ETH', 'SOL']}
-            sx={{ borderTopWidth: 1, borderBottomWidth: 1, borderColor: 'border', paddingTop: 4 }}
-          />
-        </View>
 
-        <View sx={{ paddingHorizontal: 6 }}>
-          <Text
-            variant="xs"
-            tone="muted"
-            sx={{
-              textTransform: 'uppercase',
-              fontWeight: '600',
-              letterSpacing: 2,
-              marginBottom: 4
-            }}
-          >
-            Agents
-          </Text>
-          <AgentList
-            queryKey={['explore-agents']}
-            emptyState={(
-              <View sx={{ alignItems: 'flex-start', justifyContent: 'center', paddingVertical: 12 }}>
-                <Text
-                  variant="lg"
-                  tone="subtle"
-                  sx={{
-                    fontWeight: '600',
-                    textAlign: 'center',
-                    marginBottom: 2
-                  }}
-                >
-                  No agents yet.
-                </Text>
-                <Text variant="sm" tone="muted">
-                  When agents are published, they will appear here for you to use or remix.
-                </Text>
-              </View>
-            )}
-          />
+
+        <View sx={{ alignItems: 'flex-end' }}>
+          <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
         </View>
+        <View sx={{ marginTop: 4 }}>
+          <SvgChart timeframe={timeframe} />
+        </View>
+        <CategoryAgentsListPager />
       </ScrollView>
     </ContainerView>
   );

@@ -6,7 +6,7 @@ export const assessmentService = {
     try {
       const { data, error } = await supabase
         .from('assessments')
-        .select('*')
+        .select('*, agent:agents(*)')
         .eq('agent_id', agentId)
         .order('timestamp', { ascending: false });
 

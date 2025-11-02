@@ -45,7 +45,7 @@ export default function TabsLayout() {
         name="(explore)"
         options={{
           title: 'Explore',
-          headerShown: false,
+          headerShown: true,
         }}
       >
         <Label>Explore</Label>
@@ -65,11 +65,11 @@ export default function TabsLayout() {
       <NativeTabs.Trigger
         name="performance"
         options={{
-          title: 'Performance',
+          title: 'Activity',
           headerShown: false,
         }}
       >
-        <Label>Performance</Label>
+        <Label>Activity</Label>
         <Icon sf="chart.line.uptrend.xyaxis" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger

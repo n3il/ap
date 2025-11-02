@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, Card } from '@/components/ui';
+import React, {  } from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, Card, Avatar } from '@/components/ui';
 import ContainerView from '@/components/ContainerView';
 import { AnimatedBox } from '@/components/ui/animated';
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Animated, { FadeInDown } from 'react-native-reanimated';
+import { FadeInDown } from 'react-native-reanimated';
 import SectionTitle from '@/components/SectionTitle';
 
 const { width } = Dimensions.get('window');
@@ -13,17 +13,6 @@ const { width } = Dimensions.get('window');
 export default function ProfileScreen() {
   const { user, signOut } = useAuth();
   const router = useRouter();
-
-  const getInitials = () => {
-    if (user?.user_metadata?.full_name) {
-      const names = user.user_metadata.full_name.split(' ');
-      return names.map(n => n[0]).join('').toUpperCase().slice(0, 2);
-    }
-    if (user?.email) {
-      return user.email.slice(0, 2).toUpperCase();
-    }
-    return 'U';
-  };
 
   const handleLogout = async () => {
     Alert.alert(
@@ -97,35 +86,10 @@ export default function ProfileScreen() {
               borderRadius: 24,
             }}
           >
-            <View sx={{ flexDirection: 'row' }}>
-              {/* Avatar */}
-              <View
-                sx={{
-                  width: 96,
-                  height: 96,
-                  borderRadius: 'full',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  marginBottom: 2,
-                  backgroundColor: 'rgba(99, 102, 241, 0.2)',
-                  borderWidth: 0,
-                  borderColor: 'rgba(99, 102, 241, 0.5)'
-                }}
-              >
-                <Text sx={{ fontSize: 30, fontWeight: '700', color: '#818cf8', lineHeight: 36 }}>
-                  {getInitials()}
-                </Text>
-              </View>
-              <View sx={{ marginLeft: 6, flex: 1, justifyContent: 'center' }}>
-                {/* User Info */}
-                <Text sx={{ fontSize: 24, fontWeight: '700', color: 'textPrimary', marginBottom: 1 }}>
-                  {user?.user_metadata?.full_name || 'User'}
-                </Text>
-                <Text sx={{ fontSize: 16, color: 'textSecondary', marginBottom: 4 }}>
-                  {user?.email || 'No email'}
-                </Text>
-              </View>
-            </View>
+            <Avatar
+              name={user?.user_metadata?.full_name || 'User'}
+              email={user?.email || 'No email'}
+            />
           </Card>
         </AnimatedBox>
 

@@ -1,23 +1,17 @@
 import React from 'react';
 import { View, Text, ScrollView } from '@/components/ui';
 import TradeCard from '@/components/TradeCard';
+import SectionTitle from '../SectionTitle';
 
 export default function TradesTab({ trades = [], isOwnAgent }) {
+  const ownerVisibilityRestriction = false;
   return (
-    <View sx={{ paddingHorizontal: 4, paddingBottom: 12 }}>
-      {isOwnAgent ? (
+    <View sx={{ paddingBottom: 12, gap: 4 }}>
+      {!ownerVisibilityRestriction ? (
         <>
-          <Text
-            sx={{
-              color: '#f8fafc',
-              fontSize: 16,
-              fontWeight: '700',
-              marginBottom: 2,
-              letterSpacing: 0.5,
-            }}
-          >
-            All Trades ({trades.length})
-          </Text>
+          <SectionTitle>
+            {`All Trades (${trades.length})`}
+          </SectionTitle>
           {trades.length === 0 ? (
             <Text sx={{ color: '#94a3b8', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
               No trades yet

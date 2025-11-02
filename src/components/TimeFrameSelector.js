@@ -35,7 +35,7 @@ export default function TimeFrameSelector({ timeframe, onTimeframeChange }) {
                 fontSize: 11,
                 fontWeight: '600',
                 textTransform: 'uppercase',
-                color: isSelected ? 'muted[foreground]' : 'muted',
+                color: isSelected ? 'mutedForeground' : 'muted',
               }
             }}
           >

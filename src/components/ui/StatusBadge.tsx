@@ -21,7 +21,7 @@ const badgeStyles: Record<BadgeVariant, { bg: keyof AppTheme['colors'] }> = {
   warning: { bg: 'warning' },
   info: { bg: 'info' },
   accent: { bg: 'accent' },
-  muted: { bg: 'muted' },
+  muted: { bg: 'mutedForeground' },
 };
 
 const sizeStyles: Record<BadgeSize, { paddingHorizontal: number; paddingVertical: number; textVariant: 'xs' | 'caption' }> = {

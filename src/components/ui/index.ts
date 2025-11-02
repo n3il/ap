@@ -13,6 +13,7 @@ export { default as Card } from './Card';
 export { default as Stack } from './Stack';
 export { default as ListItem } from './ListItem';
 export { default as Spacer } from './Spacer';
+export { default as BasePagerView } from './BasePagerView';
 
 // Display components
 export { default as StatusBadge } from './StatusBadge';
@@ -21,6 +22,7 @@ export { default as LabelValue } from './LabelValue';
 export { default as Divider } from './Divider';
 export { default as Separator } from './Separator';
 export { default as Skeleton } from './Skeleton';
+export { default as Avatar } from './Avatar';
 
 // Form components
 export { default as FormField } from './FormField';

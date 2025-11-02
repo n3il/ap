@@ -79,23 +79,18 @@ export default function AgentList({
   }
 
   return (
-    <View>
-      {listTitle && (
-        <Text variant="xl" sx={{ fontWeight: '700', marginBottom: 4 }}>
-          {listTitle}
-        </Text>
-      )}
-      <GlassContainer spacing={8} style={{ flexDirection: 'column', gap: 8 }}>
-        {agents.map((agent) => (
-          <AgentCard
-            key={agent.id}
-            agent={agent}
-            latestAssessment={latestAssessmentByAgent[agent.id]}
-            onPress={() => onAgentPress?.(agent)}
-          />
-        ))}
-      </GlassContainer>
-
-    </View>
+    <GlassContainer
+      spacing={8}
+      style={{ flexDirection: 'column', gap: 8 }}
+    >
+      {agents.map((agent) => (
+        <AgentCard
+          key={agent.id}
+          agent={agent}
+          latestAssessment={latestAssessmentByAgent[agent.id]}
+          onPress={() => onAgentPress?.(agent)}
+        />
+      ))}
+    </GlassContainer>
   );
 }

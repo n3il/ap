@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
+import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, Button, ActivityIndicator } from '@/components/ui';
 import { Animated, PanResponder } from 'react-native';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
@@ -9,48 +9,134 @@ import { getProviderColor, getMockAgentsForSvgChart } from '@/factories/mockAgen
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
-const CHART_WIDTH = 350;
-const CHART_HEIGHT = 180;
+const DEFAULT_CHART_WIDTH = 350;
+const CHART_ASPECT_RATIO = 3 / 7;
 const PADDING = { top: 20, right: 50, bottom: 0, left: 12 };
-const PLOT_WIDTH = CHART_WIDTH - PADDING.left - PADDING.right;
-const PLOT_HEIGHT = CHART_HEIGHT - PADDING.top - PADDING.bottom;
+
+/**
+ * Chart data source types
+ */
+export const CHART_DATA_SOURCE = {
+  AGENTS: 'agents',           // Multi-agent performance
+  ACCOUNT_BALANCE: 'account-balance',  // User account balance over time
+};
 
 // Interpolate y value for a given x position in the data
 const interpolateValue = (data, targetX) => {
   if (!data || data.length === 0) return 0;
-  if (data.length === 1) return data[0].percent;
+
+  // Filter valid data points
+  const validData = data.filter(d =>
+    d &&
+    ((typeof d.time === 'number' && isFinite(d.time)) || (typeof d.x === 'number' && isFinite(d.x))) &&
+    ((typeof d.value === 'number' && isFinite(d.value)) || (typeof d.percent === 'number' && isFinite(d.percent)))
+  );
+
+  if (validData.length === 0) return 0;
+  if (validData.length === 1) {
+    const val = validData[0].percent || validData[0].value || 0;
+    return isFinite(val) ? val : 0;
+  }
 
   // Find the two points to interpolate between
-  let leftPoint = data[0];
-  let rightPoint = data[data.length - 1];
+  let leftPoint = validData[0];
+  let rightPoint = validData[validData.length - 1];
 
-  for (let i = 0; i < data.length - 1; i++) {
-    if (data[i].time <= targetX && data[i + 1].time >= targetX) {
-      leftPoint = data[i];
-      rightPoint = data[i + 1];
+  for (let i = 0; i < validData.length - 1; i++) {
+    const xKey = validData[i].time !== undefined ? 'time' : 'x';
+    if (validData[i][xKey] <= targetX && validData[i + 1][xKey] >= targetX) {
+      leftPoint = validData[i];
+      rightPoint = validData[i + 1];
       break;
     }
   }
 
   // Handle edge cases
-  if (targetX <= data[0].time) return data[0].percent;
-  if (targetX >= data[data.length - 1].time) return data[data.length - 1].percent;
+  const xKey = validData[0].time !== undefined ? 'time' : 'x';
+  const yKey = validData[0].percent !== undefined ? 'percent' : 'value';
+
+  if (targetX <= validData[0][xKey]) {
+    const val = validData[0][yKey];
+    return isFinite(val) ? val : 0;
+  }
+  if (targetX >= validData[validData.length - 1][xKey]) {
+    const val = validData[validData.length - 1][yKey];
+    return isFinite(val) ? val : 0;
+  }
 
   // Linear interpolation
-  const xRange = rightPoint.time - leftPoint.time;
-  const yRange = rightPoint.percent - leftPoint.percent;
-  const xOffset = targetX - leftPoint.time;
+  const xRange = rightPoint[xKey] - leftPoint[xKey];
+  const yRange = rightPoint[yKey] - leftPoint[yKey];
+  const xOffset = targetX - leftPoint[xKey];
   const ratio = xRange === 0 ? 0 : xOffset / xRange;
 
-  return leftPoint.percent + yRange * ratio;
+  const result = leftPoint[yKey] + yRange * ratio;
+  return isFinite(result) ? result : 0;
 };
 
-const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
+/**
+ * Reusable SVG Chart Component
+ *
+ * @param {Object} props
+ * @param {string} props.dataSource - Type of data: CHART_DATA_SOURCE.AGENTS | CHART_DATA_SOURCE.ACCOUNT_BALANCE
+ * @param {string} props.timeframe - Time range: '1h' | '24h' | '7d'
+ * @param {Array} props.agents - Agent configs (for AGENTS source)
+ * @param {Array} props.accountData - Account balance data (for ACCOUNT_BALANCE source)
+ * @param {string} props.yAxisLabel - Label for Y-axis (default: '%' for agents, '$' for balance)
+ * @param {Function} props.formatValue - Custom value formatter
+ *
+ * @example
+ * // Agent performance
+ * <SvgChart
+ *   dataSource={CHART_DATA_SOURCE.AGENTS}
+ *   agents={myAgents}
+ *   timeframe="24h"
+ * />
+ *
+ * @example
+ * // Account balance
+ * <SvgChart
+ *   dataSource={CHART_DATA_SOURCE.ACCOUNT_BALANCE}
+ *   accountData={balanceHistory}
+ *   timeframe="7d"
+ *   yAxisLabel="$"
+ * />
+ */
+const SvgChart = ({
+  dataSource = CHART_DATA_SOURCE.AGENTS,
+  timeframe = '1h',
+  agents = [],
+  accountData = null,
+  yAxisLabel = null,
+  formatValue = null,
+}) => {
   const [expanded, setExpanded] = useState(false);
   const [touchActive, setTouchActive] = useState(false);
   const [touchX, setTouchX] = useState(0); // Normalized 0-1
   const pulseAnim = useRef(new Animated.Value(1)).current;
-  const chartRef = useRef(null);
+  const [chartWidth, setChartWidth] = useState(DEFAULT_CHART_WIDTH);
+
+  const chartHeight = useMemo(() => {
+    const calculatedHeight = chartWidth * CHART_ASPECT_RATIO;
+    const minimumHeight = PADDING.top + PADDING.bottom + 1;
+    return Math.max(calculatedHeight, minimumHeight);
+  }, [chartWidth]);
+
+  const plotWidth = useMemo(
+    () => Math.max(1, chartWidth - PADDING.left - PADDING.right),
+    [chartWidth]
+  );
+
+  const plotHeight = useMemo(
+    () => Math.max(1, chartHeight - PADDING.top - PADDING.bottom),
+    [chartHeight]
+  );
+
+  const handleLayout = useCallback((event) => {
+    const { width } = event.nativeEvent.layout;
+    if (!width) return;
+    setChartWidth((prevWidth) => (Math.abs(prevWidth - width) > 0.5 ? width : prevWidth));
+  }, []);
 
   useEffect(() => {
     const pulse = Animated.loop(
@@ -72,20 +158,20 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
   }, [pulseAnim]);
 
   // Pan responder for touch interaction
-  const panResponder = useRef(
-    PanResponder.create({
+  const panResponder = useMemo(() => {
+    const safeWidth = Math.max(plotWidth, 1);
+    const clampNormalizedX = (locationX) =>
+      Math.max(0, Math.min(1, (locationX - PADDING.left) / safeWidth));
+
+    return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: () => true,
       onPanResponderGrant: (evt) => {
-        const locationX = evt.nativeEvent.locationX;
-        const normalizedX = Math.max(0, Math.min(1, (locationX - PADDING.left) / PLOT_WIDTH));
-        setTouchX(normalizedX);
+        setTouchX(clampNormalizedX(evt.nativeEvent.locationX));
         setTouchActive(true);
       },
       onPanResponderMove: (evt) => {
-        const locationX = evt.nativeEvent.locationX;
-        const normalizedX = Math.max(0, Math.min(1, (locationX - PADDING.left) / PLOT_WIDTH));
-        setTouchX(normalizedX);
+        setTouchX(clampNormalizedX(evt.nativeEvent.locationX));
       },
       onPanResponderRelease: () => {
         setTouchActive(false);
@@ -93,82 +179,152 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
       onPanResponderTerminate: () => {
         setTouchActive(false);
       },
-    })
-  ).current;
+    });
+  }, [plotWidth]);
 
-  const agentIds = useMemo(() => agentConfigs?.map(a => a.id) || [], [agentConfigs]);
-  const { data: snapshotsData, isLoading, error } = useMultiAgentSnapshots(agentIds, timeframe);
+  // Fetch agent data if needed
+  const agentIds = useMemo(() =>
+    dataSource === CHART_DATA_SOURCE.AGENTS ? (agents?.map(a => a.id) || []) : [],
+    [dataSource, agents]
+  );
 
+  const { data: snapshotsData, isLoading: agentLoading, error: agentError } = useMultiAgentSnapshots(
+    agentIds,
+    timeframe,
+    { enabled: dataSource === CHART_DATA_SOURCE.AGENTS && agentIds.length > 0 }
+  );
+
+  // Transform data based on source
   const chartData = useMemo(() => {
-    // Use mock data if no agents configured or error
-    if (!agentConfigs || agentConfigs.length === 0 || error) {
-      return { agents: getMockAgentsForSvgChart(), useMockData: true };
-    }
-
-    // If still loading or no data, use mock
-    if (isLoading || !snapshotsData) {
-      return { agents: getMockAgentsForSvgChart(), useMockData: true };
-    }
-
-    // Transform real snapshot data
-    const transformedAgents = agentConfigs.map((agent, index) => {
-      const snapshots = snapshotsData[agent.id] || [];
-      const percentData = agentSnapshotService.calculatePercentChange(
-        snapshots,
-        parseFloat(agent.initial_capital) || 10000
-      );
-
-      // Normalize timestamps to 0-1 range for x-axis
-      const timeMin = percentData[0]?.timestamp ? new Date(percentData[0].timestamp).getTime() : Date.now();
-      const timeMax = percentData[percentData.length - 1]?.timestamp
-        ? new Date(percentData[percentData.length - 1].timestamp).getTime()
-        : Date.now();
-      const timeRange = timeMax - timeMin || 1;
-
-      const normalizedData = percentData.map(point => ({
-        time: (new Date(point.timestamp).getTime() - timeMin) / timeRange,
-        percent: point.percent,
-      }));
-
-      // Ensure we have at least start and end points
-      if (normalizedData.length === 0) {
-        normalizedData.push({ time: 0, percent: 0 }, { time: 1, percent: 0 });
-      } else if (normalizedData.length === 1) {
-        normalizedData.unshift({ time: 0, percent: 0 });
+    // ACCOUNT BALANCE DATA SOURCE
+    if (dataSource === CHART_DATA_SOURCE.ACCOUNT_BALANCE) {
+      if (!accountData || accountData.length === 0) {
+        // Return mock account balance data
+        return {
+          lines: [{
+            id: 'account-balance',
+            name: 'Account Balance',
+            color: '#34d399',
+            data: [
+              { time: 0, value: 0 },
+              { time: 0.2, value: 2.5 },
+              { time: 0.4, value: 1.8 },
+              { time: 0.6, value: 4.2 },
+              { time: 0.8, value: 3.5 },
+              { time: 1, value: 5.8 },
+            ],
+          }],
+          useMockData: true,
+        };
       }
 
+      // Transform account balance data
+      // Expecting format: [{ timestamp, balance }]
+      const timeMin = new Date(accountData[0].timestamp).getTime();
+      const timeMax = new Date(accountData[accountData.length - 1].timestamp).getTime();
+      const timeRange = timeMax - timeMin || 1;
+
+      const initialBalance = accountData[0].balance;
+      const normalizedData = accountData.map(point => ({
+        time: (new Date(point.timestamp).getTime() - timeMin) / timeRange,
+        value: ((point.balance - initialBalance) / initialBalance) * 100, // Percent change
+      }));
+
       return {
-        id: agent.id,
-        name: agent.name,
-        color: getProviderColor(agent.llm_provider),
-        data: normalizedData,
+        lines: [{
+          id: 'account-balance',
+          name: 'Account Balance',
+          color: '#34d399',
+          data: normalizedData,
+        }],
+        useMockData: false,
       };
-    });
+    }
 
-    return { agents: transformedAgents, useMockData: false };
-  }, [agentConfigs, snapshotsData, isLoading, error]);
+    // AGENTS DATA SOURCE (original logic)
+    if (dataSource === CHART_DATA_SOURCE.AGENTS) {
+      // Use mock data if no agents configured or error
+      if (!agents || agents.length === 0 || agentError) {
+        return { lines: getMockAgentsForSvgChart(), useMockData: true };
+      }
 
-  const { agents } = chartData;
+      // If still loading or no data, use mock
+      if (agentLoading || !snapshotsData) {
+        return { lines: getMockAgentsForSvgChart(), useMockData: true };
+      }
+
+      // Transform real snapshot data
+      const transformedAgents = agents.map((agent) => {
+        const snapshots = snapshotsData[agent.id] || [];
+        const percentData = agentSnapshotService.calculatePercentChange(
+          snapshots,
+          parseFloat(agent.initial_capital) || 10000
+        );
+
+        // Normalize timestamps to 0-1 range for x-axis
+        const timeMin = percentData[0]?.timestamp ? new Date(percentData[0].timestamp).getTime() : Date.now();
+        const timeMax = percentData[percentData.length - 1]?.timestamp
+          ? new Date(percentData[percentData.length - 1].timestamp).getTime()
+          : Date.now();
+        const timeRange = timeMax - timeMin || 1;
+
+        const normalizedData = percentData.map(point => ({
+          time: (new Date(point.timestamp).getTime() - timeMin) / timeRange,
+          value: point.percent,
+        }));
+
+        // Ensure we have at least start and end points
+        if (normalizedData.length === 0) {
+          normalizedData.push({ time: 0, value: 0 }, { time: 1, value: 0 });
+        } else if (normalizedData.length === 1) {
+          normalizedData.unshift({ time: 0, value: 0 });
+        }
+
+        return {
+          id: agent.id,
+          name: agent.name,
+          color: getProviderColor(agent.llm_provider),
+          data: normalizedData,
+        };
+      });
+
+      return { lines: transformedAgents, useMockData: false };
+    }
+
+    return { lines: [], useMockData: true };
+  }, [dataSource, agents, snapshotsData, agentLoading, agentError, accountData]);
+
+  const { lines } = chartData;
 
   // Calculate interpolated values at touch position
   const touchValues = useMemo(() => {
     if (!touchActive) return [];
-    return agents.map((agent) => ({
-      ...agent,
-      value: interpolateValue(agent.data, touchX),
+    return lines.map((line) => ({
+      ...line,
+      value: interpolateValue(line.data, touchX),
     }));
-  }, [touchActive, touchX, agents]);
+  }, [touchActive, touchX, lines]);
 
   const { yMin, yMax, yTicks, timeLabels } = useMemo(() => {
     // Calculate y-axis range
-    const allPercents = agents.flatMap((agent) => agent.data.map((d) => d.percent));
-    const min = Math.min(...allPercents, 0);
-    const max = Math.max(...allPercents, 0);
-    const range = max - min;
-    const padding = range * 0.1;
+    const allValues = lines.flatMap((line) => line.data.map((d) => d.value ?? d.percent)).filter(v => typeof v === 'number' && !isNaN(v) && isFinite(v));
 
-    const yMin = min - padding;
-    const yMax = max + padding;
+    // Fallback to safe defaults if no valid values
+    if (allValues.length === 0) {
+      allValues.push(0, 10);
+    }
+
+    const min = Math.min(...allValues, 0);
+    const max = Math.max(...allValues, 0);
+    const range = max - min;
+    const padding = range * 0.1 || 1;
+
+    let yMin = min - padding;
+    let yMax = max + padding;
+
+    // Ensure valid numbers
+    if (!isFinite(yMin) || isNaN(yMin)) yMin = -10;
+    if (!isFinite(yMax) || isNaN(yMax)) yMax = 10;
 
     // Generate y-axis ticks
     const tickCount = 5;
@@ -183,15 +339,12 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
       const date = new Date(now);
 
       if (timeframe === '1h') {
-        // Go back 1 hour from now, then add normalized time
         date.setMinutes(date.getMinutes() - 60 + (normalizedTime * 60));
         return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
       } else if (timeframe === '24h') {
-        // Go back 24 hours from now, then add normalized time
         date.setHours(date.getHours() - 24 + (normalizedTime * 24));
         return date.toLocaleTimeString('en-US', { hour: 'numeric' });
       } else if (timeframe === '7d') {
-        // Go back 7 days from now, then add normalized time
         date.setDate(date.getDate() - 7 + (normalizedTime * 7));
         return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
       }
@@ -201,16 +354,47 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
     const timeLabels = [0, 0.5, 1].map(getTimeLabel);
 
     return { yMin, yMax, yTicks, timeLabels };
-  }, [agents, timeframe]);
+  }, [lines, timeframe]);
 
-  const scaleY = (percent) => {
-    const normalized = (percent - yMin) / (yMax - yMin);
-    return PADDING.top + PLOT_HEIGHT - normalized * PLOT_HEIGHT;
+  const scaleY = (value) => {
+    // Validate input
+    if (!isFinite(value) || isNaN(value)) return PADDING.top + plotHeight / 2;
+
+    const normalized = (value - yMin) / (yMax - yMin);
+
+    // Validate result
+    if (!isFinite(normalized) || isNaN(normalized)) return PADDING.top + plotHeight / 2;
+
+    const result = PADDING.top + plotHeight - normalized * plotHeight;
+    return isFinite(result) ? result : PADDING.top + plotHeight / 2;
   };
 
   const scaleX = (time) => {
-    return PADDING.left + time * PLOT_WIDTH;
+    // Validate input
+    if (!isFinite(time) || isNaN(time)) return PADDING.left;
+
+    const result = PADDING.left + time * plotWidth;
+    return isFinite(result) ? result : PADDING.left;
   };
+
+  // Determine axis label
+  const axisLabel = yAxisLabel || (dataSource === CHART_DATA_SOURCE.ACCOUNT_BALANCE ? '$' : '%');
+
+  // Determine value formatter
+  const defaultFormatter = (val) => {
+    // Ensure val is a valid number
+    if (typeof val !== 'number' || !isFinite(val) || isNaN(val)) {
+      return '0.0%';
+    }
+
+    if (dataSource === CHART_DATA_SOURCE.ACCOUNT_BALANCE) {
+      return `${val >= 0 ? '+' : ''}${val.toFixed(1)}%`;
+    }
+    return `${val.toFixed(1)}%`;
+  };
+  const valueFormatter = formatValue || defaultFormatter;
+
+  const isLoading = dataSource === CHART_DATA_SOURCE.AGENTS && agentLoading;
 
   if (isLoading) {
     return (
@@ -225,8 +409,12 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
 
   return (
     <>
-      <View {...panResponder.panHandlers} sx={{ position: 'relative' }}>
-        <Svg width={CHART_WIDTH} height={CHART_HEIGHT}>
+      <View
+        {...panResponder.panHandlers}
+        onLayout={handleLayout}
+        sx={{ position: 'relative', width: '100%' }}
+      >
+        <Svg width={chartWidth} height={chartHeight}>
         {/* Y-axis grid lines */}
         {yTicks.map((tick, i) => {
           const y = scaleY(tick);
@@ -235,7 +423,7 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
               key={`grid-${i}`}
               x1={PADDING.left}
               y1={y}
-              x2={PADDING.left + PLOT_WIDTH}
+              x2={PADDING.left + plotWidth}
               y2={y}
               stroke="rgba(148, 163, 184, 0.15)"
               strokeWidth={1}
@@ -249,13 +437,13 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
           return (
             <SvgText
               key={`y-label-${i}`}
-              x={PADDING.left + PLOT_WIDTH + 6}
+              x={PADDING.left + plotWidth + 6}
               y={y + 4}
               fontSize={10}
               fill="#94a3b8"
               textAnchor="start"
             >
-              {tick.toFixed(1)}%
+              {valueFormatter(tick)}
             </SvgText>
           );
         })}
@@ -264,29 +452,44 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
         <Line
           x1={PADDING.left}
           y1={scaleY(0)}
-          x2={PADDING.left + PLOT_WIDTH}
+          x2={PADDING.left + plotWidth}
           y2={scaleY(0)}
           stroke="rgba(158, 149, 149, 0.8)"
           strokeWidth={1.5}
           strokeDasharray="3,3"
         />
 
-        {/* Agent lines */}
-        {agents.map((agent) => {
-          const points = agent.data
+        {/* Chart lines */}
+        {lines.map((line) => {
+          // Filter out invalid data points
+          const validData = (line.data || []).filter(d => {
+            if (!d) return false;
+            const hasValidTime = typeof d.time === 'number' && isFinite(d.time) && !isNaN(d.time);
+            const hasValidValue = (typeof d.value === 'number' && isFinite(d.value) && !isNaN(d.value)) ||
+                                  (typeof d.percent === 'number' && isFinite(d.percent) && !isNaN(d.percent));
+            return hasValidTime && hasValidValue;
+          });
+
+          // Skip rendering if no valid data
+          if (validData.length === 0) return null;
+
+          const points = validData
             .map((d) => {
               const x = scaleX(d.time);
-              const y = scaleY(d.percent);
+              const yValue = d.value ?? d.percent;
+              const y = scaleY(yValue);
               return `${x.toFixed(2)},${y.toFixed(2)}`;
             })
             .join(' ');
 
+          const lastPoint = validData[validData.length - 1];
+
           return (
-            <React.Fragment key={agent.id}>
+            <React.Fragment key={line.id}>
               <Polyline
                 points={points}
                 fill="none"
-                stroke={agent.color}
+                stroke={line.color}
                 strokeWidth={1.5}
                 strokeLinejoin="round"
                 strokeLinecap="round"
@@ -294,15 +497,15 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
                 opacity={0.9}
               />
               {/* End point circle */}
-              {!touchActive && agent.data.length > 0 && (
+              {!touchActive && lastPoint && (
                 <AnimatedCircle
-                  cx={scaleX(agent.data[agent.data.length - 1].time)}
-                  cy={scaleY(agent.data[agent.data.length - 1].percent)}
+                  cx={scaleX(lastPoint.time)}
+                  cy={scaleY(lastPoint.value ?? lastPoint.percent)}
                   r={pulseAnim.interpolate({
                     inputRange: [1, 1.5],
                     outputRange: [4, 6],
                   })}
-                  fill={agent.color}
+                  fill={line.color}
                   opacity={pulseAnim.interpolate({
                     inputRange: [1, 1.5],
                     outputRange: [0.9, 0.6],
@@ -321,19 +524,19 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
               x1={scaleX(touchX)}
               y1={PADDING.top}
               x2={scaleX(touchX)}
-              y2={PADDING.top + PLOT_HEIGHT}
+              y2={PADDING.top + plotHeight}
               stroke="rgba(226, 232, 240, 0.6)"
               strokeWidth={1.5}
               strokeDasharray="4,4"
             />
             {/* Intersection circles */}
-            {touchValues.map((agent) => (
+            {touchValues.map((line) => (
               <Circle
-                key={agent.id}
+                key={line.id}
                 cx={scaleX(touchX)}
-                cy={scaleY(agent.value)}
+                cy={scaleY(line.value)}
                 r={5}
-                fill={agent.color}
+                fill={line.color}
                 stroke="rgba(15, 23, 42, 0.8)"
                 strokeWidth={2}
               />
@@ -376,12 +579,12 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
               })()}
             </Text>
 
-            {/* Agent values */}
-            {touchValues.map((agent) => {
-              const isPositive = agent.value >= 0;
+            {/* Line values */}
+            {touchValues.map((line) => {
+              const isPositive = line.value >= 0;
               return (
                 <View
-                  key={agent.id}
+                  key={line.id}
                   sx={{
                     flexDirection: 'row',
                     alignItems: 'center',
@@ -395,10 +598,10 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
                         width: 8,
                         height: 8,
                         borderRadius: 'full',
-                        backgroundColor: agent.color,
+                        backgroundColor: line.color,
                       }}
                     />
-                    <Text sx={{ fontSize: 12, color: '#e2e8f0' }}>{agent.name}</Text>
+                    <Text sx={{ fontSize: 12, color: '#e2e8f0' }}>{line.name}</Text>
                   </View>
                   <Text
                     sx={{
@@ -408,7 +611,7 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
                       marginLeft: 3,
                     }}
                   >
-                    {isPositive ? '+' : ''}{agent.value.toFixed(2)}%
+                    {valueFormatter(line.value)}
                   </Text>
                 </View>
               );
@@ -420,6 +623,7 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
       {/* X-axis time labels */}
       <View
         sx={{
+          width: '100%',
           flexDirection: 'row',
           justifyContent: 'space-between',
           paddingLeft: PADDING.left,
@@ -434,7 +638,7 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
       </View>
 
       {/* More button */}
-      <View sx={{ alignItems: 'flex-end', marginTop: 0 }}>
+      <View sx={{ alignItems: 'flex-end', marginTop: 0, width: '100%' }}>
         <Button
           variant="ghost"
           size="sm"
@@ -445,18 +649,26 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
         </Button>
       </View>
 
-      {/* Expanded agent details table */}
+      {/* Expanded details table */}
       {expanded && (
         <View sx={{ marginTop: 3, gap: 2 }}>
-          {agents.map((agent) => {
-            const finalPercent = agent.data[agent.data.length - 1].percent;
-            const isPositive = finalPercent >= 0;
-            const startPercent = agent.data[0].percent;
-            const change = finalPercent - startPercent;
+          {lines.map((line) => {
+            // Get valid data points
+            const validData = (line.data || []).filter(d => {
+              const val = d?.value ?? d?.percent;
+              return d && typeof val === 'number' && isFinite(val);
+            });
+
+            if (validData.length === 0) return null;
+
+            const finalValue = (validData[validData.length - 1].value ?? validData[validData.length - 1].percent) || 0;
+            const isPositive = finalValue >= 0;
+            const startValue = (validData[0].value ?? validData[0].percent) || 0;
+            const change = finalValue - startValue;
 
             return (
               <View
-                key={agent.id}
+                key={line.id}
                 sx={{
                   flexDirection: 'row',
                   alignItems: 'center',
@@ -466,15 +678,12 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
                   backgroundColor: 'rgba(30, 41, 59, 0.3)',
                   borderRadius: 'xl',
                   borderLeftWidth: 3,
-                  borderLeftColor: agent.color,
+                  borderLeftColor: line.color,
                 }}
               >
                 <View sx={{ flex: 1 }}>
                   <Text sx={{ fontSize: 14, fontWeight: '600', color: '#e2e8f0', marginBottom: 1 }}>
-                    {agent.name}
-                  </Text>
-                  <Text sx={{ fontSize: 11, color: '#64748b', textTransform: 'uppercase' }}>
-                    {agent.llm_provider}
+                    {line.name}
                   </Text>
                 </View>
 
@@ -487,10 +696,10 @@ const SvgChart = ({ agents: agentConfigs, timeframe = '1h' }) => {
                       marginBottom: 1,
                     }}
                   >
-                    {isPositive ? '+' : ''}{finalPercent.toFixed(1)}%
+                    {valueFormatter(finalValue)}
                   </Text>
                   <Text sx={{ fontSize: 10, color: '#64748b' }}>
-                    {change >= 0 ? '+' : ''}{change.toFixed(1)}% {timeframe}
+                    {change >= 0 ? '+' : ''}{valueFormatter(change)} {timeframe}
                   </Text>
                 </View>
               </View>

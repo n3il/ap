@@ -1,107 +1,86 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, StatusBadge, Divider, Stack, Card } from '@/components/ui';
+import { View, Text, TouchableOpacity, StatusBadge, Divider, Stack, Card, Avatar } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { formatRelative } from 'date-fns';
+import { formatRelativeDate } from '@/utils/date';
+import { PROVIDER_COLORS } from '@/factories/mockAgentData';
+import { useLocalization } from '@/hooks/useLocalization';
 
 export default function AssessmentCard({ assessment }) {
   const [expanded, setExpanded] = useState(false);
-
-  const formatDate = (timestamp) => {
-    return new Date(timestamp).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  const { t } = useLocalization();
 
   const typeLabel = assessment.type === 'MARKET_SCAN' ? 'Market Scan' : 'Position Review';
 
   return (
-    <Card variant="glass" sx={{ marginBottom: 3 }}>
+    <Card glassEffectStyle="clear" variant="glass" sx={{ marginBottom: 3 }}>
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
-        <Stack direction="row" justify="space-between" align="flex-start" sx={{ marginBottom: 2 }}>
-          <View sx={{ flex: 1 }}>
-            <StatusBadge variant="accent">{typeLabel}</StatusBadge>
-            <Text variant="xs" tone="muted" sx={{ marginTop: 2 }}>
-              {formatDate(assessment.timestamp)}
-            </Text>
-          </View>
-
-
-        </Stack>
+        <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <Avatar
+            backgroundColor={PROVIDER_COLORS[assessment.agent?.llm_provider]}
+            name={assessment.agent?.name}
+            email={assessment.agent?.email}
+            size="sm"
+          />
+          <Text variant="xs" tone="muted">
+            {formatRelativeDate(assessment.timestamp)}
+          </Text>
+        </View>
 
         {assessment.trade_action_taken && (
-          <View sx={{ flexDirection: 'column', gap: 2, marginTop: 2, marginBottom: 2 }}>
-            <Text sx={{ color: 'success', fontWeight: '600' }}>
-              {assessment.trade_action_taken.replace('_', ' ').toLocaleLowerCase()}
-            </Text>
+          <View sx={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 2,
+            justifyContent: 'flex-start',
+            marginVertical: 4
+          }}>
+            <StatusBadge variant="info">
+              {typeLabel}
+            </StatusBadge>
+            <StatusBadge variant="muted">
+              {t(`tradeActionTaken.${assessment.trade_action_taken}`)}
+            </StatusBadge>
           </View>
         )}
+        <View
+          sx={{
+            borderRadius: 'lg',
+            fontFamily: 'monospace'
+          }}
+        >
 
-        {!expanded ? (
-          <Text variant="sm" tone="primary" sx={{ marginTop: 2 }}>
-            {assessment.llm_response_text.split("\n")[0].slice(0, 800) || 'No analysis available'}
-          </Text>
-        ) : (
-          <>
-            <Divider sx={{ marginTop: 3 }} />
-            <View sx={{ paddingTop: 3 }}>
-              <View sx={{ marginBottom: 3 }}>
-                <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
-                  LLM Analysis
-                </Text>
-                <View
-                  sx={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                    borderRadius: 'lg',
-                    padding: 3,
-                  }}
-                >
-                  <Text variant="sm" tone="subtle">
-                    {assessment.llm_response_text || 'No analysis available'}
-                  </Text>
-                </View>
-              </View>
-              <View sx={{ marginBottom: 3 }}>
-                <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
-                  Market Data Snapshot
-                </Text>
-                <View
-                  sx={{
-                    backgroundColor: 'rgba(0, 0, 0, 0.3)',
-                    borderRadius: 'lg',
-                    padding: 3,
-                  }}
-                >
-                  <Text variant="xs" tone="subtle" sx={{ fontFamily: 'monospace' }}>
-                    {JSON.stringify(assessment.market_data_snapshot, null, 2)}
-                  </Text>
-                </View>
-              </View>
-              <TouchableOpacity
-                onPress={() => setExpanded(!expanded)}
-                style={{
-                  backgroundColor: 'rgba(0, 0, 0, 0.2)',
-                  borderRadius: 8,
-                  padding: 8,
-                  marginTop: 8,
-                }}
-              >
-                <Text variant="xs" sx={{ textAlign: 'center', color: 'textPrimary' }}>
-                  Show Less
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </>
-        )}
+          {!expanded ? (
+            <>
+              <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
+                {assessment.llm_response_text.split("\n")[0].slice(0, 800) || 'No analysis available'}
+              </Text>
 
-        {!expanded && (
-          <View sx={{ marginTop: 2 }}>
-            <Text variant="xs" tone="muted">
-              Tap to view full analysis
+              <Text variant="xs" tone="muted">
+                Tap to view full analysis
+              </Text>
+            </>
+          ) : (
+            <>
+            <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
+              {assessment.llm_response_text || 'No analysis available'}
             </Text>
-          </View>
-        )}
+            <TouchableOpacity
+              onPress={() => setExpanded(!expanded)}
+              style={{
+                backgroundColor: 'rgba(0, 0, 0, 0.2)',
+                borderRadius: 8,
+                padding: 8,
+                marginTop: 8,
+              }}
+            >
+              <Text variant="xs" sx={{ textAlign: 'center', color: 'textPrimary' }}>
+                Show Less
+              </Text>
+            </TouchableOpacity>
+            </>
+          )}
+        </View>
       </TouchableOpacity>
     </Card>
   );

@@ -21,7 +21,7 @@ export default function TradeCard({ trade }) {
   };
 
   return (
-    <GlassCard sx={{ marginBottom: 3 }}>
+    <GlassCard glassEffectStyle="clear">
       <Stack direction="row" justify="space-between" align="flex-start" sx={{ marginBottom: 3 }}>
         <Stack direction="row" align="center" spacing={2}>
           <Text variant="lg" sx={{ fontWeight: '700' }}>
@@ -70,14 +70,14 @@ export default function TradeCard({ trade }) {
       <Stack direction="row" justify="space-between" sx={{ marginTop: 2 }}>
         <View>
           <Text variant="xs" tone="muted">Entry</Text>
-          <Text variant="xs" tone="subtle">
+          <Text variant="xs" tone="tertiary">
             {formatDate(trade.entry_timestamp)}
           </Text>
         </View>
         {!isOpen && (
           <View sx={{ alignItems: 'flex-end' }}>
             <Text variant="xs" tone="muted">Exit</Text>
-            <Text variant="xs" tone="subtle">
+            <Text variant="xs" tone="tertiary">
               {formatDate(trade.exit_timestamp)}
             </Text>
           </View>

@@ -1,5 +1,5 @@
-import React, { useMemo, useState, useEffect, useRef } from 'react';
-import { View, Text, ActivityIndicator, TouchableOpacity, Button } from '@/components/ui';
+import React, { useMemo, useEffect, useRef } from 'react';
+import { View, Text, ActivityIndicator, Button } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import Svg, { Polyline } from 'react-native-svg';
 import { useMarketSnapshot } from '@/hooks/useMarketSnapshot';
@@ -10,9 +10,6 @@ import {
 } from '@/utils/marketFormatting';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import SectionTitle from '@/components/SectionTitle';
-import { useSx } from 'dripsy';
-import TimeFrameSelector from '@/components/TimeFrameSelector';
-import SvgChart from './SvgChart';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -69,6 +66,8 @@ const PriceColumn = ({
   rangeDelta,
   rangePercent,
   isHistoryLoading,
+  compact,
+  isLast,
 }) => {
   const hasChange = Number.isFinite(rangePercent);
   const changeIsPositive = hasChange && rangePercent >= 0;
@@ -96,6 +95,56 @@ const PriceColumn = ({
   const priceAnimatedStyle = useAnimatedStyle(() => ({
     opacity: priceOpacity.value,
   }));
+
+  if (compact) {
+    return (
+      <View
+        sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          paddingVertical: 1,
+          borderBottomWidth: isLast ? 0 : 1,
+          borderBottomColor: 'rgba(148, 163, 184, 0.12)',
+        }}
+      >
+        <View sx={{ flexShrink: 1, paddingRight: 3 }}>
+          <Text
+            sx={{
+              fontSize: 11,
+              textTransform: 'uppercase',
+              letterSpacing: 1.2,
+              color: '#94a3b8',
+              marginBottom: 1,
+            }}
+          >
+            {asset?.symbol ?? '—'}
+          </Text>
+          <Animated.Text
+            style={[
+              {
+                color: '#f8fafc',
+                fontSize: 14,
+                fontWeight: '500',
+              },
+              priceAnimatedStyle,
+            ]}
+            numberOfLines={1}
+          >
+            {formatCurrency(asset?.price)}
+          </Animated.Text>
+        </View>
+        <View sx={{ alignItems: 'flex-end' }}>
+          <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
+            {hasChange ? formatPercent(rangePercent) : '—'}
+          </Text>
+          <Text sx={{ fontSize: 11, color: '#64748b', marginTop: 1 }}>
+            {Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'}
+          </Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View sx={{ flex: 1 }}>
@@ -140,9 +189,13 @@ const PriceColumn = ({
   );
 };
 
-export default function MarketPricesWidget({ tickers, sx: customSx }) {
+export default function MarketPricesWidget({
+  tickers,
+  sx: customSx,
+  timeframe,
+  compact = false,
+}) {
   const colors = useColors();
-  const [timeframe, setTimeframe] = useState('1h');
   const router = useRouter();
   const {
     normalizedTickers,
@@ -181,7 +234,7 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
         hour: '2-digit',
         minute: '2-digit',
       });
-      return `Updated ${formatted}`;
+      return `${formatted}`;
     }
     return null;
   }, [isUpdating, isLoading, lastUpdated]);
@@ -195,48 +248,75 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
 
   return (
     <View sx={customSx}>
-      <View sx={{ flexDirection: 'row', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 2 }}>
-        <SectionTitle
-          title="Live Markets"
-          error={error}
-          successIcon={<MaterialCommunityIcons name="signal" size={16} color={colors.success} />}
-          errorIcon={<MaterialCommunityIcons name="alert-circle-outline" size={16} color={colors.warning} />}
-        />
+      <View
+        sx={{
+          flexDirection: 'row',
+          alignItems: compact ? 'center' : 'flex-start',
+          justifyContent: 'space-between',
+          marginBottom: compact ? 1 : 2,
+        }}
+      >
 
-        <View sx={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-          <Button
-            variant="outline"
-            size="xs"
-            sx={{
-              borderRadius: 'full',
-              flexDirection: 'row',
-              alignItems: 'center',
-              paddingHorizontal: 2
-            }}
-            textProps={{
-              sx: {
-                fontSize: 11,
-                fontWeight: '600',
-                color: 'secondary'
-              }
-            }}
-            onPress={handleMore}
-            accessibilityRole="button"
-            accessibilityLabel="Open full market view"
-          >
-            <MaterialCommunityIcons
-              name="lightning-bolt"
-              size={14}
-              color={colors.primary}
-            />
-            <Text sx={{ fontSize: 11, fontWeight: '600', color: colors.primary }}>
-              Buy / Sell
-            </Text>
-          </Button>
-        </View>
+
+        {compact ? (
+          <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#94a3b8" />
+            ) : (
+              error ? (
+                <MaterialCommunityIcons name="alert-circle-outline" size={16} color={colors.warning} />
+              ) : (
+                <MaterialCommunityIcons name="signal" size={16} color={colors.success} />
+              )
+            )}
+            {statusLabel ? (
+              <Text sx={{ fontSize: 11, color: '#94a3b8' }}>
+                {statusLabel}
+              </Text>
+            ) : null}
+          </View>
+        ) : (
+          <View sx={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+            <Button
+              variant="outline"
+              size="xs"
+              sx={{
+                borderRadius: 'full',
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingHorizontal: 2
+              }}
+              textProps={{
+                sx: {
+                  fontSize: 11,
+                  fontWeight: '600',
+                  color: 'secondary'
+                }
+              }}
+              onPress={handleMore}
+              accessibilityRole="button"
+              accessibilityLabel="Open full market view"
+            >
+              <MaterialCommunityIcons
+                name="lightning-bolt"
+                size={14}
+                color={colors.primary}
+              />
+              <Text sx={{ fontSize: 11, fontWeight: '600', color: colors.primary }}>
+                Buy / Sell
+              </Text>
+            </Button>
+          </View>
+        )}
       </View>
 
-      <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
+      <View
+        sx={{
+          flexDirection: compact ? 'row' : 'row',
+          justifyContent: compact ? 'space-between' : 'space-between',
+          gap: compact ? 2 : 4,
+        }}
+      >
         {displayAssets.length ? (
           displayAssets.map((asset, index) => {
             const history = historyData?.[asset?.symbol] ?? [];
@@ -261,11 +341,20 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
                 rangeDelta={rangeDelta}
                 rangePercent={rangePercent}
                 isHistoryLoading={historyFetching && !history.length}
+                compact={compact}
+                isLast={index === displayAssets.length - 1}
               />
             );
           })
         ) : (
-          <View sx={{ flex: 1, alignItems: 'center', paddingVertical: 2 }}>
+          <View
+            sx={{
+              flex: compact ? undefined : 1,
+              width: '100%',
+              alignItems: 'center',
+              paddingVertical: compact ? 1 : 2,
+            }}
+          >
             {isLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
@@ -273,13 +362,6 @@ export default function MarketPricesWidget({ tickers, sx: customSx }) {
             )}
           </View>
         )}
-      </View>
-      <View sx={{ marginTop: 4, alignItems: 'flex-end' }}>
-        <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
-      </View>
-      <View sx={{ marginTop: 4 }}>
-        <SectionTitle title="Top Agents" sx={{ color: 'foreground', fontWeight: '500' }} />
-        <SvgChart timeframe={timeframe} />
       </View>
     </View>
   );
