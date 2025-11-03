@@ -104,22 +104,25 @@ const interpolateValue = (data, targetX) => {
  * @param {Array} props.accountData - Account balance data (for ACCOUNT_BALANCE source)
  * @param {string} props.yAxisLabel - Label for Y-axis (default: '%' for agents, '$' for balance)
  * @param {Function} props.formatValue - Custom value formatter
+ * @param {boolean} props.generateDataWhenNotExists - Whether to generate mock data when real data doesn't exist (default: false)
  *
  * @example
- * // Agent performance
+ * // Agent performance with mock data fallback
  * <SvgChart
  *   dataSource={CHART_DATA_SOURCE.AGENTS}
  *   agents={myAgents}
  *   timeframe="24h"
+ *   generateDataWhenNotExists={true}
  * />
  *
  * @example
- * // Account balance
+ * // Account balance - no mock data
  * <SvgChart
  *   dataSource={CHART_DATA_SOURCE.ACCOUNT_BALANCE}
  *   accountData={balanceHistory}
  *   timeframe="7d"
  *   yAxisLabel="$"
+ *   generateDataWhenNotExists={false}
  * />
  */
 const SvgChart = ({
@@ -129,6 +132,7 @@ const SvgChart = ({
   accountData = null,
   yAxisLabel = null,
   formatValue = null,
+  generateDataWhenNotExists = false,
 }) => {
   const [expanded, setExpanded] = useState(false);
   const [touchActive, setTouchActive] = useState(false);
@@ -231,14 +235,18 @@ const SvgChart = ({
     // ACCOUNT BALANCE DATA SOURCE
     if (dataSource === CHART_DATA_SOURCE.ACCOUNT_BALANCE) {
       if (!accountData || accountData.length === 0) {
-        // Return stable mock account balance data with updated color
-        return {
-          ...MOCK_ACCOUNT_DATA,
-          lines: [{
-            ...MOCK_ACCOUNT_DATA.lines[0],
-            color: positiveColor,
-          }],
-        };
+        // Return mock data only if generateDataWhenNotExists is true
+        if (generateDataWhenNotExists) {
+          return {
+            ...MOCK_ACCOUNT_DATA,
+            lines: [{
+              ...MOCK_ACCOUNT_DATA.lines[0],
+              color: positiveColor,
+            }],
+          };
+        }
+        // Otherwise return empty data
+        return { lines: [], useMockData: false };
       }
 
       // Transform account balance data
@@ -266,14 +274,20 @@ const SvgChart = ({
 
     // AGENTS DATA SOURCE (original logic)
     if (dataSource === CHART_DATA_SOURCE.AGENTS) {
-      // Use stable mock data if no agents configured or error
+      // Use mock data only if generateDataWhenNotExists is true
       if (!agents || agents.length === 0 || agentError) {
-        return { lines: MOCK_AGENTS_DATA, useMockData: true };
+        if (generateDataWhenNotExists) {
+          return { lines: MOCK_AGENTS_DATA, useMockData: true };
+        }
+        return { lines: [], useMockData: false };
       }
 
-      // If still loading or no data, use stable mock
+      // If still loading or no data
       if (agentLoading || !snapshotsData) {
-        return { lines: MOCK_AGENTS_DATA, useMockData: true };
+        if (generateDataWhenNotExists) {
+          return { lines: MOCK_AGENTS_DATA, useMockData: true };
+        }
+        return { lines: [], useMockData: false };
       }
 
       // Transform real snapshot data
@@ -314,8 +328,8 @@ const SvgChart = ({
       return { lines: transformedAgents, useMockData: false };
     }
 
-    return { lines: [], useMockData: true };
-  }, [dataSource, agents, snapshotsData, agentLoading, agentError, accountData]);
+    return { lines: [], useMockData: false };
+  }, [dataSource, agents, snapshotsData, agentLoading, agentError, accountData, generateDataWhenNotExists, positiveColor]);
 
   const { lines } = chartData;
 
