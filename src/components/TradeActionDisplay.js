@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, Card } from '@/components/ui';
+import { View, Text, Card, StatusBadge } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
 
@@ -56,51 +56,50 @@ export default function TradeActionDisplay({ actionData }) {
   const config = getActionConfig(actionData.action);
 
   return (
-    <Card
-      variant="glass"
-      glassEffectStyle="clear"
+    <View
       sx={{
         marginBottom: 3,
-        backgroundColor: config.bgColor,
-        borderWidth: 1,
-        borderColor: config.color,
-        borderStyle: 'solid',
+        // backgroundColor: config.bgColor,
+        // borderWidth: 1,
+        // borderColor: config.color,
+        // borderStyle: 'solid',
       }}
     >
       <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: 2 }}>
         <View
           sx={{
-            width: 40,
-            height: 40,
+            width: 24,
+            height: 24,
             borderRadius: 'full',
-            backgroundColor: config.color,
+            borderColor: config.color,
+            borderWidth: 1,
             justifyContent: 'center',
             alignItems: 'center',
           }}
         >
           <MaterialCommunityIcons
             name={config.icon}
-            size={24}
-            color={palette.foreground}
+            size={16}
+            color={config.color}
           />
         </View>
 
         <View sx={{ flex: 1 }}>
-          <Text variant="sm" tone="muted" sx={{ marginBottom: 1 }}>
+          <Text variant="sm" tone="muted" sx={{ marginBottom: 1, display: 'none' }}>
             Trade Action
           </Text>
-          <Text variant="lg" sx={{ fontWeight: '600', color: config.color }}>
+          <StatusBadge fontWeight="600" sx={{ borderColor: config.color }}>
             {config.label}
-          </Text>
+          </StatusBadge>
         </View>
 
         {actionData.asset && (
           <View sx={{ alignItems: 'flex-end' }}>
-            <Text variant="sm" tone="muted" sx={{ marginBottom: 1 }}>
+            <Text variant="sm" tone="muted" sx={{ marginBottom: 1, display: 'none' }}>
               Asset
             </Text>
             <Text variant="md" sx={{ fontWeight: '600' }}>
-              {actionData.asset}
+              {actionData.asset || ''}
             </Text>
           </View>
         )}
@@ -113,7 +112,42 @@ export default function TradeActionDisplay({ actionData }) {
               Position Size
             </Text>
             <Text variant="sm" sx={{ fontWeight: '500' }}>
-              {actionData.size}
+              {typeof actionData.size === 'number'
+                ? `${(actionData.size * 100).toFixed(1)}%`
+                : actionData.size}
+            </Text>
+          </View>
+        )}
+
+        {actionData.entry && (
+          <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text variant="sm" tone="muted">
+              Entry
+            </Text>
+            <Text variant="sm" sx={{ fontWeight: '500' }}>
+              ${actionData.entry.toLocaleString()}
+            </Text>
+          </View>
+        )}
+
+        {actionData.stop_loss && (
+          <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text variant="sm" tone="muted">
+              Stop Loss
+            </Text>
+            <Text variant="sm" sx={{ fontWeight: '500', color: palette.short ?? error }}>
+              ${actionData.stop_loss.toLocaleString()}
+            </Text>
+          </View>
+        )}
+
+        {actionData.take_profit && (
+          <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+            <Text variant="sm" tone="muted">
+              Take Profit
+            </Text>
+            <Text variant="sm" sx={{ fontWeight: '500', color: palette.long ?? success }}>
+              ${actionData.take_profit.toLocaleString()}
             </Text>
           </View>
         )}
@@ -129,6 +163,6 @@ export default function TradeActionDisplay({ actionData }) {
           </View>
         )}
       </View>
-    </Card>
+    </View>
   );
 }

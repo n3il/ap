@@ -29,7 +29,7 @@ const sizeStyles: Record<BadgeSize, { paddingHorizontal: number; paddingVertical
   regular: { paddingHorizontal: 3, paddingVertical: 1, textVariant: 'xs' },
 };
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent', size = 'regular', sx }) => {
+const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent', size = 'regular', sx, fontWeight = '300' }) => {
   const styles = badgeStyles[variant];
   const sizeStyle = sizeStyles[size];
 
@@ -40,13 +40,13 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent',
         paddingVertical: sizeStyle.paddingVertical,
         borderRadius: 6,
         // backgroundColor: withOpacity(styles.bg, 0.3),
-        borderColor: styles.bg,
+        borderColor: styles?.bg,
         borderWidth: 0.5,
         alignSelf: 'flex-start',
         ...sx,
       }}
     >
-      <Text variant={sizeStyle.textVariant} sx={{ color: styles.bg, fontWeight: '300' }}>
+      <Text variant={sizeStyle.textVariant} sx={{ color: styles.bg, fontWeight }}>
         {children}
       </Text>
     </View>

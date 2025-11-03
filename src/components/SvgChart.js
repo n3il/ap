@@ -14,6 +14,25 @@ const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 7;
 const PADDING = { top: 20, right: 50, bottom: 0, left: 12 };
 
+// Stable mock data references to prevent re-renders
+const MOCK_AGENTS_DATA = getMockAgentsForSvgChart();
+const MOCK_ACCOUNT_DATA = {
+  lines: [{
+    id: 'account-balance',
+    name: 'Account Balance',
+    color: '#10b981', // Will be overridden by actual color
+    data: [
+      { time: 0, value: 0 },
+      { time: 0.2, value: 2.5 },
+      { time: 0.4, value: 1.8 },
+      { time: 0.6, value: 4.2 },
+      { time: 0.8, value: 3.5 },
+      { time: 1, value: 5.8 },
+    ],
+  }],
+  useMockData: true,
+};
+
 /**
  * Chart data source types
  */
@@ -212,22 +231,13 @@ const SvgChart = ({
     // ACCOUNT BALANCE DATA SOURCE
     if (dataSource === CHART_DATA_SOURCE.ACCOUNT_BALANCE) {
       if (!accountData || accountData.length === 0) {
-        // Return mock account balance data
+        // Return stable mock account balance data with updated color
         return {
+          ...MOCK_ACCOUNT_DATA,
           lines: [{
-            id: 'account-balance',
-            name: 'Account Balance',
+            ...MOCK_ACCOUNT_DATA.lines[0],
             color: positiveColor,
-            data: [
-              { time: 0, value: 0 },
-              { time: 0.2, value: 2.5 },
-              { time: 0.4, value: 1.8 },
-              { time: 0.6, value: 4.2 },
-              { time: 0.8, value: 3.5 },
-              { time: 1, value: 5.8 },
-            ],
           }],
-          useMockData: true,
         };
       }
 
@@ -256,14 +266,14 @@ const SvgChart = ({
 
     // AGENTS DATA SOURCE (original logic)
     if (dataSource === CHART_DATA_SOURCE.AGENTS) {
-      // Use mock data if no agents configured or error
+      // Use stable mock data if no agents configured or error
       if (!agents || agents.length === 0 || agentError) {
-        return { lines: getMockAgentsForSvgChart(), useMockData: true };
+        return { lines: MOCK_AGENTS_DATA, useMockData: true };
       }
 
-      // If still loading or no data, use mock
+      // If still loading or no data, use stable mock
       if (agentLoading || !snapshotsData) {
-        return { lines: getMockAgentsForSvgChart(), useMockData: true };
+        return { lines: MOCK_AGENTS_DATA, useMockData: true };
       }
 
       // Transform real snapshot data
@@ -561,6 +571,7 @@ const SvgChart = ({
         {/* Tooltip when touching */}
         {touchActive && (
           <View
+            pointerEvents="none"
             sx={{
               position: 'absolute',
               top: 8,
