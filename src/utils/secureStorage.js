@@ -21,7 +21,6 @@ export async function setSecureItem(key, value) {
     }
     await SecureStore.setItemAsync(key, value);
   } catch (error) {
-    console.error(`Error saving item with key "${key}":`, error);
     throw error;
   }
 }
@@ -39,7 +38,6 @@ export async function getSecureItem(key) {
     const value = await SecureStore.getItemAsync(key);
     return value;
   } catch (error) {
-    console.error(`Error retrieving item with key "${key}":`, error);
     return null;
   }
 }
@@ -56,7 +54,6 @@ export async function deleteSecureItem(key) {
     }
     await SecureStore.deleteItemAsync(key);
   } catch (error) {
-    console.error(`Error deleting item with key "${key}":`, error);
     throw error;
   }
 }
@@ -72,7 +69,6 @@ export async function setSecureObject(key, object) {
     const jsonString = JSON.stringify(object);
     await setSecureItem(key, jsonString);
   } catch (error) {
-    console.error(`Error saving object with key "${key}":`, error);
     throw error;
   }
 }
@@ -88,7 +84,6 @@ export async function getSecureObject(key) {
     if (!jsonString) return null;
     return JSON.parse(jsonString);
   } catch (error) {
-    console.error(`Error retrieving object with key "${key}":`, error);
     return null;
   }
 }

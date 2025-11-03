@@ -6,6 +6,7 @@ import WalletAddressCard from './WalletAddressCard';
 import { GlassView } from 'expo-glass-effect';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/config/supabase';
+import { useAccountBalance } from '@/hooks/useAccountBalance';
 
 export default function AgentCard({
   agent,
@@ -16,6 +17,16 @@ export default function AgentCard({
   showOpenPositions = true,
   ...props
 }) {
+  const {
+    // wallet,
+    equity,
+    // margin: usedMargin,
+    // availableMargin,
+    unrealizedPnl,
+    realizedPnl,
+    // deposit,
+    // withdraw,
+  } = useAccountBalance(agent.id)
   // Fetch open positions if requested
   const { data: openPositions } = useQuery({
     queryKey: ['agent-positions', agent.id],
@@ -33,13 +44,24 @@ export default function AgentCard({
     enabled: showOpenPositions,
   });
 
-  const calculatePnL = () => {
-    // This would be calculated from trades data
-    return 0;
-  };
-  const pnl = calculatePnL();
-  const pnlColor = pnl > 0 ? 'success' : pnl < 0 ? 'error' : 'foreground';
-  const pnlSign = pnl > 0 ? '+' : '';
+  // Fetch total trades count
+  const { data: tradesCount = 0 } = useQuery({
+    queryKey: ['agent-trades-count', agent.id],
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('trades')
+        .select('*', { count: 'exact', head: true })
+        .eq('agent_id', agent.id);
+
+      if (error) throw error;
+      return count || 0;
+    },
+  });
+
+  // Calculate total PnL (realized + unrealized)
+  const totalPnl = (realizedPnl || 0) + (unrealizedPnl || 0);
+  const pnlColor = totalPnl > 0 ? 'success' : totalPnl < 0 ? 'error' : 'foreground';
+  const pnlSign = totalPnl > 0 ? '+' : '';
   const providerLabel = LLM_PROVIDERS[agent.llm_provider] || 'Unknown';
   const initialCapital = parseFloat(agent.initial_capital) || 0;
   const isPublished = Boolean(agent.published_at);
@@ -125,8 +147,6 @@ export default function AgentCard({
 
   const isActive = Boolean(agent.is_active);
 
-
-  console.log({ openPositions })
   return (
     <GlassView
       variant="glass"
@@ -160,19 +180,33 @@ export default function AgentCard({
           </View>
         </View>
 
-        <Stack direction="row" justify="space-between" align="center">
-          <LabelValue
-            label="Capital"
-            value={`$${initialCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
-          />
-          <View sx={{ alignItems: 'flex-end' }}>
+        <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 2 }}>
+          <View sx={{ flex: 1, alignItems: 'flex-start' }}>
+            <LabelValue
+              label="Balance"
+              value={`$${(equity || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+            />
+          </View>
+          <View sx={{ flex: 1, alignItems: 'center' }}>
+            <LabelValue
+              label="Positions"
+              value={`${openPositions?.length || 0}`}
+            />
+          </View>
+          <View sx={{ flex: 1, alignItems: 'center' }}>
+            <LabelValue
+              label="Trades"
+              value={`${tradesCount}`}
+            />
+          </View>
+          <View sx={{ flex: 1, alignItems: 'flex-end' }}>
             <LabelValue
               label="P&L"
-              value={`${pnlSign}${'$'}${Math.abs(pnl).toLocaleString()}`}
+              value={`${pnlSign}$${Math.abs(totalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
               sx={{ color: pnlColor }}
             />
           </View>
-        </Stack>
+        </View>
 
         {openPositions && openPositions.length > 0 && (
           <View sx={{ marginTop: 3, flex: 1 }}>

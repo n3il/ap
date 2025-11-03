@@ -146,7 +146,7 @@ export default function AssessmentCard({ assessment }) {
         return [JSON.parse(plainSingleMatch[1])];
       }
     } catch (error) {
-      console.error('Error parsing action JSON:', error);
+      return;
     }
 
     return null;
@@ -163,7 +163,6 @@ export default function AssessmentCard({ assessment }) {
 
   const typeLabel = assessment.type === 'MARKET_SCAN' ? 'Market Scan' : 'Position Review';
 
-  console.log({ palette })
   return (
     <Card glassEffectStyle="clear" variant="glass" sx={{ marginBottom: 3 }}>
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
@@ -178,23 +177,6 @@ export default function AssessmentCard({ assessment }) {
             {formatRelativeDate(assessment.timestamp)}
           </Text>
         </View>
-
-        {assessment.trade_action_taken && (
-          <View sx={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 2,
-            justifyContent: 'flex-start',
-            marginVertical: 4
-          }}>
-            <StatusBadge variant="info">
-              {typeLabel}
-            </StatusBadge>
-            <StatusBadge variant={getTradeActionVariant(assessment.trade_action_taken)}>
-              {formatTradeActionLabel(assessment.trade_action_taken)}
-            </StatusBadge>
-          </View>
-        )}
 
         {extractedAction && Array.isArray(extractedAction) && extractedAction.length > 0 && (
           <View sx={{ marginVertical: 3, gap: 2 }}>

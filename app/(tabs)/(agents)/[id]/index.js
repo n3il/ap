@@ -65,11 +65,12 @@ const AgentReadScreen = () => {
     enabled: !!agentId && isOwnAgent,
   });
 
-  const { data: assessments = [] } = useQuery({
-    queryKey: ['agent-assessments', agentId],
-    queryFn: () => assessmentService.getAssessmentsByAgent(agentId),
-    enabled: !!agentId && isOwnAgent,
-  });
+  // Assessments are now fetched directly in ThoughtsTab component
+  // const { data: assessments = [] } = useQuery({
+  //   queryKey: ['agent-assessments', agentId],
+  //   queryFn: () => assessmentService.getAssessmentsByAgent(agentId),
+  //   enabled: !!agentId && isOwnAgent,
+  // });
 
   const toggleStatusMutation = useMutation({
     mutationFn: (isActive) => agentService.updateAgentStatus(agentId, isActive),
@@ -109,7 +110,6 @@ const AgentReadScreen = () => {
     },
     onError: (error) => {
       setPendingAssessment(false);
-      console.error('Failed to run assessment:', error);
       Alert.alert('Error', 'Failed to trigger assessment: ' + error.message);
     },
   });
@@ -346,7 +346,7 @@ const AgentReadScreen = () => {
         {/* Content section */}
         {page === 0 && (
           <ThoughtsTab
-            assessments={assessments}
+            agentId={agentId}
             isOwnAgent={isOwnAgent}
             pendingAssessment={pendingAssessment}
           />

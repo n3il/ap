@@ -59,10 +59,6 @@ export default function TradeActionDisplay({ actionData }) {
     <View
       sx={{
         marginBottom: 3,
-        // backgroundColor: config.bgColor,
-        // borderWidth: 1,
-        // borderColor: config.color,
-        // borderStyle: 'solid',
       }}
     >
       <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: 2 }}>
@@ -153,7 +149,7 @@ export default function TradeActionDisplay({ actionData }) {
         )}
 
         {actionData.reasoning && (
-          <View sx={{ marginTop: 2, paddingTop: 2, borderTopWidth: 1, borderTopColor: withOpacity(palette.foreground, 0.1) }}>
+          <View sx={{ marginTop: 2, paddingTop: 2, borderTopWidth: 1 }}>
             <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
               Reasoning
             </Text>

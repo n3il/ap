@@ -13,7 +13,6 @@ export const assessmentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching assessments:', error);
       throw error;
     }
   },
@@ -52,7 +51,6 @@ export const assessmentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching all assessments:', error);
       throw error;
     }
   },
@@ -71,7 +69,6 @@ export const assessmentService = {
       if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
       return data;
     } catch (error) {
-      console.error('Error fetching latest assessment:', error);
       throw error;
     }
   },
@@ -116,7 +113,6 @@ export const assessmentService = {
         actionsTriggered: assessments.filter(a => a.trade_action_taken && a.trade_action_taken !== 'NO_ACTION').length,
       };
     } catch (error) {
-      console.error('Error fetching assessment stats:', error);
       throw error;
     }
   },

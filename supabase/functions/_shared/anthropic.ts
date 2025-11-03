@@ -40,7 +40,6 @@ export async function callAnthropicAPI(
 
   if (!response.ok) {
     const errorText = await response.text()
-    console.error('Anthropic API error response:', errorText)
     throw new Error(`Anthropic API error: ${response.statusText}`)
   }
 

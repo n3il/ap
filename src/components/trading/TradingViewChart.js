@@ -93,7 +93,6 @@ export default function TradingViewChart({
                 ]
               });
             } catch (error) {
-              console.error('TradingView initialization error:', error);
               window.ReactNativeWebView?.postMessage(JSON.stringify({
                 type: 'error',
                 message: error.message
@@ -124,14 +123,10 @@ export default function TradingViewChart({
         )}
         onError={(syntheticEvent) => {
           const { nativeEvent } = syntheticEvent;
-          console.warn('WebView error: ', nativeEvent);
         }}
         onMessage={(event) => {
           try {
             const message = JSON.parse(event.nativeEvent.data);
-            if (message.type === 'error') {
-              console.error('TradingView error:', message.message);
-            }
           } catch (e) {
             // Ignore
           }

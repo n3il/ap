@@ -24,7 +24,6 @@ function AuthNavigator() {
 
   // Handle navigation based on auth state
   useEffect(() => {
-    console.log({ user, loading, hasCompletedOnboarding, appIsReady })
     if (!loading && appIsReady) {
       const inAuthGroup = segments[0] === '(auth)';
       const inTabsGroup = segments[0] === '(tabs)';
@@ -60,7 +59,7 @@ function AuthNavigator() {
         // Keep splash visible for minimum duration for smooth UX
         await new Promise(resolve => setTimeout(resolve, 6000));
       } catch (e) {
-        console.warn(e);
+        //
       } finally {
         setAppIsReady(true);
       }

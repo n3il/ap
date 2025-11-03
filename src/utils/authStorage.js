@@ -60,7 +60,6 @@ export const authStorage = {
 
       return chunks.length > 0 ? chunks.join('') : null;
     } catch (error) {
-      console.error('Error getting auth session:', error);
       return null;
     }
   },
@@ -88,7 +87,7 @@ export const authStorage = {
       // Store the count
       await SecureStore.setItemAsync(`${SUPABASE_SESSION_KEY}_count`, chunks.length.toString());
     } catch (error) {
-      console.error('Error setting auth session:', error);
+      throw error
     }
   },
 
@@ -99,7 +98,7 @@ export const authStorage = {
       await SecureStore.deleteItemAsync(`${SUPABASE_SESSION_KEY}_count`);
       await SecureStore.deleteItemAsync(SUPABASE_SESSION_KEY);
     } catch (error) {
-      console.error('Error removing auth session:', error);
+      throw error
     }
   },
 };

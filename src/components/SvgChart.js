@@ -228,8 +228,6 @@ const SvgChart = ({
     { enabled: dataSource === CHART_DATA_SOURCE.AGENTS && agentIds.length > 0 }
   );
 
-  console.log({ snapshotsData })
-
   // Transform data based on source
   const chartData = useMemo(() => {
     // ACCOUNT BALANCE DATA SOURCE

@@ -116,7 +116,7 @@ export default function HomeScreen() {
       return response.json();
     },
     onError: (error) => {
-      console.error('Trigger request failed:', error);
+      //
     },
   });
 

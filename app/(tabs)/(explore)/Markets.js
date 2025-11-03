@@ -14,7 +14,7 @@ import { useRouter } from 'expo-router';
 import ContainerView from '@/components/ContainerView';
 import { useMarketSnapshot } from '@/hooks/useMarketSnapshot';
 import { useTradingData } from '@/hooks/useTradingData';
-import { useAccountBalance } from '@/hooks/useAccountBalance';
+import { useMockAccountBalance } from '@/hooks/useMockAccountBalance';
 import {
   TradingViewChart,
   OrderEntry,
@@ -340,7 +340,7 @@ export default function MarketsScreen() {
     ledgerAccountId: selectedLedgerAccount === 'ALL' ? null : selectedLedgerAccount,
   });
 
-  const accountBalance = useAccountBalance();
+  const accountBalance = useMockAccountBalance();
   const ledgerAccounts = useMemo(
     () => ledger?.raw?.accounts ?? [],
     [ledger?.raw?.accounts],

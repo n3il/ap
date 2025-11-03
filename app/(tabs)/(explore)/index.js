@@ -65,6 +65,10 @@ export default function ExploreScreen() {
         <View sx={{ marginTop: 4 }}>
           <SvgChart timeframe={timeframe} />
         </View>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+          <SectionTitle title="Agents" />
+          <SectionTitle title="Trades" sx={{ color: "muted" }} />
+        </View>
         <View style={{ flex: 1 }}>
           <CategoryAgentsListPager />
         </View>

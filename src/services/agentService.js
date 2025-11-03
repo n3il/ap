@@ -25,7 +25,6 @@ export const agentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching agents:', error);
       throw error;
     }
   },
@@ -42,7 +41,6 @@ export const agentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching published agents:', error);
       throw error;
     }
   },
@@ -59,7 +57,6 @@ export const agentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching agent:', error);
       throw error;
     }
   },
@@ -89,7 +86,6 @@ export const agentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error creating agent:', error);
       throw error;
     }
   },
@@ -108,7 +104,6 @@ export const agentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error updating agent status:', error);
       throw error;
     }
   },
@@ -126,7 +121,6 @@ export const agentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error publishing agent:', error);
       throw error;
     }
   },
@@ -144,7 +138,6 @@ export const agentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error unpublishing agent:', error);
       throw error;
     }
   },
@@ -160,7 +153,6 @@ export const agentService = {
       if (error) throw error;
       return true;
     } catch (error) {
-      console.error('Error deleting agent:', error);
       throw error;
     }
   },
@@ -195,7 +187,6 @@ export const agentService = {
 
       return stats;
     } catch (error) {
-      console.error('Error fetching agent stats:', error);
       throw error;
     }
   },
@@ -236,7 +227,6 @@ export const agentService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error copying agent:', error);
       throw error;
     }
   },
@@ -248,8 +238,6 @@ export const agentService = {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session?.access_token) throw new Error('Not authenticated');
 
-      console.log('Triggering assessment for agent:', agentId);
-
       // Call run_agent_assessment directly for this specific agent
       const { data, error } = await supabase.functions.invoke('run_agent_assessment', {
         body: { agent_id: agentId },
@@ -259,14 +247,11 @@ export const agentService = {
       });
 
       if (error) {
-        console.error('Function invocation error:', error);
         throw error;
       }
 
-      console.log('Assessment triggered successfully:', data);
       return data;
     } catch (error) {
-      console.error('Error triggering assessment:', error);
       throw error;
     }
   },

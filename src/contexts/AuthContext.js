@@ -61,13 +61,12 @@ export const AuthProvider = ({ children }) => {
         .single();
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error checking onboarding status:', error);
         return;
       }
 
       setHasCompletedOnboarding(data?.onboarding_completed || false);
     } catch (error) {
-      console.error('Error checking onboarding status:', error);
+      throw error
     }
   };
 
@@ -84,7 +83,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error('Error signing up:', error);
       return { data: null, error };
     }
   };
@@ -99,7 +97,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error('Error signing in:', error);
       return { data: null, error };
     }
   };
@@ -111,7 +108,6 @@ export const AuthProvider = ({ children }) => {
       setHasCompletedOnboarding(false);
       return { error: null };
     } catch (error) {
-      console.error('Error signing out:', error);
       return { error };
     }
   };
@@ -122,7 +118,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error('Error resetting password:', error);
       return { data: null, error };
     }
   };
@@ -131,7 +126,6 @@ export const AuthProvider = ({ children }) => {
     try {
       const redirectUrl = makeRedirectUri({ scheme: 'ap' });
 
-      console.log('🔗 Redirect URL:', redirectUrl);
 
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
@@ -141,18 +135,13 @@ export const AuthProvider = ({ children }) => {
         },
       });
 
-      console.log('📱 OAuth response:', { url: data?.url, error });
-
       if (error) throw error;
 
       if (data?.url) {
-        console.log('🌐 Opening browser...');
         const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
-        console.log('✅ Browser result:', result);
 
         // Extract tokens from the result URL
         if (result.type === 'success' && result.url) {
-          console.log('🔓 Extracting tokens from result...');
 
           // Parse tokens from URL hash
           const url = result.url;
@@ -166,21 +155,17 @@ export const AuthProvider = ({ children }) => {
           }
 
           if (access_token && refresh_token) {
-            console.log('✅ Tokens found, setting session...');
             const { error: sessionError } = await supabase.auth.setSession({
               access_token,
               refresh_token,
             });
 
             if (sessionError) {
-              console.error('❌ Session error:', sessionError);
               throw sessionError;
             }
 
-            console.log('✅ Session established successfully!');
             return { data: { session: true }, error: null };
           } else {
-            console.log('⚠️  No tokens in result URL');
             return { data: null, error: new Error('No tokens received') };
           }
         }
@@ -190,7 +175,6 @@ export const AuthProvider = ({ children }) => {
 
       return { data: null, error: new Error('No OAuth URL generated') };
     } catch (error) {
-      console.error('❌ Error signing in with Google:', error);
       return { data: null, error };
     }
   };
@@ -206,7 +190,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error('Error signing in with Apple:', error);
       return { data: null, error };
     }
   };
@@ -219,7 +202,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error('Error sending phone verification:', error);
       return { data: null, error };
     }
   };
@@ -234,7 +216,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error('Error verifying phone code:', error);
       return { data: null, error };
     }
   };
@@ -250,7 +231,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error('Error sending email OTP:', error);
       return { data: null, error };
     }
   };
@@ -265,7 +245,6 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      console.error('Error verifying email OTP:', error);
       return { data: null, error };
     }
   };
@@ -284,16 +263,12 @@ export const AuthProvider = ({ children }) => {
         });
 
       if (error) throw error;
-      console.log('Profile updated successfully');
       setHasCompletedOnboarding(true);
       return { error: null };
     } catch (error) {
-      console.error('Error completing onboarding:', error);
       return { error };
     }
   };
-
-  console.log(hasCompletedOnboarding)
 
   const value = {
     user,

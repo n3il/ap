@@ -2,7 +2,13 @@ import React from 'react';
 import { View, Text } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-export default function SectionTitle({ title, error, successIcon, errorIcon, sx = {} }) {
+export default function SectionTitle({
+  title,
+  error,
+  successIcon,
+  errorIcon,
+  sx = {},
+}) {
   return (
     <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
       <Text
@@ -10,7 +16,7 @@ export default function SectionTitle({ title, error, successIcon, errorIcon, sx 
           fontSize: 12,
           textTransform: 'uppercase',
           letterSpacing: 1.5,
-          color: 'textTertiary',
+          color: 'textSecondary',
           ...sx
         }}
       >

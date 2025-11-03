@@ -40,7 +40,6 @@ export const agentSnapshotService = {
       if (error) throw error;
       return data || [];
     } catch (error) {
-      console.error('Error fetching agent snapshots:', error);
       throw error;
     }
   },
@@ -93,7 +92,6 @@ export const agentSnapshotService = {
 
       return grouped;
     } catch (error) {
-      console.error('Error fetching multi-agent snapshots:', error);
       throw error;
     }
   },
@@ -116,7 +114,6 @@ export const agentSnapshotService = {
       if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
       return data || null;
     } catch (error) {
-      console.error('Error fetching latest snapshot:', error);
       throw error;
     }
   },

@@ -13,7 +13,6 @@ export const tradeService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching trades:', error);
       throw error;
     }
   },
@@ -52,7 +51,6 @@ export const tradeService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching all trades:', error);
       throw error;
     }
   },
@@ -70,7 +68,6 @@ export const tradeService = {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Error fetching open positions:', error);
       throw error;
     }
   },
@@ -118,7 +115,6 @@ export const tradeService = {
         winRate: closedTrades.length > 0 ? (winningTrades.length / closedTrades.length) * 100 : 0,
       };
     } catch (error) {
-      console.error('Error fetching trade stats:', error);
       throw error;
     }
   },
@@ -230,7 +226,6 @@ export const tradeService = {
         transactions: transactions ?? [],
       };
     } catch (error) {
-      console.error('Error fetching trading ledger snapshot:', error);
       throw error;
     }
   },

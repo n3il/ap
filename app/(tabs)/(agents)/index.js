@@ -41,7 +41,6 @@ export default function AgentsScreen() {
       router.push(`/(tabs)/(agents)/${newAgent.id}`);
     },
     onError: (error) => {
-      console.error('Error creating agent:', error);
       alert('Failed to create agent. Please try again.');
     },
   });

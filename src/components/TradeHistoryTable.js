@@ -62,8 +62,6 @@ export default function TradeHistoryTable({ userId, agentId }) {
       const { data, error } = await query;
       if (error) throw error;
       setTrades(data || []);
-    } catch (error) {
-      console.error('Error fetching trades:', error);
     } finally {
       setLoading(false);
     }

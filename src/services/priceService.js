@@ -8,7 +8,7 @@ const COIN_METADATA = {
 const RECONNECT_DELAY_MS = 5000;
 
 // Debug flag - set to false in production
-const DEBUG = true;
+const DEBUG = false;
 const log = (...args) => DEBUG && console.log('[HyperLiquid]', ...args);
 const logError = (...args) => console.log('[HyperLiquid ERROR]', ...args);
 
