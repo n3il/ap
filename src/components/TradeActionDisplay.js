@@ -1,10 +1,12 @@
-import React from 'react';
-import { View, Text, Card, StatusBadge } from '@/components/ui';
+import React, { useState } from 'react';
+import { View, Text, Card, StatusBadge, TouchableOpacity } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
 
 export default function TradeActionDisplay({ actionData }) {
   if (!actionData) return null;
+
+  const [expanded, setExpanded] = useState(false);
 
   const {
     colors: palette,
@@ -61,47 +63,56 @@ export default function TradeActionDisplay({ actionData }) {
         marginBottom: 3,
       }}
     >
-      <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: 2 }}>
-        <View
-          sx={{
-            width: 24,
-            height: 24,
-            borderRadius: 'full',
-            borderColor: config.color,
-            borderWidth: 1,
-            justifyContent: 'center',
-            alignItems: 'center',
-          }}
-        >
+      <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: expanded ? 2 : 0 }}>
+          <View
+            sx={{
+              width: 24,
+              height: 24,
+              borderRadius: 'full',
+              borderColor: config.color,
+              borderWidth: 1,
+              justifyContent: 'center',
+              alignItems: 'center',
+            }}
+          >
+            <MaterialCommunityIcons
+              name={config.icon}
+              size={16}
+              color={config.color}
+            />
+          </View>
+
+          <View sx={{ flex: 1 }}>
+            <Text variant="sm" tone="muted" sx={{ marginBottom: 1, display: 'none' }}>
+              Trade Action
+            </Text>
+            <StatusBadge fontWeight="600" sx={{ borderColor: config.color }}>
+              {config.label}
+            </StatusBadge>
+          </View>
+
+          {actionData.asset && (
+            <View sx={{ alignItems: 'flex-end' }}>
+              <Text variant="sm" tone="muted" sx={{ marginBottom: 1, display: 'none' }}>
+                Asset
+              </Text>
+              <Text variant="md" sx={{ fontWeight: '600' }}>
+                {actionData.asset || ''}
+              </Text>
+            </View>
+          )}
+
           <MaterialCommunityIcons
-            name={config.icon}
-            size={16}
-            color={config.color}
+            name={expanded ? 'chevron-up' : 'chevron-down'}
+            size={20}
+            color={palette.mutedForeground}
           />
         </View>
+      </TouchableOpacity>
 
-        <View sx={{ flex: 1 }}>
-          <Text variant="sm" tone="muted" sx={{ marginBottom: 1, display: 'none' }}>
-            Trade Action
-          </Text>
-          <StatusBadge fontWeight="600" sx={{ borderColor: config.color }}>
-            {config.label}
-          </StatusBadge>
-        </View>
-
-        {actionData.asset && (
-          <View sx={{ alignItems: 'flex-end' }}>
-            <Text variant="sm" tone="muted" sx={{ marginBottom: 1, display: 'none' }}>
-              Asset
-            </Text>
-            <Text variant="md" sx={{ fontWeight: '600' }}>
-              {actionData.asset || ''}
-            </Text>
-          </View>
-        )}
-      </View>
-
-      <View sx={{ gap: 2 }}>
+      {expanded && (
+        <View sx={{ gap: 2 }}>
         {actionData.size && (
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
             <Text variant="sm" tone="muted">
@@ -158,7 +169,8 @@ export default function TradeActionDisplay({ actionData }) {
             </Text>
           </View>
         )}
-      </View>
+        </View>
+      )}
     </View>
   );
 }
