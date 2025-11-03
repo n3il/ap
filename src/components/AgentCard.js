@@ -14,7 +14,7 @@ export default function AgentCard({
   isOwnAgent = false,
   onPress,
   shortView = false,
-  showOpenPositions = true,
+  hideOpenPositions = false,
   ...props
 }) {
   const {
@@ -27,7 +27,7 @@ export default function AgentCard({
     enrichedPositions,
     // deposit,
     // withdraw,
-  } = useAccountBalance(agent.id)
+  } = useAccountBalance(agent.id, hideOpenPositions)
 
   // Fetch total trades count
   const { data: tradesCount = 0 } = useQuery({
@@ -160,8 +160,6 @@ export default function AgentCard({
         paddingVertical: 18,
         paddingHorizontal: 18,
         borderRadius: 16,
-        flexShrink: 0,
-        flexGrow: 1,
       }}
       {...props}
     >
@@ -214,7 +212,7 @@ export default function AgentCard({
         </View>
 
         {safeEnrichedPositions.length > 0 && (
-          <View sx={{ marginTop: 3 }}>
+          <View sx={{ marginTop: 3, flex: 1 }}>
             {safeEnrichedPositions.map((position) => {
               const assetLabel = position.asset || position.symbol || position.coin || '';
               const sizeLabel = position.size || position.szi || 'N/A';

@@ -57,7 +57,6 @@ export default function BasePagerView({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={[styles.tabBarContainer, tabBarContainerStyle]}
         contentContainerStyle={[styles.tabBarContent, tabBarContentStyle]}
       >
         <GlassContainer

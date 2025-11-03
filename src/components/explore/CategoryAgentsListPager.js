@@ -1,5 +1,5 @@
 import React from 'react';
-import { BasePagerView, View } from '@/components/ui';
+import { SwipeableTabs, View } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';
 import AgentList from '../AgentList';
 
@@ -10,27 +10,28 @@ export default function CategoryAgentsListPager() {
   const tabs = [
     {
       key: 'top',
-      label: 'Top',
-      content: <AgentList queryKey={['explore-agents']} showOpenPositions />,
+      title: 'Top',
+      content: <AgentList queryKey={['explore-agents']} />,
     },
     {
       key: 'popular',
-      label: 'Popular',
-      content: <AgentList queryKey={['explore-agents', 'popular']} showOpenPositions />,
+      title: 'Popular',
+      content: <AgentList queryKey={['explore-agents', 'popular']} />,
     },
     {
       key: 'new',
-      label: 'New',
-      content: <AgentList queryKey={['explore-agents', 'new']} showOpenPositions />,
+      title: 'New',
+      content: <AgentList queryKey={['explore-agents', 'new']} />,
     },
   ];
 
   return (
-    <BasePagerView
+    <SwipeableTabs
       tabs={tabs}
-      initialPage={0}
+      initialIndex={0}
       tabTextStyle={{ color: theme.colors.text.secondary }}
       activeTabTextStyle={{ color: theme.colors.accent }}
+      indicatorColor={theme.colors.accent}
     />
   );
 }

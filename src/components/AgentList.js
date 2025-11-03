@@ -16,7 +16,7 @@ export default function AgentList({
   userId = undefined,
   published = true,
   listTitle = undefined,
-  showOpenPositions = false,
+  hideOpenPositions = false,
 }) {
   const router = useRouter();
 
@@ -155,7 +155,7 @@ export default function AgentList({
         <AgentCard
           key={agent.id}
           agent={agent}
-          showOpenPositions={showOpenPositions}
+          hideOpenPositions={hideOpenPositions}
           latestAssessment={latestAssessmentByAgent[agent.id]}
           onPress={() => onAgentPress?.(agent)}
         />

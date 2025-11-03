@@ -14,6 +14,7 @@ export { default as Stack } from './Stack';
 export { default as ListItem } from './ListItem';
 export { default as Spacer } from './Spacer';
 export { default as BasePagerView } from './BasePagerView';
+export { default as SwipeableTabs } from './SwipeableTabs';
 
 // Display components
 export { default as StatusBadge } from './StatusBadge';

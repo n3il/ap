@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/config/supabase';
 
-export function useAccountBalance(agentId) {
+export function useAccountBalance(agentId, hideOpenPositions) {
   // Fetch agent data for initial capital
   const { data: agent } = useQuery({
     queryKey: ['agent', agentId],
@@ -45,7 +45,7 @@ export function useAccountBalance(agentId) {
       if (error) throw error;
       return data || [];
     },
-    enabled: !!agentId,
+    enabled: !!agentId && !hideOpenPositions,
   });
 
   // Fetch current market prices for open positions
