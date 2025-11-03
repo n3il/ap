@@ -48,6 +48,79 @@ export function useAccountBalance(agentId) {
     enabled: !!agentId,
   });
 
+  // Fetch current market prices for open positions
+  const positionSymbols = useMemo(() => {
+    return openPositions.map(p => p.asset).filter(Boolean);
+  }, [openPositions]);
+
+  const { data: marketPrices = {} } = useQuery({
+    queryKey: ['market-prices-for-positions', positionSymbols.join(',')],
+    queryFn: async () => {
+      if (positionSymbols.length === 0) return {};
+
+      // Fetch from Hyperliquid market data
+      const response = await fetch('https://api.hyperliquid.xyz/info', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ type: 'allMids' }),
+      });
+
+      if (!response.ok) throw new Error('Failed to fetch market prices');
+      const allMids = await response.json();
+
+      // Create a map of symbol -> price
+      const priceMap = {};
+      positionSymbols.forEach(symbol => {
+        if (allMids[symbol]) {
+          priceMap[symbol] = parseFloat(allMids[symbol]);
+        }
+      });
+
+      return priceMap;
+    },
+    enabled: positionSymbols.length > 0,
+    refetchInterval: 5000, // Refresh prices every 5 seconds
+  });
+
+  // Calculate enriched positions with current prices and P&L
+  const enrichedPositions = useMemo(() => {
+    return openPositions.map(position => {
+      const symbol = position.asset;
+      const currentPrice = marketPrices[symbol];
+      const entryPrice = parseFloat(position.entry_price) || 0;
+      const size = parseFloat(position.size) || 0;
+      const side = position.side;
+
+      let unrealizedPnl = 0;
+      let pnlPercent = 0;
+
+      if (currentPrice && entryPrice && size) {
+        const entryValue = entryPrice * size;
+        const currentValue = currentPrice * size;
+
+        // Calculate P&L based on position side
+        if (side === 'LONG') {
+          unrealizedPnl = currentValue - entryValue;
+        } else if (side === 'SHORT') {
+          unrealizedPnl = entryValue - currentValue;
+        }
+
+        // Calculate percentage
+        pnlPercent = entryValue !== 0 ? (unrealizedPnl / entryValue) * 100 : 0;
+      } else if (position.unrealized_pnl) {
+        // Fallback to stored unrealized_pnl if available
+        unrealizedPnl = parseFloat(position.unrealized_pnl) || 0;
+      }
+
+      return {
+        ...position,
+        currentPrice,
+        unrealizedPnl,
+        pnlPercent,
+      };
+    });
+  }, [openPositions, marketPrices]);
+
   // Calculate all balance metrics (matching run_agent_assessment logic)
   const balanceMetrics = useMemo(() => {
     if (!agent) {
@@ -66,21 +139,19 @@ export function useAccountBalance(agentId) {
     // Calculate realized PnL from closed trades
     const realizedPnl = closedTrades.reduce((sum, t) => sum + (parseFloat(t.realized_pnl) || 0), 0);
 
-    // Calculate unrealized PnL from open positions
-    // Note: This calculation requires current market prices
-    // For now, we'll use the unrealized_pnl field if available
-    const unrealizedPnl = openPositions.reduce((sum, p) => {
-      return sum + (parseFloat(p.unrealized_pnl) || 0);
+    // Calculate unrealized PnL from enriched positions
+    const unrealizedPnl = enrichedPositions.reduce((sum, p) => {
+      return sum + (p.unrealizedPnl || 0);
     }, 0);
 
     // Calculate account value
     const accountValue = initialCapital + realizedPnl + unrealizedPnl;
 
     // Calculate margin used
-    const marginUsed = openPositions.reduce((sum, p) => {
+    const marginUsed = enrichedPositions.reduce((sum, p) => {
       const size = parseFloat(p.size) || 0;
-      const entryPrice = parseFloat(p.entry_price) || 0;
-      return sum + (size * entryPrice);
+      const currentPrice = p.currentPrice || parseFloat(p.entry_price) || 0;
+      return sum + (size * currentPrice);
     }, 0);
 
     // Calculate remaining cash
@@ -94,7 +165,7 @@ export function useAccountBalance(agentId) {
       marginUsed,
       remainingCash,
     };
-  }, [agent, closedTrades, openPositions]);
+  }, [agent, closedTrades, enrichedPositions]);
 
   return {
     wallet: balanceMetrics.initialCapital,
@@ -103,6 +174,7 @@ export function useAccountBalance(agentId) {
     availableMargin: balanceMetrics.remainingCash,
     unrealizedPnl: balanceMetrics.unrealizedPnl,
     realizedPnl: balanceMetrics.realizedPnl,
+    enrichedPositions,
     isLoading: !agent,
   };
 }

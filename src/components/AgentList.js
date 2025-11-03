@@ -149,7 +149,7 @@ export default function AgentList({
   return (
     <GlassContainer
       spacing={8}
-      style={{ flexDirection: 'column', gap: 16 }}
+      style={{ flex: 1, gap: 16 }}
     >
       {sortedAgents.map((agent) => (
         <AgentCard

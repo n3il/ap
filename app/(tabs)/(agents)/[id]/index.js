@@ -105,6 +105,10 @@ const AgentReadScreen = () => {
     mutationFn: () => agentService.triggerAssessment(agentId),
     onSuccess: () => {
       setPendingAssessment(true);
+      // Immediately invalidate queries to refresh UI
+      queryClient.invalidateQueries(['agent', agentId]);
+      queryClient.invalidateQueries(['agent-assessments', agentId]);
+      queryClient.invalidateQueries(['agent-stats', agentId]);
       // Start polling for new assessment
       startPolling();
     },
@@ -121,7 +125,9 @@ const AgentReadScreen = () => {
       clearInterval(pollingInterval.current);
     }
 
-    const initialCount = assessments.length;
+    // Get initial assessment count from cache
+    const initialAssessments = queryClient.getQueryData(['agent-assessments', agentId]);
+    const initialCount = initialAssessments?.length || 0;
     let pollCount = 0;
     const maxPolls = 60; // Poll for max 2 minutes (2s intervals)
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, Stack, StatusBadge, LabelValue, Divider, Card } from '@/components/ui';
+import { View, Text, TouchableOpacity, Stack, StatusBadge, LabelValue, Divider } from '@/components/ui';
 import { LLM_PROVIDERS } from './CreateAgentModal';
 import ActiveDurationBadge from './ActiveDurationBadge';
 import WalletAddressCard from './WalletAddressCard';
@@ -24,25 +24,10 @@ export default function AgentCard({
     // availableMargin,
     unrealizedPnl,
     realizedPnl,
+    enrichedPositions,
     // deposit,
     // withdraw,
   } = useAccountBalance(agent.id)
-  // Fetch open positions if requested
-  const { data: openPositions } = useQuery({
-    queryKey: ['agent-positions', agent.id],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('positions')
-        .select('*')
-        .eq('agent_id', agent.id)
-        .eq('is_open', true)
-        .order('created_at', { ascending: false });
-
-      if (error) throw error;
-      return data || [];
-    },
-    enabled: showOpenPositions,
-  });
 
   // Fetch total trades count
   const { data: tradesCount = 0 } = useQuery({
@@ -58,14 +43,17 @@ export default function AgentCard({
     },
   });
 
-  // Calculate total PnL (realized + unrealized)
-  const totalPnl = (realizedPnl || 0) + (unrealizedPnl || 0);
-  const pnlColor = totalPnl > 0 ? 'success' : totalPnl < 0 ? 'error' : 'foreground';
-  const pnlSign = totalPnl > 0 ? '+' : '';
-  const providerLabel = LLM_PROVIDERS[agent.llm_provider] || 'Unknown';
-  const initialCapital = parseFloat(agent.initial_capital) || 0;
-  const isPublished = Boolean(agent.published_at);
-
+  const formatPublishedOn = () => {
+    if (!agent.published_at) return 'Not published';
+    const publishedDate = new Date(agent.published_at);
+    return publishedDate.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      // hour: '2-digit',
+      // minute: '2-digit',
+    });
+  };
 
   const formatRelativeTime = (timestamp) => {
     if (!timestamp) return 'Awaiting first loop';
@@ -120,6 +108,33 @@ export default function AgentCard({
     return `Awaiting scheduler (+${overdue} min)`;
   };
 
+  // Calculate total PnL (realized + unrealized)
+  const totalPnl = (realizedPnl || 0) + (unrealizedPnl || 0);
+  const providerLabel = LLM_PROVIDERS[agent.llm_provider] || 'Unknown';
+  const isPublished = Boolean(agent.published_at);
+
+  const safeAgentName = agent?.name || '';
+  const safeModelName = agent?.model_name || '';
+  const safeProviderLabel = providerLabel || '';
+  const safeHyperliquidAddress = agent?.hyperliquid_address || '';
+  const safeTradesCount = typeof tradesCount === 'number' ? tradesCount : 0;
+  const safeEnrichedPositions = Array.isArray(enrichedPositions) ? enrichedPositions : [];
+  const safeEquity = Number.isFinite(equity) ? equity : 0;
+  const safeTotalPnl = Number.isFinite(totalPnl) ? totalPnl : 0;
+  const pnlColor = safeTotalPnl > 0 ? 'success' : safeTotalPnl < 0 ? 'error' : 'foreground';
+  const pnlSign = safeTotalPnl > 0 ? '+' : '';
+  const balanceLabel = `$${safeEquity.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  const positionsCountLabel = safeEnrichedPositions.length > 0 ? String(safeEnrichedPositions.length) : '-';
+  const tradesCountLabel = String(safeTradesCount);
+  const pnlValueLabel = safeTotalPnl !== 0
+    ? `${pnlSign}$${Math.abs(safeTotalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
+    : '-';
+  const safeActionLabel = actionLabel || '';
+  const safeLatestTypeLabel = latestTypeLabel || '';
+  const publishedLabel = isPublished ? (formatPublishedOn() || '') : '';
+  const nextRunLabel = latestAssessment ? (getNextRunLabel(latestAssessment.timestamp) || '') : '';
+  const providerMeta = safeModelName ? `${safeProviderLabel} (${safeModelName})` : safeProviderLabel;
+
   const latestTypeLabel =
     latestAssessment?.type === 'POSITION_REVIEW' ? 'Position Review' : 'Market Scan';
 
@@ -133,18 +148,6 @@ export default function AgentCard({
       ? 'textSecondary'
       : 'success';
 
-  const formatPublishedOn = () => {
-    if (!agent.published_at) return 'Not published';
-    const publishedDate = new Date(agent.published_at);
-    return publishedDate.toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      year: 'numeric',
-      // hour: '2-digit',
-      // minute: '2-digit',
-    });
-  };
-
   const isActive = Boolean(agent.is_active);
 
   return (
@@ -157,25 +160,27 @@ export default function AgentCard({
         paddingVertical: 18,
         paddingHorizontal: 18,
         borderRadius: 16,
+        flexShrink: 0,
+        flexGrow: 1,
       }}
       {...props}
     >
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <TouchableOpacity onPress={onPress} activeOpacity={0.7} style={{ flex: 1 }}>
         <View sx={{ marginBottom: 3, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <View sx={{ flex: 1 }}>
             <View sx={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' }}>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
                 <Text variant="lg" sx={{ fontWeight: '500' }}>
-                  {agent.name}
+                  {safeAgentName}
                 </Text>
-                <ActiveDurationBadge isActive={agent.is_active} variant="small" />
+                <ActiveDurationBadge isActive={isActive} variant="small" />
              </View>
                <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'}>
                 {isPublished ? 'PUBLIC' : 'PRIVATE'}
               </StatusBadge>
             </View>
             <Text variant="sm" tone="subtle" sx={{ flex: 1 }}>
-              {providerLabel} ({agent.model_name})
+              {providerMeta}
             </Text>
           </View>
         </View>
@@ -184,138 +189,134 @@ export default function AgentCard({
           <View sx={{ flex: 1, alignItems: 'flex-start' }}>
             <LabelValue
               label="Balance"
-              value={`$${(equity || 0).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+              value={balanceLabel}
             />
           </View>
           <View sx={{ flex: 1, alignItems: 'center' }}>
             <LabelValue
               label="Positions"
-              value={`${openPositions?.length || 0}`}
+              value={positionsCountLabel}
             />
           </View>
           <View sx={{ flex: 1, alignItems: 'center' }}>
             <LabelValue
               label="Trades"
-              value={`${tradesCount}`}
+              value={tradesCountLabel}
             />
           </View>
           <View sx={{ flex: 1, alignItems: 'flex-end' }}>
             <LabelValue
               label="P&L"
-              value={`${pnlSign}$${Math.abs(totalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
+              value={pnlValueLabel}
               sx={{ color: pnlColor }}
             />
           </View>
         </View>
 
-        {openPositions && openPositions.length > 0 && (
-          <View sx={{ marginTop: 3, flex: 1 }}>
-            <Text variant="xs" tone="muted" sx={{ marginBottom: 2 }}>
-              Open Positions ({openPositions.length})
-            </Text>
-            <View sx={{ gap: 2 }}>
-              {openPositions.map((position) => (
+        {safeEnrichedPositions.length > 0 && (
+          <View sx={{ marginTop: 3 }}>
+            {safeEnrichedPositions.map((position) => {
+              const assetLabel = position.asset || position.symbol || position.coin || '';
+              const sizeLabel = position.size || position.szi || 'N/A';
+              const entryPriceValue = position.entry_price ? parseFloat(position.entry_price) : null;
+              const currentPriceValue =
+                typeof position.currentPrice === 'number'
+                  ? position.currentPrice
+                  : position.currentPrice
+                    ? parseFloat(position.currentPrice)
+                    : null;
+              const hasEntryPrice = Number.isFinite(entryPriceValue);
+              const hasCurrentPrice = Number.isFinite(currentPriceValue);
+              const entryPriceLabel = hasEntryPrice
+                ? `$${entryPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+                : '';
+              const currentPriceLabel = hasCurrentPrice
+                ? `$${currentPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+                : '';
+              const unrealizedPnlValue = typeof position.unrealizedPnl === 'number'
+                ? position.unrealizedPnl
+                : parseFloat(position.unrealizedPnl) || 0;
+              const pnlPercentValue = typeof position.pnlPercent === 'number'
+                ? position.pnlPercent
+                : position.pnlPercent
+                  ? parseFloat(position.pnlPercent)
+                  : null;
+              const positionPnlColor = unrealizedPnlValue > 0 ? 'success' : unrealizedPnlValue < 0 ? 'error' : 'foreground';
+              const positionPnlSign = unrealizedPnlValue > 0 ? '+' : '';
+              const unrealizedPnlLabel = unrealizedPnlValue !== 0
+                ? `${positionPnlSign}$${Math.abs(unrealizedPnlValue).toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+                : '';
+              const pnlPercentLabel = typeof pnlPercentValue === 'number'
+                ? `${positionPnlSign}${Math.abs(pnlPercentValue).toFixed(2)}%`
+                : '';
+
+              return (
                 <View
                   key={position.id || position.symbol}
                   sx={{
-                    flexDirection: 'row',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
+                    flexDirection: 'column',
                     paddingVertical: 2,
                     paddingHorizontal: 3,
                     borderRadius: 8,
                     backgroundColor: 'rgba(255, 255, 255, 0.05)',
                   }}
-                >
-                  <View sx={{ flex: 1 }}>
-                    <Text variant="sm" sx={{ fontWeight: '600' }}>
-                      {position.symbol || position.coin}
-                    </Text>
-                    <Text variant="xs" tone="subtle">
-                      Size: {position.szi || position.size || 'N/A'}
-                    </Text>
-                  </View>
-                  {(position.entryPx || position.entry_px || position.entry_price) && (
-                    <View sx={{ alignItems: 'flex-end' }}>
+                  >
+                  <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <View sx={{ flex: 1 }}>
+                      <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <Text variant="sm" sx={{ fontWeight: '600' }}>
+                          {assetLabel}
+                        </Text>
+                        {position.side && (
+                          <StatusBadge size="small" variant={position.side === 'LONG' ? 'success' : 'error'}>
+                            {position.side}
+                          </StatusBadge>
+                        )}
+                      </View>
                       <Text variant="xs" tone="muted">
-                        Entry
-                      </Text>
-                      <Text variant="xs" sx={{ fontWeight: '500' }}>
-                        ${parseFloat(position.entryPx || position.entry_px || position.entry_price).toLocaleString('en-US', { maximumFractionDigits: 2 })}
+                        Size: {sizeLabel}
                       </Text>
                     </View>
-                  )}
-                </View>
-              ))}
-            </View>
-          </View>
-        )}
-
-        {!shortView && (
-          <>
-            <Divider sx={{ marginTop: 3, opacity: 1 }} />
-
-            <View sx={{  }}>
-              {isOwnAgent ? (
-                latestAssessment ? (
-                  <>
-                    <Stack direction="row" justify="space-between" align="flex-start">
-                      <View sx={{ flex: 1, paddingRight: 3 }}>
-                        <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-                          Last Assessment
-                        </Text>
-                        <Text variant="sm" sx={{ fontWeight: '600' }}>
-                          {latestTypeLabel}
-                        </Text>
-                        <Text variant="xs" tone="subtle" sx={{ marginTop: 1 }}>
-                          {formatRelativeTime(latestAssessment.timestamp)}
-                        </Text>
-                      </View>
-                      <View sx={{ alignItems: 'flex-end', flex: 1 }}>
-                        <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-                          Action
-                        </Text>
-                        <Text variant="xs" sx={{ fontWeight: '600', color: actionColor, textAlign: 'right' }}>
-                          {actionLabel}
-                        </Text>
-                      </View>
-                    </Stack>
-                    <Text variant="xs" tone="subtle" sx={{ marginTop: 2 }}>
-                      {getNextRunLabel(latestAssessment.timestamp)}
-                    </Text>
-                  </>
-                ) : (
-                  <View>
-                    <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-                      Assessments
-                    </Text>
-                    <Text variant="xs" tone="subtle">
-                      Awaiting first MARKET_SCAN loop from the scheduler.
-                    </Text>
+                    <View sx={{ alignItems: 'flex-end' }}>
+                      {unrealizedPnlLabel && (
+                        <>
+                          <Text variant="xs" sx={{ fontWeight: '600', color: positionPnlColor }}>
+                            {unrealizedPnlLabel}
+                          </Text>
+                          {pnlPercentLabel && (
+                            <Text variant="xs" tone="subtle" sx={{ color: positionPnlColor }}>
+                              {pnlPercentLabel}
+                            </Text>
+                          )}
+                        </>
+                      )}
+                    </View>
                   </View>
-                )
-              ) : (isPublished &&
-                <View>
-                  <Text variant="xs" tone="muted" sx={{ marginBottom: 1, flex: 1 }}>
-                    Published
-                  </Text>
-                  <Text variant="xs" tone="muted">
-                    {formatPublishedOn()}
-                  </Text>
-                </View>
-              )}
 
-              <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
-                <WalletAddressCard address={agent.hyperliquid_address} variant="short" />
-              </View>
-            </View>
-          </>
-        )}
-        {shortView &&
-          <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
-            <WalletAddressCard address={agent.hyperliquid_address} variant="short" />
+                  <View sx={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 1 }}>
+                    {entryPriceLabel && (
+                      <View>
+                        <Text variant="xs" tone="muted">
+                          Entry: {entryPriceLabel}
+                        </Text>
+                      </View>
+                    )}
+                    {currentPriceLabel && (
+                      <View>
+                        <Text variant="xs" tone="muted">
+                          Current: {currentPriceLabel}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              );
+            })}
           </View>
-        }
+        )}
+        <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
+          <WalletAddressCard address={safeHyperliquidAddress} variant="short" />
+        </View>
       </TouchableOpacity>
     </GlassView>
   );

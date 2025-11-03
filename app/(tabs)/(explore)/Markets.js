@@ -12,7 +12,7 @@ import {
 } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import ContainerView from '@/components/ContainerView';
-import { useMarketSnapshot } from '@/hooks/useMarketSnapshot';
+import { useMarketPrices } from '@/hooks/useMarketPrices';
 import { useTradingData } from '@/hooks/useTradingData';
 import { useMockAccountBalance } from '@/hooks/useMockAccountBalance';
 import {
@@ -325,7 +325,7 @@ export default function MarketsScreen() {
   const [selectedSymbol, setSelectedSymbol] = useState('BTC');
   const [ledgerType, setLedgerType] = useState('paper');
   const [selectedLedgerAccount, setSelectedLedgerAccount] = useState('ALL');
-  const { assets, isLoading: pricesLoading } = useMarketSnapshot();
+  const { assets, isLoading: pricesLoading } = useMarketPrices();
   const {
     trades,
     positions,

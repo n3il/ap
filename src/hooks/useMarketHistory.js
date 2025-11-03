@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { marketHistoryService } from '@/services';
-import { normalizeTickers } from '@/hooks/useMarketSnapshot';
+import { normalizeTickers } from '@/hooks/useMarketPrices';
 
 export function useMarketHistory(tickers, timeframe) {
   const normalizedTickers = useMemo(

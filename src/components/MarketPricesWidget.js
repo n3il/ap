@@ -1,8 +1,8 @@
-import React, { useMemo, useEffect, useRef, useState } from 'react';
+import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
 import { View, Text, ActivityIndicator, Button } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import Svg, { Polyline } from 'react-native-svg';
-import { useMarketSnapshot } from '@/hooks/useMarketSnapshot';
+import { useMarketPrices, useMarketPricesStore } from '@/hooks/useMarketPrices';
 import { useMarketHistory } from '@/hooks/useMarketHistory';
 import {
   formatCurrency,
@@ -17,7 +17,7 @@ import Animated, {
   withTiming,
 } from 'react-native-reanimated';
 import { useColors } from '@/theme';
-import { Pressable } from 'react-native';
+import { Pressable, Image } from 'react-native';
 
 const SPARKLINE_WIDTH = 88;
 const SPARKLINE_HEIGHT = 32;
@@ -61,7 +61,7 @@ const Sparkline = ({ data = [], positiveColor, negativeColor, neutralColor }) =>
 };
 
 const PriceColumn = ({
-  asset,
+  symbol,
   index,
   sparklineData,
   rangeDelta,
@@ -69,12 +69,31 @@ const PriceColumn = ({
   isHistoryLoading,
   compact,
   isLast,
-  palette,
-  positiveColor,
-  negativeColor,
-  neutralColor,
-  withOpacity,
 }) => {
+  const {
+    colors: palette,
+    success,
+    error: errorColor,
+    withOpacity,
+  } = useColors();
+
+  const positiveColor = success;
+  const negativeColor = errorColor;
+  const neutralColor = palette.mutedForeground;
+
+  // Get asset data from Zustand store - use a selector that returns just the asset
+  const asset = useMarketPricesStore(
+    useCallback((state) => state.tickers[symbol]?.asset, [symbol])
+  );
+
+  // Provide fallback asset if not yet loaded
+  const displayAsset = useMemo(() => asset ?? {
+    id: symbol,
+    symbol: symbol,
+    name: symbol,
+    price: null,
+  }, [asset, symbol]);
+
   const hasChange = Number.isFinite(rangePercent);
   const changeIsPositive = hasChange && rangePercent >= 0;
   const changeColor = hasChange
@@ -85,18 +104,18 @@ const PriceColumn = ({
 
   // Animated opacity for price flash effect
   const priceOpacity = useSharedValue(0.8);
-  const prevPrice = useRef(asset?.price);
+  const prevPrice = useRef(displayAsset?.price);
 
   useEffect(() => {
     // Flash when price changes
-    if (prevPrice.current !== asset?.price && Number.isFinite(asset?.price)) {
+    if (prevPrice.current !== displayAsset?.price && Number.isFinite(displayAsset?.price)) {
       priceOpacity.value = withSequence(
         withTiming(1, { duration: 150 }),
         withTiming(0.8, { duration: 300 })
       );
     }
-    prevPrice.current = asset?.price;
-  }, [asset?.price]);
+    prevPrice.current = displayAsset?.price;
+  }, [displayAsset?.price]);
 
   const priceAnimatedStyle = useAnimatedStyle(() => ({
     opacity: priceOpacity.value,
@@ -106,46 +125,39 @@ const PriceColumn = ({
     return (
       <View
         sx={{
-          flexDirection: 'row',
-          alignItems: 'flex-end',
-          justifyContent: 'space-between',
+          flex: 1,
           paddingVertical: 1,
-          borderBottomWidth: isLast ? 0 : 1,
-          borderBottomColor: withOpacity(neutralColor, 0.12),
+          gap: 1,
         }}
       >
-        <View sx={{ flexShrink: 1, paddingRight: 3 }}>
-          <Text
-            sx={{
-              fontSize: 11,
-              textTransform: 'uppercase',
-              letterSpacing: 1.2,
-              color: 'mutedForeground',
-              marginBottom: 1,
-            }}
-          >
-            {asset?.symbol ?? '—'}
-          </Text>
-          <Animated.Text
-            style={[
-              {
-                color: palette.textPrimary,
-                fontSize: 14,
-                fontWeight: '500',
-              },
-              priceAnimatedStyle,
-            ]}
-            numberOfLines={1}
-          >
-            {formatCurrency(asset?.price)}
-          </Animated.Text>
-        </View>
-        <View sx={{ alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-          <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
+        <Text
+          sx={{
+            fontSize: 11,
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            color: 'mutedForeground',
+          }}
+        >
+          {displayAsset?.symbol ?? '—'}
+        </Text>
+        <Animated.Text
+          style={[
+            {
+              color: palette.textPrimary,
+              fontSize: 14,
+              fontWeight: '500',
+            },
+            priceAnimatedStyle,
+          ]}
+        >
+          {formatCurrency(displayAsset?.price)}
+        </Animated.Text>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
+          <Text sx={{ fontSize: 11, fontWeight: '600', color: changeColor }}>
             {hasChange ? formatPercent(rangePercent) : '—'}
           </Text>
           <Text sx={{ fontSize: 11, color: 'secondary500' }}>
-            {Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'}
+            ({Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'})
           </Text>
         </View>
       </View>
@@ -163,7 +175,7 @@ const PriceColumn = ({
           marginBottom: 1
         }}
       >
-        {asset?.symbol ?? '—'}
+        {displayAsset?.symbol ?? '—'}
       </Text>
       <Animated.Text
         style={[
@@ -176,7 +188,7 @@ const PriceColumn = ({
         ]}
         numberOfLines={1}
       >
-        {formatCurrency(asset?.price)}
+        {formatCurrency(displayAsset?.price)}
       </Animated.Text>
       <View sx={{ marginTop: 2, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
         <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
@@ -223,7 +235,7 @@ export default function MarketPricesWidget({
     isUpdating,
     error,
     lastUpdated,
-  } = useMarketSnapshot(tickers);
+  } = useMarketPrices(tickers);
 
   const {
     data: historyData,
@@ -246,97 +258,18 @@ export default function MarketPricesWidget({
     });
   }, [assets, normalizedTickers]);
 
-  const statusLabel = useMemo(() => {
-    if (isUpdating && !isLoading) return 'Updating…';
-    if (lastUpdated) {
-      const formatted = new Date(lastUpdated).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-      return `${formatted}`;
-    }
-    return null;
-  }, [isUpdating, isLoading, lastUpdated]);
-
-  const handleMore = () => {
-    router.push({
-      pathname: '/(tabs)/(explore)/Markets',
-      params: { tickers: normalizedTickers.join(','), timeframe },
-    });
-  };
-
   return (
     <Pressable onPress={() => setCompact(!compact)} sx={customSx}>
       <View
         sx={{
           flexDirection: 'row',
-          alignItems: compact ? 'center' : 'flex-start',
-          justifyContent: 'space-between',
-          marginBottom: compact ? 1 : 2,
-        }}
-      >
-        {compact ? (
-          <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: 1 }}>
-            {isLoading ? (
-              <ActivityIndicator size="small" color={neutralColor} />
-            ) : (
-              error ? (
-                <MaterialCommunityIcons name="alert-circle-outline" size={16} color={warning} />
-              ) : (
-                <MaterialCommunityIcons name="signal" size={16} color={success} />
-              )
-            )}
-            {statusLabel ? (
-              <Text sx={{ fontSize: 11, color: 'mutedForeground' }}>
-                {statusLabel}
-              </Text>
-            ) : null}
-          </View>
-        ) : (
-          <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-            <Button
-              variant="outline"
-              size="xs"
-              sx={{
-                borderRadius: 'full',
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingHorizontal: 2
-              }}
-              textProps={{
-                sx: {
-                  fontSize: 11,
-                  fontWeight: '600',
-                  color: 'secondary'
-                }
-              }}
-              onPress={handleMore}
-              accessibilityRole="button"
-              accessibilityLabel="Open full market view"
-            >
-              <MaterialCommunityIcons
-                name="lightning-bolt"
-                size={14}
-                color={primary}
-              />
-              <Text sx={{ fontSize: 11, fontWeight: '600', color: 'primary' }}>
-                Buy / Sell
-              </Text>
-            </Button>
-          </View>
-        )}
-      </View>
-
-      <View
-        sx={{
-          flexDirection: compact ? 'row' : 'row',
-          justifyContent: compact ? 'space-between' : 'space-between',
           gap: compact ? 2 : 4,
         }}
       >
         {displayAssets.length ? (
           displayAssets.map((asset, index) => {
-            const history = historyData?.[asset?.symbol] ?? [];
+            const symbol = asset?.symbol;
+            const history = historyData?.[symbol] ?? [];
             const sparklinePoints = history.map((point) => point.close);
             const baseline = history.length ? history[0].close : null;
 
@@ -351,8 +284,8 @@ export default function MarketPricesWidget({
 
             return (
               <PriceColumn
-                key={asset?.id ?? index}
-                asset={asset}
+                key={symbol ?? index}
+                symbol={symbol}
                 index={index}
                 sparklineData={sparklinePoints}
                 rangeDelta={rangeDelta}
@@ -360,11 +293,6 @@ export default function MarketPricesWidget({
                 isHistoryLoading={historyFetching && !history.length}
                 compact={compact}
                 isLast={index === displayAssets.length - 1}
-                palette={palette}
-                positiveColor={success}
-                negativeColor={errorColor}
-                neutralColor={neutralColor}
-                withOpacity={withOpacity}
               />
             );
           })

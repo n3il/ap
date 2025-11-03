@@ -9,6 +9,7 @@ import SectionTitle from '@/components/SectionTitle';
 import TimeFrameSelector from '@/components/TimeFrameSelector';
 import CategoryAgentsListPager from '@/components/explore/CategoryAgentsListPager';
 import { useColors } from '@/theme';
+import ExploreHeader from '@/components/explore/Header';
 
 export default function ExploreScreen() {
   const [isFetching, setIsFetching] = useState(false);
@@ -27,6 +28,10 @@ export default function ExploreScreen() {
   return (
     <ContainerView>
       <View sx={{ marginBottom: 6 }}>
+        <ExploreHeader
+          tickers={['BTC', 'ETH', 'SOL']}
+          timeframe={timeframe}
+        />
         <MarketPricesWidget
           tickers={['BTC', 'ETH', 'SOL']}
           sx={{ borderBottomWidth: 1, borderColor: 'border', paddingTop: 0, paddingBottom: 4 }}
@@ -45,7 +50,7 @@ export default function ExploreScreen() {
           />
         }
       >
-        <View sx={{ }}>
+        <View>
           <Text
             variant="xs"
             tone="muted"

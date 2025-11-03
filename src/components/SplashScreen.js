@@ -50,7 +50,7 @@ export default function SplashScreen() {
         theme.colors.background,
         theme.colors.backgroundSecondary ?? theme.colors.surface,
       ]}
-      locations={[0, 0.9, 1]}
+      locations={[0, 0.78, 1]}
       style={styles.container}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
