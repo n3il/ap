@@ -16,6 +16,7 @@ interface BuildPromptContext {
   openPositions: any[]
   accountValue?: number
   remainingCash?: number
+  candleData?: Record<string, any[]>
 }
 
 export interface GeminiResponse {
@@ -162,6 +163,9 @@ export function buildPrompt(
       : 'N/A',
     REMAINING_CASH: context.remainingCash !== undefined
       ? `$${context.remainingCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+      : 'N/A',
+    CANDLE_DATA_5M: context.candleData
+      ? JSON.stringify(context.candleData, null, 2)
       : 'N/A',
   }
 

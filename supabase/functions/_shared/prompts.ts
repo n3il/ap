@@ -31,7 +31,8 @@ const FALLBACK_PROMPTS: Record<PromptType, PromptRecord> = {
       `Available Cash: {{REMAINING_CASH}}\n\n` +
       `Current Market State: {{MARKET_PRICES}}.\n\n` +
       `Open Positions: {{OPEN_POSITIONS}}.\n\n` +
-      `Based on this data and the most relevant news/macro trends from your web search, perform a comprehensive market assessment. ` +
+      `5-Minute Candle Data (Last 3 Hours):\n{{CANDLE_DATA_5M}}\n\n` +
+      `Based on this data, the candle patterns, and the most relevant news/macro trends from your web search, perform a comprehensive market assessment. ` +
       `If a trade is warranted, output an action using the ACTION_JSON format. If no trade is warranted, output ACTION_JSON with NO_ACTION.`,
   },
   POSITION_REVIEW: {
@@ -48,7 +49,8 @@ const FALLBACK_PROMPTS: Record<PromptType, PromptRecord> = {
       `Available Cash: {{REMAINING_CASH}}\n\n` +
       `Current Market State: {{MARKET_PRICES}}.\n\n` +
       `Open Positions: {{OPEN_POSITIONS}}.\n\n` +
-      `Provide a position management assessment for each open trade. Use ACTION_JSON to communicate your decision, or default to NO_ACTION when holding is preferred.`,
+      `5-Minute Candle Data (Last 3 Hours):\n{{CANDLE_DATA_5M}}\n\n` +
+      `Provide a position management assessment for each open trade based on price action and candle patterns. Use ACTION_JSON to communicate your decision, or default to NO_ACTION when holding is preferred.`,
   },
 }
 
@@ -131,5 +133,6 @@ export function listPromptPlaceholders(): Record<string, string> {
     TIMESTAMP: 'ISO timestamp when the prompt was generated',
     ACCOUNT_VALUE: 'Total account value (initial capital + realized PnL + unrealized PnL)',
     REMAINING_CASH: 'Available cash for trading (account value - margin used)',
+    CANDLE_DATA_5M: 'JSON payload of 5-minute candle data for the last 3 hours for all tracked assets',
   }
 }

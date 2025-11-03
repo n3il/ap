@@ -1,6 +1,6 @@
 import { createSupabaseClient, createSupabaseServiceClient } from '../_shared/supabase.ts';
 import { corsHeaders } from '../_shared/cors.ts';
-import { fetchHyperliquidMarketData } from '../_shared/hyperliquid.ts';
+import { fetchHyperliquidMarketData, fetchAllCandleData } from '../_shared/hyperliquid.ts';
 import { callGeminiAPI, buildPrompt } from '../_shared/gemini.ts';
 import { callDeepseekAPI } from '../_shared/deepseek.ts';
 import { callOpenAIAPI } from '../_shared/openai.ts';
@@ -92,8 +92,11 @@ Deno.serve(async (req) => {
 
     console.log(`Open positions: ${openPositions?.length || 0}`);
 
-    const marketData = await fetchHyperliquidMarketData();
-    console.log(`Fetched ${marketData.length} market assets`);
+    const [marketData, candleData] = await Promise.all([
+      fetchHyperliquidMarketData(),
+      fetchAllCandleData(5, 3), // 5-minute candles for last 3 hours
+    ]);
+    console.log(`Fetched ${marketData.length} market assets and candle data for ${Object.keys(candleData).length} assets`);
 
     // --- DETERMINE PROMPT ---
     const hasOpenPositions = openPositions && openPositions.length > 0;
@@ -144,6 +147,7 @@ Deno.serve(async (req) => {
       openPositions: openPositions || [],
       accountValue,
       remainingCash,
+      candleData,
     });
 
     // --- CALL LLM PROVIDER ---

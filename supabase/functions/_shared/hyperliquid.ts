@@ -22,6 +22,15 @@ export interface MarketData {
   open_interest?: number
 }
 
+export interface CandleData {
+  time: number // timestamp in ms
+  open: number
+  high: number
+  low: number
+  close: number
+  volume: number
+}
+
 export interface TradeAction {
   action: string
   asset?: string
@@ -120,6 +129,84 @@ async function resolveAssetInfo(symbol: string) {
 
 function normalizePrivateKey(key: string) {
   return key.startsWith('0x') ? key : `0x${key}`
+}
+
+/**
+ * Fetch 5-minute candle data for the last 3 hours for a specific asset
+ */
+export async function fetchCandleData(
+  asset: string,
+  intervalMinutes = 5,
+  lookbackHours = 3
+): Promise<CandleData[]> {
+  try {
+    const infoClient = await getInfoClient()
+    const assetSymbol = asset.replace('-PERP', '')
+
+    const endTime = Date.now()
+    const startTime = endTime - (lookbackHours * 60 * 60 * 1000)
+
+    // Convert interval to seconds for API
+    const intervalSeconds = intervalMinutes * 60
+
+    console.log(`Fetching ${intervalMinutes}m candles for ${assetSymbol} from last ${lookbackHours}h`)
+
+    const candles = await infoClient.candleSnapshot({
+      coin: assetSymbol,
+      interval: `${intervalMinutes}m`,
+      startTime,
+      endTime,
+    })
+
+    if (!candles || candles.length === 0) {
+      console.log(`No candle data returned for ${assetSymbol}`)
+      return []
+    }
+
+    return candles.map((c: any) => ({
+      time: c.t ?? c.T ?? 0,
+      open: parseFloat(c.o ?? 0),
+      high: parseFloat(c.h ?? 0),
+      low: parseFloat(c.l ?? 0),
+      close: parseFloat(c.c ?? 0),
+      volume: parseFloat(c.v ?? 0),
+    }))
+  } catch (error) {
+    console.error(`Error fetching candle data for ${asset}:`, error)
+    return []
+  }
+}
+
+/**
+ * Fetch 5-minute candle data for all tracked assets for the last 3 hours
+ */
+export async function fetchAllCandleData(
+  intervalMinutes = 5,
+  lookbackHours = 3
+): Promise<Record<string, CandleData[]>> {
+  console.log(`Fetching ${intervalMinutes}m candles for all tracked assets`)
+
+  const candleDataMap: Record<string, CandleData[]> = {}
+
+  // Fetch candles for all tracked assets in parallel
+  const candlePromises = TRACKED_ASSETS.map(async (symbol) => {
+    const asset = `${symbol}-PERP`
+    const candles = await fetchCandleData(asset, intervalMinutes, lookbackHours)
+    return { asset, candles }
+  })
+
+  const results = await Promise.allSettled(candlePromises)
+
+  results.forEach((result, idx) => {
+    if (result.status === 'fulfilled') {
+      candleDataMap[result.value.asset] = result.value.candles
+    } else {
+      console.error(`Failed to fetch candles for ${TRACKED_ASSETS[idx]}:`, result.reason)
+      candleDataMap[`${TRACKED_ASSETS[idx]}-PERP`] = []
+    }
+  })
+
+  return candleDataMap
 }
 
 /**
