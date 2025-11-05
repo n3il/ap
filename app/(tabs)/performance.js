@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, BasePagerView } from '@/components/ui';
+import { View } from '@/components/ui';
 import ContainerView from '@/components/ContainerView';
 import SectionTitle from '@/components/SectionTitle';
 import { useTheme } from '@/contexts/ThemeContext';
 import TradesTab from '@/components/activity/TradesTab';
 import BalanceTab from '@/components/activity/BalanceTab';
 import AgentTab from '@/components/activity/AgentTab';
+import SwipeableTabs from '@/components/ui/SwipeableTabs';
 
 export default function AssessmentsScreen() {
   const { theme } = useTheme();
@@ -14,17 +15,17 @@ export default function AssessmentsScreen() {
   const tabs = [
     {
       key: 'trades',
-      label: 'Trades',
+      title: 'Trades',
       content: <TradesTab />,
     },
     {
       key: 'balance',
-      label: 'Balance',
+      title: 'Balance',
       content: <BalanceTab />,
     },
     {
       key: 'agent',
-      label: 'Agent',
+      title: 'Agent',
       content: <AgentTab />,
     },
   ];
@@ -35,9 +36,9 @@ export default function AssessmentsScreen() {
         <SectionTitle title="Performance" />
       </View>
 
-      <BasePagerView
+      <SwipeableTabs
         tabs={tabs}
-        initialPage={0}
+        initialIndex={0}
         tabTextStyle={{ color: theme.colors.text.secondary }}
         activeTabTextStyle={{ color: theme.colors.accent }}
       />

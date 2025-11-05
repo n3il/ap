@@ -104,6 +104,7 @@ Deno.serve(async (req) => {
             size: actionResult.size || 0.01,
             entry_price: tradeResult.price,
             entry_timestamp: new Date().toISOString(),
+            leverage: actionResult.leverage || 1,
           },
         ])
         .select()
@@ -197,12 +198,14 @@ Deno.serve(async (req) => {
         )
       }
 
-      // Calculate P&L
+      // Calculate P&L with leverage
+      const tradeLeverage = parseFloat(existingTrade.leverage) || 1;
       const pnl = calculatePnL(
         existingTrade.entry_price,
         closeResult.price || 0,
         existingTrade.size,
-        existingTrade.side
+        existingTrade.side,
+        tradeLeverage
       )
 
       // Update trade in database
@@ -299,27 +302,33 @@ function parseTradeAction(action: string): {
   asset: string
   side?: 'LONG' | 'SHORT'
   size?: number
+  leverage?: number
 } | null {
   // Match patterns like "OPEN_LONG_BTC", "OPEN_SHORT_ETH", "CLOSE_BTC"
-  const openLongMatch = action.match(/OPEN_LONG_([A-Z]+)/)
-  const openShortMatch = action.match(/OPEN_SHORT_([A-Z]+)/)
+  // Also support leverage notation: "OPEN_LONG_BTC_10X", "OPEN_SHORT_ETH_5X"
+  const openLongMatch = action.match(/OPEN_LONG_([A-Z]+)(?:_(\d+)X)?/)
+  const openShortMatch = action.match(/OPEN_SHORT_([A-Z]+)(?:_(\d+)X)?/)
   const closeMatch = action.match(/CLOSE_([A-Z]+)/)
 
   if (openLongMatch) {
+    const leverage = openLongMatch[2] ? parseInt(openLongMatch[2]) : 1
     return {
       type: 'OPEN',
       asset: `${openLongMatch[1]}-PERP`,
       side: 'LONG',
       size: 0.01, // Default size - adjust based on capital
+      leverage,
     }
   }
 
   if (openShortMatch) {
+    const leverage = openShortMatch[2] ? parseInt(openShortMatch[2]) : 1
     return {
       type: 'OPEN',
       asset: `${openShortMatch[1]}-PERP`,
       side: 'SHORT',
       size: 0.01,
+      leverage,
     }
   }
 
@@ -337,10 +346,23 @@ function calculatePnL(
   entryPrice: number,
   exitPrice: number,
   size: number,
-  side: 'LONG' | 'SHORT'
+  side: 'LONG' | 'SHORT',
+  leverage: number = 1
 ): number {
+  // Calculate price change percentage
   const priceChange = exitPrice - entryPrice
-  const pnl = side === 'LONG' ? priceChange * size : -priceChange * size
+  const priceChangePercent = priceChange / entryPrice
+
+  // Position value at entry
+  const positionValue = size * entryPrice
+
+  // PnL = position value * price change % * leverage
+  // For LONG: profit when price increases
+  // For SHORT: profit when price decreases
+  const pnl = side === 'LONG'
+    ? positionValue * priceChangePercent * leverage
+    : -positionValue * priceChangePercent * leverage
+
   return pnl
 }
 

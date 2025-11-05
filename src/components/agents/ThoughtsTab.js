@@ -10,7 +10,7 @@ import { assessmentService } from '@/services/assessmentService';
 
 export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = false }) {
   const { info, error: errorColor } = useColors();
-
+  console.log('agentId', agentId);
   // Fetch assessments for this agent
   const {
     data: assessments = [],
@@ -21,6 +21,16 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
     queryFn: () => assessmentService.getAssessmentsByAgent(agentId),
     enabled: !!agentId && isOwnAgent,
   });
+
+  if (error) {
+    return (
+      <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <Text sx={{ color: 'secondary500', fontSize: 12 }}>
+          {error.message || 'An error occurred while loading assessments'}
+        </Text>
+      </View>
+    )
+  }
 
   return (
     <View style={{ flex: 1}}>
@@ -127,7 +137,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
 
         {!isLoading && !error && assessments.map((assessment) => (
           // <AssessmentCard key={assessment.id} assessment={assessment} />
-          <Text key={assessment.id}>{assessment.id}</Text>
+          <Text key={assessment.id}>asdf</Text>
         ))}
       </GlassContainer>
     </View>

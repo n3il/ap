@@ -681,68 +681,15 @@ const SvgChart = ({
           onPress={() => setExpanded(!expanded)}
           sx={{ opacity: 0.3 }}
         >
-          {expanded ? 'Less' : <MaterialCommunityIcons name="fullscreen" size={24} color="white" />}
+          {expanded
+          ? (
+            <MaterialCommunityIcons name="fullscreen-exit" size={24} color="white" />
+          )
+          : (
+            <MaterialCommunityIcons name="fullscreen" size={24} color="white" />
+          )}
         </Button>
       </View>
-
-
-      {expanded && (
-        <View sx={{ marginTop: 3, gap: 2 }}>
-          {lines.map((line) => {
-            // Get valid data points
-            const validData = (line.data || []).filter(d => {
-              const val = d?.value ?? d?.percent;
-              return d && typeof val === 'number' && isFinite(val);
-            });
-
-            if (validData.length === 0) return null;
-
-            const finalValue = (validData[validData.length - 1].value ?? validData[validData.length - 1].percent) || 0;
-            const isPositive = finalValue >= 0;
-            const startValue = (validData[0].value ?? validData[0].percent) || 0;
-            const change = finalValue - startValue;
-
-            return (
-              <View
-                key={line.id}
-                sx={{
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  paddingVertical: 3,
-                  paddingHorizontal: 4,
-                  backgroundColor: withOpacity(palette.secondary800 ?? palette.surfaceSecondary, 0.3),
-                  borderRadius: 'xl',
-                  borderLeftWidth: 3,
-                  borderLeftColor: line.color,
-                }}
-              >
-                <View sx={{ flex: 1 }}>
-                  <Text sx={{ fontSize: 14, fontWeight: '600', color: 'textSecondary', marginBottom: 1 }}>
-                    {line.name}
-                  </Text>
-                </View>
-
-                <View sx={{ alignItems: 'flex-end' }}>
-                  <Text
-                    sx={{
-                      fontSize: 18,
-                      fontWeight: '700',
-                      color: isPositive ? 'success' : 'errorLight',
-                      marginBottom: 1,
-                    }}
-                  >
-                    {valueFormatter(finalValue)}
-                  </Text>
-                  <Text sx={{ fontSize: 10, color: 'secondary500' }}>
-                    {change >= 0 ? '+' : ''}{valueFormatter(change)} {timeframe}
-                  </Text>
-                </View>
-              </View>
-            );
-          })}
-        </View>
-      )}
     </>
   );
 };

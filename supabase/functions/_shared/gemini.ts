@@ -42,8 +42,8 @@ export function parseActionFromText(text: string) {
 
   if (action === 'NO_ACTION') {
     const actionPatterns = [
-      /OPEN_LONG_([A-Z]+)/,
-      /OPEN_SHORT_([A-Z]+)/,
+      /OPEN_LONG_([A-Z]+)(?:_(\d+)X)?/,  // Matches OPEN_LONG_BTC or OPEN_LONG_BTC_10X
+      /OPEN_SHORT_([A-Z]+)(?:_(\d+)X)?/, // Matches OPEN_SHORT_ETH or OPEN_SHORT_ETH_5X
       /CLOSE_([A-Z]+)/,
       /NO_ACTION/,
     ]

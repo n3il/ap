@@ -92,7 +92,7 @@ export function PositionRow({
             }}
           >
             <Text variant="sm" sx={{ fontWeight: '600' }}>
-              {assetLabel}
+              {assetLabel.replace('-PERP', '')}
             </Text>
             {side && (
               <StatusBadge
@@ -103,9 +103,6 @@ export function PositionRow({
               </StatusBadge>
             )}
           </View>
-          <Text variant="xs" tone="muted">
-            Size: {sizeLabel}
-          </Text>
         </View>
 
         <View sx={{ alignItems: 'flex-end' }}>
@@ -162,7 +159,7 @@ export function PositionRow({
 
 export default function PositionList({ positions = [] }) {
   const safeEnrichedPositions = Array.isArray(positions) ? positions : [];
-
+  console.log(positions)
   return (
     <View sx={{ marginTop: 3, flex: 1 }}>
       {safeEnrichedPositions.length > 0 ? (

@@ -122,20 +122,43 @@ Deno.serve(async (req) => {
     const unrealizedPnl = (openPositions || []).reduce((sum, p) => {
       const price = priceMap.get(p.asset);
       if (!price || !p.entry_price || !p.size) return sum;
-      const entryValue = parseFloat(p.entry_price) * parseFloat(p.size);
-      const currentValue = price * parseFloat(p.size);
-      const pnl = p.side === 'LONG' ? currentValue - entryValue : entryValue - currentValue;
+
+      const leverage = parseFloat(p.leverage) || 1;
+      const size = parseFloat(p.size);
+      const entryPrice = parseFloat(p.entry_price);
+
+      // Calculate price change
+      const priceChange = price - entryPrice;
+
+      // PnL with leverage: (priceChange / entryPrice) * positionValue * leverage
+      // For LONG: profit when price goes up
+      // For SHORT: profit when price goes down
+      const positionValue = size * entryPrice;
+      const pnl = p.side === 'LONG'
+        ? (priceChange / entryPrice) * positionValue * leverage
+        : -(priceChange / entryPrice) * positionValue * leverage;
+
       return sum + pnl;
     }, 0);
 
     const initialCapital = parseFloat(agent.initial_capital) || 0;
     const accountValue = initialCapital + realizedPnl + unrealizedPnl;
 
-    // Calculate margin used (assuming positions use full value as margin)
+    // Calculate margin used (position value / leverage)
+    // With leverage, you only need to put up a fraction of the position value as margin
+    // Example: $1000 position with 10x leverage requires only $100 margin
     const marginUsed = (openPositions || []).reduce((sum, p) => {
       const price = priceMap.get(p.asset);
       if (!price || !p.size) return sum;
-      return sum + (price * parseFloat(p.size));
+
+      const leverage = parseFloat(p.leverage) || 1;
+      const size = parseFloat(p.size);
+      const positionValue = price * size;
+
+      // Margin required = position value / leverage
+      const margin = positionValue / leverage;
+
+      return sum + margin;
     }, 0);
 
     const remainingCash = accountValue - marginUsed;

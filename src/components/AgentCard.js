@@ -6,6 +6,7 @@ import { GlassView } from 'expo-glass-effect';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/config/supabase';
 import { useAccountBalance } from '@/hooks/useAccountBalance';
+import PositionList from './PositionList';
 
 export default function AgentCard({
   agent,
@@ -42,8 +43,6 @@ export default function AgentCard({
   const providerLabel = LLM_PROVIDERS[agent.llm_provider] || 'Unknown';
   const isPublished = Boolean(agent.published_at);
 
-  const safeAgentName = agent?.name || '';
-  const safeHyperliquidAddress = agent?.hyperliquid_address || '';
   const safeTradesCount = typeof tradesCount === 'number' ? tradesCount : 0;
   const safeEnrichedPositions = Array.isArray(enrichedPositions) ? enrichedPositions : [];
   const safeEquity = Number.isFinite(equity) ? equity : 0;
@@ -77,15 +76,15 @@ export default function AgentCard({
           <View sx={{ flex: 1 }}>
             <View sx={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' }}>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                <Text variant="lg" sx={{ fontWeight: '500' }}>
+                <Text variant="lg" sx={{ fontWeight: '500', fontFamily: 'monospace' }}>
                   {agent.name}
                 </Text>
              </View>
-               <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'}>
+               <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'} sx={{ fontFamily: 'monospace' }}>
                 {isPublished ? 'PUBLIC' : 'PRIVATE'}
               </StatusBadge>
             </View>
-            <Text variant="sm" tone="subtle" sx={{ flex: 1 }}>
+            <Text variant="sm" tone="subtle" sx={{ flex: 1, fontFamily: 'monospace' }}>
               {providerMeta}
             </Text>
           </View>
@@ -118,10 +117,11 @@ export default function AgentCard({
             />
           </View>
         </View>
+        <PositionList positions={enrichedPositions} />
 
-        <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
+        {/* <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
           <WalletAddressCard address={safeHyperliquidAddress} variant="short" />
-        </View>
+        </View> */}
       </TouchableOpacity>
     </GlassView>
   );

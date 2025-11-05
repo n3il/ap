@@ -8,7 +8,6 @@ import {
   Alert,
   ActivityIndicator,
   Button,
-  BasePagerView,
 } from '@/components/ui';
 import { useRouter } from 'expo-router';
 import ContainerView from '@/components/ContainerView';
@@ -27,6 +26,7 @@ import {
 import { useTheme } from '@/contexts/ThemeContext';
 import { withOpacity } from '@/theme/utils';
 import SectionTitle from '@/components/SectionTitle';
+import SwipeableTabs from '@/components/ui/SwipeableTabs';
 
 const { width } = Dimensions.get('window');
 
@@ -460,7 +460,7 @@ export default function MarketsScreen() {
   const tabs = [
     {
       key: 'trade',
-      label: 'Trade',
+      title: 'Trade',
       content: (
         <ScrollView
           style={styles.content}
@@ -506,7 +506,7 @@ export default function MarketsScreen() {
     },
     {
       key: 'positions',
-      label: 'Positions',
+      title: 'Positions',
       content: (
         <View style={styles.content}>
           <PositionTracker
@@ -519,7 +519,7 @@ export default function MarketsScreen() {
     },
     {
       key: 'history',
-      label: 'History',
+      title: 'History',
       content: (
         <View style={styles.content}>
           <TradeHistory trades={trades} isLoading={false} />
@@ -528,7 +528,7 @@ export default function MarketsScreen() {
     },
     {
       key: 'account',
-      label: 'Account',
+      title: 'Account',
       content: (
         <ScrollView
           style={styles.content}
@@ -700,9 +700,9 @@ export default function MarketsScreen() {
         <SectionTitle>Trade</SectionTitle>
       </View>
 
-      <BasePagerView
+      <SwipeableTabs
         tabs={tabs}
-        initialPage={0}
+        initialIndex={0}
         tabTextStyle={{ color: theme.colors.text.secondary }}
         activeTabTextStyle={{ color: theme.colors.accent }}
       />

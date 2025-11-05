@@ -26,11 +26,11 @@ const badgeStyles: Record<BadgeVariant, { bg: keyof AppTheme['colors'] }> = {
 };
 
 const sizeStyles: Record<BadgeSize, { paddingHorizontal: number; paddingVertical: number; textVariant: 'xs' | 'caption' }> = {
-  small: { paddingHorizontal: 2, paddingVertical: 0.5, textVariant: 'xs' },
+  small: { paddingHorizontal: 1, paddingVertical: 0, textVariant: 'xs' },
   regular: { paddingHorizontal: 3, paddingVertical: 1, textVariant: 'xs' },
 };
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent', size = 'regular', sx, fontWeight = '300' }) => {
+const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent', size = 'regular', sx = {}, textSx = {}, fontWeight = '300' }) => {
   const styles = badgeStyles[variant];
   const sizeStyle = sizeStyles[size];
 
@@ -41,7 +41,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent',
       sx={{
         paddingHorizontal: sizeStyle.paddingHorizontal,
         paddingVertical: sizeStyle.paddingVertical,
-        borderRadius: 6,
+        borderRadius: 3,
         // backgroundColor: withOpacity(styles.bg, 0.3),
         borderColor: styles?.bg,
         borderWidth: 0.5,
@@ -49,7 +49,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent',
         ...sx,
       }}
     >
-      <Text variant={sizeStyle.textVariant} sx={{ color: styles.bg, fontWeight }}>
+      <Text variant={sizeStyle.textVariant} sx={{ color: styles.bg, fontWeight, ...textSx }}>
         {children}
       </Text>
     </View>

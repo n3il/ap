@@ -32,7 +32,7 @@ export const agentSnapshotService = {
 
       const { data, error } = await supabase
         .from('agent_pnl_snapshots')
-        .select('timestamp, equity, realized_pnl, unrealized_pnl, open_positions_count')
+        .select('timestamp, equity, realized_pnl, unrealized_pnl, open_positions_count, margin_used')
         .eq('agent_id', agentId)
         .gte('timestamp', startTime.toISOString())
         .order('timestamp', { ascending: true });
@@ -74,7 +74,7 @@ export const agentSnapshotService = {
 
       const { data, error } = await supabase
         .from('agent_pnl_snapshots')
-        .select('agent_id, timestamp, equity, realized_pnl, unrealized_pnl')
+        .select('agent_id, timestamp, equity, realized_pnl, unrealized_pnl, margin_used')
         .in('agent_id', agentIds)
         .gte('timestamp', startTime.toISOString())
         .order('timestamp', { ascending: true });
@@ -137,5 +137,34 @@ export const agentSnapshotService = {
         equity: equity,
       };
     });
+  },
+
+  /**
+   * Calculate margin utilization and effective leverage from snapshot
+   * @param {Object} snapshot - Snapshot object with equity and margin_used
+   * @returns {Object} { marginUtilization, effectiveLeverage, availableMargin }
+   */
+  calculateLeverageMetrics(snapshot) {
+    if (!snapshot) return { marginUtilization: 0, effectiveLeverage: 1, availableMargin: 0 };
+
+    const equity = parseFloat(snapshot.equity) || 0;
+    const marginUsed = parseFloat(snapshot.margin_used) || 0;
+
+    // Margin utilization as a percentage
+    const marginUtilization = equity > 0 ? (marginUsed / equity) * 100 : 0;
+
+    // Available margin (free to use)
+    const availableMargin = Math.max(0, equity - marginUsed);
+
+    // Effective leverage is calculated from unrealized PnL exposure
+    // For now, we can approximate: if margin utilization is 50%, effective leverage is ~2x
+    const effectiveLeverage = equity > 0 && marginUsed > 0 ? equity / (equity - marginUsed) : 1;
+
+    return {
+      marginUtilization: Number.isFinite(marginUtilization) ? marginUtilization : 0,
+      effectiveLeverage: Number.isFinite(effectiveLeverage) ? effectiveLeverage : 1,
+      availableMargin: Number.isFinite(availableMargin) ? availableMargin : 0,
+      marginUsed,
+    };
   },
 };
