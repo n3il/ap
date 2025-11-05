@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, type ViewProps } from '@/components/ui';
+import View, { type ViewProps } from '@/components/ui/View';
 import { useColors } from '@/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -39,7 +39,7 @@ export default function ContainerView({ children, style, noSafeArea, ...props }:
   );
 }
 
-export function PaddedView({ children, sx, style, ...props }: ViewProps) {
+export function PaddedView({ children, sx, style = {}, ...props }: ViewProps) {
   return (
     <View
       {...props}

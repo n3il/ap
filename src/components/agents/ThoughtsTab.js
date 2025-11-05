@@ -29,7 +29,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
       </SectionTitle>
 
       <GlassContainer style={{ gap: 16 }}>
-        
+
         {isLoading && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, justifyContent: 'center', paddingVertical: 4 }}>
             <ActivityIndicator size="small" color={info} />
@@ -39,7 +39,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
           </View>
         )}
 
-        
+
         {error && (
           <GlassView
             variant="glass"
@@ -78,7 +78,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
           </GlassView>
         )}
 
-        
+
         {!isLoading && !error && pendingAssessment && (
           <GlassView
             variant="glass"
@@ -118,7 +118,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
           </GlassView>
         )}
 
-        
+
         {!isLoading && !error && assessments.length === 0 && !pendingAssessment && (
           <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
             No assessments yet
@@ -126,7 +126,8 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
         )}
 
         {!isLoading && !error && assessments.map((assessment) => (
-          <AssessmentCard key={assessment.id} assessment={assessment} />
+          // <AssessmentCard key={assessment.id} assessment={assessment} />
+          <Text key={assessment.id}>{assessment.id}</Text>
         ))}
       </GlassContainer>
     </View>

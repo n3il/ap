@@ -72,7 +72,7 @@ export default function AgentTab() {
         />
       }
     >
-      
+
       {stats && (
         <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} sx={{ marginBottom: 4 }}>
@@ -104,7 +104,7 @@ export default function AgentTab() {
         </View>
       )}
 
-      
+
       <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
         <View sx={{ flexDirection: 'row', gap: 2 }}>
           <TouchableOpacity
@@ -191,7 +191,7 @@ export default function AgentTab() {
         </View>
       </View>
 
-      
+
       <View sx={{ paddingHorizontal: 6 }}>
         {filteredAssessments.length === 0 ? (
           <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
@@ -205,7 +205,7 @@ export default function AgentTab() {
             <Text sx={{ color: 'textPrimary', fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
               Timeline ({filteredAssessments.length})
             </Text>
-            {filteredAssessments.map((assessment) => (
+            {/* {filteredAssessments.map((assessment) => (
               <View key={assessment.id} sx={{ marginBottom: 2 }}>
                 {assessment.agents && (
                   <Text sx={{ color: 'mutedForeground', fontSize: 12, marginBottom: 1, marginLeft: 1 }}>
@@ -214,7 +214,7 @@ export default function AgentTab() {
                 )}
                 <AssessmentCard assessment={assessment} />
               </View>
-            ))}
+            ))} */}
           </>
         )}
       </View>

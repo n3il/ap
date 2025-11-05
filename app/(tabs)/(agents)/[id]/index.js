@@ -22,6 +22,7 @@ import { GlassContainer, GlassView } from 'expo-glass-effect';
 import { useColors } from '@/theme';
 import { ROUTES } from '@/config/routes';
 import SwipeableTabs from '@/components/ui/SwipeableTabs';
+import AgentCard from '@/components/AgentCard';
 
 const AgentReadScreen = () => {
   const colors = useColors();
@@ -314,68 +315,49 @@ const AgentReadScreen = () => {
   // chat
 
   return (
-    <ContainerView style={{ flex: 1, paddingTop: 0 }}>
-      <View style={{ flex: 1, paddingTop: 24 }}>
-        
-        <View key={pendingAssessment}>
-          <AgentBalanceHeader
-            agent={agent}
-            onMenuPress={isOwnAgent ? handleOpenManageScreen : null}
-          />
-
-          
-          <View
-            style={{ marginHorizontal: 24, marginVertical: 12 }}
+    <ContainerView style={{ paddingTop: 0, gap: 8, flex: 1 }}>
+      <AgentCard
+        agent={agent}
+        shortView
+        extraContent={
+          <GlassView
+            glassEffectStyle='regular'
+            style={{
+              padding: 12,
+              borderRadius: 20,
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            <GlassContainer style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-              <GlassView
-                glassEffectStyle='regular'
-                style={{
-                  padding: 12,
-                  borderRadius: 20,
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  flex: 1,
-                }}
-              >
-                <TouchableOpacity onPress={handlePokeAgent}
-                  style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-                >
-                  {pendingAssessment ? (
-                    <ActivityIndicator size="small" color={colors.primary} />
-                  ) : (
-                    <MaterialCommunityIcons
-                      name="gesture-tap-button"
-                      size={22}
-                      color={colors.primary}
-                    />
-                  )}
-                  <Text sx={{ fontWeight: '600', color: colors.primary }}>Poke</Text>
-                </TouchableOpacity>
-              </GlassView>
-            </GlassContainer>
-          </View>
-        </View>
+            <TouchableOpacity onPress={handlePokeAgent}
+              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
+            >
+              {pendingAssessment ? (
+                <ActivityIndicator size="small" color={colors.primary} />
+              ) : (
+                <MaterialCommunityIcons
+                  name="gesture-tap-button"
+                  size={22}
+                  color={colors.primary}
+                />
+              )}
+              <Text sx={{ fontWeight: '600', color: colors.primary }}>Poke</Text>
+            </TouchableOpacity>
+          </GlassView>
+        }
+      />
 
-        
-        <SwipeableTabs
-          tabs={TABS}
-          initialIndex={page}
-          onTabChange={setPage}
-          renderTab={renderTab}
-          tabWrapperStyle={{
-            borderRadius: 100,
-            padding: 0,
-            paddingHorizontal: 0,
-            marginHorizontal: 6,
-          }}
-          tabStyle={{
-            padding: 12,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        />
-      </View>
+      <SwipeableTabs
+        tabs={TABS}
+        initialIndex={page}
+        onTabChange={setPage}
+        renderTab={renderTab}
+        tabStyle={{
+          padding: 12,
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      />
     </ContainerView>
   );
 };

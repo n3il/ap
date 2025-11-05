@@ -34,12 +34,12 @@ export default function ExploreScreen() {
         />
         <MarketPricesWidget
           tickers={['BTC', 'ETH', 'SOL']}
-          sx={{ borderBottomWidth: 1, borderColor: 'border', paddingTop: 0, paddingBottom: 4 }}
           timeframe={timeframe}
         />
       </PaddedView>
       <ScrollView
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: '70%' }}
         refreshControl={
           <RefreshControl
             refreshing={isFetching}
@@ -56,7 +56,8 @@ export default function ExploreScreen() {
             sx={{
               textTransform: 'uppercase',
               fontWeight: '600',
-              letterSpacing: 2
+              letterSpacing: 2,
+              marginTop: 4
             }}
           >
             Explore Agents
@@ -69,7 +70,7 @@ export default function ExploreScreen() {
         <View sx={{ marginTop: 4 }}>
           <SvgChart timeframe={timeframe} />
         </View>
-        <PaddedView sx={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+        <PaddedView sx={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 3 }}>
           <SectionTitle title="Agents" />
           <SectionTitle title="Trades" sx={{ color: "muted" }} />
         </PaddedView>

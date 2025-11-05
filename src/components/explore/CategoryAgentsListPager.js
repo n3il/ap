@@ -32,22 +32,6 @@ export default function CategoryAgentsListPager() {
       tabTextStyle={{ color: theme.colors.text.secondary }}
       activeTabTextStyle={{ color: theme.colors.accent }}
       indicatorColor={theme.colors.accent}
-      tabWrapperStyle={{
-        borderRadius: 32,
-        paddingHorizontal: 12,
-        marginHorizontal: 0,
-      }}
-      tabStyle={{
-        paddingHorizontal: 0,
-        paddingVertical: 0,
-      }}
-      tabContainerStyle={{
-        marginBottom: 16,
-        gap: 8,
-      }}
-      contentStyle={{
-        marginHorizontal: 0,
-      }}
     />
   );
 }

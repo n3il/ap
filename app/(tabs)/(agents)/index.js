@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, BasePagerView, TouchableOpacity } from '@/components/ui';
+import { View, Text, SwipeableTabs, TouchableOpacity } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import ContainerView from '@/components/ContainerView';
 import AgentList from '@/components/AgentList';
@@ -57,7 +57,7 @@ export default function AgentsScreen() {
   const tabs = [
     {
       key: 'active',
-      label: 'Active',
+      title: 'Active',
       content: (
         <AgentList
           queryKey="active-agents"
@@ -78,7 +78,7 @@ export default function AgentsScreen() {
     },
     {
       key: 'shared',
-      label: 'Shared',
+      title: 'Shared',
       content: (
         <AgentList
           queryKey="shared-agents"
@@ -98,7 +98,7 @@ export default function AgentsScreen() {
     },
     {
       key: 'all',
-      label: 'All',
+      title: 'All',
       content: (
         <AgentList
           queryKey="all-agents"
@@ -155,11 +155,12 @@ export default function AgentsScreen() {
         </TouchableOpacity>
       </View>
 
-      <BasePagerView
+      <SwipeableTabs
         tabs={tabs}
-        initialPage={0}
+        initialIndex={0}
         tabTextStyle={{ color: theme.colors.text.secondary }}
         activeTabTextStyle={{ color: theme.colors.accent }}
+        indicatorColor={theme.colors.accent}
       />
 
       <CreateAgentModal

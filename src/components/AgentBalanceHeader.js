@@ -41,7 +41,7 @@ export default function AgentBalanceHeader({ agent, onMenuPress }) {
         marginBottom: 8,
       }}
     >
-      
+
       <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
         <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
           <View
@@ -73,22 +73,22 @@ export default function AgentBalanceHeader({ agent, onMenuPress }) {
         )}
       </View>
 
-      
+
       <Text sx={{ fontSize: 12, color: withOpacity('#FFFFFF', 0.8), marginBottom: 4 }}>
         {providerLabel} " {agent?.model_name || 'N/A'}
       </Text>
 
-      
+
       <View sx={{ marginVertical: 4 }}>
         <Text sx={{ fontSize: 14, color: withOpacity('#FFFFFF', 0.9), marginBottom: 1 }}>
           Total Balance
         </Text>
         <Text sx={{ fontSize: 48, fontWeight: '700', color: '#FFFFFF', letterSpacing: -2 }}>
-          ${equity.toLocaleString('en-US', { minimumFractionDigits: 3, maximumFractionDigits: 3 })}
+          ${equity.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
         </Text>
       </View>
 
-      
+
       {totalPnl !== 0 && (
         <View
           sx={{
@@ -106,7 +106,7 @@ export default function AgentBalanceHeader({ agent, onMenuPress }) {
         </View>
       )}
 
-      
+
       <View sx={{ flexDirection: 'row', justifyContent: 'space-around', marginTop: 3 }}>
         <View sx={{ alignItems: 'center' }}>
           <MaterialCommunityIcons name="send" size={24} color="#FFFFFF" />
@@ -124,7 +124,7 @@ export default function AgentBalanceHeader({ agent, onMenuPress }) {
         </View>
       </View>
 
-      
+
       <View sx={{ position: 'absolute', top: 24, right: 24 }}>
         <View
           sx={{

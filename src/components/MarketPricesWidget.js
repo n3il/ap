@@ -190,14 +190,16 @@ const PriceColumn = ({
       >
         {formatCurrency(displayAsset?.price)}
       </Animated.Text>
-      <View sx={{ marginTop: 2, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-        <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
-          {hasChange ? formatPercent(rangePercent) : '—'}
-        </Text>
-        <Text sx={{ fontSize: 11, color: 'secondary500', marginLeft: 2 }}>
-          ({Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'})
-        </Text>
-      </View>
+      {displayAsset?.price ? (
+        <View sx={{ marginTop: 2, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
+          <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
+            {hasChange ? formatPercent(rangePercent) : '—'}
+          </Text>
+          <Text sx={{ fontSize: 11, color: 'secondary500', marginLeft: 2 }}>
+            ({Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'})
+          </Text>
+        </View>
+      ) : null}
       <View sx={{ marginTop: 3, height: SPARKLINE_HEIGHT }}>
         {!isHistoryLoading && (
           <Sparkline

@@ -30,7 +30,6 @@ interface SwipeableTabsProps {
   tabs: SwipeableTab[];
   initialIndex?: number;
   onTabChange?: (index: number) => void;
-  tabBarStyle?: ViewStyle;
   tabStyle?: ViewStyle;
   activeTabStyle?: ViewStyle;
   tabTextStyle?: TextStyle;
@@ -46,7 +45,6 @@ export default function SwipeableTabs({
   tabs,
   initialIndex = 0,
   onTabChange,
-  tabBarStyle,
   tabStyle,
   activeTabStyle,
   tabTextStyle,
@@ -59,7 +57,7 @@ export default function SwipeableTabs({
 }: SwipeableTabsProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
-  const scrollX = useRef(new Animated.Value(initialIndex * SCREEN_WIDTH)).current;
+  const scrollX = useRef(new Animated.Value(initialIndex * SCREEN_WIDTH + GLOBAL_PADDING)).current;
 
   const handleTabPress = useCallback((index: number) => {
     flatListRef.current?.scrollToIndex({ index, animated: true });
@@ -110,10 +108,11 @@ export default function SwipeableTabs({
   );
 
   return (
-    <View style={styles.container}>
+    <View>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        style={{ flex: 0  }}
       >
         <GlassContainer
           spacing={10}
@@ -151,7 +150,6 @@ export default function SwipeableTabs({
                   <Text
                     style={[
                       styles.tabText,
-                      styles.tabText,
                       tabTextStyle,
                       currentIndex === index && [styles.activeTabText, activeTabTextStyle],
                     ]}
@@ -187,9 +185,6 @@ export default function SwipeableTabs({
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
   tabBar: {
     flexDirection: 'row',
     borderBottomWidth: 1,
@@ -227,7 +222,6 @@ const styles = StyleSheet.create({
   },
   pageContent: {
     flex: 1,
-    marginHorizontal: 8,
     paddingHorizontal: GLOBAL_PADDING,
     width,
   },

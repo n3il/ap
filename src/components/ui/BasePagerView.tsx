@@ -1,5 +1,5 @@
 import React, { useState, useRef, ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
+import { StyleSheet, Platform } from 'react-native';
 import PagerView from 'react-native-pager-view';
 import View from '@/components/ui/View';
 import Text from '@/components/ui/Text';
@@ -40,9 +40,14 @@ export default function BasePagerView({
   const pagerRef = useRef<PagerView>(null);
 
   const handleTitlePress = (index: number) => {
-    pagerRef.current?.setPage(index);
-    setPage(index);
-    onPageChange?.(index);
+    if (Platform.OS === 'web') {
+      setPage(index);
+      onPageChange?.(index);
+    } else {
+      pagerRef.current?.setPage(index);
+      setPage(index);
+      onPageChange?.(index);
+    }
   };
 
   const handlePageSelected = (e: any) => {
@@ -51,9 +56,68 @@ export default function BasePagerView({
     onPageChange?.(position);
   };
 
+  // Web fallback: render simple tab view without swiping
+  if (Platform.OS === 'web') {
+    return (
+      <>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={[styles.tabBarContent, tabBarContentStyle]}
+        >
+          <GlassContainer
+            spacing={10}
+            style={{ flexDirection: 'row', gap: 8 }}
+          >
+            {tabs.map((tab, index) => (
+              <GlassView
+                key={tab.key}
+                glassEffectStyle="regular"
+                style={{
+                  borderRadius: 32,
+                  paddingHorizontal: 8,
+                  marginHorizontal: 4,
+                }}
+              >
+                <TouchableOpacity
+                  key={tab.key}
+                  onPress={() => handleTitlePress(index)}
+                  style={[
+                    styles.tab,
+                    tabStyle,
+                    page === index && [styles.activeTab, activeTabStyle],
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.tabText,
+                      tabTextStyle,
+                      page === index && [styles.activeTabText, activeTabTextStyle],
+                    ]}
+                  >
+                    {tab.label}
+                  </Text>
+                </TouchableOpacity>
+              </GlassView>
+            ))}
+          </GlassContainer>
+        </ScrollView>
+
+        <View style={styles.pagerView}>
+          {tabs[page] && (
+            <View style={styles.page} key={tabs[page].key}>
+              {tabs[page].content}
+            </View>
+          )}
+        </View>
+      </>
+    );
+  }
+
+  // Native: use PagerView with swipe support
   return (
     <>
-      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -86,7 +150,6 @@ export default function BasePagerView({
                 <Text
                   style={[
                     styles.tabText,
-                    styles.tabText,
                     tabTextStyle,
                     page === index && [styles.activeTabText, activeTabTextStyle],
                   ]}
@@ -99,7 +162,6 @@ export default function BasePagerView({
         </GlassContainer>
       </ScrollView>
 
-      
       <PagerView
         style={styles.pagerView}
         initialPage={initialPage}

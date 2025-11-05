@@ -12,7 +12,7 @@ export default function Layout() {
       gestureEnabled: true,
     }}>
       <Stack.Screen name="index" />
-      <Stack.Screen
+      {/* <Stack.Screen
         name="[id]/index"
         options={{
           headerShown: true,
@@ -24,9 +24,14 @@ export default function Layout() {
           headerTintColor: colors.colors.foreground,
           headerBackTitleVisible: false,
           headerShadowVisible: false,
-          headerLargeStyle: true
+          headerLargeStyle: true,
+          preferLargeTitle: true,
+          headerLargeTitleStyle: {
+            fontSize: 32,
+            fontWeight: '600',
+          }
         }}
-      />
+      /> */}
       <Stack.Screen name="[id]/manage" />
     </Stack>
   );
