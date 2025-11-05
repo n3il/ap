@@ -201,7 +201,7 @@ export default function InfoSlides({ onSlideChange }) {
                     alignItems: 'center',
                   }}
                 >
-                  {/* Icon */}
+                  
                   {slide.icon && (
                     <View
                       style={{
@@ -244,7 +244,7 @@ export default function InfoSlides({ onSlideChange }) {
                     {slide.description}
                   </Text>
 
-                  {/* Features List */}
+                  
                   {slide.features && (
                     <View sx={{ gap: 3 }}>
                       {slide.features.map((feature, idx) => (

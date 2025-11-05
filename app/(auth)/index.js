@@ -125,7 +125,6 @@ export default function Auth() {
           layout={LinearTransition.duration(300).springify()}
           style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}
         >
-          {/* Phone Input Mode */}
           {authMode === 'phone' && (
             <AnimatedBox
               key="phone-mode"
@@ -173,7 +172,6 @@ export default function Auth() {
             </AnimatedBox>
           )}
 
-          {/* Email Input Mode */}
           {authMode === 'email' && (
             <AnimatedBox
               key="email-mode"
@@ -217,16 +215,13 @@ export default function Auth() {
             </AnimatedBox>
           )}
 
-          {/* Divider */}
           <View sx={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
             <View sx={{ flex: 1, height: 1, backgroundColor: 'border' }} />
             <Text variant="sm" tone="muted" sx={{ marginHorizontal: 3 }}>{t('login.orContinueWith')}</Text>
             <View sx={{ flex: 1, height: 1, backgroundColor: 'border' }} />
           </View>
 
-          {/* OAuth Buttons */}
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 3, marginBottom: 3 }}>
-            {/* Toggle Button */}
             <Button
               variant="surface"
               onPress={toggleAuthMode}

@@ -53,7 +53,7 @@ export default function BasePagerView({
 
   return (
     <>
-      {/* Tab Bar */}
+      
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -99,7 +99,7 @@ export default function BasePagerView({
         </GlassContainer>
       </ScrollView>
 
-      {/* Pager View */}
+      
       <PagerView
         style={styles.pagerView}
         initialPage={initialPage}

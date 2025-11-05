@@ -62,7 +62,7 @@ export default function TabsLayout() {
       >
         <Label>Agents</Label>
         <Icon sf="doc.text.magnifyingglass" drawable="custom_android_drawable" />
-        {/* <Badge>1</Badge> */}
+        
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
         name="performance"

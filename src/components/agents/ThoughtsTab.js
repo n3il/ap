@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, ScrollView, ActivityIndicator, Card } from '@/components/ui';
+import { View, Text, ActivityIndicator } from '@/components/ui';
 import AssessmentCard from '@/components/AssessmentCard';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
@@ -9,7 +9,7 @@ import { useQuery } from '@tanstack/react-query';
 import { assessmentService } from '@/services/assessmentService';
 
 export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = false }) {
-  const { info, error: errorColor, withOpacity } = useColors();
+  const { info, error: errorColor } = useColors();
 
   // Fetch assessments for this agent
   const {
@@ -29,7 +29,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
       </SectionTitle>
 
       <GlassContainer style={{ gap: 16 }}>
-        {/* Loading State */}
+        
         {isLoading && (
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, justifyContent: 'center', paddingVertical: 4 }}>
             <ActivityIndicator size="small" color={info} />
@@ -39,7 +39,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
           </View>
         )}
 
-        {/* Error State */}
+        
         {error && (
           <GlassView
             variant="glass"
@@ -78,7 +78,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
           </GlassView>
         )}
 
-        {/* Pending Assessment Card */}
+        
         {!isLoading && !error && pendingAssessment && (
           <GlassView
             variant="glass"
@@ -118,7 +118,7 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
           </GlassView>
         )}
 
-        {/* Assessments List */}
+        
         {!isLoading && !error && assessments.length === 0 && !pendingAssessment && (
           <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
             No assessments yet

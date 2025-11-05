@@ -3,6 +3,19 @@ import { View, Text, Card, StatusBadge, TouchableOpacity } from '@/components/ui
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
 
+function TradeActionRow({ label, value, valueStyle }) {
+  return (
+    <View sx={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+      <Text variant="sm" tone="muted">
+        {label}
+      </Text>
+      <Text variant="sm" sx={{ fontWeight: '500', ...valueStyle }}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
 export default function TradeActionDisplay({ actionData }) {
   if (!actionData) return null;
 
@@ -64,111 +77,84 @@ export default function TradeActionDisplay({ actionData }) {
       }}
     >
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 3, marginBottom: expanded ? 2 : 0 }}>
-          <View
-            sx={{
-              width: 24,
-              height: 24,
-              borderRadius: 'full',
-              borderColor: config.color,
-              borderWidth: 1,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}
-          >
-            <MaterialCommunityIcons
-              name={config.icon}
-              size={16}
-              color={config.color}
-            />
+        <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 2 : 0 }}>
+          
+          <View sx={{ flex: 1 }}>
+            <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
+              {actionData.asset || 'N/A'}
+            </Text>
           </View>
 
-          <View sx={{ flex: 1 }}>
-            <Text variant="sm" tone="muted" sx={{ marginBottom: 1, display: 'none' }}>
-              Trade Action
-            </Text>
-            <StatusBadge fontWeight="600" sx={{ borderColor: config.color }}>
+          
+          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+            {actionData.size && (
+              <Text variant="sm" sx={{ fontWeight: '500', marginRight: 2 }}>
+                {typeof actionData.size === 'number'
+                  ? `${(actionData.size * 100).toFixed(0)}x`
+                  : actionData.size}
+              </Text>
+            )}
+
+            <StatusBadge fontWeight="600" sx={{ borderColor: config.color, marginRight: 2 }}>
               {config.label}
             </StatusBadge>
-          </View>
 
-          {actionData.asset && (
-            <View sx={{ alignItems: 'flex-end' }}>
-              <Text variant="sm" tone="muted" sx={{ marginBottom: 1, display: 'none' }}>
-                Asset
-              </Text>
-              <Text variant="md" sx={{ fontWeight: '600' }}>
-                {actionData.asset || ''}
-              </Text>
+            <View
+              sx={{
+                width: 24,
+                height: 24,
+                borderRadius: 'full',
+                borderColor: config.color,
+                borderWidth: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={config.icon}
+                size={16}
+                color={config.color}
+              />
             </View>
-          )}
-
-          <MaterialCommunityIcons
-            name={expanded ? 'chevron-up' : 'chevron-down'}
-            size={20}
-            color={palette.mutedForeground}
-          />
+          </View>
         </View>
       </TouchableOpacity>
 
       {expanded && (
-        <View sx={{ gap: 2 }}>
-        {actionData.size && (
-          <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text variant="sm" tone="muted">
-              Position Size
-            </Text>
-            <Text variant="sm" sx={{ fontWeight: '500' }}>
-              {typeof actionData.size === 'number'
-                ? `${(actionData.size * 100).toFixed(1)}%`
-                : actionData.size}
-            </Text>
-          </View>
-        )}
+        <View>
+          {actionData.entry && (
+            <TradeActionRow
+              label="Entry"
+              value={`$${actionData.entry.toLocaleString()}`}
+            />
+          )}
 
-        {actionData.entry && (
-          <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text variant="sm" tone="muted">
-              Entry
-            </Text>
-            <Text variant="sm" sx={{ fontWeight: '500' }}>
-              ${actionData.entry.toLocaleString()}
-            </Text>
-          </View>
-        )}
+          {actionData.stop_loss && (
+            <TradeActionRow
+              label="Stop Loss"
+              value={`$${actionData.stop_loss.toLocaleString()}`}
+              valueStyle={{ color: palette.short ?? error }}
+            />
+          )}
 
-        {actionData.stop_loss && (
-          <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text variant="sm" tone="muted">
-              Stop Loss
-            </Text>
-            <Text variant="sm" sx={{ fontWeight: '500', color: palette.short ?? error }}>
-              ${actionData.stop_loss.toLocaleString()}
-            </Text>
-          </View>
-        )}
+          {actionData.take_profit && (
+            <TradeActionRow
+              label="Take Profit"
+              value={`$${actionData.take_profit.toLocaleString()}`}
+              valueStyle={{ color: palette.long ?? success }}
+            />
+          )}
 
-        {actionData.take_profit && (
-          <View sx={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-            <Text variant="sm" tone="muted">
-              Take Profit
-            </Text>
-            <Text variant="sm" sx={{ fontWeight: '500', color: palette.long ?? success }}>
-              ${actionData.take_profit.toLocaleString()}
-            </Text>
-          </View>
-        )}
-
-        {actionData.reasoning && (
-          <View sx={{ marginTop: 2, paddingTop: 2, borderTopWidth: 1 }}>
-            <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-              Reasoning
-            </Text>
-            <Text variant="sm" sx={{ lineHeight: 20, fontWeight: 300 }}>
-              {actionData.reasoning}
-            </Text>
-          </View>
-        )}
+          {actionData.reasoning && (
+            <View sx={{ marginTop: 2, paddingTop: 2, borderTopWidth: 1 }}>
+              <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
+                Reasoning
+              </Text>
+              <Text variant="sm" sx={{ lineHeight: 20, fontWeight: 300 }}>
+                {actionData.reasoning}
+              </Text>
+            </View>
+          )}
         </View>
       )}
     </View>

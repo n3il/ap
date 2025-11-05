@@ -174,7 +174,7 @@ export default function AssessmentCard({ assessment }) {
             size="sm"
           />
           <Text variant="xs" tone="muted">
-            {formatRelativeDate(assessment.timestamp)}
+            {formatRelativeDate(assessment.timestamp) || ''}
           </Text>
         </View>
 

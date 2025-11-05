@@ -135,7 +135,7 @@ export default function VerifyOTPScreen() {
           layout={LinearTransition.duration(300).springify()}
           style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}
         >
-          {/* Back Button */}
+          
           <View sx={{ position: 'absolute', top: 12, left: 0, zIndex: 10 }}>
             <Button
               variant="ghost"
@@ -147,7 +147,7 @@ export default function VerifyOTPScreen() {
             </Button>
           </View>
 
-          {/* Header */}
+          
           <View sx={{ marginBottom: 8 }}>
             <Text variant="h1" sx={{ fontWeight: 300, marginBottom: 2 }}>
               Verify Code
@@ -159,7 +159,7 @@ export default function VerifyOTPScreen() {
             </Text>
           </View>
 
-          {/* Verification Code Input */}
+          
           <View sx={{ marginBottom: 8 }}>
             <OtpInput
               numberOfDigits={6}
@@ -207,7 +207,7 @@ export default function VerifyOTPScreen() {
             />
           </View>
 
-          {/* Verify Button */}
+          
           <Button
             variant="surface"
             sx={{ borderColor: 'primary', borderRadius: 'full', marginBottom: 4 }}
@@ -222,7 +222,7 @@ export default function VerifyOTPScreen() {
             )}
           </Button>
 
-          {/* Resend Code */}
+          
           <Button
             variant="ghost"
             onPress={handleResendCode}

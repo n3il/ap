@@ -108,7 +108,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
 
   return (
     <View sx={{ flex: 1 }}>
-      {/* Header Row */}
+      
       <View
         style={[
           styles.headerRow,
@@ -119,14 +119,14 @@ export default function TradeHistoryTable({ userId, agentId }) {
           },
         ]}
       >
-        {/* Sticky Header Cell */}
+        
         <View style={[styles.stickyColumn, { width: COLUMN_WIDTHS.symbol }]}>
           <Text variant="xs" tone="muted">
             Symbol
           </Text>
         </View>
 
-        {/* Scrollable Header Cells */}
+        
         <ScrollView
           ref={headerScrollRef}
           horizontal
@@ -159,7 +159,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
         </ScrollView>
       </View>
 
-      {/* Data Rows */}
+      
       <ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={true}
@@ -177,7 +177,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
               },
             ]}
           >
-            {/* Sticky Column - Symbol */}
+            
             <View
               style={[
                 styles.stickyColumn,
@@ -196,7 +196,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
               </Text>
             </View>
 
-            {/* Scrollable Columns */}
+            
             <ScrollView
               ref={scrollViewRef}
               horizontal
@@ -205,7 +205,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
               scrollEventThrottle={16}
             >
               <View style={styles.dataRow}>
-                {/* Status */}
+                
                 <View style={{ width: COLUMN_WIDTHS.status, paddingHorizontal: 8, justifyContent: 'center' }}>
                   <Text
                     variant="sm"
@@ -218,7 +218,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
                   </Text>
                 </View>
 
-                {/* Filled/Total */}
+                
                 <View style={{ width: COLUMN_WIDTHS.filled, paddingHorizontal: 8, justifyContent: 'center' }}>
                   <Text variant="sm">{trade.filled || 0}/{trade.size || 0}</Text>
                   {trade.avg_price && (
@@ -228,7 +228,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
                   )}
                 </View>
 
-                {/* Price/Avg Price */}
+                
                 <View
                   style={{
                     width: COLUMN_WIDTHS.price,
@@ -247,7 +247,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
                   )}
                 </View>
 
-                {/* Time */}
+                
                 <View
                   style={{
                     width: COLUMN_WIDTHS.time,

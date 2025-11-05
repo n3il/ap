@@ -171,7 +171,6 @@ export default function AgentCard({
                 <Text variant="lg" sx={{ fontWeight: '500' }}>
                   {safeAgentName}
                 </Text>
-                <ActiveDurationBadge isActive={isActive} variant="small" />
              </View>
                <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'}>
                 {isPublished ? 'PUBLIC' : 'PRIVATE'}
@@ -211,107 +210,6 @@ export default function AgentCard({
           </View>
         </View>
 
-        {safeEnrichedPositions.length > 0 && (
-          <View sx={{ marginTop: 3, flex: 1 }}>
-            {safeEnrichedPositions.map((position) => {
-              const assetLabel = position.asset || position.symbol || position.coin || '';
-              const sizeLabel = position.size || position.szi || 'N/A';
-              const entryPriceValue = position.entry_price ? parseFloat(position.entry_price) : null;
-              const currentPriceValue =
-                typeof position.currentPrice === 'number'
-                  ? position.currentPrice
-                  : position.currentPrice
-                    ? parseFloat(position.currentPrice)
-                    : null;
-              const hasEntryPrice = Number.isFinite(entryPriceValue);
-              const hasCurrentPrice = Number.isFinite(currentPriceValue);
-              const entryPriceLabel = hasEntryPrice
-                ? `$${entryPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
-                : '';
-              const currentPriceLabel = hasCurrentPrice
-                ? `$${currentPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
-                : '';
-              const unrealizedPnlValue = typeof position.unrealizedPnl === 'number'
-                ? position.unrealizedPnl
-                : parseFloat(position.unrealizedPnl) || 0;
-              const pnlPercentValue = typeof position.pnlPercent === 'number'
-                ? position.pnlPercent
-                : position.pnlPercent
-                  ? parseFloat(position.pnlPercent)
-                  : null;
-              const positionPnlColor = unrealizedPnlValue > 0 ? 'success' : unrealizedPnlValue < 0 ? 'error' : 'foreground';
-              const positionPnlSign = unrealizedPnlValue > 0 ? '+' : '';
-              const unrealizedPnlLabel = unrealizedPnlValue !== 0
-                ? `${positionPnlSign}$${Math.abs(unrealizedPnlValue).toLocaleString('en-US', { maximumFractionDigits: 2 })}`
-                : '';
-              const pnlPercentLabel = typeof pnlPercentValue === 'number'
-                ? `${positionPnlSign}${Math.abs(pnlPercentValue).toFixed(2)}%`
-                : '';
-
-              return (
-                <View
-                  key={position.id || position.symbol}
-                  sx={{
-                    flexDirection: 'column',
-                    paddingVertical: 2,
-                    paddingHorizontal: 3,
-                    borderRadius: 8,
-                    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-                  }}
-                  >
-                  <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <View sx={{ flex: 1 }}>
-                      <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <Text variant="sm" sx={{ fontWeight: '600' }}>
-                          {assetLabel}
-                        </Text>
-                        {position.side && (
-                          <StatusBadge size="small" variant={position.side === 'LONG' ? 'success' : 'error'}>
-                            {position.side}
-                          </StatusBadge>
-                        )}
-                      </View>
-                      <Text variant="xs" tone="muted">
-                        Size: {sizeLabel}
-                      </Text>
-                    </View>
-                    <View sx={{ alignItems: 'flex-end' }}>
-                      {unrealizedPnlLabel && (
-                        <>
-                          <Text variant="xs" sx={{ fontWeight: '600', color: positionPnlColor }}>
-                            {unrealizedPnlLabel}
-                          </Text>
-                          {pnlPercentLabel && (
-                            <Text variant="xs" tone="subtle" sx={{ color: positionPnlColor }}>
-                              {pnlPercentLabel}
-                            </Text>
-                          )}
-                        </>
-                      )}
-                    </View>
-                  </View>
-
-                  <View sx={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', marginTop: 1 }}>
-                    {entryPriceLabel && (
-                      <View>
-                        <Text variant="xs" tone="muted">
-                          Entry: {entryPriceLabel}
-                        </Text>
-                      </View>
-                    )}
-                    {currentPriceLabel && (
-                      <View>
-                        <Text variant="xs" tone="muted">
-                          Current: {currentPriceLabel}
-                        </Text>
-                      </View>
-                    )}
-                  </View>
-                </View>
-              );
-            })}
-          </View>
-        )}
         <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
           <WalletAddressCard address={safeHyperliquidAddress} variant="short" />
         </View>

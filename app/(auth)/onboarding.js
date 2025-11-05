@@ -314,7 +314,7 @@ export default function OnboardingScreen() {
               layout={LinearTransition.duration(300).springify()}
               style={{ flex: 1, justifyContent: 'center', paddingVertical: 20 }}
             >
-              {/* Header */}
+
               <View sx={{ marginBottom: 8, alignItems: 'center' }}>
                 <Text variant="h1" sx={{ fontWeight: 300, marginBottom: 2, textAlign: 'center' }}>
                   {step.title}
@@ -324,7 +324,7 @@ export default function OnboardingScreen() {
                   {step.subtitle}
                 </Text>
 
-                {/* Progress Indicator */}
+
                 <View sx={{ flexDirection: 'row', gap: 2 }}>
                   {STEPS.map((s, index) => (
                     <View
@@ -347,10 +347,10 @@ export default function OnboardingScreen() {
                 </View>
               </View>
 
-              {/* Step Content */}
+
               {renderStep()}
 
-              {/* Sign Out Link */}
+
               {currentStep < STEPS.length - 1 && (
                 <View sx={{ marginTop: 8, alignItems: 'center' }}>
                   <Text variant="xs" tone="subtle" sx={{ textAlign: 'center' }}>

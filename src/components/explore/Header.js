@@ -56,17 +56,21 @@ export default function ExploreHeader({
         gap: 2,
         justifyContent: 'space-between',
       }}>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+        <View sx={{
+          flexDirection: 'row',
+          alignItems: 'center', gap: 2,
+          justifyContent: 'center'
+        }}>
           <Image
             source={require('@assets/puppet-bare-icon-w.png')}
             style={{
-              width: 16,
-              height: 16,
+              width: 36,
+              height: 36,
             }}
             resizeMode="contain"
           />
           <Text sx={{
-            fontSize: 12,
+            fontSize: 18,
             fontWeight: '600',
             textTransform: 'uppercase',
             color: 'mutedForeground',

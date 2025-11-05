@@ -13,6 +13,7 @@ export interface StatusBadgeProps {
   variant?: BadgeVariant;
   size?: BadgeSize;
   sx?: ViewProps['sx'];
+  fontWeight?: string;
 }
 
 const badgeStyles: Record<BadgeVariant, { bg: keyof AppTheme['colors'] }> = {
@@ -32,6 +33,8 @@ const sizeStyles: Record<BadgeSize, { paddingHorizontal: number; paddingVertical
 const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent', size = 'regular', sx, fontWeight = '300' }) => {
   const styles = badgeStyles[variant];
   const sizeStyle = sizeStyles[size];
+
+  if (!children) return null;
 
   return (
     <View

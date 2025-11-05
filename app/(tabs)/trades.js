@@ -69,13 +69,13 @@ export default function TradesScreen() {
           />
         }
       >
-        {/* Header */}
+        
         <View sx={{ paddingHorizontal: 6, paddingTop: 16, paddingBottom: 6 }}>
           <Text sx={{ color: 'textPrimary', fontSize: 36, fontWeight: '700', marginBottom: 2 }}>Trades</Text>
           <Text sx={{ color: 'mutedForeground', fontSize: 18 }}>Trading History</Text>
         </View>
 
-        {/* Stats Cards */}
+        
         {stats && (
           <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} sx={{ marginBottom: 4 }}>
@@ -101,7 +101,7 @@ export default function TradesScreen() {
           </View>
         )}
 
-        {/* Filter Buttons */}
+        
         <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
           <View sx={{ flexDirection: 'row', gap: 2 }}>
             <TouchableOpacity
@@ -185,7 +185,7 @@ export default function TradesScreen() {
           </View>
         </View>
 
-        {/* Trades List */}
+        
         <View sx={{ paddingHorizontal: 6 }}>
           {filteredTrades.length === 0 ? (
             <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>

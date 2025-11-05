@@ -206,7 +206,7 @@ const AgentManageScreen = () => {
 
   if (agentLoading) {
     return (
-      <ContainerView>
+      <ContainerView style={{ flex: 1 }}>
         <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
           <ActivityIndicator size="large" color={colors.colors.foreground} />
         </View>
@@ -216,8 +216,8 @@ const AgentManageScreen = () => {
 
   if (agentError || !agent) {
     return (
-      <ContainerView>
-        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
+      <ContainerView style={{ flex: 1 }}>
+        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 6 }}>
           <Text tone="muted" sx={{ textAlign: 'center', marginBottom: 4, color: 'error' }}>
             Error loading agent settings
           </Text>
@@ -239,8 +239,8 @@ const AgentManageScreen = () => {
 
   if (!isOwnAgent) {
     return (
-      <ContainerView>
-        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 6 }}>
+      <ContainerView style={{ flex: 1 }}>
+        <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', paddingHorizontal: 6 }}>
           <Text tone="muted" sx={{ textAlign: 'center', marginBottom: 4 }}>
             Only the agent owner can edit publishing and prompt settings.
           </Text>
@@ -261,12 +261,12 @@ const AgentManageScreen = () => {
   }
 
   return (
-    <ContainerView>
-      <ScrollView sx={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 100 }}>
-        <View sx={{  paddingTop: 16, paddingBottom: 6 }}>
+    <ContainerView style={{ flex: 1 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}>
+        <View sx={{ paddingTop: 16, paddingBottom: 6, paddingHorizontal: 6 }}>
 
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 4 }}>
-            <View sx={{ flex: 1, paddingRight: 4 }}>
+            <View sx={{ flexShrink: 1, paddingRight: 4 }}>
               <Text
                 sx={{
                   color: 'textPrimary',
@@ -285,7 +285,7 @@ const AgentManageScreen = () => {
                 {agent.llm_provider}
               </Text>
             </View>
-            <View sx={{ alignItems: 'flex-end', gap: 2 }}>
+            <View sx={{ alignItems: 'flex-end', gap: 2, flexShrink: 0 }}>
               <StatusBadge>
                 {agent.is_active ? 'ACTIVE' : 'PAUSED'}
               </StatusBadge>
@@ -296,7 +296,7 @@ const AgentManageScreen = () => {
           </View>
         </View>
 
-        <View sx={{ marginBottom: 6 }}>
+        <View sx={{ marginBottom: 6, paddingHorizontal: 0 }}>
           <PromptAssignmentsCard
             selectedMarketPrompt={selectedMarketPrompt}
             selectedPositionPrompt={selectedPositionPrompt}
@@ -307,13 +307,14 @@ const AgentManageScreen = () => {
           />
         </View>
 
-        <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
-          <View sx={{ flexDirection: 'column', gap: 3 }}>
+        <View sx={{ paddingHorizontal: 6, marginBottom: 6, marginTop: 4 }}>
+          <View sx={{ gap: 3 }}>
             <TouchableOpacity
               onPress={handlePublishToggle}
               sx={{
                 borderRadius: 'xl',
-                paddingVertical: 3,
+                paddingVertical: 4,
+                paddingHorizontal: 4,
                 backgroundColor: agent.published_at
                   ? colors.withOpacity(colors.colors.secondary800 ?? colors.surface, 0.6)
                   : colors.withOpacity(colors.success, 0.2),
@@ -341,7 +342,8 @@ const AgentManageScreen = () => {
                 borderWidth: 1,
                 borderColor: colors.withOpacity(colors.error, 0.4),
                 borderRadius: 'xl',
-                paddingVertical: 3
+                paddingVertical: 4,
+                paddingHorizontal: 4
               }}
               disabled={deleteAgentMutation.isLoading}
             >

@@ -1,5 +1,6 @@
 import React from 'react';
 import { Text } from '@/components/ui';
+import { formatRelativeDate } from '@/utils/date';
 
 const getActiveDuration = (isActive) => {
   if (!isActive) return null;
@@ -27,7 +28,7 @@ const getActiveDuration = (isActive) => {
 };
 
 export default function ActiveDurationBadge({ isActive, variant = 'small' }) {
-  const duration = getActiveDuration(isActive);
+  const duration = formatRelativeDate(isActive);
 
   if (!duration) return null;
 

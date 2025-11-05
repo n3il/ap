@@ -17,7 +17,7 @@ export default function BalanceTab() {
       contentContainerStyle={{ paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
     >
-      {/* Account Balance Chart */}
+      
       <View sx={{ marginBottom: 6 }}>
         <View sx={{}}>
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -25,7 +25,7 @@ export default function BalanceTab() {
               Balance
             </Text>
 
-            {/* Timeframe selector */}
+            
             <View sx={{ flexDirection: 'row', gap: 2 }}>
               {['1h', '24h', '7d'].map((tf) => (
                 <TouchableOpacity

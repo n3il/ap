@@ -10,6 +10,8 @@ type ContainerViewProps = ViewProps & {
   noSafeArea?: boolean;
 };
 
+export const GLOBAL_PADDING = 16;
+
 export default function ContainerView({ children, style, noSafeArea, ...props }: ContainerViewProps) {
   const { background } = useColors();
   const { isDark, theme: { colors } } = useTheme()
@@ -30,11 +32,24 @@ export default function ContainerView({ children, style, noSafeArea, ...props }:
         {noSafeArea ?
         children :
         <SafeAreaView style={{ flex: 1 }}>
-          <View style={{ flex: 1, paddingHorizontal: 12 }}>
-            {children}
-          </View>
+          {children}
         </SafeAreaView>}
       </LinearGradient>
+    </View>
+  );
+}
+
+export function PaddedView({ children, sx, style, ...props }: ViewProps) {
+  return (
+    <View
+      {...props}
+      sx={sx}
+      style={{
+        paddingHorizontal: GLOBAL_PADDING,
+        ...style
+      }}
+    >
+      {children}
     </View>
   );
 }

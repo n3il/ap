@@ -75,10 +75,10 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 1, paddingTop: 6, paddingBottom: 150 }}
       >
-        {/* Header */}
+        
         <SectionTitle title="Profile" sx={{ fontSize: 16, padding: 6 }} />
 
-        {/* Profile Card */}
+        
         <AnimatedBox
           entering={FadeInDown.delay(100).springify()}
           sx={{ marginHorizontal: 6, marginBottom: 6 }}
@@ -96,7 +96,7 @@ export default function ProfileScreen() {
           </Card>
         </AnimatedBox>
 
-        {/* Menu Items */}
+        
         <View sx={{ paddingHorizontal: 6, marginBottom: 6, marginTop: 8 }}>
           <Text sx={{ fontSize: 18, fontWeight: '600', color: 'textPrimary', marginBottom: 4 }}>
             Settings
@@ -148,7 +148,7 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        {/* About Section */}
+        
         <AnimatedBox
           entering={FadeInDown.delay(600).springify()}
           sx={{ paddingHorizontal: 6, marginBottom: 6 }}
@@ -171,7 +171,7 @@ export default function ProfileScreen() {
           </View>
         </AnimatedBox>
 
-        {/* Sign Out Button */}
+        
         <AnimatedBox
           entering={FadeInDown.delay(700).springify()}
           sx={{ paddingHorizontal: 6, marginBottom: 12 }}

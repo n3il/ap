@@ -20,7 +20,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView sx={{ flex: 1, backgroundColor: 'background', marginBottom: 32 }}>
       <ScrollView sx={{ flex: 1 }}>
-        {/* Header */}
+        
         <View sx={{ backgroundColor: 'surface', borderBottomWidth: 1, borderBottomColor: 'border', paddingHorizontal: 6, paddingVertical: 4 }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 2 }}>
             <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -44,7 +44,7 @@ export default function HomeScreen() {
 
           <Text sx={{ fontSize: 24, fontWeight: '700', color: 'textPrimary', marginTop: 2 }}>{challenge.title}</Text>
 
-          {/* Stats */}
+          
           <View sx={{ flexDirection: 'row', alignItems: 'center', marginTop: 3, gap: 4 }}>
             <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
               <MaterialIcons name="check-circle" size={16} color={success} />
@@ -60,7 +60,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Topics */}
+          
           <View sx={{ flexDirection: 'row', flexWrap: 'wrap', marginTop: 3, gap: 2 }}>
             {challenge.topics.map((topic, index) => (
               <View
@@ -78,16 +78,16 @@ export default function HomeScreen() {
           </View>
         </View>
 
-        {/* Content */}
+        
         <View sx={{ paddingHorizontal: 6, paddingVertical: 5 }}>
-          {/* Description */}
+          
           <View sx={{ marginBottom: 6 }}>
             <Text sx={{ fontSize: 16, color: 'textPrimary', lineHeight: 24 }}>
               {challenge.description}
             </Text>
           </View>
 
-          {/* Examples */}
+          
           <View sx={{ marginBottom: 6 }}>
             <Text sx={{ fontSize: 18, fontWeight: '600', color: 'textPrimary', marginBottom: 3 }}>Examples</Text>
             {challenge.examples.map((example, index) => (
@@ -124,7 +124,7 @@ export default function HomeScreen() {
             ))}
           </View>
 
-          {/* Constraints */}
+          
           <View sx={{ marginBottom: 6 }}>
             <Text sx={{ fontSize: 18, fontWeight: '600', color: 'textPrimary', marginBottom: 3 }}>Constraints</Text>
             <View sx={{ backgroundColor: 'surface', borderRadius: 'lg', padding: 4, borderWidth: 1, borderColor: 'border' }}>
@@ -139,7 +139,7 @@ export default function HomeScreen() {
             </View>
           </View>
 
-          {/* Hints */}
+          
           <View sx={{ marginBottom: 6 }}>
             <TouchableOpacity
               onPress={() => setShowHints(!showHints)}
@@ -179,7 +179,7 @@ export default function HomeScreen() {
             )}
           </View>
 
-          {/* Companies */}
+          
           <View sx={{ marginBottom: 6 }}>
             <Text sx={{ fontSize: 14, color: 'textTertiary', marginBottom: 2 }}>Asked by</Text>
             <View sx={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
@@ -201,7 +201,7 @@ export default function HomeScreen() {
         </View>
       </ScrollView>
 
-      {/* Bottom Action Bar */}
+      
       <View sx={{ backgroundColor: 'surface', borderTopWidth: 1, borderTopColor: 'border', paddingHorizontal: 6, paddingVertical: 4 }}>
         <View sx={{ flexDirection: 'row', gap: 3 }}>
           <TouchableOpacity

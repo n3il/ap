@@ -151,7 +151,7 @@ export default function AccountSettingsScreen() {
       <KeyboardAvoidingView
         sx={{ flex: 1 }}
       >
-        {/* Header */}
+        
         <View sx={{ paddingHorizontal: 6, paddingTop: 4, paddingBottom: 6, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
             <TouchableOpacity
@@ -219,7 +219,7 @@ export default function AccountSettingsScreen() {
         </View>
 
         <ScrollView sx={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-          {/* Profile Section */}
+          
           <AnimatedBox entering={FadeInDown.delay(100).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6, flex: 1 }}>
             <GlassView
               glassEffectStyle="clear"
@@ -261,7 +261,7 @@ export default function AccountSettingsScreen() {
             </GlassView>
           </AnimatedBox>
 
-          {/* Security Section */}
+          
           <AnimatedBox entering={FadeInDown.delay(200).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
             <GlassView
               glassEffectStyle="clear"
@@ -310,7 +310,7 @@ export default function AccountSettingsScreen() {
             </GlassView>
           </AnimatedBox>
 
-          {/* Appearance Section */}
+          
           <AnimatedBox entering={FadeInDown.delay(250).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
             <GlassView
               glassEffectStyle="clear"
@@ -409,7 +409,7 @@ export default function AccountSettingsScreen() {
             </GlassView>
           </AnimatedBox>
 
-          {/* Account Info */}
+          
           <AnimatedBox entering={FadeInDown.delay(300).springify()} sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
             <GlassView
               glassEffectStyle="clear"
@@ -458,7 +458,7 @@ export default function AccountSettingsScreen() {
             </GlassView>
           </AnimatedBox>
 
-          {/* Delete Account */}
+          
           <AnimatedBox entering={FadeInDown.delay(400).springify()} sx={{ paddingHorizontal: 6, marginBottom: 12 }}>
             <TouchableOpacity
               onPress={() => {

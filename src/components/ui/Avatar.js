@@ -61,7 +61,7 @@ export default function Avatar({
 
   return (
     <View sx={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
-      {/* Avatar Circle */}
+      
       <View
         sx={{
           width: avatarSize,
@@ -88,7 +88,7 @@ export default function Avatar({
         )}
       </View>
 
-      {/* User Info (optional) */}
+      
       {shouldShowDetails && (
         <View sx={{ marginLeft: size === 'xs' ? 2 : size === 'sm' ? 3 : 4, flex: 1, justifyContent: 'center' }}>
           {name && (

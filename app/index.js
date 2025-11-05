@@ -80,7 +80,6 @@ export default function GetStartedScreen() {
     <View sx={{ flex: 1, backgroundColor: 'black', }}>
       <StatusBar barStyle={currentSlide?.statusBarStyle || 'light-content'} />
 
-      {/* Background Video */}
       <VideoView
         style={{
           width,
@@ -97,7 +96,6 @@ export default function GetStartedScreen() {
         contentFit="cover"
       />
 
-      {/* Gradient Overlay */}
       <LinearGradient
       colors={gradient}
         style={{
@@ -113,7 +111,6 @@ export default function GetStartedScreen() {
         end={{ x: 1, y: 1 }}
       />
 
-      {/* Animated Content */}
       <Animated.View
         style={{
           flex: 1,
@@ -125,9 +122,7 @@ export default function GetStartedScreen() {
         <SafeAreaView style={{ flex: 1 }}>
           <InfoSlides onSlideChange={handleSlideChange} />
 
-          {/* Bottom Section */}
           <View sx={{ paddingHorizontal: 8, paddingBottom: 4 }}>
-            {/* CTA Buttons */}
             <View sx={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', gap: 3 }}>
               <Button
                 variant="secondary"
@@ -160,7 +155,6 @@ export default function GetStartedScreen() {
               </Button>
             </View>
 
-            {/* Skip Auth Button - Only show if REQUIRE_AUTH=false */}
             {true && (
               <Button
                 variant="ghost"

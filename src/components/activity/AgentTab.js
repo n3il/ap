@@ -72,7 +72,7 @@ export default function AgentTab() {
         />
       }
     >
-      {/* Stats Cards */}
+      
       {stats && (
         <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} sx={{ marginBottom: 4 }}>
@@ -104,7 +104,7 @@ export default function AgentTab() {
         </View>
       )}
 
-      {/* Filter Buttons */}
+      
       <View sx={{ paddingHorizontal: 6, marginBottom: 6 }}>
         <View sx={{ flexDirection: 'row', gap: 2 }}>
           <TouchableOpacity
@@ -191,7 +191,7 @@ export default function AgentTab() {
         </View>
       </View>
 
-      {/* Assessments List */}
+      
       <View sx={{ paddingHorizontal: 6 }}>
         {filteredAssessments.length === 0 ? (
           <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>

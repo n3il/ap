@@ -75,7 +75,7 @@ export default function OrderEntry({
 
   return (
     <View style={styles.container}>
-      {/* Order Type Selector */}
+      
       <View style={styles.section}>
         <Text style={styles.label}>Order Type</Text>
         <View style={styles.buttonGroup}>
@@ -101,7 +101,7 @@ export default function OrderEntry({
         </View>
       </View>
 
-      {/* Buy/Sell Tabs */}
+      
       <View style={styles.sideSelector}>
         <TouchableOpacity
           onPress={() => setSide('BUY')}
@@ -121,7 +121,7 @@ export default function OrderEntry({
         </TouchableOpacity>
       </View>
 
-      {/* Price Input (for limit orders) */}
+      
       {orderType === 'LIMIT' && (
         <View style={styles.section}>
           <Text style={styles.label}>Price (USD)</Text>
@@ -136,7 +136,7 @@ export default function OrderEntry({
         </View>
       )}
 
-      {/* Amount Input */}
+      
       <View style={styles.section}>
         <Text style={styles.label}>Amount ({symbol})</Text>
         <TextInput
@@ -164,7 +164,7 @@ export default function OrderEntry({
         </View>
       </View>
 
-      {/* Leverage Selector */}
+      
       <View style={styles.section}>
         <Text style={styles.label}>Leverage: {leverage}x</Text>
         <View style={styles.leverageButtons}>
@@ -190,18 +190,18 @@ export default function OrderEntry({
         </View>
       </View>
 
-      {/* Reduce Only Toggle */}
+      
       <TouchableOpacity
         style={styles.checkboxRow}
         onPress={() => setReduceOnly(!reduceOnly)}
       >
         <View style={[styles.checkbox, reduceOnly && styles.checkboxActive]}>
-          {reduceOnly && <Text style={styles.checkmark}>✓</Text>}
+          {reduceOnly ? <Text style={styles.checkmark}>✓</Text> : null}
         </View>
         <Text style={styles.checkboxLabel}>Reduce Only</Text>
       </TouchableOpacity>
 
-      {/* Order Summary */}
+      
       <View style={styles.summary}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Total Value</Text>
@@ -213,7 +213,7 @@ export default function OrderEntry({
         </View>
       </View>
 
-      {/* Place Order Button */}
+      
       <TouchableOpacity
         onPress={handlePlaceOrder}
         disabled={isLoading}

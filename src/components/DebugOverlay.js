@@ -398,7 +398,7 @@ function DebugOverlayComponent() {
 
   return (
     <>
-      {/* Toggle Button */}
+      
       <TouchableOpacity
         onPress={() => setIsOpen(!isOpen)}
         style={{
@@ -428,7 +428,7 @@ function DebugOverlayComponent() {
         />
       </TouchableOpacity>
 
-      {/* Debug Panel */}
+      
       {isOpen && (
         <View
           style={{
@@ -451,7 +451,7 @@ function DebugOverlayComponent() {
               padding: 16,
             }}
           >
-            {/* Header */}
+            
             <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 16 }}>
               <MaterialIcons name="bug-report" size={24} color={info} />
               <Text style={{ fontSize: 20, fontWeight: 'bold', color: textPrimary, marginLeft: 8 }}>
@@ -466,7 +466,7 @@ function DebugOverlayComponent() {
               </TouchableOpacity>
             </View>
 
-            {/* Status Indicator */}
+            
             <View
               style={{
                 flexDirection: 'row',
@@ -493,7 +493,7 @@ function DebugOverlayComponent() {
               </Text>
             </View>
 
-            {/* Test Results */}
+            
             <ScrollView style={{ flex: 1 }}>
               {connectionStatus.loading && (
                 <View style={{ padding: 40, alignItems: 'center' }}>

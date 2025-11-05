@@ -55,18 +55,6 @@ export default function SplashScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-      {/* <View style={styles.orbContainer}>
-        <Animated.View
-          style={[
-            styles.orb,
-            {
-              transform: [{ scale: pulseAnim }],
-            },
-          ]}
-        />
-      </View> */}
-
-      {/* Main content */}
       <Animated.View
         style={[
           styles.content,
@@ -76,7 +64,7 @@ export default function SplashScreen() {
           },
         ]}
       >
-        {/* Logo/Brand */}
+
         <View style={styles.logoContainer}>
           <View style={styles.logoGlass}>
             <Image

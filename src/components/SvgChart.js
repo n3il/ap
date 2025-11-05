@@ -12,7 +12,7 @@ const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 7;
-const PADDING = { top: 20, right: 50, bottom: 0, left: 12 };
+const PADDING = { top: 20, right: 50, bottom: 5, left: 12 };
 
 // Stable mock data references to prevent re-renders
 const MOCK_AGENTS_DATA = getMockAgentsForSvgChart();
@@ -450,7 +450,7 @@ const SvgChart = ({
         sx={{ position: 'relative', width: '100%' }}
       >
         <Svg width={chartWidth} height={chartHeight}>
-        {/* Y-axis grid lines */}
+
         {yTicks.map((tick, i) => {
           const y = scaleY(tick);
           return (
@@ -466,7 +466,7 @@ const SvgChart = ({
           );
         })}
 
-        {/* Y-axis labels */}
+
         {yTicks.map((tick, i) => {
           const y = scaleY(tick);
           return (
@@ -483,7 +483,7 @@ const SvgChart = ({
           );
         })}
 
-        {/* Zero line (emphasized) */}
+
         <Line
           x1={PADDING.left}
           y1={scaleY(0)}
@@ -494,7 +494,7 @@ const SvgChart = ({
           strokeDasharray="3,3"
         />
 
-        {/* Chart lines */}
+
         {lines.map((line) => {
           // Filter out invalid data points
           const validData = (line.data || []).filter(d => {
@@ -531,7 +531,7 @@ const SvgChart = ({
                 strokeDasharray="1,1"
                 opacity={0.9}
               />
-              {/* End point circle */}
+
               {!touchActive && lastPoint && (
                 <AnimatedCircle
                   cx={scaleX(lastPoint.time)}
@@ -551,10 +551,10 @@ const SvgChart = ({
           );
         })}
 
-        {/* Crosshair and intersection points when touching */}
+
         {touchActive && (
           <>
-            {/* Vertical crosshair line */}
+
             <Line
               x1={scaleX(touchX)}
               y1={PADDING.top}
@@ -564,7 +564,7 @@ const SvgChart = ({
               strokeWidth={1.5}
               strokeDasharray="4,4"
             />
-            {/* Intersection circles */}
+
             {touchValues.map((line) => (
               <Circle
                 key={line.id}
@@ -580,7 +580,7 @@ const SvgChart = ({
         )}
         </Svg>
 
-        {/* Tooltip when touching */}
+
         {touchActive && (
           <View
             pointerEvents="none"
@@ -596,7 +596,7 @@ const SvgChart = ({
               minWidth: 160,
             }}
           >
-            {/* Time label */}
+
             <Text sx={{ fontSize: 11, color: 'mutedForeground', marginBottom: 2 }}>
               {(() => {
                 const now = new Date();
@@ -615,7 +615,7 @@ const SvgChart = ({
               })()}
             </Text>
 
-            {/* Line values */}
+
             {touchValues.map((line) => {
               const isPositive = line.value >= 0;
               return (
@@ -656,7 +656,7 @@ const SvgChart = ({
         )}
       </View>
 
-      {/* X-axis time labels */}
+
       <View
         sx={{
           width: '100%',
@@ -673,7 +673,7 @@ const SvgChart = ({
         ))}
       </View>
 
-      {/* More button */}
+
       <View sx={{ alignItems: 'flex-end', marginTop: 0, width: '100%' }}>
         <Button
           variant="ghost"
@@ -685,7 +685,7 @@ const SvgChart = ({
         </Button>
       </View>
 
-      {/* Expanded details table */}
+
       {expanded && (
         <View sx={{ marginTop: 3, gap: 2 }}>
           {lines.map((line) => {

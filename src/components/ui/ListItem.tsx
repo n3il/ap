@@ -56,7 +56,7 @@ const ListItem: React.FC<ListItemProps> = ({
         ...sx,
       }}
     >
-      {left && <View>{left}</View>}
+      {left ? <View>{left}</View> : null}
 
       <Stack
         direction="column"
@@ -87,7 +87,7 @@ const ListItem: React.FC<ListItemProps> = ({
         {children}
       </Stack>
 
-      {right && <View>{right}</View>}
+      {right ? <View>{right}</View> : null}
     </Stack>
   );
 

@@ -13,8 +13,9 @@ import {
 import View from '@/components/ui/View';
 import Text from '@/components/ui/Text';
 import TouchableOpacity from '@/components/ui/TouchableOpacity';
-import { ScrollView } from '@/components/ui';
+import ScrollView from '@/components/ui/ScrollView';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
+import { GLOBAL_PADDING } from '@/components/ContainerView';
 
 const { width } = Dimensions.get('window');
 const SCREEN_WIDTH = width - 32;
@@ -36,6 +37,9 @@ interface SwipeableTabsProps {
   activeTabTextStyle?: TextStyle;
   indicatorColor?: string;
   contentStyle?: ViewStyle;
+  renderTab?: (tab: SwipeableTab, index: number, isActive: boolean) => ReactNode;
+  tabWrapperStyle?: ViewStyle;
+  tabContainerStyle?: ViewStyle;
 }
 
 export default function SwipeableTabs({
@@ -49,6 +53,9 @@ export default function SwipeableTabs({
   activeTabTextStyle,
   indicatorColor = '#007AFF',
   contentStyle,
+  renderTab,
+  tabWrapperStyle,
+  tabContainerStyle,
 }: SwipeableTabsProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
@@ -86,11 +93,11 @@ export default function SwipeableTabs({
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<SwipeableTab>) => (
-      <View style={[styles.pageContent, { width: SCREEN_WIDTH }]}>
+      <View style={[styles.pageContent, contentStyle]}>
         {item.content}
       </View>
     ),
-    []
+    [contentStyle]
   );
 
   const getItemLayout = useCallback(
@@ -104,24 +111,29 @@ export default function SwipeableTabs({
 
   return (
     <View style={styles.container}>
-      {/* Tab Bar */}
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
       >
         <GlassContainer
           spacing={10}
-          style={{ flexDirection: 'row', gap: 8, marginBottom: 12 }}
+          style={[
+            { flexDirection: 'row', gap: 8, marginBottom: 12, paddingHorizontal: GLOBAL_PADDING },
+            tabContainerStyle,
+          ]}
         >
           {tabs.map((tab, index) => (
             <GlassView
               key={tab.key}
               glassEffectStyle="regular"
-              style={{
-                borderRadius: 32,
-                paddingHorizontal: 8,
-                marginHorizontal: 4,
-              }}
+              style={[
+                {
+                  borderRadius: 32,
+                  paddingHorizontal: 8,
+                  marginHorizontal: 4,
+                },
+                tabWrapperStyle,
+              ]}
             >
               <TouchableOpacity
                 key={tab.key}
@@ -133,23 +145,26 @@ export default function SwipeableTabs({
                 ]}
                 activeOpacity={0.8}
               >
-                <Text
-                  style={[
-                    styles.tabText,
-                    styles.tabText,
-                    tabTextStyle,
-                    currentIndex === index && [styles.activeTabText, activeTabTextStyle],
-                  ]}
-                >
-                  {tab.title}
-                </Text>
+                {renderTab ? (
+                  renderTab(tab, index, currentIndex === index)
+                ) : (
+                  <Text
+                    style={[
+                      styles.tabText,
+                      styles.tabText,
+                      tabTextStyle,
+                      currentIndex === index && [styles.activeTabText, activeTabTextStyle],
+                    ]}
+                  >
+                    {tab.title}
+                  </Text>
+                )}
               </TouchableOpacity>
             </GlassView>
           ))}
         </GlassContainer>
       </ScrollView>
 
-      {/* Content */}
       <FlatList
         ref={flatListRef}
         data={tabs}
@@ -163,7 +178,7 @@ export default function SwipeableTabs({
         scrollEventThrottle={16}
         getItemLayout={getItemLayout}
         initialScrollIndex={initialIndex}
-        style={[styles.flatList, contentStyle]}
+        style={styles.flatList}
         bounces={false}
         decelerationRate="fast"
       />
@@ -192,7 +207,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8
   },
   activeTab: {},
- tabText: {
+  tabText: {
     fontSize: 10,
     fontWeight: '600',
     textTransform: 'uppercase',
@@ -213,6 +228,7 @@ const styles = StyleSheet.create({
   pageContent: {
     flex: 1,
     marginHorizontal: 8,
-
+    paddingHorizontal: GLOBAL_PADDING,
+    width,
   },
 });

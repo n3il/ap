@@ -2,22 +2,18 @@ import React, { useMemo, useState, useLayoutEffect, useRef, useEffect } from 're
 import {
   View,
   Text,
-  ScrollView,
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  IconButton,
-  Button,
 } from '@/components/ui';
 import { useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ContainerView from '@/components/ContainerView';
 import { agentService } from '@/services/agentService';
 import { tradeService } from '@/services/tradeService';
-import { assessmentService } from '@/services/assessmentService';
 import { useAuth } from '@/contexts/AuthContext';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import AgentCard from '@/components/AgentCard';
+import AgentBalanceHeader from '@/components/AgentBalanceHeader';
 import PositionsTab from '@/components/agents/PositionsTab';
 import ThoughtsTab from '@/components/agents/ThoughtsTab';
 import TradesTab from '@/components/agents/TradesTab';
@@ -25,6 +21,7 @@ import WalletTab from '@/components/agents/WalletTab';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
 import { useColors } from '@/theme';
 import { ROUTES } from '@/config/routes';
+import SwipeableTabs from '@/components/ui/SwipeableTabs';
 
 const AgentReadScreen = () => {
   const colors = useColors();
@@ -253,20 +250,51 @@ const AgentReadScreen = () => {
 
   const TABS = [
     {
+      key: 'thoughts',
       title: 'Thoughts',
       icon: 'thought-bubble-outline',
+      content: (
+        <ThoughtsTab
+          agentId={agentId}
+          isOwnAgent={isOwnAgent}
+          pendingAssessment={pendingAssessment}
+        />
+      ),
     },
     {
+      key: 'positions',
       title: 'Positions',
       icon: 'table',
+      content: (
+        <PositionsTab
+          agent={agent}
+          trades={trades}
+          stats={stats}
+          isOwnAgent={isOwnAgent}
+        />
+      ),
     },
     {
+      key: 'trades',
       title: 'Trades',
       icon: 'chart-line',
+      content: (
+        <TradesTab
+          trades={trades}
+          isOwnAgent={isOwnAgent}
+        />
+      ),
     },
     {
+      key: 'wallet',
       title: 'Wallet',
       icon: 'wallet',
+      content: (
+        <WalletTab
+          agent={agent}
+          isOwnAgent={isOwnAgent}
+        />
+      ),
     },
   ];
 
@@ -274,110 +302,80 @@ const AgentReadScreen = () => {
     setPage(index);
   };
 
+  const renderTab = (tab, index, isActive) => (
+    <MaterialCommunityIcons
+      name={tab.icon}
+      size={22}
+      color={isActive ? colors.accent : colors.colors.secondary500 ?? colors.secondary}
+    />
+  );
+
   // poke
   // chat
 
   return (
-    <ContainerView style={{ flex: 1, paddingTop: 60 }}>
-      <ScrollView style={{ flex: 1, paddingTop: 24 }}>
-        {/* Header section with AgentCard and Tabs */}
+    <ContainerView style={{ flex: 1, paddingTop: 0 }}>
+      <View style={{ flex: 1, paddingTop: 24 }}>
+        
         <View key={pendingAssessment}>
-          <AgentCard
+          <AgentBalanceHeader
             agent={agent}
-            isOwnAgent={isOwnAgent}
-            onPress={null}
-            shortView
+            onMenuPress={isOwnAgent ? handleOpenManageScreen : null}
           />
 
+          
           <View
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={{ maxHeight: 60,  marginHorizontal: 24, marginVertical: 0 }}
-            contentContainerStyle={{
-              paddingHorizontal: 10,
-              alignItems: 'flex-start',
-            }}
+            style={{ marginHorizontal: 24, marginVertical: 12 }}
           >
-            <GlassContainer style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 12, paddingTop: 12 }}>
-              {TABS.map(({ title, icon }, index) => (
-                <GlassView
-                  key={title}
-                  glassEffectStyle='regular'
-                  style={{
-                    padding: 12,
-                    borderRadius: 100,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                  }}
+            <GlassContainer style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+              <GlassView
+                glassEffectStyle='regular'
+                style={{
+                  padding: 12,
+                  borderRadius: 20,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flex: 1,
+                }}
+              >
+                <TouchableOpacity onPress={handlePokeAgent}
+                  style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
                 >
-                  <TouchableOpacity onPress={() => handleTabPress(index)}>
+                  {pendingAssessment ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
                     <MaterialCommunityIcons
-                      name={icon}
+                      name="gesture-tap-button"
                       size={22}
-                      color={page === index ? colors.accent : colors.colors.secondary500 ?? colors.secondary}
+                      color={colors.primary}
                     />
-                  </TouchableOpacity>
-              </GlassView>
-              ))}
-                <GlassView
-                  glassEffectStyle='regular'
-                  style={{
-                    padding: 12,
-                    borderRadius: 20,
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexGrow: 1,
-                  }}
-                >
-                  <TouchableOpacity onPress={handlePokeAgent}
-                    style={{ flexDirection: 'row', alignItems: 'center', }}
-                  >
-                    {pendingAssessment ? (
-                      <ActivityIndicator size="small" color={colors.primary} />
-                    ) : (
-                      <MaterialCommunityIcons
-                        name={"gesture-tap-button"}
-                        size={22}
-                        color={colors.primary}
-                      />
-                    )}
-                    <Text sx={{ fontWeight: '600', color: colors.primary }}>Poke</Text>
-                  </TouchableOpacity>
+                  )}
+                  <Text sx={{ fontWeight: '600', color: colors.primary }}>Poke</Text>
+                </TouchableOpacity>
               </GlassView>
             </GlassContainer>
-
           </View>
         </View>
 
-        {/* Content section */}
-        {page === 0 && (
-          <ThoughtsTab
-            agentId={agentId}
-            isOwnAgent={isOwnAgent}
-            pendingAssessment={pendingAssessment}
-          />
-        )}
-        {page === 1 && (
-          <PositionsTab
-            agent={agent}
-            trades={trades}
-            stats={stats}
-            isOwnAgent={isOwnAgent}
-          />
-        )}
-        {page === 2 && (
-          <TradesTab
-            trades={trades}
-            isOwnAgent={isOwnAgent}
-          />
-        )}
-        {page === 3 && (
-          <WalletTab
-            agent={agent}
-            isOwnAgent={isOwnAgent}
-          />
-        )}
-      </ScrollView>
+        
+        <SwipeableTabs
+          tabs={TABS}
+          initialIndex={page}
+          onTabChange={setPage}
+          renderTab={renderTab}
+          tabWrapperStyle={{
+            borderRadius: 100,
+            padding: 0,
+            paddingHorizontal: 0,
+            marginHorizontal: 6,
+          }}
+          tabStyle={{
+            padding: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        />
+      </View>
     </ContainerView>
   );
 };

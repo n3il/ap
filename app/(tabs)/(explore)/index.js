@@ -1,6 +1,6 @@
 import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, RefreshControl } from '@/components/ui';
-import ContainerView from '@/components/ContainerView';
+import ContainerView, { PaddedView } from '@/components/ContainerView';
 import AgentList from '@/components/AgentList';
 import MarketPricesWidget from '@/components/MarketPricesWidget';
 import { useQueryClient } from '@tanstack/react-query';
@@ -27,7 +27,7 @@ export default function ExploreScreen() {
 
   return (
     <ContainerView>
-      <View sx={{ marginBottom: 6 }}>
+      <PaddedView style={{ marginBottom: 6 }}>
         <ExploreHeader
           tickers={['BTC', 'ETH', 'SOL']}
           timeframe={timeframe}
@@ -37,7 +37,7 @@ export default function ExploreScreen() {
           sx={{ borderBottomWidth: 1, borderColor: 'border', paddingTop: 0, paddingBottom: 4 }}
           timeframe={timeframe}
         />
-      </View>
+      </PaddedView>
       <ScrollView
         showsVerticalScrollIndicator={false}
         refreshControl={
@@ -49,7 +49,7 @@ export default function ExploreScreen() {
           />
         }
       >
-        <View>
+        <PaddedView>
           <Text
             variant="xs"
             tone="muted"
@@ -61,7 +61,7 @@ export default function ExploreScreen() {
           >
             Explore Agents
           </Text>
-        </View>
+        </PaddedView>
 
         <View sx={{ alignItems: 'flex-end' }}>
           <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
@@ -69,10 +69,10 @@ export default function ExploreScreen() {
         <View sx={{ marginTop: 4 }}>
           <SvgChart timeframe={timeframe} />
         </View>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 }}>
+        <PaddedView sx={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 4 }}>
           <SectionTitle title="Agents" />
           <SectionTitle title="Trades" sx={{ color: "muted" }} />
-        </View>
+        </PaddedView>
         <View style={{ flex: 1 }}>
           <CategoryAgentsListPager />
         </View>
