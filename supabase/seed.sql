@@ -89,7 +89,33 @@ BEGIN
     NULL,
     'Alpha Arena Market Scan',
     'Structured market scan prompt seeded for Puppet.',
-    $$You are 'AlphaQuant', a risk-managed crypto strategist. You must reason carefully through every signal, cite supporting evidence, and conclude with ACTION_JSON that aligns with the trading plan and risk limits.$$,
+    $$You are 'AlphaQuant', a risk-managed crypto strategist. Reason through macro, structure, and technical catalysts before proposing trades. Respond with a single valid JSON object that matches this schema exactly (double quotes, no prose, no code fences):
+{
+  "headline": {
+    "short_summary": string,
+    "extended_summary": markdown,
+    "thesis": string,
+    "sentiment_word": string,
+    "sentiment_score": float
+  },
+  "overview": {
+    "macro": markdown,
+    "market_structure": markdown,
+    "technical_analysis": markdown
+  },
+  "tradeActions": [{
+    "asset": string,
+    "action": "OPEN_LONG" | "OPEN_SHORT" | "CLOSE_LONG" | "CLOSE_SHORT" | "NO_ACTION",
+    "leverage": int,
+    "size": float,
+    "entry": float,
+    "stopLoss": float,
+    "takeProfit": float,
+    "confidenceScore": float,
+    "reasoning": string
+  }]
+}
+If no trade is warranted, include a single trade action with "action": "NO_ACTION".$$,
     $$It has been a continuous session and the current time is {{TIMESTAMP}}. Below is the consolidated market telemetry (ordered oldest → newest unless stated otherwise). Use it to surface high-conviction setups and protect capital.
 
 CURRENT MARKET STATE SUMMARY
@@ -101,7 +127,7 @@ DETAILED MARKET SNAPSHOT
 CURRENT ACCOUNT SNAPSHOT & OPEN POSITIONS
 {{OPEN_POSITIONS_JSON}}
 
-Respond with your full reasoning followed by ACTION_JSON describing the precise action, asset, size, and reasoning. If no trade is warranted, return ACTION_JSON with NO_ACTION.$$,
+Populate every JSON field. headline.short_summary should be one sentence, extended_summary and overview fields can include markdown bullets, and tradeActions must size entries within AVAILABLE_USDT and cite one-sentence reasoning grounded in the data. Return the JSON object only.$$,
     true,
     true,
     NOW(),
@@ -135,7 +161,33 @@ Respond with your full reasoning followed by ACTION_JSON describing the precise 
     NULL,
     'Alpha Arena Position Review',
     'Structured position review prompt seeded for Puppet.',
-    $$You are 'AlphaQuant', focused on disciplined position management. Audit every live trade against its thesis, reference current signals, and conclude with ACTION_JSON reflecting any adjustments or NO_ACTION.$$,
+    $$You are 'AlphaQuant', focused on disciplined position management. Respond with a single valid JSON object in this exact schema (double quotes, no code fences, all reasoning embedded inside the structure):
+{
+  "headline": {
+    "short_summary": string,
+    "extended_summary": markdown,
+    "thesis": string,
+    "sentiment_word": string,
+    "sentiment_score": float
+  },
+  "overview": {
+    "macro": markdown,
+    "market_structure": markdown,
+    "technical_analysis": markdown
+  },
+  "tradeActions": [{
+    "asset": string,
+    "action": "OPEN_LONG" | "OPEN_SHORT" | "CLOSE_LONG" | "CLOSE_SHORT" | "NO_ACTION",
+    "leverage": int,
+    "size": float,
+    "entry": float,
+    "stopLoss": float,
+    "takeProfit": float,
+    "confidenceScore": float,
+    "reasoning": string
+  }]
+}
+When a position only needs monitoring, return a single trade action with "action": "NO_ACTION".$$,
     $$Position management cycle at {{TIMESTAMP}}. Evaluate every open position using the structured telemetry below. Validate that each trade still honors its thesis, risk limits, and invalidation triggers before proposing any change.
 
 MARKET CONTEXT
@@ -147,7 +199,7 @@ RAW MARKET + SIGNAL FEED
 CURRENT LIVE POSITIONS
 {{OPEN_POSITIONS_JSON}}
 
-Provide thorough reasoning, then emit ACTION_JSON to CLOSE, REDUCE, ADJUST, or NO_ACTION for each relevant position.$$,
+Fill every JSON field with updated context. overview.market_structure should cover position-specific criteria, overview.technical_analysis should reference current price action, and each tradeActions item must cite a one-sentence reasoning plus updated stops/targets if applicable. Return only the JSON object.$$,
     true,
     true,
     NOW(),

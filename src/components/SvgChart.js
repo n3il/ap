@@ -7,6 +7,7 @@ import { useMultiAgentSnapshots } from '@/hooks/useAgentSnapshots';
 import { agentSnapshotService } from '@/services/agentSnapshotService';
 import { getProviderColor, getMockAgentsForSvgChart } from '@/factories/mockAgentData';
 import { useColors } from '@/theme';
+import { useExploreAgentsStore } from '@/stores/useExploreAgentsStore';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -128,12 +129,16 @@ const interpolateValue = (data, targetX) => {
 const SvgChart = ({
   dataSource = CHART_DATA_SOURCE.AGENTS,
   timeframe = '1h',
-  agents = [],
+  agents: agentsProp = [],
   accountData = null,
   yAxisLabel = null,
   formatValue = null,
   generateDataWhenNotExists = false,
 }) => {
+  // Get agents from store (for explore tab), fallback to prop if provided
+  const agentsFromStore = useExploreAgentsStore((state) => state.agents);
+  const agents = agentsProp.length > 0 ? agentsProp : agentsFromStore;
+
   const [expanded, setExpanded] = useState(false);
   const [touchActive, setTouchActive] = useState(false);
   const [touchX, setTouchX] = useState(0); // Normalized 0-1

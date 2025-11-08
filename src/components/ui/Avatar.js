@@ -72,6 +72,8 @@ export default function Avatar({
           backgroundColor: withOpacity(resolvedBackground, 0.7),
           borderWidth: 0,
           borderColor: resolvedBackground,
+          alignSelf: 'flex-start',
+          marginTop: 1,
         }}
       >
         {imgSrc ? (

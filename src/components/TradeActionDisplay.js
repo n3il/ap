@@ -1,7 +1,18 @@
 import React, { useState } from 'react';
-import { View, Text, Card, StatusBadge, TouchableOpacity } from '@/components/ui';
+import { View, Text, StatusBadge, TouchableOpacity } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
+
+const asNumber = (value) => {
+  const num = typeof value === 'number' ? value : Number(value);
+  return Number.isFinite(num) ? num : undefined;
+};
+
+const formatCurrency = (value, maximumFractionDigits = 2) => {
+  const num = asNumber(value);
+  if (num === undefined) return null;
+  return `$${num.toLocaleString('en-US', { maximumFractionDigits })}`;
+};
 
 function TradeActionRow({ label, value, valueStyle }) {
   return (
@@ -35,7 +46,16 @@ export default function TradeActionDisplay({ actionData, showReason = true }) {
   const neutralColor = palette.secondary ?? palette.secondary500 ?? palette.textTertiary;
 
   const getActionConfig = (action) => {
-    const actionType = action.toUpperCase();
+    const actionType = (action || 'NO_ACTION').toUpperCase();
+
+    if (actionType.includes('CLOSE')) {
+      return {
+        icon: 'close-circle',
+        color: closeColor,
+        bgColor: withOpacity(closeColor, 0.1),
+        label: 'Close',
+      };
+    }
 
     if (actionType.includes('LONG')) {
       return {
@@ -44,31 +64,35 @@ export default function TradeActionDisplay({ actionData, showReason = true }) {
         bgColor: withOpacity(longColor, 0.1),
         label: 'Long',
       };
-    } else if (actionType.includes('SHORT')) {
+    }
+
+    if (actionType.includes('SHORT')) {
       return {
         icon: 'trending-down',
         color: shortColor,
         bgColor: withOpacity(shortColor, 0.1),
         label: 'Short',
       };
-    } else if (actionType.includes('CLOSE')) {
-      return {
-        icon: 'close-circle',
-        color: closeColor,
-        bgColor: withOpacity(closeColor, 0.1),
-        label: 'Close',
-      };
-    } else {
-      return {
-        icon: 'minus-circle',
-        color: neutralColor,
-        bgColor: withOpacity(neutralColor, 0.1),
-        label: 'No Action',
-      };
     }
+
+    return {
+      icon: 'minus-circle',
+      color: neutralColor,
+      bgColor: withOpacity(neutralColor, 0.1),
+      label: 'No Action',
+    };
   };
 
   const config = getActionConfig(actionData.action);
+  const entryPrice = asNumber(actionData.entry ?? actionData.entry_price);
+  const stopLoss = asNumber(actionData.stopLoss ?? actionData.stop_loss);
+  const takeProfit = asNumber(actionData.takeProfit ?? actionData.take_profit);
+  const sizeValue = asNumber(actionData.size);
+  const leverageValue = asNumber(actionData.leverage);
+  const confidenceScore = asNumber(actionData.confidenceScore ?? actionData.confidence_score);
+  const confidencePercent = confidenceScore !== undefined
+    ? Math.round(Math.min(Math.max(confidenceScore, 0), 1) * 100)
+    : null;
 
   return (
     <View
@@ -78,23 +102,28 @@ export default function TradeActionDisplay({ actionData, showReason = true }) {
     >
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 2 : 0 }}>
-
           <View sx={{ flex: 1 }}>
             <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
               {actionData.asset || 'N/A'}
             </Text>
+
+            {(sizeValue !== undefined || leverageValue !== undefined) && (
+              <View sx={{ flexDirection: 'row', gap: 1, marginTop: 1 }}>
+                {sizeValue !== undefined && (
+                  <Text variant="xs" tone="muted">
+                    {formatCurrency(sizeValue, 0)}
+                  </Text>
+                )}
+                {leverageValue !== undefined && (
+                  <Text variant="xs" tone="muted">
+                    {`${leverageValue}x`}
+                  </Text>
+                )}
+              </View>
+            )}
           </View>
 
-
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-            {actionData.size && (
-              <Text variant="sm" sx={{ fontWeight: '500', marginRight: 2 }}>
-                {typeof actionData.size === 'number'
-                  ? `${(actionData.size * 100).toFixed(0)}x`
-                  : actionData.size}
-              </Text>
-            )}
-
             <StatusBadge fontWeight="600" sx={{ borderColor: config.color, marginRight: 2 }} textSx={{ color: config.color }}>
               {config.label}
             </StatusBadge>
@@ -123,26 +152,47 @@ export default function TradeActionDisplay({ actionData, showReason = true }) {
         <View>
           {expanded && (
             <>
-              {actionData.entry && (
+              {entryPrice !== undefined && (
                 <TradeActionRow
                   label="Entry"
-                  value={`$${actionData.entry.toLocaleString()}`}
+                  value={formatCurrency(entryPrice, 2)}
                 />
               )}
 
-              {actionData.stop_loss && (
+              {stopLoss !== undefined && (
                 <TradeActionRow
                   label="Stop Loss"
-                  value={`$${actionData.stop_loss.toLocaleString()}`}
+                  value={formatCurrency(stopLoss, 2)}
                   valueStyle={{ color: palette.short ?? error }}
                 />
               )}
 
-              {actionData.take_profit && (
+              {takeProfit !== undefined && (
                 <TradeActionRow
                   label="Take Profit"
-                  value={`$${actionData.take_profit.toLocaleString()}`}
+                  value={formatCurrency(takeProfit, 2)}
                   valueStyle={{ color: palette.long ?? success }}
+                />
+              )}
+
+              {sizeValue !== undefined && (
+                <TradeActionRow
+                  label="Order Size"
+                  value={formatCurrency(sizeValue, 0)}
+                />
+              )}
+
+              {leverageValue !== undefined && (
+                <TradeActionRow
+                  label="Leverage"
+                  value={`${leverageValue}x`}
+                />
+              )}
+
+              {confidencePercent !== null && (
+                <TradeActionRow
+                  label="Confidence"
+                  value={`${confidencePercent}%`}
                 />
               )}
             </>

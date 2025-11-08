@@ -1,6 +1,6 @@
 import { createSupabaseServiceClient } from '../../_shared/supabase.ts';
 import type { MarketDataSnapshot } from './data.ts';
-import type { PromptType, LLMResponse } from './llm.ts';
+import type { PromptType, LLMResponse } from '../../_shared/llm/types.ts';
 import type { PnLMetrics } from '../../_shared/lib/pnl.ts';
 
 export interface Assessment {
@@ -11,6 +11,7 @@ export interface Assessment {
   market_data_snapshot: MarketDataSnapshot;
   llm_prompt_used: string;
   llm_response_text: string;
+  parsed_llm_response: Record<string, unknown> | null;
   trade_action_taken: string;
 }
 
@@ -35,6 +36,7 @@ export async function saveAssessment(
       market_data_snapshot: marketSnapshot,
       llm_prompt_used: `${prompt.systemInstruction}\n\n${prompt.userQuery}`,
       llm_response_text: llmResponse.text,
+      parsed_llm_response: llmResponse.parsed ?? null,
       trade_action_taken: llmResponse.action,
     }])
     .select()

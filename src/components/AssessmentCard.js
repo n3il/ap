@@ -1,13 +1,19 @@
-import React, { useState, useMemo } from 'react';
-import { View, Text, TouchableOpacity, StatusBadge, Divider, Stack, Card, Avatar } from '@/components/ui';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { formatRelative } from 'date-fns';
+import React, { useMemo, useState } from 'react';
+import { View, Text, TouchableOpacity, StatusBadge, Card, Avatar } from '@/components/ui';
 import { formatRelativeDate } from '@/utils/date';
-import { PROVIDER_COLORS } from '@/factories/mockAgentData';
-import { formatTradeActionLabel, getTradeActionVariant } from '@/utils/tradeActions';
 import TradeActionDisplay from './TradeActionDisplay';
 import { useColors } from '@/theme';
 import Markdown from 'react-native-markdown-display';
+
+const hasContent = (value) => typeof value === 'string' && value.trim().length > 0;
+
+const getFirstLine = (text) => {
+  if (!hasContent(text)) return '';
+  return text
+    .split('\n')
+    .map((line) => line.trim())
+    .find(Boolean) || '';
+};
 
 export default function AssessmentCard({ assessment }) {
   const [expanded, setExpanded] = useState(false);
@@ -116,51 +122,54 @@ export default function AssessmentCard({ assessment }) {
     },
   }), [palette, withOpacity]);
 
-  const extractedAction = useMemo(() => {
-    if (!assessment.llm_response_text) return null;
+  const parsedResponse = assessment?.parsed_llm_response && typeof assessment.parsed_llm_response === 'object'
+    ? assessment.parsed_llm_response
+    : null;
+  const headline = parsedResponse?.headline ?? null;
+  const overview = parsedResponse?.overview ?? null;
 
-    try {
-      // Try to match array format first: ACTION_JSON: [{...}, {...}]
-      const arrayMatch = assessment.llm_response_text.match(/\*\*ACTION_JSON:\*\*\s*(\[\s*\{[\s\S]*?\}\s*\])/);
-      if (arrayMatch && arrayMatch[1]) {
-        const parsed = JSON.parse(arrayMatch[1]);
-        return Array.isArray(parsed) ? parsed : [parsed];
-      }
+  const tradeActions = useMemo(
+    () => (Array.isArray(parsedResponse?.tradeActions) ? parsedResponse.tradeActions.filter(Boolean) : []),
+    [parsedResponse]
+  );
 
-      // Try to match ACTION_JSON: without ** formatting
-      const plainArrayMatch = assessment.llm_response_text.match(/ACTION_JSON:\s*(\[\s*\{[\s\S]*?\}\s*\])/);
-      if (plainArrayMatch && plainArrayMatch[1]) {
-        const parsed = JSON.parse(plainArrayMatch[1]);
-        return Array.isArray(parsed) ? parsed : [parsed];
-      }
+  const shortSummary = hasContent(headline?.short_summary) ? headline.short_summary.trim() : '';
+  const extendedSummary = hasContent(headline?.extended_summary) ? headline.extended_summary.trim() : '';
+  const thesis = hasContent(headline?.thesis) ? headline.thesis.trim() : '';
+  const fallbackText = hasContent(assessment?.llm_response_text) ? assessment.llm_response_text.trim() : '';
 
-      // Fall back to single object format: ACTION_JSON: {...}
-      const singleMatch = assessment.llm_response_text.match(/\*\*ACTION_JSON:\*\*\s*(\{[^}]+\})/);
-      if (singleMatch && singleMatch[1]) {
-        return [JSON.parse(singleMatch[1])];
-      }
+  const previewText =
+    getFirstLine(shortSummary) ||
+    getFirstLine(extendedSummary) ||
+    getFirstLine(fallbackText);
 
-      // Try plain single object without ** formatting
-      const plainSingleMatch = assessment.llm_response_text.match(/ACTION_JSON:\s*(\{[^}]+\})/);
-      if (plainSingleMatch && plainSingleMatch[1]) {
-        return [JSON.parse(plainSingleMatch[1])];
-      }
-    } catch (error) {
-      return;
-    }
+  const overviewSections = useMemo(
+    () => [
+      { key: 'macro', label: 'Macro', content: overview?.macro },
+      { key: 'market_structure', label: 'Market Structure', content: overview?.market_structure },
+      { key: 'technical_analysis', label: 'Technical Analysis', content: overview?.technical_analysis },
+    ].filter((section) => hasContent(section.content)),
+    [overview]
+  );
 
-    return null;
-  }, [assessment.llm_response_text]);
+  const sentimentScore = typeof headline?.sentiment_score === 'number' ? headline.sentiment_score : null;
+  const sentimentWord = hasContent(headline?.sentiment_word) ? headline.sentiment_word.trim() : '';
+  const sentimentLabel = sentimentWord
+    ? sentimentScore !== null
+      ? `${sentimentWord} (${sentimentScore.toFixed(2)})`
+      : sentimentWord
+    : '';
 
-  const cleanedResponseText = useMemo(() => {
-    if (!assessment.llm_response_text) return '';
-    // Remove both array and single object ACTION_JSON patterns
-    return assessment.llm_response_text
-      .replace('Market Analysis:', '')
-      .replace(/\*\*ACTION_JSON:\*\*\s*(\[\s*\{[\s\S]*?\}\s*\]|\{[^}]+\})/g, '')
-      .replace(/ACTION_JSON:\s*(\[\s*\{[\s\S]*?\}\s*\]|\{[^}]+\})/g, '')
-      .trim();
-  }, [assessment.llm_response_text]);
+  const sentimentVariant =
+    sentimentScore === null
+      ? 'info'
+      : sentimentScore > 0.2
+        ? 'success'
+        : sentimentScore < -0.2
+          ? 'error'
+          : 'warning';
+
+  const showStructured = Boolean(parsedResponse);
 
   return (
     <Card isInteractive={expanded} glassEffectStyle="clear" variant="glass" sx={{ marginBottom: 3 }}>
@@ -177,10 +186,14 @@ export default function AssessmentCard({ assessment }) {
           </Text>
         </View>
 
-        {extractedAction && Array.isArray(extractedAction) && extractedAction.length > 0 && (
+        {tradeActions.length > 0 && (
           <View sx={{ marginVertical: 3, gap: 2 }}>
-            {extractedAction.map((action, index) => (
-              <TradeActionDisplay key={`${action.asset}-${index}`} actionData={action} showReason={expanded} />
+            {tradeActions.map((action, index) => (
+              <TradeActionDisplay
+                key={`${action.asset ?? 'action'}-${index}`}
+                actionData={action}
+                showReason={expanded}
+              />
             ))}
           </View>
         )}
@@ -188,15 +201,18 @@ export default function AssessmentCard({ assessment }) {
         <View
           sx={{
             borderRadius: 'lg',
-            fontFamily: 'monospace'
+            fontFamily: 'monospace',
           }}
         >
-
           {!expanded ? (
             <>
-              {cleanedResponseText ? (
+              {hasContent(previewText) ? (
+                <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
+                  {previewText}
+                </Text>
+              ) : fallbackText ? (
                 <Markdown style={markdownStyles}>
-                  {cleanedResponseText.split("\n").slice(0, 1).join("\n").slice(0, 800) || 'No analysis available'}
+                  {fallbackText.split('\n').slice(0, 1).join('\n')}
                 </Markdown>
               ) : (
                 <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
@@ -210,28 +226,68 @@ export default function AssessmentCard({ assessment }) {
             </>
           ) : (
             <>
-            {cleanedResponseText ? (
-              <Markdown style={markdownStyles}>
-                {cleanedResponseText}
-              </Markdown>
-            ) : (
-              <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
-                No analysis available
-              </Text>
-            )}
-            <TouchableOpacity
-              onPress={() => setExpanded(!expanded)}
-              style={{
-                backgroundColor: withOpacity(palette.background ?? palette.surface, 0.2),
-                borderRadius: 8,
-                padding: 8,
-                marginTop: 8,
-              }}
-            >
-              <Text variant="xs" sx={{ textAlign: 'center', color: 'textPrimary' }}>
-                Show Less
-              </Text>
-            </TouchableOpacity>
+              {showStructured ? (
+                <View sx={{ gap: 2 }}>
+                  {shortSummary && (
+                    <Text variant="md" sx={{ fontWeight: '500', lineHeight: 24 }}>
+                      {shortSummary}
+                    </Text>
+                  )}
+
+                  {sentimentLabel ? (
+                    <View sx={{ marginBottom: 1 }}>
+                      <StatusBadge variant={sentimentVariant} size="small">
+                        {sentimentLabel}
+                      </StatusBadge>
+                    </View>
+                  ) : null}
+
+                  {thesis && (
+                    <Text variant="sm" tone="muted" sx={{ fontStyle: 'italic', marginBottom: 2 }}>
+                      {thesis}
+                    </Text>
+                  )}
+
+                  {extendedSummary && (
+                    <Markdown style={markdownStyles}>
+                      {extendedSummary}
+                    </Markdown>
+                  )}
+
+                  {overviewSections.map((section) => (
+                    <View key={section.key} sx={{ marginTop: 2 }}>
+                      <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                        {section.label}
+                      </Text>
+                      <Markdown style={markdownStyles}>
+                        {section.content}
+                      </Markdown>
+                    </View>
+                  ))}
+                </View>
+              ) : fallbackText ? (
+                <Markdown style={markdownStyles}>
+                  {fallbackText}
+                </Markdown>
+              ) : (
+                <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
+                  No analysis available
+                </Text>
+              )}
+
+              <TouchableOpacity
+                onPress={() => setExpanded(!expanded)}
+                style={{
+                  backgroundColor: withOpacity(palette.background ?? palette.surface, 0.2),
+                  borderRadius: 8,
+                  padding: 8,
+                  marginTop: 8,
+                }}
+              >
+                <Text variant="xs" sx={{ textAlign: 'center', color: 'textPrimary' }}>
+                  Show Less
+                </Text>
+              </TouchableOpacity>
             </>
           )}
         </View>

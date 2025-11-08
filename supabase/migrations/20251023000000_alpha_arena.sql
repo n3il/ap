@@ -41,6 +41,7 @@ CREATE TABLE IF NOT EXISTS assessments (
     market_data_snapshot JSONB NOT NULL,
     llm_prompt_used TEXT NOT NULL,
     llm_response_text TEXT NOT NULL,
+    parsed_llm_response JSONB,
     trade_action_taken TEXT
 );
 

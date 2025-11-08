@@ -1,5 +1,5 @@
 import type { GeminiPrompt, LLMResponse } from './gemini.ts'
-import { parseActionFromText } from './gemini.ts'
+import { buildLLMResponsePayload } from './gemini.ts'
 
 const DEFAULT_MODEL = 'gpt-4o-mini'
 const API_URL = 'https://api.openai.com/v1/chat/completions'
@@ -52,11 +52,12 @@ export async function callOpenAIAPI(
     throw new Error('No response from OpenAI API')
   }
 
-  const action = parseActionFromText(text)
+  const { parsed, action } = buildLLMResponsePayload(text)
 
   return {
     text,
     action,
+    parsed,
     rawResponse: data,
   }
 }

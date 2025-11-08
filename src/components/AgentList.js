@@ -6,9 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import { agentService } from '@/services/agentService';
 import { assessmentService } from '@/services/assessmentService';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useEffect } from 'react';
 import { GlassContainer } from 'expo-glass-effect';
 import { ActivityIndicator } from 'dripsy';
+import { useExploreAgentsStore } from '@/stores/useExploreAgentsStore';
 
 export default function AgentList({
   queryKey,
@@ -19,6 +20,7 @@ export default function AgentList({
   hideOpenPositions = false,
 }) {
   const router = useRouter();
+  const setAgents = useExploreAgentsStore((state) => state.setAgents);
 
   // Extract category from queryKey if it exists (e.g., ['explore-agents', 'top'])
   const category = Array.isArray(queryKey) ? queryKey[queryKey.length - 1] : null;
@@ -112,6 +114,11 @@ export default function AgentList({
 
     return sorted;
   }, [agents, category, latestAssessments]);
+
+  // Update the explore agents store whenever sortedAgents changes
+  useEffect(() => {
+    setAgents(sortedAgents);
+  }, [sortedAgents, setAgents]);
 
   const onAgentPress = useCallback(
     (agent) => {
