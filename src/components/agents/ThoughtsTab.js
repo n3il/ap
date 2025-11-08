@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, ActivityIndicator, FlatList } from 'react-native';
+import React, { useRef } from 'react';
+import { View, Text, ActivityIndicator, FlatList, Animated } from 'react-native';
 import AssessmentCard from '@/components/AssessmentCard';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
@@ -8,8 +8,17 @@ import { useColors } from '@/theme';
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { assessmentService } from '@/services/assessmentService';
 
-export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = false }) {
+export default function ThoughtsTab({
+  agentId,
+  isOwnAgent,
+  pendingAssessment = false,
+  headerContent,
+  tabBar,
+  onRefresh: parentOnRefresh,
+  refreshing: parentRefreshing = false
+}) {
   const { info, error: errorColor } = useColors();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   // Fetch assessments for this agent with infinite scroll
   const {
@@ -57,13 +66,19 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
 
   const handleRefresh = () => {
     refetch();
+    parentOnRefresh?.();
   };
+
+  const renderSectionHeader = () => (
+    <SectionTitle>
+      All Assessments ({totalCount + (pendingAssessment ? 1 : 0)})
+    </SectionTitle>
+  );
 
   const renderHeader = () => (
     <>
-      <SectionTitle>
-        All Assessments ({totalCount + (pendingAssessment ? 1 : 0)})
-      </SectionTitle>
+      {headerContent}
+      {renderSectionHeader()}
 
       {isLoading && (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center', paddingVertical: 16 }}>
@@ -187,7 +202,24 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
 
   return (
     <View style={{ flex: 1 }}>
-      <FlatList
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: 90,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          transform: [{
+            translateY: scrollY.interpolate({
+              inputRange: [-100, 0, 100],
+              outputRange: [200, 100, 0],
+            })
+          }],
+        }}
+      >
+        {tabBar}
+      </Animated.View>
+      <Animated.FlatList
         data={assessments}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <AssessmentCard assessment={item} />}
@@ -196,10 +228,15 @@ export default function ThoughtsTab({ agentId, isOwnAgent, pendingAssessment = f
         ListEmptyComponent={renderEmpty}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
-        refreshing={isRefetching}
+        refreshing={isRefetching || parentRefreshing}
         onRefresh={handleRefresh}
-        contentContainerStyle={{ gap: 16, paddingBottom: '40%' }}
-        showsVerticalScrollIndicator={true}
+        contentContainerStyle={{ gap: 16, paddingBottom: '40%', paddingTop: 30 }}
+        showsVerticalScrollIndicator={false}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
       />
     </View>
   );

@@ -32,10 +32,6 @@ export default function ExploreScreen() {
           tickers={['BTC', 'ETH', 'SOL']}
           timeframe={timeframe}
         />
-        <MarketPricesWidget
-          tickers={['BTC', 'ETH', 'SOL']}
-          timeframe={timeframe}
-        />
       </PaddedView>
       <ScrollView
         showsVerticalScrollIndicator={false}
@@ -50,6 +46,11 @@ export default function ExploreScreen() {
         }
       >
         <PaddedView>
+          <MarketPricesWidget
+            tickers={['BTC', 'ETH', 'SOL']}
+            timeframe={timeframe}
+          />
+
           <Text
             variant="xs"
             tone="muted"

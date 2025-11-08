@@ -18,7 +18,7 @@ import { GlassContainer, GlassView } from 'expo-glass-effect';
 import { GLOBAL_PADDING } from '@/components/ContainerView';
 
 const { width } = Dimensions.get('window');
-const SCREEN_WIDTH = width - 32;
+const SCREEN_WIDTH = width;
 
 export interface SwipeableTab {
   key: string;
@@ -39,6 +39,10 @@ interface SwipeableTabsProps {
   renderTab?: (tab: SwipeableTab, index: number, isActive: boolean) => ReactNode;
   tabWrapperStyle?: ViewStyle;
   tabContainerStyle?: ViewStyle;
+  headerContent?: ReactNode;
+  onRefresh?: () => void;
+  refreshing?: boolean;
+  hideTabBar?: boolean;
 }
 
 export default function SwipeableTabs({
@@ -54,10 +58,14 @@ export default function SwipeableTabs({
   renderTab,
   tabWrapperStyle,
   tabContainerStyle,
+  headerContent,
+  onRefresh,
+  refreshing = false,
+  hideTabBar = false,
 }: SwipeableTabsProps) {
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
-  const scrollX = useRef(new Animated.Value(initialIndex * SCREEN_WIDTH + GLOBAL_PADDING)).current;
+  const scrollX = useRef(new Animated.Value(initialIndex * SCREEN_WIDTH)).current;
 
   const handleTabPress = useCallback((index: number) => {
     flatListRef.current?.scrollToIndex({ index, animated: true });
@@ -109,59 +117,61 @@ export default function SwipeableTabs({
 
   return (
     <>
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={{ flexGrow: 0  }}
-      >
-        <GlassContainer
-          spacing={10}
-          style={[
-            { flexDirection: 'row', gap: 8, marginBottom: 18, paddingHorizontal: GLOBAL_PADDING },
-            tabContainerStyle,
-          ]}
+      {!hideTabBar && (
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          style={{ flexGrow: 0 }}
         >
-          {tabs.map((tab, index) => (
-            <GlassView
-              key={tab.key}
-              glassEffectStyle="regular"
-              style={[
-                {
-                  borderRadius: 32,
-                  paddingHorizontal: 8,
-                  marginHorizontal: 4,
-                },
-                tabWrapperStyle,
-              ]}
-            >
-              <TouchableOpacity
+          <GlassContainer
+            spacing={10}
+            style={[
+              { flexDirection: 'row', gap: 8, marginBottom: 18, paddingHorizontal: GLOBAL_PADDING },
+              tabContainerStyle,
+            ]}
+          >
+            {tabs.map((tab, index) => (
+              <GlassView
                 key={tab.key}
-                onPress={() => handleTabPress(index)}
+                glassEffectStyle="regular"
                 style={[
-                  styles.tab,
-                  tabStyle,
-                  currentIndex === index && [styles.activeTab, activeTabStyle],
+                  {
+                    borderRadius: 32,
+                    paddingHorizontal: 8,
+                    marginHorizontal: 4,
+                  },
+                  tabWrapperStyle,
                 ]}
-                activeOpacity={0.8}
               >
-                {renderTab ? (
-                  renderTab(tab, index, currentIndex === index)
-                ) : (
-                  <Text
-                    style={[
-                      styles.tabText,
-                      tabTextStyle,
-                      currentIndex === index && [styles.activeTabText, activeTabTextStyle],
-                    ]}
-                  >
-                    {tab.title}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </GlassView>
-          ))}
-        </GlassContainer>
-      </ScrollView>
+                <TouchableOpacity
+                  key={tab.key}
+                  onPress={() => handleTabPress(index)}
+                  style={[
+                    styles.tab,
+                    tabStyle,
+                    currentIndex === index && [styles.activeTab, activeTabStyle],
+                  ]}
+                  activeOpacity={0.8}
+                >
+                  {renderTab ? (
+                    renderTab(tab, index, currentIndex === index)
+                  ) : (
+                    <Text
+                      style={[
+                        styles.tabText,
+                        tabTextStyle,
+                        currentIndex === index && [styles.activeTabText, activeTabTextStyle],
+                      ]}
+                    >
+                      {tab.title}
+                    </Text>
+                  )}
+                </TouchableOpacity>
+              </GlassView>
+            ))}
+          </GlassContainer>
+        </ScrollView>
+      )}
 
       <FlatList
         ref={flatListRef}
@@ -169,7 +179,8 @@ export default function SwipeableTabs({
         renderItem={renderItem}
         keyExtractor={(item) => item.key}
         horizontal
-        pagingEnabled
+        snapToInterval={SCREEN_WIDTH}
+        snapToAlignment="start"
         showsHorizontalScrollIndicator={false}
         onScroll={handleScroll}
         onMomentumScrollEnd={handleMomentumScrollEnd}
@@ -178,7 +189,7 @@ export default function SwipeableTabs({
         initialScrollIndex={initialIndex}
         bounces={false}
         decelerationRate="fast"
-        style={{ flex: 1 }}
+        style={{ flex: 1, paddingVertical: 2 }}
       />
     </>
   );
@@ -220,6 +231,6 @@ const styles = StyleSheet.create({
   pageContent: {
     flex: 1,
     paddingHorizontal: GLOBAL_PADDING,
-    width,
+    width: SCREEN_WIDTH,
   },
 });

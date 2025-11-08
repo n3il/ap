@@ -40,6 +40,7 @@ export function PositionRow({
 
   const assetLabel = asset || symbol || coin || '';
   const sizeLabel = size || szi || 'N/A';
+  const sizeValue = parseFloat(size || szi || 0);
 
   const entryPriceValue = entry_price ? parseFloat(entry_price) : null;
   const currentPriceValue =
@@ -51,6 +52,14 @@ export function PositionRow({
 
   const hasEntryPrice = Number.isFinite(entryPriceValue);
   const hasCurrentPrice = Number.isFinite(currentPriceValue);
+
+  const positionValue = hasCurrentPrice && Number.isFinite(sizeValue)
+    ? Math.abs(sizeValue * currentPriceValue)
+    : null;
+
+  const positionValueLabel = positionValue !== null
+    ? `$${positionValue.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`
+    : 'N/A';
 
   const entryPriceLabel = hasEntryPrice
     ? `$${entryPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
@@ -113,13 +122,14 @@ export function PositionRow({
 
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
             <Text variant="sm" sx={{ fontWeight: '500', marginRight: 2 }}>
-              {sizeLabel}
+              {positionValueLabel}
             </Text>
 
             {side && (
               <StatusBadge
                 fontWeight="600"
-                sx={{ borderColor: sideColor, marginRight: 2 }}
+                sx={{ borderWidth: 0, borderColor: sideColor }}
+                textSx={{ color: sideColor, fontWeight: '400' }}
               >
                 {side}
               </StatusBadge>
@@ -131,7 +141,7 @@ export function PositionRow({
                 height: 24,
                 borderRadius: 'full',
                 borderColor: sideColor,
-                borderWidth: 1,
+                borderWidth: 0,
                 justifyContent: 'center',
                 alignItems: 'center',
               }}
@@ -149,6 +159,11 @@ export function PositionRow({
       <View>
         {expanded && (
           <>
+            <PositionDetailRow
+              label="Size"
+              value={sizeLabel}
+            />
+
             {entryPriceLabel && (
               <PositionDetailRow
                 label="Entry"

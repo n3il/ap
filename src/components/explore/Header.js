@@ -58,27 +58,23 @@ export default function ExploreHeader({
       }}>
         <View sx={{
           flexDirection: 'row',
-          alignItems: 'center', gap: 2,
-          justifyContent: 'center'
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: 2.5,
         }}>
-          {/* <Image
-            source={require('@assets/puppet-bare-icon-w.png')}
+          <Image
+            source={require('@assets/puppet-bare-icon-w-s.svg')}
             style={{
-              width: 36,
-              height: 36,
+              width: 30,
+              height: 30,
             }}
-            resizeMode="contain"
-          /> */}
-          <MaterialCommunityIcons
-            name="ghost-outline"
-            size={24}
-            color={colors.muted}
+            contentFit="contain"
+            tintColor={colors.accent700}
           />
           <Text sx={{
-            fontSize: 18,
+            fontSize: 16,
             fontWeight: '600',
-            textTransform: 'uppercase',
-            color: 'muted',
+            color: 'accent700',
             letterSpacing: 3,
           }}>
             {process.env.EXPO_PUBLIC_APP_NAME}

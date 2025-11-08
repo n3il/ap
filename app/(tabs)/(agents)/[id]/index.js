@@ -5,9 +5,7 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-  ScrollView,
-  Animated,
-  RefreshControl,
+  ScrollView as RNScrollView,
 } from 'react-native';
 import { useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
@@ -41,7 +39,6 @@ const AgentReadScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const pollingInterval = useRef(null);
   const { user } = useAuth();
-  const scrollY = useRef(new Animated.Value(0)).current;
 
   const {
     data: agent,
@@ -290,18 +287,93 @@ const AgentReadScreen = () => {
     );
   }
 
-  // Animated card height (200 -> 80 on scroll)
-  const cardHeight = scrollY.interpolate({
-    inputRange: [0, 100],
-    outputRange: [200, 80],
-    extrapolate: 'clamp',
-  });
+  const renderHeaderContent = () => (
+    <PaddedView style={{ marginBottom: 22 }}>
+      <AgentCard
+        agent={agent}
+        shortView
+        showPositions={false}
+        extraContent={
+          <Button onPress={handlePokeAgent}
+            variant="ghost"
+            style={{ marginTop: 4, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}
+          >
+            {(pokeAgentMutation.isPending || pendingAssessment) ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <MaterialCommunityIcons
+                name="gesture-tap-button"
+                size={14}
+                color={colors.primary}
+              />
+            )}
+            <Text style={{ fontWeight: '600', color: colors.primary, fontSize: 12 }}>Poke</Text>
+          </Button>
+        }
+      />
+    </PaddedView>
+  );
 
-  const cardOpacity = scrollY.interpolate({
-    inputRange: [0, 50],
-    outputRange: [1, 0],
-    extrapolate: 'clamp',
-  });
+  const renderTab = (tab, index, isActive) => (
+    <MaterialCommunityIcons
+      name={tab.icon}
+      size={22}
+      color={isActive ? colors.accent : colors.colors.secondary500 ?? colors.secondary}
+    />
+  );
+
+  const renderTabBar = (tabsArray) => (
+    <View style={{ backgroundColor: colors.colors.background, zIndex: 10 }}>
+      <RNScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }}
+      >
+        <GlassContainer
+          spacing={10}
+          style={{
+            flexDirection: 'row',
+            gap: 8,
+            marginBottom: 18,
+            paddingHorizontal: 16,
+          }}
+        >
+          {tabsArray.map((tab, index) => (
+            <GlassView
+              key={tab.key}
+              glassEffectStyle="regular"
+              style={{
+                borderRadius: 32,
+                paddingHorizontal: 8,
+                marginHorizontal: 4,
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setPage(index)}
+                style={{
+                  padding: 12,
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderRadius: 16,
+                  paddingHorizontal: 8,
+                }}
+                activeOpacity={0.8}
+              >
+                {renderTab(tab, index, page === index)}
+              </TouchableOpacity>
+            </GlassView>
+          ))}
+        </GlassContainer>
+      </RNScrollView>
+    </View>
+  );
+
+  const tabsConfig = [
+    { key: 'thoughts', title: 'Thoughts', icon: 'thought-bubble-outline' },
+    { key: 'positions', title: 'Positions', icon: 'table' },
+    { key: 'trades', title: 'Trades', icon: 'chart-line' },
+    { key: 'wallet', title: 'Wallet', icon: 'wallet' },
+  ];
 
   const TABS = [
     {
@@ -313,6 +385,10 @@ const AgentReadScreen = () => {
           agentId={agentId}
           isOwnAgent={isOwnAgent}
           pendingAssessment={pendingAssessment}
+          headerContent={renderHeaderContent()}
+          tabBar={renderTabBar(tabsConfig)}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
         />
       ),
     },
@@ -326,6 +402,10 @@ const AgentReadScreen = () => {
           trades={trades}
           stats={stats}
           isOwnAgent={isOwnAgent}
+          headerContent={renderHeaderContent()}
+          tabBar={renderTabBar(tabsConfig)}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
         />
       ),
     },
@@ -337,6 +417,10 @@ const AgentReadScreen = () => {
         <TradesTab
           trades={trades}
           isOwnAgent={isOwnAgent}
+          headerContent={renderHeaderContent()}
+          tabBar={renderTabBar(tabsConfig)}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
         />
       ),
     },
@@ -348,84 +432,26 @@ const AgentReadScreen = () => {
         <WalletTab
           agent={agent}
           isOwnAgent={isOwnAgent}
+          headerContent={renderHeaderContent()}
+          tabBar={renderTabBar(tabsConfig)}
+          onRefresh={handleRefresh}
+          refreshing={refreshing}
         />
       ),
     },
   ];
 
-  const handleTabPress = (index) => {
-    setPage(index);
-  };
-
-  const renderTab = (tab, index, isActive) => (
-    <MaterialCommunityIcons
-      name={tab.icon}
-      size={22}
-      color={isActive ? colors.accent : colors.colors.secondary500 ?? colors.secondary}
-    />
-  );
-
   // poke
   // chat
 
   return (
-    <ContainerView style={{ paddingTop: 80, flex: 1, backgroundColor: colors.background }}>
-      <Animated.ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingTop: 0 }}
-        showsVerticalScrollIndicator={false}
-        scrollEventThrottle={16}
-        refreshControl={
-          <RefreshControl
-            refreshing={refreshing}
-            onRefresh={handleRefresh}
-            tintColor={colors.primary}
-          />
-        }
-      >
-        <PaddedView style={{ marginBottom: 12 }}>
-          <Animated.View style={{ opacity: cardOpacity }}>
-            <AgentCard
-              agent={agent}
-              shortView
-              showPositions={false}
-              // tintColor={withOpacity(PROVIDER_COLORS[agent.llm_provider], 0.2)}
-              extraContent={
-                <Button onPress={handlePokeAgent}
-                  variant="ghost"
-                  style={{ marginTop: 4, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}
-                >
-                  {pendingAssessment ? (
-                    <ActivityIndicator size="small" color={colors.primary} />
-                  ) : (
-                    <MaterialCommunityIcons
-                      name="gesture-tap-button"
-                      size={14}
-                      color={colors.primary}
-                    />
-                  )}
-                  <Text style={{ fontWeight: '600', color: colors.primary, fontSize: 12 }}>Poke</Text>
-                </Button>
-              }
-            />
-          </Animated.View>
-        </PaddedView>
-
-        <SwipeableTabs
-          tabs={TABS}
-          initialIndex={page}
-          onTabChange={setPage}
-          renderTab={renderTab}
-          tabContainerStyle={{
-            marginBottom: 0,
-          }}
-          tabStyle={{
-            padding: 12,
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        />
-      </Animated.ScrollView>
+    <ContainerView style={{ flex: 1, backgroundColor: colors.background, position: 'relative' }}>
+      <SwipeableTabs
+        tabs={TABS}
+        initialIndex={page}
+        onTabChange={setPage}
+        hideTabBar
+      />
     </ContainerView>
   );
 };

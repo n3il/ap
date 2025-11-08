@@ -95,18 +95,20 @@ export function useAccountBalance(agentId, hideOpenPositions) {
       let pnlPercent = 0;
 
       if (currentPrice && entryPrice && size) {
-        const entryValue = entryPrice * size;
-        const currentValue = currentPrice * size;
+        const leverage = parseFloat(position.leverage) || 1;
+        const priceChange = currentPrice - entryPrice;
+        const priceChangePercent = priceChange / entryPrice;
+        const positionValue = size * entryPrice;
 
-        // Calculate P&L based on position side
+        // Calculate P&L based on position side (matching backend logic)
         if (side === 'LONG') {
-          unrealizedPnl = currentValue - entryValue;
+          unrealizedPnl = positionValue * priceChangePercent * leverage;
         } else if (side === 'SHORT') {
-          unrealizedPnl = entryValue - currentValue;
+          unrealizedPnl = -positionValue * priceChangePercent * leverage;
         }
 
         // Calculate percentage
-        pnlPercent = entryValue !== 0 ? (unrealizedPnl / entryValue) * 100 : 0;
+        pnlPercent = entryPrice !== 0 ? (unrealizedPnl / positionValue) * 100 : 0;
       } else if (position.unrealized_pnl) {
         // Fallback to stored unrealized_pnl if available
         unrealizedPnl = parseFloat(position.unrealized_pnl) || 0;
@@ -147,11 +149,13 @@ export function useAccountBalance(agentId, hideOpenPositions) {
     // Calculate account value
     const accountValue = initialCapital + realizedPnl + unrealizedPnl;
 
-    // Calculate margin used
+    // Calculate margin used (position value / leverage)
     const marginUsed = enrichedPositions.reduce((sum, p) => {
       const size = parseFloat(p.size) || 0;
       const currentPrice = p.currentPrice || parseFloat(p.entry_price) || 0;
-      return sum + (size * currentPrice);
+      const leverage = parseFloat(p.leverage) || 1;
+      const positionValue = size * currentPrice;
+      return sum + (positionValue / leverage);
     }, 0);
 
     // Calculate remaining cash

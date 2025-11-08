@@ -95,7 +95,7 @@ export default function TradeActionDisplay({ actionData, showReason = true }) {
               </Text>
             )}
 
-            <StatusBadge fontWeight="600" sx={{ borderColor: config.color, marginRight: 2 }}>
+            <StatusBadge fontWeight="600" sx={{ borderColor: config.color, marginRight: 2 }} textSx={{ color: config.color }}>
               {config.label}
             </StatusBadge>
 

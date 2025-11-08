@@ -34,7 +34,6 @@ export {
   Appearance,
   Dimensions,
   FlatList,
-  Image,
   KeyboardAvoidingView,
   Modal,
   Platform,
@@ -42,10 +41,11 @@ export {
   StatusBar,
 } from 'react-native';
 
+export { Image } from 'expo-image';
+
 export type {
   ActivityIndicatorProps,
   FlatListProps,
-  ImageProps,
   KeyboardAvoidingViewProps,
   ModalProps,
   RefreshControlProps,
@@ -58,3 +58,5 @@ export type {
   TextInputProps as RNTextInputProps,
   ViewProps,
 } from 'react-native';
+
+export type { ImageProps } from 'expo-image';

@@ -196,7 +196,7 @@ export default function AssessmentCard({ assessment }) {
             <>
               {cleanedResponseText ? (
                 <Markdown style={markdownStyles}>
-                  {cleanedResponseText.split("\n").slice(0, 3).join("\n").slice(0, 800) || 'No analysis available'}
+                  {cleanedResponseText.split("\n").slice(0, 1).join("\n").slice(0, 800) || 'No analysis available'}
                 </Markdown>
               ) : (
                 <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>

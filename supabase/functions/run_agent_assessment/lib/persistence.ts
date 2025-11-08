@@ -1,7 +1,7 @@
-import { createSupabaseServiceClient } from '../functions/_shared/supabase.ts';
+import { createSupabaseServiceClient } from '../../_shared/supabase.ts';
 import type { MarketDataSnapshot } from './data.ts';
 import type { PromptType, LLMResponse } from './llm.ts';
-import type { PnLMetrics } from './pnl.ts';
+import type { PnLMetrics } from '../../_shared/lib/pnl.ts';
 
 export interface Assessment {
   id: string;

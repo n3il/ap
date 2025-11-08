@@ -1,5 +1,5 @@
-import { createSupabaseServiceClient } from '../functions/_shared/supabase.ts';
-import { fetchHyperliquidMarketData, fetchAllCandleData } from '../functions/_shared/hyperliquid.ts';
+import { createSupabaseServiceClient } from '../../_shared/supabase.ts';
+import { fetchHyperliquidMarketData, fetchAllCandleData } from '../../_shared/hyperliquid.ts';
 
 export interface Trade {
   id: string;

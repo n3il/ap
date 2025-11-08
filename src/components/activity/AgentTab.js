@@ -206,7 +206,7 @@ export default function AgentTab() {
               Timeline ({filteredAssessments.length})
             </Text>
             {filteredAssessments.map((assessment) => (
-              <AssessmentCard assessment={assessment} />
+              <AssessmentCard key={assessment.id} assessment={assessment} />
             ))}
           </>
         )}

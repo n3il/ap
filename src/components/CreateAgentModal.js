@@ -84,7 +84,7 @@ export default function CreateAgentModal({
       animationType="slide"
       onRequestClose={onClose}
       style={{ flex: 1 }}
-      backdropColor="rgba(0, 0, 0, 0.5)"
+      backdropColor={palette.background}
     >
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}

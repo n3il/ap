@@ -1,14 +1,62 @@
-import React from 'react';
-import { View, Text, ScrollView } from '@/components/ui';
+import React, { useRef } from 'react';
+import { View, Text, RefreshControl, Animated, ScrollView } from '@/components/ui';
 import TradeCard from '@/components/TradeCard';
 import StatCard from '@/components/StatCard';
 import SectionTitle from '../SectionTitle';
+import { useColors } from '@/theme';
 
-export default function PositionsTab({ agent, trades = [], stats, isOwnAgent }) {
+export default function PositionsTab({
+  agent,
+  trades = [],
+  stats,
+  isOwnAgent,
+  headerContent,
+  tabBar,
+  onRefresh,
+  refreshing = false
+}) {
   const openTrades = trades.filter((t) => t.status === 'OPEN');
+  const colors = useColors();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   return (
-    <View>
+    <View style={{ flex: 1 }}>
+      <Animated.View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          zIndex: 100,
+          transform: [{
+            translateY: scrollY.interpolate({
+              inputRange: [-100, 0, 100],
+              outputRange: [200, 100, 0],
+            })
+          }],
+        }}
+      >
+        {tabBar}
+      </Animated.View>
+      <Animated.ScrollView
+        style={{ flex: 1 }}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: '40%' }}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={colors.primary}
+          />
+        }
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
+        scrollEventThrottle={16}
+      >
+        {headerContent}
+
       {stats && isOwnAgent ? (
         <View sx={{ flex: 1, paddingHorizontal: 4, marginBottom: 4, flexDirection: 'row', justifyContent: 'space-between' }}>
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
@@ -63,6 +111,7 @@ export default function PositionsTab({ agent, trades = [], stats, isOwnAgent }) 
           </Text>
         )}
       </View>
+      </Animated.ScrollView>
     </View>
   );
 }

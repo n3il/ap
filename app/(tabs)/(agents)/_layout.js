@@ -15,7 +15,7 @@ export default function Layout() {
       <Stack.Screen
         name="[id]/index"
         options={{
-          headerShown: true,
+          headerShown: false,
           presentation: 'card',
           headerTitle: '',
           headerBackButtonDisplayMode: 'minimal',
