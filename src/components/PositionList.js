@@ -1,5 +1,20 @@
-import React from 'react';
-import { View, Text, StatusBadge } from '@/components/ui';
+import React, { useState } from 'react';
+import { View, Text, StatusBadge, TouchableOpacity } from '@/components/ui';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { useColors } from '@/theme';
+
+function PositionDetailRow({ label, value, valueStyle }) {
+  return (
+    <View sx={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+      <Text variant="sm" tone="muted">
+        {label}
+      </Text>
+      <Text variant="sm" sx={{ fontWeight: '500', ...valueStyle }}>
+        {value}
+      </Text>
+    </View>
+  );
+}
 
 export function PositionRow({
   id = '',
@@ -14,6 +29,15 @@ export function PositionRow({
   unrealizedPnl = '',
   pnlPercent = '',
 }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const {
+    colors: palette,
+    success,
+    error,
+    withOpacity,
+  } = useColors();
+
   const assetLabel = asset || symbol || coin || '';
   const sizeLabel = size || szi || 'N/A';
 
@@ -45,12 +69,18 @@ export function PositionRow({
       ? parseFloat(pnlPercent)
       : null;
 
+  const longColor = palette.long ?? success;
+  const shortColor = palette.short ?? error;
+
+  const sideColor = side === 'LONG' ? longColor : shortColor;
+  const sideIcon = side === 'LONG' ? 'trending-up' : 'trending-down';
+
   const positionPnlColor =
     unrealizedPnlValue > 0
-      ? 'success'
+      ? longColor
       : unrealizedPnlValue < 0
-      ? 'error'
-      : 'foreground';
+      ? shortColor
+      : palette.secondary ?? palette.textTertiary;
 
   const positionPnlSign = unrealizedPnlValue > 0 ? '+' : '';
 
@@ -59,7 +89,7 @@ export function PositionRow({
       ? `${positionPnlSign}$${Math.abs(unrealizedPnlValue).toLocaleString('en-US', {
           maximumFractionDigits: 2,
         })}`
-      : '';
+      : '$0.00';
 
   const pnlPercentLabel =
     typeof pnlPercentValue === 'number'
@@ -68,89 +98,89 @@ export function PositionRow({
 
   return (
     <View
-      key={id || symbol}
       sx={{
-        flexDirection: 'column',
-        paddingVertical: 2,
-        paddingHorizontal: 3,
-        borderRadius: 8,
-        paddingLeft: '10%'
+        marginBottom: 3,
       }}
     >
-      <View
-        sx={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-        }}
-      >
-        <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
-          {side && (
-            <StatusBadge
-              size="small"
-              variant={side === 'LONG' ? 'success' : 'error'}
-            >
-              {side}
-            </StatusBadge>
-          )}
-          <Text variant="sm" sx={{ fontWeight: '600' }}>
-            {assetLabel.replace('-PERP', '')}
-          </Text>
+      <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
+        <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 2 : 0 }}>
 
-        </View>
-        <View sx={{ flex: 1, alignItems: 'flex-end' }}>
-          <Text variant="sm" sx={{ fontWeight: '600' }}>
-            {sizeLabel}
-          </Text>
-        </View>
-        <View sx={{ alignItems: 'flex-end' }}>
-          {unrealizedPnlLabel && (
-            <>
-              <Text
-                variant="xs"
-                sx={{ fontWeight: '600', color: positionPnlColor }}
+          <View sx={{ flex: 1 }}>
+            <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
+              {assetLabel.replace('-PERP', '')}
+            </Text>
+          </View>
+
+          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text variant="sm" sx={{ fontWeight: '500', marginRight: 2 }}>
+              {sizeLabel}
+            </Text>
+
+            {side && (
+              <StatusBadge
+                fontWeight="600"
+                sx={{ borderColor: sideColor, marginRight: 2 }}
               >
-                {unrealizedPnlLabel}
-              </Text>
-              {pnlPercentLabel && (
-                <Text
-                  variant="xs"
-                  tone="subtle"
-                  sx={{ color: positionPnlColor }}
-                >
-                  {pnlPercentLabel}
-                </Text>
-              )}
-            </>
-          )}
-        </View>
-      </View>
+                {side}
+              </StatusBadge>
+            )}
 
-      {(entryPriceLabel || currentPriceLabel) && (
-        <View
-          sx={{
-            flex: 1,
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            marginTop: 1,
-          }}
-        >
-          {entryPriceLabel && (
-            <View>
-              <Text variant="xs" tone="muted">
-                Entry: {entryPriceLabel}
-              </Text>
+            <View
+              sx={{
+                width: 24,
+                height: 24,
+                borderRadius: 'full',
+                borderColor: sideColor,
+                borderWidth: 1,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={sideIcon}
+                size={16}
+                color={sideColor}
+              />
             </View>
-          )}
-          {currentPriceLabel && (
-            <View>
-              <Text variant="xs" tone="muted">
-                Current: {currentPriceLabel}
-              </Text>
-            </View>
-          )}
+          </View>
         </View>
-      )}
+      </TouchableOpacity>
+
+      <View>
+        {expanded && (
+          <>
+            {entryPriceLabel && (
+              <PositionDetailRow
+                label="Entry"
+                value={entryPriceLabel}
+              />
+            )}
+
+            {currentPriceLabel && (
+              <PositionDetailRow
+                label="Current"
+                value={currentPriceLabel}
+              />
+            )}
+
+            {unrealizedPnlLabel && (
+              <PositionDetailRow
+                label="Unrealized PnL"
+                value={unrealizedPnlLabel}
+                valueStyle={{ color: positionPnlColor }}
+              />
+            )}
+
+            {pnlPercentLabel && (
+              <PositionDetailRow
+                label="PnL %"
+                value={pnlPercentLabel}
+                valueStyle={{ color: positionPnlColor }}
+              />
+            )}
+          </>
+        )}
+      </View>
     </View>
   );
 }
