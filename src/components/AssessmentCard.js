@@ -16,7 +16,7 @@ export default function AssessmentCard({ assessment }) {
   const markdownStyles = useMemo(() => ({
     body: {
       color: palette.textPrimary,
-      fontSize: 14,
+      fontSize: 16,
       lineHeight: 24,
       fontWeight: '300',
     },
@@ -24,7 +24,7 @@ export default function AssessmentCard({ assessment }) {
       marginTop: 0,
       marginBottom: 8,
       color: palette.textPrimary,
-      fontSize: 14,
+      fontSize: 16,
       lineHeight: 24,
       fontWeight: '300',
     },
@@ -156,17 +156,16 @@ export default function AssessmentCard({ assessment }) {
     if (!assessment.llm_response_text) return '';
     // Remove both array and single object ACTION_JSON patterns
     return assessment.llm_response_text
+      .replace('Market Analysis:', '')
       .replace(/\*\*ACTION_JSON:\*\*\s*(\[\s*\{[\s\S]*?\}\s*\]|\{[^}]+\})/g, '')
       .replace(/ACTION_JSON:\s*(\[\s*\{[\s\S]*?\}\s*\]|\{[^}]+\})/g, '')
       .trim();
   }, [assessment.llm_response_text]);
 
-  const typeLabel = assessment.type === 'MARKET_SCAN' ? 'Market Scan' : 'Position Review';
-
   return (
-    <Card glassEffectStyle="clear" variant="glass" sx={{ marginBottom: 3 }}>
+    <Card isInteractive={expanded} glassEffectStyle="clear" variant="glass" sx={{ marginBottom: 3 }}>
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
-        <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Avatar
             backgroundColor={palette.providers[assessment.agent?.llm_provider]}
             name={assessment.agent?.name}
@@ -181,7 +180,7 @@ export default function AssessmentCard({ assessment }) {
         {extractedAction && Array.isArray(extractedAction) && extractedAction.length > 0 && (
           <View sx={{ marginVertical: 3, gap: 2 }}>
             {extractedAction.map((action, index) => (
-              <TradeActionDisplay key={`${action.asset}-${index}`} actionData={action} />
+              <TradeActionDisplay key={`${action.asset}-${index}`} actionData={action} showReason={expanded} />
             ))}
           </View>
         )}

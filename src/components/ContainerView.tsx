@@ -22,19 +22,12 @@ export default function ContainerView({ children, style, noSafeArea, ...props }:
       {...props}
       style={style}
     >
-      <LinearGradient
-        colors={isDark ?
-          ['#04060dff', '#0e1729ff', '#020306ff']
-          : [colors.background, colors.backgroundSecondary, colors.background]}
-        locations={[0, 0.5, 1]}
-        style={{ flex: 1 }}
-      >
+
         {noSafeArea ?
         children :
         <SafeAreaView style={{ flex: 1 }}>
           {children}
         </SafeAreaView>}
-      </LinearGradient>
     </View>
   );
 }

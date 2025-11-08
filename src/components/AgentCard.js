@@ -15,6 +15,9 @@ export default function AgentCard({
   onPress,
   shortView = false,
   hideOpenPositions = false,
+  showPositions = true,
+  extraContent = null,
+  tintColor = 'rgba(0, 0, 0, .1)',
   ...props
 }) {
   const {
@@ -56,13 +59,13 @@ export default function AgentCard({
     ? `${pnlSign}$${Math.abs(safeTotalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
     : '-';
 
-  const providerMeta = `${agent.llm_provider} (${agent.model_name})`;
+  const providerMeta = `${agent.llm_provider} ${agent.model_name}`;
 
   return (
     <GlassView
       variant="glass"
       glassEffectStyle="regular"
-      tintColor="rgba(0, 0, 0, 1)"
+      tintColor={tintColor}
       isInteractive
       style={{
         paddingVertical: 18,
@@ -76,15 +79,15 @@ export default function AgentCard({
           <View sx={{ flex: 1 }}>
             <View sx={{ justifyContent: 'space-between', flexDirection: 'row', alignItems: 'center' }}>
               <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-                <Text variant="lg" sx={{ fontWeight: '500', fontFamily: 'monospace' }}>
+                <Text variant="md" sx={{ fontWeight: '500', textTransform: 'uppercase', fontFamily: 'monospace' }}>
                   {agent.name}
                 </Text>
              </View>
-               <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'} sx={{ fontFamily: 'monospace' }}>
+               <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'} sx={{ fontFamily: 'monospace', borderWidth: 0 }}>
                 {isPublished ? 'PUBLIC' : 'PRIVATE'}
               </StatusBadge>
             </View>
-            <Text variant="sm" tone="subtle" sx={{ flex: 1, fontFamily: 'monospace' }}>
+            <Text variant="sm" tone="muted" sx={{ flex: 1, fontFamily: 'monospace' }}>
               {providerMeta}
             </Text>
           </View>
@@ -117,12 +120,17 @@ export default function AgentCard({
             />
           </View>
         </View>
-        <PositionList positions={enrichedPositions} />
+        {showPositions && (
+          <View sx={{ marginTop: 6, borderTopColor: 'muted', borderTopWidth: 1 }}>
+            <PositionList positions={enrichedPositions} />
+          </View>
+        )}
 
         {/* <View sx={{ marginTop: 3, alignItems: 'flex-end' }}>
           <WalletAddressCard address={safeHyperliquidAddress} variant="short" />
         </View> */}
       </TouchableOpacity>
+      {extraContent}
     </GlassView>
   );
 }

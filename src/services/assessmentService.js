@@ -2,16 +2,24 @@ import { supabase } from '@/config/supabase';
 
 export const assessmentService = {
   // Fetch all assessments for a specific agent
-  async getAssessmentsByAgent(agentId) {
+  async getAssessmentsByAgent(agentId, { pageParam = 0, pageSize = 10 } = {}) {
     try {
-      const { data, error } = await supabase
+      const from = pageParam * pageSize;
+      const to = from + pageSize - 1;
+
+      const { data, error, count } = await supabase
         .from('assessments')
-        .select('*, agent:agents(*)')
+        .select('*, agent:agents(*)', { count: 'exact' })
         .eq('agent_id', agentId)
-        .order('timestamp', { ascending: false });
+        .order('timestamp', { ascending: false })
+        .range(from, to);
 
       if (error) throw error;
-      return data;
+      return {
+        data,
+        nextPage: data.length === pageSize ? pageParam + 1 : undefined,
+        totalCount: count,
+      };
     } catch (error) {
       throw error;
     }

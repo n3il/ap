@@ -1,11 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, KeyboardAvoidingView, Platform } from '@/components/ui';
+import { View, Text, TextInput, TouchableOpacity, Modal, ScrollView, KeyboardAvoidingView, Platform, Button } from '@/components/ui';
 import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GlassCard from './GlassCard';
 import PromptPickerModal from './PromptPickerModal';
 import { PROMPT_TYPES } from '@/services';
 import { useColors } from '@/theme';
+import { PaddedView } from './ContainerView';
+import SectionTitle from './SectionTitle';
 
 export const LLM_PROVIDERS = [
   { id: 'google', name: 'Google', models: ['gemini-2.5-flash-preview-09-2025', 'gemini-1.5-pro'] },
@@ -99,17 +101,17 @@ export default function CreateAgentModal({
       animationType="slide"
       onRequestClose={onClose}
       style={{ flex: 1 }}
+      backdropColor="rgba(0, 0, 0, 0.5)"
     >
-      <BlurView intensity={80} style={{ flex: 1 }}>
         <KeyboardAvoidingView
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           style={{ flex: 1 }}
           sx={{ flex: 1 }}
         >
-          <View sx={{ backgroundColor: 'card', flex: 1, paddingTop: insets.top }}>
-            <View sx={{ padding: 6, borderBottomWidth: 1, borderBottomColor: withOpacity(palette.foreground, 0.1) }}>
+          <PaddedView sx={{ backgroundColor: 'card', flex: 1, paddingTop: insets.top }}>
+            <View sx={{ paddingVertical: 6, marginBottom: 4, borderBottomWidth: 1, borderBottomColor: withOpacity(palette.foreground, 0.1) }}>
               <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-                <Text variant="2xl" sx={{ fontWeight: 'bold' }}>Create Agent</Text>
+                <SectionTitle title="Create Agent" sx={{ fontSize: 16 }}/>
                 <TouchableOpacity onPress={onClose}>
                   <Text sx={{ fontSize: 24, color: 'mutedForeground' }}>✕</Text>
                 </TouchableOpacity>
@@ -118,7 +120,7 @@ export default function CreateAgentModal({
 
             <ScrollView sx={{ padding: 6 }} contentContainerStyle={{ paddingBottom: insets.bottom + 24 }}>
               <View sx={{ marginBottom: 4 }}>
-                <Text variant="sm" tone="muted" sx={{ marginBottom: 2 }}>Agent Name *</Text>
+                <SectionTitle title="Agent Name" />
                 <TextInput
                   sx={{
                     backgroundColor: withOpacity(palette.foreground, 0.05),
@@ -129,7 +131,7 @@ export default function CreateAgentModal({
                     borderWidth: 1,
                     borderColor: withOpacity(palette.foreground, 0.1)
                   }}
-                  placeholder="e.g., AlphaQuant Pro"
+                  placeholder="e.g., Casper the Friendly Ghost"
                   placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
                   value={formData.name}
                   onChangeText={(text) => setFormData({ ...formData, name: text })}
@@ -137,7 +139,7 @@ export default function CreateAgentModal({
               </View>
 
               <View sx={{ marginBottom: 4 }}>
-                <Text variant="sm" tone="muted" sx={{ marginBottom: 2 }}>LLM Provider *</Text>
+                <SectionTitle title="Model Provider" />
                 <View sx={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
                   {LLM_PROVIDERS.map((provider) => (
                     <TouchableOpacity
@@ -169,7 +171,7 @@ export default function CreateAgentModal({
               </View>
 
               <View sx={{ marginBottom: 4 }}>
-                <Text variant="sm" tone="muted" sx={{ marginBottom: 2 }}>Model *</Text>
+                <SectionTitle title="Model" />
                 <View sx={{ flexDirection: 'row', flexWrap: 'wrap', gap: 2 }}>
                   {selectedProvider?.models.map((model) => (
                     <TouchableOpacity
@@ -216,7 +218,7 @@ export default function CreateAgentModal({
                 />
               </View>
 
-              <View sx={{
+              {/* <View sx={{
                 marginBottom: 4,
                 backgroundColor: withOpacity(palette.foreground, 0.04),
                 borderWidth: 1,
@@ -226,18 +228,18 @@ export default function CreateAgentModal({
               }}>
                 <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', marginBottom: 1 }}>Hyperliquid Wallet</Text>
                 <Text variant="sm" tone="muted">
-                  A new wallet address is generated automatically when the agent is created. Update it later with your production wallet before pushing live trades.
+                  A new wallet address is generated automatically when the agent is created.
                 </Text>
-              </View>
+              </View> */}
 
-              <View sx={{ marginBottom: 4 }}>
+              {/* <View sx={{ marginBottom: 4 }}>
                 <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
                   <Text variant="sm" tone="muted">Market Scan Prompt</Text>
                   <TouchableOpacity onPress={() => setMarketPickerVisible(true)}>
                     <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', textTransform: 'uppercase' }}>Select</Text>
                   </TouchableOpacity>
                 </View>
-                <GlassCard
+                <View
                   sx={{
                     padding: 3,
                     borderWidth: 1,
@@ -252,7 +254,7 @@ export default function CreateAgentModal({
                     {selectedMarketPrompt?.description ||
                       'Uses the default AlphaQuant market scan instructions.'}
                   </Text>
-                </GlassCard>
+                </View>
               </View>
 
               <View sx={{ marginBottom: 4 }}>
@@ -262,7 +264,7 @@ export default function CreateAgentModal({
                     <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', textTransform: 'uppercase' }}>Select</Text>
                   </TouchableOpacity>
                 </View>
-                <GlassCard
+                <View
                   sx={{
                     padding: 3,
                     borderWidth: 1,
@@ -277,10 +279,10 @@ export default function CreateAgentModal({
                     {selectedPositionPrompt?.description ||
                       'Uses the default AlphaQuant position management instructions.'}
                   </Text>
-                </GlassCard>
-              </View>
+                </View>
+              </View> */}
 
-              <TouchableOpacity
+              {/* <TouchableOpacity
                 onPress={onManagePrompts}
                 sx={{
                   marginBottom: 6,
@@ -295,19 +297,19 @@ export default function CreateAgentModal({
                 <Text variant="sm" sx={{ color: 'accent', textAlign: 'center', fontWeight: '600', textTransform: 'uppercase' }}>
                   Manage Prompt Library
                 </Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
 
-              <TouchableOpacity
+              <Button
+                variant="primary"
                 onPress={handleSubmit}
-                sx={{ backgroundColor: 'accent', borderRadius: 'xl', paddingVertical: 4, marginTop: 2 }}
+                sx={{ backgroundColor: 'accent', borderRadius: 'xl', marginTop: 2 }}
                 activeOpacity={0.8}
               >
-                <Text variant="lg" sx={{ color: 'accentForeground', textAlign: 'center', fontWeight: 'bold' }}>Create Agent</Text>
-              </TouchableOpacity>
+                <Text sx={{ color: 'accentForeground', textAlign: 'center', fontWeight: 'bold' }}>Create</Text>
+              </Button>
             </ScrollView>
-          </View>
+          </PaddedView>
         </KeyboardAvoidingView>
-      </BlurView>
 
       <PromptPickerModal
         visible={marketPickerVisible}

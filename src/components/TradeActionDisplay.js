@@ -16,7 +16,7 @@ function TradeActionRow({ label, value, valueStyle }) {
   );
 }
 
-export default function TradeActionDisplay({ actionData }) {
+export default function TradeActionDisplay({ actionData, showReason = true }) {
   if (!actionData) return null;
 
   const [expanded, setExpanded] = useState(false);
@@ -78,14 +78,14 @@ export default function TradeActionDisplay({ actionData }) {
     >
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 2 : 0 }}>
-          
+
           <View sx={{ flex: 1 }}>
             <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
               {actionData.asset || 'N/A'}
             </Text>
           </View>
 
-          
+
           <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
             {actionData.size && (
               <Text variant="sm" sx={{ fontWeight: '500', marginRight: 2 }}>
@@ -120,43 +120,42 @@ export default function TradeActionDisplay({ actionData }) {
         </View>
       </TouchableOpacity>
 
-      {expanded && (
         <View>
-          {actionData.entry && (
-            <TradeActionRow
-              label="Entry"
-              value={`$${actionData.entry.toLocaleString()}`}
-            />
+          {expanded && (
+            <>
+              {actionData.entry && (
+                <TradeActionRow
+                  label="Entry"
+                  value={`$${actionData.entry.toLocaleString()}`}
+                />
+              )}
+
+              {actionData.stop_loss && (
+                <TradeActionRow
+                  label="Stop Loss"
+                  value={`$${actionData.stop_loss.toLocaleString()}`}
+                  valueStyle={{ color: palette.short ?? error }}
+                />
+              )}
+
+              {actionData.take_profit && (
+                <TradeActionRow
+                  label="Take Profit"
+                  value={`$${actionData.take_profit.toLocaleString()}`}
+                  valueStyle={{ color: palette.long ?? success }}
+                />
+              )}
+            </>
           )}
 
-          {actionData.stop_loss && (
-            <TradeActionRow
-              label="Stop Loss"
-              value={`$${actionData.stop_loss.toLocaleString()}`}
-              valueStyle={{ color: palette.short ?? error }}
-            />
-          )}
-
-          {actionData.take_profit && (
-            <TradeActionRow
-              label="Take Profit"
-              value={`$${actionData.take_profit.toLocaleString()}`}
-              valueStyle={{ color: palette.long ?? success }}
-            />
-          )}
-
-          {actionData.reasoning && (
-            <View sx={{ marginTop: 2, paddingTop: 2, borderTopWidth: 1 }}>
-              <Text variant="xs" tone="muted" sx={{ marginBottom: 1 }}>
-                Reasoning
-              </Text>
-              <Text variant="sm" sx={{ lineHeight: 20, fontWeight: 300 }}>
-                {actionData.reasoning}
+          {showReason && actionData.reasoning && (
+            <View sx={{ marginTop: 2, borderTopWidth: 1 }}>
+              <Text variant="sm" sx={{ lineHeight: 14, fontSize: 10, fontWeight: 300 }}>
+                {actionData.reasoning || '-'}
               </Text>
             </View>
           )}
         </View>
-      )}
     </View>
   );
 }

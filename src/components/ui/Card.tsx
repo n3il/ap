@@ -12,6 +12,8 @@ export interface CardProps {
   style?: any;
   glassIntensity?: number;
   glassTintColor?: string;
+  glassEffectStyle?: 'clear' | 'regular';
+  isInteractive?: boolean;
 }
 
 const Card: React.FC<CardProps> = ({
@@ -22,6 +24,7 @@ const Card: React.FC<CardProps> = ({
   style,
   glassIntensity = 20,
   glassTintColor,
+  isInteractive,
 }) => {
   const { theme } = useDripsyTheme();
 
@@ -57,7 +60,7 @@ const Card: React.FC<CardProps> = ({
       <GlassView
         tintColor={defaultTintColor}
         glassEffectStyle={glassEffectStyle}
-        isInteractive
+        isInteractive={isInteractive}
         style={{
           borderRadius,
           paddingHorizontal: 6,
@@ -82,7 +85,7 @@ const Card: React.FC<CardProps> = ({
       <GlassView
         tintColor={defaultTintColor}
         glassEffectStyle={glassEffectStyle}
-        isInteractive
+        isInteractive={isInteractive}
         style={{
           borderRadius,
           paddingHorizontal: 6,

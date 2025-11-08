@@ -5,10 +5,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   Alert,
-} from '@/components/ui';
+  ScrollView,
+  Animated,
+  RefreshControl,
+} from 'react-native';
 import { useRouter, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import ContainerView from '@/components/ContainerView';
+import ContainerView, { PaddedView } from '@/components/ContainerView';
 import { agentService } from '@/services/agentService';
 import { tradeService } from '@/services/tradeService';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,10 +22,12 @@ import ThoughtsTab from '@/components/agents/ThoughtsTab';
 import TradesTab from '@/components/agents/TradesTab';
 import WalletTab from '@/components/agents/WalletTab';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
-import { useColors } from '@/theme';
+import { useColors, withOpacity } from '@/theme';
 import { ROUTES } from '@/config/routes';
 import SwipeableTabs from '@/components/ui/SwipeableTabs';
 import AgentCard from '@/components/AgentCard';
+import { Button } from '@/components/ui';
+import { PROVIDER_COLORS } from '@/theme/base';
 
 const AgentReadScreen = () => {
   const colors = useColors();
@@ -33,8 +38,10 @@ const AgentReadScreen = () => {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(0);
   const [pendingAssessment, setPendingAssessment] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const pollingInterval = useRef(null);
   const { user } = useAuth();
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   const {
     data: agent,
@@ -186,6 +193,40 @@ const AgentReadScreen = () => {
     pokeAgentMutation.mutate();
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+
+    // Invalidate queries based on the current active tab
+    const tabKeys = ['thoughts', 'positions', 'trades', 'wallet'];
+    const activeTabKey = tabKeys[page];
+
+    const queries = {
+      thoughts: ['agent-assessments', agentId],
+      positions: [
+        ['agent-trades', agentId],
+        ['agent-stats', agentId],
+      ],
+      trades: ['agent-trades', agentId],
+      wallet: ['agent', agentId],
+    };
+
+    const queriesToInvalidate = queries[activeTabKey];
+
+    if (Array.isArray(queriesToInvalidate[0])) {
+      // Multiple queries to invalidate
+      await Promise.all(
+        queriesToInvalidate.map(queryKey =>
+          queryClient.invalidateQueries({ queryKey })
+        )
+      );
+    } else {
+      // Single query to invalidate
+      await queryClient.invalidateQueries({ queryKey: queriesToInvalidate });
+    }
+
+    setRefreshing(false);
+  };
+
   const handleOpenManageScreen = () => {
     if (!agentId) return;
     router.push({
@@ -248,6 +289,19 @@ const AgentReadScreen = () => {
       </ContainerView>
     );
   }
+
+  // Animated card height (200 -> 80 on scroll)
+  const cardHeight = scrollY.interpolate({
+    inputRange: [0, 100],
+    outputRange: [200, 80],
+    extrapolate: 'clamp',
+  });
+
+  const cardOpacity = scrollY.interpolate({
+    inputRange: [0, 50],
+    outputRange: [1, 0],
+    extrapolate: 'clamp',
+  });
 
   const TABS = [
     {
@@ -315,49 +369,63 @@ const AgentReadScreen = () => {
   // chat
 
   return (
-    <ContainerView style={{ paddingTop: 0, gap: 8, flex: 1 }}>
-      <AgentCard
-        agent={agent}
-        shortView
-        extraContent={
-          <GlassView
-            glassEffectStyle='regular'
-            style={{
-              padding: 12,
-              borderRadius: 20,
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <TouchableOpacity onPress={handlePokeAgent}
-              style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}
-            >
-              {pendingAssessment ? (
-                <ActivityIndicator size="small" color={colors.primary} />
-              ) : (
-                <MaterialCommunityIcons
-                  name="gesture-tap-button"
-                  size={22}
-                  color={colors.primary}
-                />
-              )}
-              <Text sx={{ fontWeight: '600', color: colors.primary }}>Poke</Text>
-            </TouchableOpacity>
-          </GlassView>
+    <ContainerView style={{ paddingTop: 80, flex: 1, backgroundColor: colors.background }}>
+      <Animated.ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingTop: 0 }}
+        showsVerticalScrollIndicator={false}
+        scrollEventThrottle={16}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            tintColor={colors.primary}
+          />
         }
-      />
+      >
+        <PaddedView style={{ marginBottom: 12 }}>
+          <Animated.View style={{ opacity: cardOpacity }}>
+            <AgentCard
+              agent={agent}
+              shortView
+              showPositions={false}
+              // tintColor={withOpacity(PROVIDER_COLORS[agent.llm_provider], 0.2)}
+              extraContent={
+                <Button onPress={handlePokeAgent}
+                  variant="ghost"
+                  style={{ marginTop: 4, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}
+                >
+                  {pendingAssessment ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <MaterialCommunityIcons
+                      name="gesture-tap-button"
+                      size={14}
+                      color={colors.primary}
+                    />
+                  )}
+                  <Text style={{ fontWeight: '600', color: colors.primary, fontSize: 12 }}>Poke</Text>
+                </Button>
+              }
+            />
+          </Animated.View>
+        </PaddedView>
 
-      <SwipeableTabs
-        tabs={TABS}
-        initialIndex={page}
-        onTabChange={setPage}
-        renderTab={renderTab}
-        tabStyle={{
-          padding: 12,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      />
+        <SwipeableTabs
+          tabs={TABS}
+          initialIndex={page}
+          onTabChange={setPage}
+          renderTab={renderTab}
+          tabContainerStyle={{
+            marginBottom: 0,
+          }}
+          tabStyle={{
+            padding: 12,
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        />
+      </Animated.ScrollView>
     </ContainerView>
   );
 };

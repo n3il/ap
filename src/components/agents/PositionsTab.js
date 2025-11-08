@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, ScrollView } from '@/components/ui';
 import TradeCard from '@/components/TradeCard';
 import StatCard from '@/components/StatCard';
+import SectionTitle from '../SectionTitle';
 
 export default function PositionsTab({ agent, trades = [], stats, isOwnAgent }) {
   const openTrades = trades.filter((t) => t.status === 'OPEN');
@@ -44,18 +45,9 @@ export default function PositionsTab({ agent, trades = [], stats, isOwnAgent }) 
       <View sx={{ paddingHorizontal: 4 }}>
         {isOwnAgent ? (
           <>
-            <Text
-              sx={{
-                color: 'textPrimary',
-                fontSize: 16,
-                fontWeight: '700',
-                marginBottom: 2,
-                marginTop: 3,
-                letterSpacing: 0.5,
-              }}
-            >
+            <SectionTitle>
               Open Positions ({openTrades.length})
-            </Text>
+            </SectionTitle>
             {openTrades.length === 0 ? (
               <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
                 No open positions

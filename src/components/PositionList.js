@@ -74,6 +74,7 @@ export function PositionRow({
         paddingVertical: 2,
         paddingHorizontal: 3,
         borderRadius: 8,
+        paddingLeft: '10%'
       }}
     >
       <View
@@ -83,28 +84,25 @@ export function PositionRow({
           alignItems: 'center',
         }}
       >
-        <View sx={{ flex: 1 }}>
-          <View
-            sx={{
-              flexDirection: 'row',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-            }}
-          >
-            <Text variant="sm" sx={{ fontWeight: '600' }}>
-              {assetLabel.replace('-PERP', '')}
-            </Text>
-            {side && (
-              <StatusBadge
-                size="small"
-                variant={side === 'LONG' ? 'success' : 'error'}
-              >
-                {side}
-              </StatusBadge>
-            )}
-          </View>
-        </View>
+        <View sx={{ flex: 1, flexDirection: 'row', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
+          {side && (
+            <StatusBadge
+              size="small"
+              variant={side === 'LONG' ? 'success' : 'error'}
+            >
+              {side}
+            </StatusBadge>
+          )}
+          <Text variant="sm" sx={{ fontWeight: '600' }}>
+            {assetLabel.replace('-PERP', '')}
+          </Text>
 
+        </View>
+        <View sx={{ flex: 1, alignItems: 'flex-end' }}>
+          <Text variant="sm" sx={{ fontWeight: '600' }}>
+            {sizeLabel}
+          </Text>
+        </View>
         <View sx={{ alignItems: 'flex-end' }}>
           {unrealizedPnlLabel && (
             <>
@@ -159,9 +157,8 @@ export function PositionRow({
 
 export default function PositionList({ positions = [] }) {
   const safeEnrichedPositions = Array.isArray(positions) ? positions : [];
-  console.log(positions)
   return (
-    <View sx={{ marginTop: 3, flex: 1 }}>
+    <View sx={{ marginTop: 3 }}>
       {safeEnrichedPositions.length > 0 ? (
         safeEnrichedPositions.map((position, i) => (
           <PositionRow key={position?.id || position?.symbol || i} {...position} />

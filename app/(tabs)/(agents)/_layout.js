@@ -12,12 +12,12 @@ export default function Layout() {
       gestureEnabled: true,
     }}>
       <Stack.Screen name="index" />
-      {/* <Stack.Screen
+      <Stack.Screen
         name="[id]/index"
         options={{
           headerShown: true,
           presentation: 'card',
-          headerTitle: 'Agent Detail',
+          headerTitle: '',
           headerBackButtonDisplayMode: 'minimal',
           headerTransparent: true,
           headerBlurEffect: 'dark',
@@ -31,7 +31,7 @@ export default function Layout() {
             fontWeight: '600',
           }
         }}
-      /> */}
+      />
       <Stack.Screen name="[id]/manage" />
     </Stack>
   );

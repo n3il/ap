@@ -61,19 +61,24 @@ export default function ExploreHeader({
           alignItems: 'center', gap: 2,
           justifyContent: 'center'
         }}>
-          <Image
+          {/* <Image
             source={require('@assets/puppet-bare-icon-w.png')}
             style={{
               width: 36,
               height: 36,
             }}
             resizeMode="contain"
+          /> */}
+          <MaterialCommunityIcons
+            name="ghost-outline"
+            size={24}
+            color={colors.muted}
           />
           <Text sx={{
             fontSize: 18,
             fontWeight: '600',
             textTransform: 'uppercase',
-            color: 'mutedForeground',
+            color: 'muted',
             letterSpacing: 3,
           }}>
             {process.env.EXPO_PUBLIC_APP_NAME}

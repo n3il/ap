@@ -108,16 +108,16 @@ export default function SwipeableTabs({
   );
 
   return (
-    <View>
+    <>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
-        style={{ flex: 0  }}
+        style={{ flexGrow: 0  }}
       >
         <GlassContainer
           spacing={10}
           style={[
-            { flexDirection: 'row', gap: 8, marginBottom: 12, paddingHorizontal: GLOBAL_PADDING },
+            { flexDirection: 'row', gap: 8, marginBottom: 18, paddingHorizontal: GLOBAL_PADDING },
             tabContainerStyle,
           ]}
         >
@@ -176,11 +176,11 @@ export default function SwipeableTabs({
         scrollEventThrottle={16}
         getItemLayout={getItemLayout}
         initialScrollIndex={initialIndex}
-        style={styles.flatList}
         bounces={false}
         decelerationRate="fast"
+        style={{ flex: 1 }}
       />
-    </View>
+    </>
   );
 }
 
@@ -216,9 +216,6 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 0,
     height: 2,
-  },
-  flatList: {
-    flex: 1,
   },
   pageContent: {
     flex: 1,

@@ -11,6 +11,9 @@ const View = React.forwardRef<React.ComponentRef<typeof RNView>, ViewProps>(
   ({ sx, style, ...props }, ref) => {
     // If there's an sx prop, use Dripsy's View for theme-aware styling
     // Otherwise use React Native's View for maximum compatibility
+    if (!props.children) {
+      return null;
+    }
     if (sx) {
       return (
         <DripsyView
