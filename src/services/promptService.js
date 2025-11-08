@@ -1,8 +1,13 @@
 import { supabase } from '@/config/supabase';
 
-export const PROMPT_TYPES = {
-  MARKET_SCAN: 'MARKET_SCAN',
-  POSITION_REVIEW: 'POSITION_REVIEW',
+export const PROMPT_SLOTS = {
+  MARKET: 'market',
+  POSITION: 'position',
+};
+
+const PROMPT_SLOT_COLUMN_MAP = {
+  [PROMPT_SLOTS.MARKET]: 'market_prompt_id',
+  [PROMPT_SLOTS.POSITION]: 'position_prompt_id',
 };
 
 export const PROMPT_PLACEHOLDERS = {
@@ -29,10 +34,10 @@ export const promptService = {
   /**
    * Fetch prompts visible to the user (global + personal).
    */
-  async listPrompts({ promptType } = {}) {
+  async listPrompts() {
     const user = await ensureAuthenticatedUser();
 
-    let query = supabase
+    const { data, error } = await supabase
       .from('prompts')
       .select('*')
       .eq('is_active', true)
@@ -41,11 +46,6 @@ export const promptService = {
       .order('is_default', { ascending: false })
       .order('updated_at', { ascending: false });
 
-    if (promptType) {
-      query = query.eq('prompt_type', promptType);
-    }
-
-    const { data, error } = await query;
     if (error) throw error;
     return data ?? [];
   },
@@ -103,15 +103,13 @@ export const promptService = {
   },
 
   /**
-   * Assign a prompt to an agent for a given type.
+   * Assign a prompt to an agent for a given slot (market or position).
    */
-  async assignPromptToAgent(agentId, promptType, promptId) {
-    if (!Object.values(PROMPT_TYPES).includes(promptType)) {
-      throw new Error(`Unsupported prompt type: ${promptType}`);
+  async assignPromptToAgent(agentId, slot, promptId) {
+    const column = PROMPT_SLOT_COLUMN_MAP[slot];
+    if (!column) {
+      throw new Error(`Unsupported prompt slot: ${slot}`);
     }
-
-    const column =
-      promptType === PROMPT_TYPES.MARKET_SCAN ? 'market_prompt_id' : 'position_prompt_id';
 
     const { data, error } = await supabase
       .from('agents')

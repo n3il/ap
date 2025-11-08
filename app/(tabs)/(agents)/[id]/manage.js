@@ -6,7 +6,7 @@ import ContainerView from '@/components/ContainerView';
 import { PromptAssignmentsCard, PromptModals } from '@/components/ManagePrompts';
 import GlassCard from '@/components/GlassCard';
 import { agentService } from '@/services/agentService';
-import { promptService, PROMPT_TYPES } from '@/services';
+import { promptService, PROMPT_SLOTS } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColors } from '@/theme';
 
@@ -43,13 +43,8 @@ const AgentManageScreen = () => {
     enabled: !!agentId && isOwnAgent,
   });
 
-  const marketPrompts = useMemo(
-    () => prompts.filter((prompt) => prompt.prompt_type === PROMPT_TYPES.MARKET_SCAN),
-    [prompts]
-  );
-
-  const positionPrompts = useMemo(
-    () => prompts.filter((prompt) => prompt.prompt_type === PROMPT_TYPES.POSITION_REVIEW),
+  const defaultPrompt = useMemo(
+    () => prompts.find((prompt) => prompt.is_default) || prompts[0] || null,
     [prompts]
   );
 
@@ -57,21 +52,19 @@ const AgentManageScreen = () => {
     if (!agent) return null;
     const targetId = agent.market_prompt_id;
     if (!targetId) {
-      return marketPrompts.find((prompt) => prompt.is_default) || marketPrompts[0] || null;
+      return defaultPrompt;
     }
     return prompts.find((prompt) => prompt.id === targetId) || null;
-  }, [agent, prompts, marketPrompts]);
+  }, [agent, prompts, defaultPrompt]);
 
   const selectedPositionPrompt = useMemo(() => {
     if (!agent) return null;
     const targetId = agent.position_prompt_id;
     if (!targetId) {
-      return (
-        positionPrompts.find((prompt) => prompt.is_default) || positionPrompts[0] || null
-      );
+      return defaultPrompt;
     }
     return prompts.find((prompt) => prompt.id === targetId) || null;
-  }, [agent, prompts, positionPrompts]);
+  }, [agent, prompts, defaultPrompt]);
 
   const [promptPickerVisible, setPromptPickerVisible] = useState(false);
   const [promptPickerType, setPromptPickerType] = useState(null);
@@ -79,8 +72,8 @@ const AgentManageScreen = () => {
   const [resumePromptPicker, setResumePromptPicker] = useState(null);
 
   const assignPromptMutation = useMutation({
-    mutationFn: ({ promptType, promptId }) =>
-      promptService.assignPromptToAgent(agentId, promptType, promptId),
+    mutationFn: ({ slot, promptId }) =>
+      promptService.assignPromptToAgent(agentId, slot, promptId),
     onSuccess: () => {
       queryClient.invalidateQueries(['agent', agentId]);
       refetchPrompts();
@@ -126,16 +119,16 @@ const AgentManageScreen = () => {
     },
   });
 
-  const handlePromptSelect = (promptType) => {
+  const handlePromptSelect = (slot) => {
     setResumePromptPicker(null);
-    setPromptPickerType(promptType);
+    setPromptPickerType(slot);
     setPromptPickerVisible(true);
   };
 
   const handlePromptPicked = (prompt) => {
     if (!promptPickerType) return;
     const currentId =
-      promptPickerType === PROMPT_TYPES.MARKET_SCAN
+      promptPickerType === PROMPT_SLOTS.MARKET
         ? selectedMarketPrompt?.id ?? null
         : selectedPositionPrompt?.id ?? null;
     const nextId = prompt?.id ?? null;
@@ -146,7 +139,7 @@ const AgentManageScreen = () => {
       return;
     }
     assignPromptMutation.mutate({
-      promptType: promptPickerType,
+      slot: promptPickerType,
       promptId: prompt?.id ?? null,
     });
     setPromptPickerVisible(false);
@@ -364,8 +357,7 @@ const AgentManageScreen = () => {
       <PromptModals
         pickerVisible={promptPickerVisible}
         pickerType={promptPickerType}
-        marketPrompts={marketPrompts}
-        positionPrompts={positionPrompts}
+        prompts={prompts}
         selectedMarketPrompt={selectedMarketPrompt}
         selectedPositionPrompt={selectedPositionPrompt}
         onSelectPrompt={handlePromptPicked}
@@ -374,10 +366,9 @@ const AgentManageScreen = () => {
           setPromptPickerType(null);
           setResumePromptPicker(null);
         }}
-        onOpenManagerFromPicker={() => handleOpenPromptManager(promptPickerType)}
+        onOpenManagerFromPicker={handleOpenPromptManager}
         managerVisible={promptManagerVisible}
         onCloseManager={handleClosePromptManager}
-        prompts={prompts}
         onPromptCreated={() => {
           refetchPrompts();
           queryClient.invalidateQueries(['prompts']);

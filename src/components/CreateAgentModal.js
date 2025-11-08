@@ -4,7 +4,6 @@ import { BlurView } from 'expo-blur';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import GlassCard from './GlassCard';
 import PromptPickerModal from './PromptPickerModal';
-import { PROMPT_TYPES } from '@/services';
 import { useColors } from '@/theme';
 import { PaddedView } from './ContainerView';
 import SectionTitle from './SectionTitle';
@@ -40,29 +39,20 @@ export default function CreateAgentModal({
   const [marketPickerVisible, setMarketPickerVisible] = useState(false);
   const [positionPickerVisible, setPositionPickerVisible] = useState(false);
 
-  const marketPrompts = useMemo(
-    () => promptOptions.filter((prompt) => prompt.prompt_type === PROMPT_TYPES.MARKET_SCAN),
-    [promptOptions]
-  );
-  const positionPrompts = useMemo(
-    () => promptOptions.filter((prompt) => prompt.prompt_type === PROMPT_TYPES.POSITION_REVIEW),
-    [promptOptions]
-  );
+  const promptLibrary = useMemo(() => promptOptions, [promptOptions]);
 
   useEffect(() => {
     if (!visible) return;
 
-    const defaultMarketPrompt =
-      marketPrompts.find((prompt) => prompt.is_default) || marketPrompts[0] || null;
-    const defaultPositionPrompt =
-      positionPrompts.find((prompt) => prompt.is_default) || positionPrompts[0] || null;
+    const defaultPrompt =
+      promptLibrary.find((prompt) => prompt.is_default) || promptLibrary[0] || null;
 
     setFormData((prev) => ({
       ...prev,
-      market_prompt_id: defaultMarketPrompt?.id ?? null,
-      position_prompt_id: defaultPositionPrompt?.id ?? null,
+      market_prompt_id: defaultPrompt?.id ?? null,
+      position_prompt_id: defaultPrompt?.id ?? null,
     }));
-  }, [visible, marketPrompts, positionPrompts]);
+  }, [visible, promptLibrary]);
 
   const handleSubmit = () => {
     if (!formData.name || !formData.initial_capital) {
@@ -81,16 +71,16 @@ export default function CreateAgentModal({
       llm_provider: 'google',
       model_name: 'gemini-2.5-flash-preview-09-2025',
       initial_capital: '',
-      market_prompt_id: marketPrompts.find((prompt) => prompt.is_default)?.id || null,
-      position_prompt_id: positionPrompts.find((prompt) => prompt.is_default)?.id || null,
+      market_prompt_id: promptLibrary.find((prompt) => prompt.is_default)?.id || null,
+      position_prompt_id: promptLibrary.find((prompt) => prompt.is_default)?.id || null,
     });
   };
 
   const selectedProvider = LLM_PROVIDERS.find(p => p.id === formData.llm_provider);
-  const selectedMarketPrompt = marketPrompts.find(
+  const selectedMarketPrompt = promptLibrary.find(
     (prompt) => prompt.id === formData.market_prompt_id
   );
-  const selectedPositionPrompt = positionPrompts.find(
+  const selectedPositionPrompt = promptLibrary.find(
     (prompt) => prompt.id === formData.position_prompt_id
   );
 
@@ -313,7 +303,7 @@ export default function CreateAgentModal({
 
       <PromptPickerModal
         visible={marketPickerVisible}
-        prompts={marketPrompts}
+        prompts={promptLibrary}
         selectedPromptId={formData.market_prompt_id}
         onSelect={(prompt) =>
           setFormData((prev) => ({ ...prev, market_prompt_id: prompt.id ?? null }))
@@ -326,7 +316,7 @@ export default function CreateAgentModal({
 
       <PromptPickerModal
         visible={positionPickerVisible}
-        prompts={positionPrompts}
+        prompts={promptLibrary}
         selectedPromptId={formData.position_prompt_id}
         onSelect={(prompt) =>
           setFormData((prev) => ({ ...prev, position_prompt_id: prompt.id ?? null }))

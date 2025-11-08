@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useState } from 'react';
 import {
   Modal,
   View,
@@ -14,13 +14,12 @@ import {
 import { BlurView } from 'expo-blur';
 import { useMutation } from '@tanstack/react-query';
 import GlassCard from './GlassCard';
-import { promptService, PROMPT_TYPES, PROMPT_PLACEHOLDERS } from '@/services';
+import { promptService, PROMPT_PLACEHOLDERS } from '@/services';
 import { supabase } from '@/config/supabase';
 import { useColors } from '@/theme';
 
 const defaultFormState = {
   name: '',
-  prompt_type: PROMPT_TYPES.MARKET_SCAN,
   description: '',
   system_instruction: '',
   user_template: '',
@@ -58,7 +57,6 @@ export default function PromptManagerModal({
       const { data, error } = await supabase.functions.invoke('run-assessment', {
         body: {
           prompt_id: prompt.id,
-          prompt_type: prompt.prompt_type,
           system_instruction: prompt.system_instruction,
           user_template: prompt.user_template,
         },
@@ -76,15 +74,6 @@ export default function PromptManagerModal({
       Alert.alert('Test Failed', error.message || 'Failed to run prompt test.');
     },
   });
-
-  const marketScanPrompts = useMemo(
-    () => prompts.filter((prompt) => prompt.prompt_type === PROMPT_TYPES.MARKET_SCAN),
-    [prompts]
-  );
-  const positionPrompts = useMemo(
-    () => prompts.filter((prompt) => prompt.prompt_type === PROMPT_TYPES.POSITION_REVIEW),
-    [prompts]
-  );
 
   const handleSubmit = () => {
     if (!form.name.trim()) {
@@ -267,8 +256,7 @@ export default function PromptManagerModal({
               sx={{ flex: 1, paddingHorizontal: 6, paddingVertical: 4 }}
               contentContainerStyle={{ paddingBottom: 120 }}
             >
-              {renderPromptList('Market Scan Prompts', marketScanPrompts)}
-              {renderPromptList('Position Review Prompts', positionPrompts)}
+              {renderPromptList('Prompt Library', prompts)}
 
               <GlassCard
                 sx={{
@@ -300,43 +288,6 @@ export default function PromptManagerModal({
                       color: 'textPrimary'
                     }}
                   />
-                </View>
-
-                <View sx={{ marginBottom: 4 }}>
-                  <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', marginBottom: 2 }}>
-                    Prompt Type
-                  </Text>
-                  <View sx={{ flexDirection: 'row', gap: 2 }}>
-                    {Object.values(PROMPT_TYPES).map((type) => {
-                      const isSelected = form.prompt_type === type;
-                      return (
-                        <TouchableOpacity
-                          key={type}
-                          onPress={() =>
-                            setForm((prev) => ({ ...prev, prompt_type: type }))
-                          }
-                          sx={{
-                            paddingHorizontal: 3,
-                            paddingVertical: 2,
-                            borderRadius: 'lg',
-                            borderWidth: 1,
-                            borderColor: isSelected ? 'accent' : withOpacity(palette.foreground, 0.08),
-                            backgroundColor: isSelected ? withOpacity(info, 0.2) : withOpacity(palette.foreground, 0.04)
-                          }}
-                        >
-                          <Text
-                            variant="xs"
-                            sx={{
-                              fontWeight: '600',
-                              color: isSelected ? 'accent' : 'mutedForeground'
-                            }}
-                          >
-                            {type === PROMPT_TYPES.MARKET_SCAN ? 'Market Scan' : 'Position Review'}
-                          </Text>
-                        </TouchableOpacity>
-                      );
-                    })}
-                  </View>
                 </View>
 
                 <View sx={{ marginBottom: 4 }}>

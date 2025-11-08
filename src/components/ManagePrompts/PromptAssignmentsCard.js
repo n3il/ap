@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from '@/components/ui';
 import GlassCard from '@/components/GlassCard';
-import { PROMPT_TYPES } from '@/services';
+import { PROMPT_SLOTS } from '@/services';
 import { useColors } from '@/theme';
 
 const PromptAssignmentsCard = ({
@@ -71,14 +71,14 @@ const PromptAssignmentsCard = ({
             selectedMarketPrompt?.name,
             selectedMarketPrompt?.description,
             selectedMarketPrompt?.system_instruction,
-            () => onSelectPrompt(PROMPT_TYPES.MARKET_SCAN)
+            () => onSelectPrompt(PROMPT_SLOTS.MARKET)
           )}
           {renderPromptBlock(
             'Position Review',
             selectedPositionPrompt?.name,
             selectedPositionPrompt?.description,
             selectedPositionPrompt?.system_instruction,
-            () => onSelectPrompt(PROMPT_TYPES.POSITION_REVIEW)
+            () => onSelectPrompt(PROMPT_SLOTS.POSITION)
           )}
         </>
       )}

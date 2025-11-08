@@ -10,7 +10,6 @@ export interface PromptRecord {
   user_id?: string | null;
   name?: string;
   description?: string | null;
-  prompt_type: PromptType;
   system_instruction: string;
   user_template: string;
   is_default?: boolean;
@@ -55,7 +54,6 @@ export async function fetchPrompt(
   const { data, error } = await supabase
     .from('prompts')
     .select('*')
-    .eq('prompt_type', promptType)
     .eq('is_active', true)
     .or(`user_id.eq.${agent.user_id},user_id.is.null`)
     .order('user_id', { ascending: false }) // User prompts first

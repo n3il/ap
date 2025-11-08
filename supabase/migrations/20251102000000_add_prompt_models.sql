@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS public.prompts (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
-  prompt_type TEXT NOT NULL CHECK (prompt_type IN ('MARKET_SCAN', 'POSITION_REVIEW')),
   system_instruction TEXT NOT NULL,
   user_template TEXT NOT NULL,
   is_default BOOLEAN DEFAULT false,
@@ -25,8 +24,6 @@ CREATE TABLE IF NOT EXISTS public.prompts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_prompts_user_id ON public.prompts(user_id);
-CREATE INDEX IF NOT EXISTS idx_prompts_prompt_type ON public.prompts(prompt_type);
-CREATE INDEX IF NOT EXISTS idx_prompts_user_type ON public.prompts(user_id, prompt_type);
 
 ALTER TABLE public.prompts ENABLE ROW LEVEL SECURITY;
 
@@ -61,7 +58,6 @@ INSERT INTO public.prompts (
   user_id,
   name,
   description,
-  prompt_type,
   system_instruction,
   user_template,
   is_default
@@ -70,21 +66,18 @@ SELECT
   NULL,
   'Default Market Scan',
   'System default market scan prompt for AlphaQuant agents',
-  'MARKET_SCAN',
   'You are ''AlphaQuant'', a highly risk-averse, world-class quantitative crypto analyst. Your goal is to identify high-probability trades with defined entry/exit points, leveraging real-time data and grounded web search analysis. You must always justify your trade using market structure, macroeconomic trends, or technical analysis. You must output your analysis first, followed by a mandatory ''ACTION_JSON'' block in this exact format:\n\nACTION_JSON: {"action": "OPEN_LONG_BTC" or "OPEN_SHORT_ETH" or "NO_ACTION", "asset": "BTC-PERP", "size": 0.1, "reasoning": "brief reason"}\n\nIf no trade is warranted, use: ACTION_JSON: {"action": "NO_ACTION"}',
   'Current Market State: {{MARKET_PRICES}}.\n\nOpen Positions: {{OPEN_POSITIONS}}.\n\nBased on this data and the most relevant news/macro trends from your web search, perform a comprehensive market assessment. If a trade is warranted, output an action using the ACTION_JSON format. If no trade is warranted, output ACTION_JSON with NO_ACTION.',
   true
 WHERE NOT EXISTS (
   SELECT 1 FROM public.prompts
   WHERE user_id IS NULL
-    AND prompt_type = 'MARKET_SCAN'
 );
 
 INSERT INTO public.prompts (
   user_id,
   name,
   description,
-  prompt_type,
   system_instruction,
   user_template,
   is_default
@@ -93,14 +86,12 @@ SELECT
   NULL,
   'Default Position Review',
   'System default position review prompt for AlphaQuant agents',
-  'POSITION_REVIEW',
   'You are ''AlphaQuant'', a highly risk-averse, world-class quantitative crypto analyst. Your primary objective is position management. You must assess all current open trades against their original thesis, considering current price action and the latest market events obtained via web search. You must output your analysis first, followed by a mandatory ''ACTION_JSON'' block in this exact format:\n\nACTION_JSON: {"action": "CLOSE_BTC" or "HOLD" or "NO_ACTION", "asset": "BTC-PERP", "reasoning": "brief reason"}\n\nIf no change is needed, use: ACTION_JSON: {"action": "NO_ACTION"}',
   'Current Market State: {{MARKET_PRICES}}.\n\nOpen Positions: {{OPEN_POSITIONS}}.\n\nProvide a position management assessment for each open trade. Use ACTION_JSON to communicate your decision, or default to NO_ACTION when holding is preferred.',
   true
 WHERE NOT EXISTS (
   SELECT 1 FROM public.prompts
   WHERE user_id IS NULL
-    AND prompt_type = 'POSITION_REVIEW'
 );
 
 -- Attach prompt references to agents

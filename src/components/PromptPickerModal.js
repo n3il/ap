@@ -85,7 +85,7 @@ export default function PromptPickerModal({
                         {prompt.name || 'Untitled Prompt'}
                       </Text>
                       <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', marginBottom: 2, letterSpacing: 1 }}>
-                        {prompt.prompt_type || 'CUSTOM'}
+                        {prompt.user_id ? 'PERSONAL PROMPT' : 'GLOBAL PROMPT'}
                       </Text>
                       {prompt.description ? (
                         <Text variant="sm" sx={{ color: withOpacity(palette.mutedForeground, 0.8), marginBottom: 2 }}>

@@ -69,8 +69,7 @@ BEGIN
   -- Disable existing global default prompts
   UPDATE public.prompts
   SET is_default = false
-  WHERE user_id IS NULL
-    AND prompt_type IN ('MARKET_SCAN', 'POSITION_REVIEW');
+  WHERE user_id IS NULL;
 
   -- Upsert Puppet default Market Scan prompt
   INSERT INTO public.prompts (
@@ -78,7 +77,6 @@ BEGIN
     user_id,
     name,
     description,
-    prompt_type,
     system_instruction,
     user_template,
     is_default,
@@ -91,7 +89,6 @@ BEGIN
     NULL,
     'Alpha Arena Market Scan',
     'Structured market scan prompt seeded for Puppet.',
-    'MARKET_SCAN',
     $$You are 'AlphaQuant', a risk-managed crypto strategist. You must reason carefully through every signal, cite supporting evidence, and conclude with ACTION_JSON that aligns with the trading plan and risk limits.$$,
     $$It has been a continuous session and the current time is {{TIMESTAMP}}. Below is the consolidated market telemetry (ordered oldest → newest unless stated otherwise). Use it to surface high-conviction setups and protect capital.
 
@@ -126,7 +123,6 @@ Respond with your full reasoning followed by ACTION_JSON describing the precise 
     user_id,
     name,
     description,
-    prompt_type,
     system_instruction,
     user_template,
     is_default,
@@ -139,7 +135,6 @@ Respond with your full reasoning followed by ACTION_JSON describing the precise 
     NULL,
     'Alpha Arena Position Review',
     'Structured position review prompt seeded for Puppet.',
-    'POSITION_REVIEW',
     $$You are 'AlphaQuant', focused on disciplined position management. Audit every live trade against its thesis, reference current signals, and conclude with ACTION_JSON reflecting any adjustments or NO_ACTION.$$,
     $$Position management cycle at {{TIMESTAMP}}. Evaluate every open position using the structured telemetry below. Validate that each trade still honors its thesis, risk limits, and invalidation triggers before proposing any change.
 

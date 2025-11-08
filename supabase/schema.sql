@@ -157,7 +157,6 @@ CREATE TABLE IF NOT EXISTS prompts (
   user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   description TEXT,
-  prompt_type TEXT NOT NULL CHECK (prompt_type IN ('MARKET_SCAN', 'POSITION_REVIEW')),
   system_instruction TEXT NOT NULL,
   user_template TEXT NOT NULL,
   is_default BOOLEAN DEFAULT false,
@@ -185,8 +184,6 @@ CREATE POLICY "Users can delete their prompts"
   USING (auth.uid() = user_id);
 
 CREATE INDEX IF NOT EXISTS idx_prompts_user_id ON prompts(user_id);
-CREATE INDEX IF NOT EXISTS idx_prompts_prompt_type ON prompts(prompt_type);
-CREATE INDEX IF NOT EXISTS idx_prompts_user_type ON prompts(user_id, prompt_type);
 
 CREATE TRIGGER update_prompts_updated_at
   BEFORE UPDATE ON prompts
