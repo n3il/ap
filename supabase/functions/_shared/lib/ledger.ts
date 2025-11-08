@@ -1,0 +1,202 @@
+import { sanitizeMetadata } from './validation.ts';
+
+export type TradingRecordType = 'paper' | 'real';
+export type ExecutionSide = 'BUY' | 'SELL';
+
+/**
+ * Ensures a trading account exists for an agent
+ * Creates one if it doesn't exist
+ */
+export async function ensureTradingAccount({
+  supabase,
+  userId,
+  agentId,
+  agentName,
+  type,
+}: {
+  supabase: any;
+  userId: string;
+  agentId: string;
+  agentName: string | null;
+  type: TradingRecordType;
+}) {
+  const { data: existingAccount, error: fetchError } = await supabase
+    .from('trading_accounts')
+    .select('id, label')
+    .eq('user_id', userId)
+    .eq('type', type)
+    .eq('agent_id', agentId)
+    .order('created_at', { ascending: true })
+    .limit(1)
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error('Error fetching trading account:', fetchError);
+    throw fetchError;
+  }
+
+  if (existingAccount) {
+    return existingAccount;
+  }
+
+  const defaultLabel = agentName
+    ? `${agentName} (${type === 'real' ? 'Real' : 'Paper'})`
+    : `${type === 'real' ? 'Real' : 'Paper'} Account`;
+
+  const { data: createdAccount, error: createError } = await supabase
+    .from('trading_accounts')
+    .insert({
+      user_id: userId,
+      agent_id: agentId,
+      label: defaultLabel,
+      type,
+    })
+    .select('id, label')
+    .single();
+
+  if (createError) {
+    console.error('Error creating trading account:', createError);
+    throw createError;
+  }
+
+  return createdAccount;
+}
+
+/**
+ * Records a trade execution in all ledger tables
+ * Creates records in trading_orders, trading_trades, and trading_transactions
+ */
+export async function recordLedgerExecution({
+  supabase,
+  accountId,
+  agentId,
+  userId,
+  symbol,
+  executionSide,
+  quantity,
+  price,
+  fee = 0,
+  clientOrderId = null,
+  realizedPnL = 0,
+  metadata,
+  description,
+  orderType = 'MARKET',
+  status = 'FILLED',
+  type = 'real',
+}: {
+  supabase: any;
+  accountId: string;
+  agentId: string;
+  userId: string;
+  symbol: string;
+  executionSide: ExecutionSide;
+  quantity: number;
+  price: number;
+  fee?: number;
+  clientOrderId?: string | null;
+  realizedPnL?: number;
+  metadata?: Record<string, unknown>;
+  description?: string;
+  orderType?: string;
+  status?: string;
+  type?: TradingRecordType;
+}) {
+  const sanitized = sanitizeMetadata({
+    ...(metadata || {}),
+    executionSide,
+  });
+
+  const safeQuantity = Number(quantity) || 0;
+  const safePrice = Number(price) || 0;
+  const safeFee = Number(fee) || 0;
+  const rawNotional = safePrice * safeQuantity;
+  const safeNotional = Number.isFinite(rawNotional) ? rawNotional : 0;
+  const signedAmount = safeNotional * (executionSide === 'BUY' ? -1 : 1);
+  const netAmount = signedAmount - safeFee;
+
+  // Insert order record
+  const { data: order, error: orderError } = await supabase
+    .from('trading_orders')
+    .insert({
+      account_id: accountId,
+      user_id: userId,
+      agent_id: agentId,
+      type,
+      client_order_id: clientOrderId,
+      symbol,
+      side: executionSide,
+      order_type: orderType,
+      status,
+      quantity: safeQuantity,
+      filled_quantity: safeQuantity,
+      average_fill_price: safePrice || null,
+      meta: sanitized,
+    })
+    .select()
+    .single();
+
+  if (orderError) {
+    console.error('Error recording trading order:', orderError);
+    throw orderError;
+  }
+
+  // Insert trade record
+  const { data: trade, error: tradeError } = await supabase
+    .from('trading_trades')
+    .insert({
+      order_id: order?.id ?? null,
+      account_id: accountId,
+      user_id: userId,
+      agent_id: agentId,
+      type,
+      symbol,
+      side: executionSide,
+      quantity: safeQuantity,
+      price: safePrice || 0,
+      fee: safeFee,
+      realized_pnl: realizedPnL ?? 0,
+      meta: sanitized,
+    })
+    .select()
+    .single();
+
+  if (tradeError) {
+    console.error('Error recording trading trade:', tradeError);
+    throw tradeError;
+  }
+
+  // Insert transaction record
+  const { data: transaction, error: transactionError } = await supabase
+    .from('trading_transactions')
+    .insert({
+      account_id: accountId,
+      user_id: userId,
+      agent_id: agentId,
+      type,
+      category: 'TRADE',
+      amount: Number(netAmount.toFixed(8)),
+      reference_order_id: order?.id ?? null,
+      reference_trade_id: trade?.id ?? null,
+      description:
+        description ||
+        `Executed ${executionSide} ${safeQuantity} ${symbol} @ ${safePrice}`,
+      metadata: {
+        ...sanitized,
+        fee: safeFee,
+        notional: Number(safeNotional.toFixed(8)),
+      },
+    })
+    .select()
+    .single();
+
+  if (transactionError) {
+    console.error('Error recording trading transaction:', transactionError);
+    throw transactionError;
+  }
+
+  return {
+    order,
+    trade,
+    transaction,
+  };
+}
