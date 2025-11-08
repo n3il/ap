@@ -1,21 +1,11 @@
 import { supabase } from '@/config/supabase';
 
-export const PROMPT_SLOTS = {
-  MARKET: 'market',
-  POSITION: 'position',
-};
-
-const PROMPT_SLOT_COLUMN_MAP = {
-  [PROMPT_SLOTS.MARKET]: 'market_prompt_id',
-  [PROMPT_SLOTS.POSITION]: 'position_prompt_id',
-};
-
 export const PROMPT_PLACEHOLDERS = {
   '{{MARKET_PRICES}}': 'Comma-separated list of tracked assets with price and 24h change',
   '{{MARKET_DATA_JSON}}': 'Full market data payload as formatted JSON',
   '{{OPEN_POSITIONS}}': 'Human-readable summary of open positions or "None"',
   '{{OPEN_POSITIONS_JSON}}': 'Open positions array as formatted JSON',
-  '{{PROMPT_TYPE}}': 'Either MARKET_SCAN or POSITION_REVIEW',
+  '{{PROMPT_TYPE}}': 'Context string like MARKET_SCAN or POSITION_REVIEW based on open positions',
   '{{TIMESTAMP}}': 'ISO timestamp when the prompt is rendered',
 };
 
@@ -103,17 +93,12 @@ export const promptService = {
   },
 
   /**
-   * Assign a prompt to an agent for a given slot (market or position).
+   * Assign a prompt to an agent.
    */
-  async assignPromptToAgent(agentId, slot, promptId) {
-    const column = PROMPT_SLOT_COLUMN_MAP[slot];
-    if (!column) {
-      throw new Error(`Unsupported prompt slot: ${slot}`);
-    }
-
+  async assignPromptToAgent(agentId, promptId) {
     const { data, error } = await supabase
       .from('agents')
-      .update({ [column]: promptId ?? null })
+      .update({ prompt_id: promptId ?? null })
       .eq('id', agentId)
       .select()
       .single();

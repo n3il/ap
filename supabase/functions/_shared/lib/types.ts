@@ -11,8 +11,7 @@ export interface Agent {
   llm_provider?: string;
   model_name?: string;
   hyperliquid_address?: string;
-  market_prompt_id?: string | null;
-  position_prompt_id?: string | null;
+  prompt_id?: string | null;
 }
 
 export interface Trade {

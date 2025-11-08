@@ -87,7 +87,7 @@ export default function AgentCard({
                 {isPublished ? 'PUBLIC' : 'PRIVATE'}
               </StatusBadge>
             </View>
-            <Text variant="sm" tone="muted" sx={{ flex: 1, fontFamily: 'monospace' }}>
+            <Text variant="xs" tone="muted" sx={{ flex: 1, fontFamily: 'monospace' }}>
               {providerMeta}
             </Text>
           </View>

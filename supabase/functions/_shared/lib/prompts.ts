@@ -1,9 +1,9 @@
+import type { Agent } from './types.ts';
+
 /**
  * Simple prompt fetching from database
  * No fallbacks - prompts must exist in database
  */
-
-export type PromptType = 'MARKET_SCAN' | 'POSITION_REVIEW';
 
 export interface PromptRecord {
   id: string;
@@ -17,24 +17,15 @@ export interface PromptRecord {
   updated_at?: string;
 }
 
-interface Agent {
-  id: string;
-  user_id: string;
-  market_prompt_id?: string | null;
-  position_prompt_id?: string | null;
-}
-
 /**
  * Fetches prompt from database for an agent
  * Priority: agent's custom prompt -> user's default -> global default
  */
 export async function fetchPrompt(
   supabase: any,
-  agent: Agent,
-  promptType: PromptType
+  agent: Agent
 ): Promise<PromptRecord> {
-  const selectedPromptId =
-    promptType === 'MARKET_SCAN' ? agent.market_prompt_id : agent.position_prompt_id;
+  const selectedPromptId = agent.prompt_id;
 
   // Try agent's specific prompt first
   if (selectedPromptId) {
@@ -63,9 +54,7 @@ export async function fetchPrompt(
     .single();
 
   if (error || !data) {
-    throw new Error(
-      `No ${promptType} prompt found. Please create a prompt in the database.`
-    );
+    throw new Error('No prompt found. Please create a prompt in the database.');
   }
 
   return data as PromptRecord;

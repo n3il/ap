@@ -1,27 +1,26 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from '@/components/ui';
 import GlassCard from '@/components/GlassCard';
-import { PROMPT_SLOTS } from '@/services';
 import { useColors } from '@/theme';
 
 const PromptAssignmentsCard = ({
-  selectedMarketPrompt,
-  selectedPositionPrompt,
+  selectedPrompt,
   onSelectPrompt,
   onOpenLibrary,
   isFetching,
   isMutating,
 }) => {
   const { colors: palette, withOpacity } = useColors();
-  const renderPromptBlock = (label, summary, description, instruction, onPress) => (
-    <TouchableOpacity onPress={onPress} sx={{ marginBottom: 3 }} activeOpacity={0.8}>
+
+  const renderPromptBlock = () => (
+    <TouchableOpacity onPress={onSelectPrompt} sx={{ marginBottom: 3 }} activeOpacity={0.8}>
       <View sx={{ padding: 3 }}>
-        <Text variant="sm" sx={{ color: 'textSecondary', fontWeight: '600' }}>{label}</Text>
+        <Text variant="sm" sx={{ color: 'textSecondary', fontWeight: '600' }}>Active Prompt</Text>
         <Text variant="xs" sx={{ color: 'mutedForeground', textTransform: 'uppercase', marginTop: 1, letterSpacing: 1 }}>
-          {summary || 'Default Prompt'}
+          {selectedPrompt?.name || 'Default Prompt'}
         </Text>
         <Text variant="xs" sx={{ color: 'secondary500', marginTop: 2 }}>
-          {description ||
+          {selectedPrompt?.description ||
             'Configure a custom prompt to override the default AlphaQuant instruction.'}
         </Text>
         <Text
@@ -34,7 +33,7 @@ const PromptAssignmentsCard = ({
           }}
           numberOfLines={3}
         >
-          {instruction || 'Uses the built-in AlphaQuant system instruction.'}
+          {selectedPrompt?.system_instruction || 'Uses the built-in AlphaQuant system instruction.'}
         </Text>
         <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', marginTop: 3 }}>Tap to change →</Text>
       </View>
@@ -65,24 +64,9 @@ const PromptAssignmentsCard = ({
       {isFetching ? (
         <Text variant="sm" sx={{ color: 'secondary500' }}>Loading prompts...</Text>
       ) : (
-        <>
-          {renderPromptBlock(
-            'Market Scan',
-            selectedMarketPrompt?.name,
-            selectedMarketPrompt?.description,
-            selectedMarketPrompt?.system_instruction,
-            () => onSelectPrompt(PROMPT_SLOTS.MARKET)
-          )}
-          {renderPromptBlock(
-            'Position Review',
-            selectedPositionPrompt?.name,
-            selectedPositionPrompt?.description,
-            selectedPositionPrompt?.system_instruction,
-            () => onSelectPrompt(PROMPT_SLOTS.POSITION)
-          )}
-        </>
+        renderPromptBlock()
       )}
-      {(isMutating) ? (
+      {isMutating ? (
         <Text variant="xs" sx={{ color: 'secondary500', marginTop: 3 }}>Updating agent prompt selection...</Text>
       ) : null}
     </GlassCard>

@@ -14,11 +14,6 @@ export default function AssessmentsScreen() {
   // Define tabs with their content
   const tabs = [
     {
-      key: 'trades',
-      title: 'Trades',
-      content: <TradesTab />,
-    },
-    {
       key: 'balance',
       title: 'Balance',
       content: <BalanceTab />,
@@ -27,6 +22,11 @@ export default function AssessmentsScreen() {
       key: 'agent',
       title: 'Agent',
       content: <AgentTab />,
+    },
+    {
+      key: 'trades',
+      title: 'Trades',
+      content: <TradesTab />,
     },
   ];
 

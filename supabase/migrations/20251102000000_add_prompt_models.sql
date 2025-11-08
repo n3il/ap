@@ -96,11 +96,9 @@ WHERE NOT EXISTS (
 
 -- Attach prompt references to agents
 ALTER TABLE public.agents
-  ADD COLUMN IF NOT EXISTS market_prompt_id UUID REFERENCES public.prompts(id) ON DELETE SET NULL,
-  ADD COLUMN IF NOT EXISTS position_prompt_id UUID REFERENCES public.prompts(id) ON DELETE SET NULL;
+  ADD COLUMN IF NOT EXISTS prompt_id UUID REFERENCES public.prompts(id) ON DELETE SET NULL;
 
-CREATE INDEX IF NOT EXISTS idx_agents_market_prompt ON public.agents(market_prompt_id);
-CREATE INDEX IF NOT EXISTS idx_agents_position_prompt ON public.agents(position_prompt_id);
+CREATE INDEX IF NOT EXISTS idx_agents_prompt ON public.agents(prompt_id);
 
 -- Record prompt used for each assessment
 ALTER TABLE public.assessments
@@ -112,25 +110,14 @@ CREATE INDEX IF NOT EXISTS idx_assessments_prompt_id ON public.assessments(promp
 CREATE OR REPLACE FUNCTION public.validate_agent_prompt_references()
 RETURNS TRIGGER AS $$
 BEGIN
-  IF NEW.market_prompt_id IS NOT NULL THEN
+  IF NEW.prompt_id IS NOT NULL THEN
     IF NOT EXISTS (
       SELECT 1 FROM public.prompts p
-      WHERE p.id = NEW.market_prompt_id
+      WHERE p.id = NEW.prompt_id
         AND (p.user_id IS NULL OR p.user_id = NEW.user_id)
         AND p.is_active = true
     ) THEN
-      RAISE EXCEPTION 'Invalid market prompt reference for agent %', NEW.id;
-    END IF;
-  END IF;
-
-  IF NEW.position_prompt_id IS NOT NULL THEN
-    IF NOT EXISTS (
-      SELECT 1 FROM public.prompts p
-      WHERE p.id = NEW.position_prompt_id
-        AND (p.user_id IS NULL OR p.user_id = NEW.user_id)
-        AND p.is_active = true
-    ) THEN
-      RAISE EXCEPTION 'Invalid position prompt reference for agent %', NEW.id;
+      RAISE EXCEPTION 'Invalid prompt reference for agent %', NEW.id;
     END IF;
   END IF;
 

@@ -9,8 +9,7 @@ export interface CreateAgentInput {
   model_name: string;
   hyperliquid_address: string;
   initial_capital: number;
-  market_prompt_id?: string | null;
-  position_prompt_id?: string | null;
+  prompt_id?: string | null;
 }
 
 /**
@@ -66,8 +65,7 @@ export function validateAgentInput(data: any): CreateAgentInput {
     model_name: data.model_name,
     hyperliquid_address: data.hyperliquid_address,
     initial_capital,
-    market_prompt_id: data.market_prompt_id ?? null,
-    position_prompt_id: data.position_prompt_id ?? null,
+    prompt_id: data.prompt_id ?? null,
   };
 }
 
@@ -90,8 +88,7 @@ export async function createAgent(
         hyperliquid_address: input.hyperliquid_address,
         initial_capital: input.initial_capital,
         is_active: new Date().toISOString(),
-        market_prompt_id: input.market_prompt_id,
-        position_prompt_id: input.position_prompt_id,
+        prompt_id: input.prompt_id,
       },
     ])
     .select()

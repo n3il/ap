@@ -214,13 +214,14 @@ export const agentService = {
             name: duplicatedName,
             llm_provider: sourceAgent.llm_provider,
             model_name: sourceAgent.model_name,
-            hyperliquid_address: hyperliquidAddress,
-            initial_capital: sourceAgent.initial_capital,
-            user_id: user.id,
-            is_active: null,
-            published_at: null,
-          }
-        ])
+          hyperliquid_address: hyperliquidAddress,
+          initial_capital: sourceAgent.initial_capital,
+          user_id: user.id,
+          is_active: null,
+          published_at: null,
+          prompt_id: sourceAgent.prompt_id ?? null,
+        }
+      ])
         .select()
         .single();
 

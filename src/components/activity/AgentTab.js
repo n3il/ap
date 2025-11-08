@@ -205,16 +205,9 @@ export default function AgentTab() {
             <Text sx={{ color: 'textPrimary', fontSize: 20, fontWeight: '700', marginBottom: 4 }}>
               Timeline ({filteredAssessments.length})
             </Text>
-            {/* {filteredAssessments.map((assessment) => (
-              <View key={assessment.id} sx={{ marginBottom: 2 }}>
-                {assessment.agents && (
-                  <Text sx={{ color: 'mutedForeground', fontSize: 12, marginBottom: 1, marginLeft: 1 }}>
-                    {assessment.agents.name} • {assessment.agents.model_name}
-                  </Text>
-                )}
-                <AssessmentCard assessment={assessment} />
-              </View>
-            ))} */}
+            {filteredAssessments.map((assessment) => (
+              <AssessmentCard assessment={assessment} />
+            ))}
           </>
         )}
       </View>

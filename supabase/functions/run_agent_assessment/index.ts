@@ -55,7 +55,7 @@ async function runAgentAssessment(agentId: string, authHeader: string) {
   console.log('Prompt type:', promptType);
 
   const serviceClient = createSupabaseServiceClient();
-  const promptTemplate = await fetchPrompt(serviceClient, agent, promptType);
+  const promptTemplate = await fetchPrompt(serviceClient, agent);
 
   const prompt = buildPrompt(promptTemplate, {
     promptType,

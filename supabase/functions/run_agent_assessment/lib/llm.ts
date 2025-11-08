@@ -3,7 +3,7 @@ import { callDeepseekAPI } from '../../_shared/deepseek.ts';
 import { callOpenAIAPI } from '../../_shared/openai.ts';
 import { callAnthropicAPI } from '../../_shared/anthropic.ts';
 import { fetchPrompt } from '../../_shared/lib/prompts.ts';
-import type { Agent } from './agent.ts';
+import type { Agent } from '../../_shared/lib/types.ts';
 import type { Trade, MarketAsset } from './data.ts';
 
 export type PromptType = 'POSITION_REVIEW' | 'MARKET_SCAN';
@@ -37,7 +37,7 @@ export async function buildLLMPrompt(
   agent: Agent,
   context: PromptContext
 ): Promise<{ systemInstruction: string; userQuery: string }> {
-  const template = await fetchPrompt(serviceClient, agent, context.promptType);
+  const template = await fetchPrompt(serviceClient, agent);
 
   return buildPrompt(template, context);
 }

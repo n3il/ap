@@ -36,8 +36,7 @@ Deno.serve(async (req) => {
       model_name,
       hyperliquid_address,
       initial_capital,
-      market_prompt_id,
-      position_prompt_id,
+      prompt_id,
     } = await req.json()
 
     // Validate required fields
@@ -62,8 +61,7 @@ Deno.serve(async (req) => {
           hyperliquid_address,
           initial_capital,
           is_active: new Date().toISOString(),
-          market_prompt_id: market_prompt_id ?? null,
-          position_prompt_id: position_prompt_id ?? null,
+          prompt_id: prompt_id ?? null,
         },
       ])
       .select()

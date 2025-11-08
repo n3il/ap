@@ -33,11 +33,9 @@ export default function CreateAgentModal({
     llm_provider: 'google',
     model_name: 'gemini-2.5-flash-preview-09-2025',
     initial_capital: '',
-    market_prompt_id: null,
-    position_prompt_id: null,
+    prompt_id: null,
   });
-  const [marketPickerVisible, setMarketPickerVisible] = useState(false);
-  const [positionPickerVisible, setPositionPickerVisible] = useState(false);
+  const [promptPickerVisible, setPromptPickerVisible] = useState(false);
 
   const promptLibrary = useMemo(() => promptOptions, [promptOptions]);
 
@@ -49,8 +47,7 @@ export default function CreateAgentModal({
 
     setFormData((prev) => ({
       ...prev,
-      market_prompt_id: defaultPrompt?.id ?? null,
-      position_prompt_id: defaultPrompt?.id ?? null,
+      prompt_id: defaultPrompt?.id ?? null,
     }));
   }, [visible, promptLibrary]);
 
@@ -71,17 +68,13 @@ export default function CreateAgentModal({
       llm_provider: 'google',
       model_name: 'gemini-2.5-flash-preview-09-2025',
       initial_capital: '',
-      market_prompt_id: promptLibrary.find((prompt) => prompt.is_default)?.id || null,
-      position_prompt_id: promptLibrary.find((prompt) => prompt.is_default)?.id || null,
+      prompt_id: promptLibrary.find((prompt) => prompt.is_default)?.id || null,
     });
   };
 
   const selectedProvider = LLM_PROVIDERS.find(p => p.id === formData.llm_provider);
-  const selectedMarketPrompt = promptLibrary.find(
-    (prompt) => prompt.id === formData.market_prompt_id
-  );
-  const selectedPositionPrompt = promptLibrary.find(
-    (prompt) => prompt.id === formData.position_prompt_id
+  const selectedPrompt = promptLibrary.find(
+    (prompt) => prompt.id === formData.prompt_id
   );
 
   return (
@@ -127,6 +120,50 @@ export default function CreateAgentModal({
                   onChangeText={(text) => setFormData({ ...formData, name: text })}
                 />
               </View>
+
+              <View sx={{ marginBottom: 4 }}>
+                <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
+                  <Text variant="sm" tone="muted">Prompt Template</Text>
+                  <TouchableOpacity onPress={() => setPromptPickerVisible(true)}>
+                    <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', textTransform: 'uppercase' }}>Select</Text>
+                  </TouchableOpacity>
+                </View>
+                <View
+                  sx={{
+                    padding: 3,
+                    borderWidth: 1,
+                    borderColor: withOpacity(palette.foreground, 0.08),
+                    backgroundColor: withOpacity(palette.foreground, 0.04),
+                    borderRadius: 'xl'
+                  }}
+                >
+                  <Text variant="sm" sx={{ fontWeight: '600' }}>
+                    {selectedPrompt?.name || 'Default Prompt'}
+                  </Text>
+                  <Text variant="xs" tone="muted" sx={{ marginTop: 1 }}>
+                    {selectedPrompt?.description || 'Uses the default AlphaQuant instruction set.'}
+                  </Text>
+                </View>
+              </View>
+
+              {onManagePrompts ? (
+                <TouchableOpacity
+                  onPress={onManagePrompts}
+                  sx={{
+                    marginBottom: 6,
+                    paddingHorizontal: 4,
+                    paddingVertical: 3,
+                    borderRadius: 'xl',
+                    borderWidth: 1,
+                    borderColor: withOpacity(palette.foreground, 0.08),
+                    backgroundColor: withOpacity(palette.foreground, 0.04)
+                  }}
+                >
+                  <Text variant="sm" sx={{ color: 'accent', textAlign: 'center', fontWeight: '600', textTransform: 'uppercase' }}>
+                    Manage Prompt Library
+                  </Text>
+                </TouchableOpacity>
+              ) : null}
 
               <View sx={{ marginBottom: 4 }}>
                 <SectionTitle title="Model Provider" />
@@ -208,87 +245,6 @@ export default function CreateAgentModal({
                 />
               </View>
 
-              {/* <View sx={{
-                marginBottom: 4,
-                backgroundColor: withOpacity(palette.foreground, 0.04),
-                borderWidth: 1,
-                borderColor: withOpacity(palette.foreground, 0.08),
-                borderRadius: 'xl',
-                padding: 4
-              }}>
-                <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', marginBottom: 1 }}>Hyperliquid Wallet</Text>
-                <Text variant="sm" tone="muted">
-                  A new wallet address is generated automatically when the agent is created.
-                </Text>
-              </View> */}
-
-              {/* <View sx={{ marginBottom: 4 }}>
-                <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                  <Text variant="sm" tone="muted">Market Scan Prompt</Text>
-                  <TouchableOpacity onPress={() => setMarketPickerVisible(true)}>
-                    <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', textTransform: 'uppercase' }}>Select</Text>
-                  </TouchableOpacity>
-                </View>
-                <View
-                  sx={{
-                    padding: 3,
-                    borderWidth: 1,
-                    borderColor: withOpacity(palette.foreground, 0.08),
-                    backgroundColor: withOpacity(palette.foreground, 0.04),
-                  }}
-                >
-                  <Text variant="sm" sx={{ fontWeight: '600' }}>
-                    {selectedMarketPrompt?.name || 'Default Market Scan'}
-                  </Text>
-                  <Text variant="xs" tone="muted" sx={{ marginTop: 1 }}>
-                    {selectedMarketPrompt?.description ||
-                      'Uses the default AlphaQuant market scan instructions.'}
-                  </Text>
-                </View>
-              </View>
-
-              <View sx={{ marginBottom: 4 }}>
-                <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 2 }}>
-                  <Text variant="sm" tone="muted">Position Review Prompt</Text>
-                  <TouchableOpacity onPress={() => setPositionPickerVisible(true)}>
-                    <Text variant="xs" sx={{ color: 'accent', fontWeight: '600', textTransform: 'uppercase' }}>Select</Text>
-                  </TouchableOpacity>
-                </View>
-                <View
-                  sx={{
-                    padding: 3,
-                    borderWidth: 1,
-                    borderColor: withOpacity(palette.foreground, 0.08),
-                    backgroundColor: withOpacity(palette.foreground, 0.04),
-                  }}
-                >
-                  <Text variant="sm" sx={{ fontWeight: '600' }}>
-                    {selectedPositionPrompt?.name || 'Default Position Review'}
-                  </Text>
-                  <Text variant="xs" tone="muted" sx={{ marginTop: 1 }}>
-                    {selectedPositionPrompt?.description ||
-                      'Uses the default AlphaQuant position management instructions.'}
-                  </Text>
-                </View>
-              </View> */}
-
-              {/* <TouchableOpacity
-                onPress={onManagePrompts}
-                sx={{
-                  marginBottom: 6,
-                  paddingHorizontal: 4,
-                  paddingVertical: 3,
-                  borderRadius: 'xl',
-                  borderWidth: 1,
-                  borderColor: withOpacity(palette.foreground, 0.08),
-                  backgroundColor: withOpacity(palette.foreground, 0.04)
-                }}
-              >
-                <Text variant="sm" sx={{ color: 'accent', textAlign: 'center', fontWeight: '600', textTransform: 'uppercase' }}>
-                  Manage Prompt Library
-                </Text>
-              </TouchableOpacity> */}
-
               <Button
                 variant="primary"
                 onPress={handleSubmit}
@@ -302,28 +258,15 @@ export default function CreateAgentModal({
         </KeyboardAvoidingView>
 
       <PromptPickerModal
-        visible={marketPickerVisible}
+        visible={promptPickerVisible}
         prompts={promptLibrary}
-        selectedPromptId={formData.market_prompt_id}
+        selectedPromptId={formData.prompt_id}
         onSelect={(prompt) =>
-          setFormData((prev) => ({ ...prev, market_prompt_id: prompt.id ?? null }))
+          setFormData((prev) => ({ ...prev, prompt_id: prompt.id ?? null }))
         }
-        onClose={() => setMarketPickerVisible(false)}
-        title="Select Market Scan Prompt"
-        emptyMessage="Create a market scan prompt from the prompt library."
-        onCreateNew={onManagePrompts}
-      />
-
-      <PromptPickerModal
-        visible={positionPickerVisible}
-        prompts={promptLibrary}
-        selectedPromptId={formData.position_prompt_id}
-        onSelect={(prompt) =>
-          setFormData((prev) => ({ ...prev, position_prompt_id: prompt.id ?? null }))
-        }
-        onClose={() => setPositionPickerVisible(false)}
-        title="Select Position Review Prompt"
-        emptyMessage="Create a position review prompt from the prompt library."
+        onClose={() => setPromptPickerVisible(false)}
+        title="Select Prompt"
+        emptyMessage="Create a prompt from the prompt library."
         onCreateNew={onManagePrompts}
       />
     </Modal>

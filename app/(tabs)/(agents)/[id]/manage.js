@@ -4,9 +4,8 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ContainerView from '@/components/ContainerView';
 import { PromptAssignmentsCard, PromptModals } from '@/components/ManagePrompts';
-import GlassCard from '@/components/GlassCard';
 import { agentService } from '@/services/agentService';
-import { promptService, PROMPT_SLOTS } from '@/services';
+import { promptService } from '@/services';
 import { useAuth } from '@/contexts/AuthContext';
 import { useColors } from '@/theme';
 
@@ -43,37 +42,24 @@ const AgentManageScreen = () => {
     enabled: !!agentId && isOwnAgent,
   });
 
-  const defaultPrompt = useMemo(
-    () => prompts.find((prompt) => prompt.is_default) || prompts[0] || null,
-    [prompts]
-  );
+  const defaultPrompt = useMemo(() => {
+    return prompts.find((prompt) => prompt.is_default) || prompts[0] || null;
+  }, [prompts]);
 
-  const selectedMarketPrompt = useMemo(() => {
-    if (!agent) return null;
-    const targetId = agent.market_prompt_id;
-    if (!targetId) {
+  const selectedPrompt = useMemo(() => {
+    if (!agent) return defaultPrompt;
+    if (!agent.prompt_id) {
       return defaultPrompt;
     }
-    return prompts.find((prompt) => prompt.id === targetId) || null;
-  }, [agent, prompts, defaultPrompt]);
-
-  const selectedPositionPrompt = useMemo(() => {
-    if (!agent) return null;
-    const targetId = agent.position_prompt_id;
-    if (!targetId) {
-      return defaultPrompt;
-    }
-    return prompts.find((prompt) => prompt.id === targetId) || null;
+    return prompts.find((prompt) => prompt.id === agent.prompt_id) || defaultPrompt;
   }, [agent, prompts, defaultPrompt]);
 
   const [promptPickerVisible, setPromptPickerVisible] = useState(false);
-  const [promptPickerType, setPromptPickerType] = useState(null);
   const [promptManagerVisible, setPromptManagerVisible] = useState(false);
-  const [resumePromptPicker, setResumePromptPicker] = useState(null);
+  const [resumePromptPicker, setResumePromptPicker] = useState(false);
 
   const assignPromptMutation = useMutation({
-    mutationFn: ({ slot, promptId }) =>
-      promptService.assignPromptToAgent(agentId, slot, promptId),
+    mutationFn: (promptId) => promptService.assignPromptToAgent(agentId, promptId),
     onSuccess: () => {
       queryClient.invalidateQueries(['agent', agentId]);
       refetchPrompts();
@@ -119,50 +105,38 @@ const AgentManageScreen = () => {
     },
   });
 
-  const handlePromptSelect = (slot) => {
-    setResumePromptPicker(null);
-    setPromptPickerType(slot);
+  const handlePromptSelect = () => {
+    setResumePromptPicker(false);
     setPromptPickerVisible(true);
   };
 
   const handlePromptPicked = (prompt) => {
-    if (!promptPickerType) return;
-    const currentId =
-      promptPickerType === PROMPT_SLOTS.MARKET
-        ? selectedMarketPrompt?.id ?? null
-        : selectedPositionPrompt?.id ?? null;
+    const currentId = selectedPrompt?.id ?? null;
     const nextId = prompt?.id ?? null;
     if (currentId === nextId) {
       setPromptPickerVisible(false);
-      setPromptPickerType(null);
-      setResumePromptPicker(null);
+      setResumePromptPicker(false);
       return;
     }
-    assignPromptMutation.mutate({
-      slot: promptPickerType,
-      promptId: prompt?.id ?? null,
-    });
+    assignPromptMutation.mutate(prompt?.id ?? null);
     setPromptPickerVisible(false);
-    setPromptPickerType(null);
-    setResumePromptPicker(null);
+    setResumePromptPicker(false);
   };
 
-  const handleOpenPromptManager = (resumeType = null) => {
-    setResumePromptPicker(resumeType);
-    setPromptPickerVisible(false);
-    setPromptPickerType(null);
+  const handleOpenPromptManager = (shouldResumePicker = false) => {
+    setResumePromptPicker(shouldResumePicker);
+    if (shouldResumePicker) {
+      setPromptPickerVisible(false);
+    }
     setPromptManagerVisible(true);
   };
 
   const handleClosePromptManager = () => {
     setPromptManagerVisible(false);
     if (resumePromptPicker) {
-      setPromptPickerType(resumePromptPicker);
       setPromptPickerVisible(true);
-      setResumePromptPicker(null);
-    } else {
-      setResumePromptPicker(null);
     }
+    setResumePromptPicker(false);
   };
 
   const handlePublishToggle = () => {
@@ -291,10 +265,9 @@ const AgentManageScreen = () => {
 
         <View sx={{ marginBottom: 6, paddingHorizontal: 0 }}>
           <PromptAssignmentsCard
-            selectedMarketPrompt={selectedMarketPrompt}
-            selectedPositionPrompt={selectedPositionPrompt}
+            selectedPrompt={selectedPrompt}
             onSelectPrompt={handlePromptSelect}
-            onOpenLibrary={() => handleOpenPromptManager(null)}
+            onOpenLibrary={() => handleOpenPromptManager(false)}
             isFetching={promptsFetching}
             isMutating={assignPromptMutation.isLoading}
           />
@@ -356,17 +329,14 @@ const AgentManageScreen = () => {
 
       <PromptModals
         pickerVisible={promptPickerVisible}
-        pickerType={promptPickerType}
         prompts={prompts}
-        selectedMarketPrompt={selectedMarketPrompt}
-        selectedPositionPrompt={selectedPositionPrompt}
+        selectedPrompt={selectedPrompt}
         onSelectPrompt={handlePromptPicked}
         onClosePicker={() => {
           setPromptPickerVisible(false);
-          setPromptPickerType(null);
-          setResumePromptPicker(null);
+          setResumePromptPicker(false);
         }}
-        onOpenManagerFromPicker={handleOpenPromptManager}
+        onOpenManagerFromPicker={() => handleOpenPromptManager(true)}
         managerVisible={promptManagerVisible}
         onCloseManager={handleClosePromptManager}
         onPromptCreated={() => {

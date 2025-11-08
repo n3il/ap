@@ -173,8 +173,7 @@ Provide thorough reasoning, then emit ACTION_JSON to CLOSE, REDUCE, ADJUST, or N
     hyperliquid_address,
     initial_capital,
     is_active,
-    market_prompt_id,
-    position_prompt_id,
+    prompt_id,
     created_at
   )
   VALUES
@@ -188,7 +187,6 @@ Provide thorough reasoning, then emit ACTION_JSON to CLOSE, REDUCE, ADJUST, or N
       25000,
       true,
       market_prompt_id,
-      position_prompt_id,
       NOW()
     ),
     (
@@ -200,7 +198,6 @@ Provide thorough reasoning, then emit ACTION_JSON to CLOSE, REDUCE, ADJUST, or N
       '0xpuppetopenairanger',
       25000,
       true,
-      market_prompt_id,
       position_prompt_id,
       NOW()
     ),
@@ -214,7 +211,6 @@ Provide thorough reasoning, then emit ACTION_JSON to CLOSE, REDUCE, ADJUST, or N
       25000,
       true,
       market_prompt_id,
-      position_prompt_id,
       NOW()
     )
   ON CONFLICT (id) DO UPDATE
@@ -225,7 +221,6 @@ Provide thorough reasoning, then emit ACTION_JSON to CLOSE, REDUCE, ADJUST, or N
     hyperliquid_address = EXCLUDED.hyperliquid_address,
     initial_capital = EXCLUDED.initial_capital,
     is_active = EXCLUDED.is_active,
-    market_prompt_id = EXCLUDED.market_prompt_id,
-    position_prompt_id = EXCLUDED.position_prompt_id;
+    prompt_id = EXCLUDED.prompt_id;
 END
 $$;
