@@ -317,7 +317,7 @@ const AgentReadScreen = () => {
   const renderTab = (tab, index, isActive) => (
     <MaterialCommunityIcons
       name={tab.icon}
-      size={22}
+      size={18}
       color={isActive ? colors.accent : colors.colors.secondary500 ?? colors.secondary}
     />
   );
@@ -344,7 +344,7 @@ const AgentReadScreen = () => {
               glassEffectStyle="regular"
               style={{
                 borderRadius: 32,
-                paddingHorizontal: 8,
+                paddingHorizontal: 4,
                 marginHorizontal: 4,
               }}
             >

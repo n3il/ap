@@ -135,6 +135,7 @@ export default function ThoughtsTab({
             borderRadius: 16,
             padding: 16,
             marginBottom: 16,
+            paddingVertical: 4,
           }}
         >
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>

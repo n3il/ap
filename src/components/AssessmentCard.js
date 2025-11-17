@@ -122,9 +122,20 @@ export default function AssessmentCard({ assessment }) {
     },
   }), [palette, withOpacity]);
 
-  const parsedResponse = assessment?.parsed_llm_response && typeof assessment.parsed_llm_response === 'object'
-    ? assessment.parsed_llm_response
-    : null;
+    const [parsedResponse, _] = useState(() => {
+      try {
+        return assessment?.parsed_llm_response && typeof assessment.parsed_llm_response === 'object'
+      ? assessment.parsed_llm_response
+      : JSON.parse(assessment.llm_response_text);
+      } catch (e) {
+        return {
+          headline: assessment.llm_response_text,
+          overview: null,
+          tradeActions: [],
+        };
+      }
+    });
+
   const headline = parsedResponse?.headline ?? null;
   const overview = parsedResponse?.overview ?? null;
 
