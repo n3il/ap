@@ -1,6 +1,6 @@
 import { createSupabaseServiceClient } from '../../_shared/supabase.ts';
 import type { MarketDataSnapshot } from './data.ts';
-import type { PromptType, LLMResponse } from '../../_shared/llm/types.ts';
+import type { PromptType, LLMResponse, LLMTradeAction } from '../../_shared/llm/types.ts';
 import type { PnLMetrics } from '../../_shared/lib/pnl.ts';
 
 export interface Assessment {
@@ -23,9 +23,20 @@ export async function saveAssessment(
   promptType: PromptType,
   marketSnapshot: MarketDataSnapshot,
   prompt: { systemInstruction: string; userQuery: string },
-  llmResponse: LLMResponse
+  llmResponse: LLMResponse,
+  tradeActions: LLMTradeAction[]
 ): Promise<Assessment> {
   const serviceClient = createSupabaseServiceClient();
+
+  // Create a summary string of all trade actions for the trade_action_taken field
+  const actionsSummary = tradeActions.length > 0
+    ? tradeActions.map(ta => {
+        if (ta.action === 'NO_ACTION') {
+          return `NO_ACTION (${ta.asset})`;
+        }
+        return `${ta.action} ${ta.asset}${ta.leverage ? ` ${ta.leverage}X` : ''}`;
+      }).join(', ')
+    : llmResponse.action || 'NO_ACTION';
 
   const { data: assessment, error } = await serviceClient
     .from('assessments')
@@ -37,7 +48,7 @@ export async function saveAssessment(
       llm_prompt_used: `${prompt.systemInstruction}\n\n${prompt.userQuery}`,
       llm_response_text: llmResponse.text,
       parsed_llm_response: llmResponse.parsed ?? null,
-      trade_action_taken: llmResponse.action,
+      trade_action_taken: actionsSummary,
     }])
     .select()
     .single();
@@ -45,6 +56,7 @@ export async function saveAssessment(
   if (error) throw error;
 
   console.log('Assessment saved:', assessment.id);
+  console.log('Trade actions summary:', actionsSummary);
   return assessment as Assessment;
 }
 

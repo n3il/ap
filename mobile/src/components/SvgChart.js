@@ -1,46 +1,15 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, Button, ActivityIndicator } from '@/components/ui';
+import { View, Text, Button } from '@/components/ui';
 import { Animated, PanResponder } from 'react-native';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useMultiAgentSnapshots } from '@/hooks/useAgentSnapshots';
-import { agentSnapshotService } from '@/services/agentSnapshotService';
-import { getProviderColor, getMockAgentsForSvgChart } from '@/factories/mockAgentData';
 import { useColors } from '@/theme';
-import { useExploreAgentsStore } from '@/stores/useExploreAgentsStore';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
 const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 7;
 const PADDING = { top: 20, right: 50, bottom: 5, left: 12 };
-
-// Stable mock data references to prevent re-renders
-const MOCK_AGENTS_DATA = getMockAgentsForSvgChart();
-const MOCK_ACCOUNT_DATA = {
-  lines: [{
-    id: 'account-balance',
-    name: 'Account Balance',
-    color: '#10b981', // Will be overridden by actual color
-    data: [
-      { time: 0, value: 0 },
-      { time: 0.2, value: 2.5 },
-      { time: 0.4, value: 1.8 },
-      { time: 0.6, value: 4.2 },
-      { time: 0.8, value: 3.5 },
-      { time: 1, value: 5.8 },
-    ],
-  }],
-  useMockData: true,
-};
-
-/**
- * Chart data source types
- */
-export const CHART_DATA_SOURCE = {
-  AGENTS: 'agents',           // Multi-agent performance
-  ACCOUNT_BALANCE: 'account-balance',  // User account balance over time
-};
 
 // Interpolate y value for a given x position in the data
 const interpolateValue = (data, targetX) => {
@@ -99,45 +68,42 @@ const interpolateValue = (data, targetX) => {
  * Reusable SVG Chart Component
  *
  * @param {Object} props
- * @param {string} props.dataSource - Type of data: CHART_DATA_SOURCE.AGENTS | CHART_DATA_SOURCE.ACCOUNT_BALANCE
+ * @param {Array} props.lines - Array of line data objects
+ * @param {string} props.lines[].id - Unique identifier for the line
+ * @param {string} props.lines[].name - Display name for the line
+ * @param {string} props.lines[].color - Color for the line
+ * @param {Array} props.lines[].data - Data points [{ time: 0-1, value: number }]
+ * @param {string} props.lines[].axisGroup - Axis grouping: 'left' | 'right' (default: 'left')
+ * @param {Function} props.lines[].formatValue - Custom value formatter for this line
  * @param {string} props.timeframe - Time range: '1h' | '24h' | '7d'
- * @param {Array} props.agents - Agent configs (for AGENTS source)
- * @param {Array} props.accountData - Account balance data (for ACCOUNT_BALANCE source)
- * @param {string} props.yAxisLabel - Label for Y-axis (default: '%' for agents, '$' for balance)
- * @param {Function} props.formatValue - Custom value formatter
- * @param {boolean} props.generateDataWhenNotExists - Whether to generate mock data when real data doesn't exist (default: false)
  *
  * @example
- * // Agent performance with mock data fallback
  * <SvgChart
- *   dataSource={CHART_DATA_SOURCE.AGENTS}
- *   agents={myAgents}
+ *   lines={[
+ *     {
+ *       id: 'agent-1',
+ *       name: 'Agent 1',
+ *       color: '#10b981',
+ *       data: [{ time: 0, value: 0 }, { time: 1, value: 10 }],
+ *       axisGroup: 'left',
+ *       formatValue: (val) => `${val.toFixed(1)}%`
+ *     },
+ *     {
+ *       id: 'balance',
+ *       name: 'Balance',
+ *       color: '#3b82f6',
+ *       data: [{ time: 0, value: 1000 }, { time: 1, value: 1500 }],
+ *       axisGroup: 'right',
+ *       formatValue: (val) => `$${val.toFixed(0)}`
+ *     }
+ *   ]}
  *   timeframe="24h"
- *   generateDataWhenNotExists={true}
- * />
- *
- * @example
- * // Account balance - no mock data
- * <SvgChart
- *   dataSource={CHART_DATA_SOURCE.ACCOUNT_BALANCE}
- *   accountData={balanceHistory}
- *   timeframe="7d"
- *   yAxisLabel="$"
- *   generateDataWhenNotExists={false}
  * />
  */
 const SvgChart = ({
-  dataSource = CHART_DATA_SOURCE.AGENTS,
+  lines = [],
   timeframe = '1h',
-  agents: agentsProp = [],
-  accountData = null,
-  yAxisLabel = null,
-  formatValue = null,
-  generateDataWhenNotExists = false,
 }) => {
-  // Get agents from store (for explore tab), fallback to prop if provided
-  const agentsFromStore = useExploreAgentsStore((state) => state.agents);
-  const agents = agentsProp.length > 0 ? agentsProp : agentsFromStore;
 
   const [expanded, setExpanded] = useState(false);
   const [touchActive, setTouchActive] = useState(false);
@@ -221,120 +187,22 @@ const SvgChart = ({
     });
   }, [plotWidth]);
 
-  // Fetch agent data if needed
-  const agentIds = useMemo(() =>
-    dataSource === CHART_DATA_SOURCE.AGENTS ? (agents?.map(a => a.id) || []) : [],
-    [dataSource, agents]
-  );
+  // Group lines by axis
+  const axisGroups = useMemo(() => {
+    const groups = {
+      left: [],
+      right: []
+    };
 
-  const { data: snapshotsData, isLoading: agentLoading, error: agentError } = useMultiAgentSnapshots(
-    agentIds,
-    timeframe,
-    { enabled: dataSource === CHART_DATA_SOURCE.AGENTS && agentIds.length > 0 }
-  );
-
-  // Transform data based on source
-  const chartData = useMemo(() => {
-    // ACCOUNT BALANCE DATA SOURCE
-    if (dataSource === CHART_DATA_SOURCE.ACCOUNT_BALANCE) {
-      if (!accountData || accountData.length === 0) {
-        // Return mock data only if generateDataWhenNotExists is true
-        if (generateDataWhenNotExists) {
-          return {
-            ...MOCK_ACCOUNT_DATA,
-            lines: [{
-              ...MOCK_ACCOUNT_DATA.lines[0],
-              color: positiveColor,
-            }],
-          };
-        }
-        // Otherwise return empty data
-        return { lines: [], useMockData: false };
+    lines.forEach(line => {
+      const group = line.axisGroup || 'left';
+      if (groups[group]) {
+        groups[group].push(line);
       }
+    });
 
-      // Transform account balance data
-      // Expecting format: [{ timestamp, balance }]
-      const timeMin = new Date(accountData[0].timestamp).getTime();
-      const timeMax = new Date(accountData[accountData.length - 1].timestamp).getTime();
-      const timeRange = timeMax - timeMin || 1;
-
-      const initialBalance = accountData[0].balance;
-      const normalizedData = accountData.map(point => ({
-        time: (new Date(point.timestamp).getTime() - timeMin) / timeRange,
-        value: ((point.balance - initialBalance) / initialBalance) * 100, // Percent change
-      }));
-
-      return {
-        lines: [{
-          id: 'account-balance',
-          name: 'Account Balance',
-          color: positiveColor,
-          data: normalizedData,
-        }],
-        useMockData: false,
-      };
-    }
-
-    // AGENTS DATA SOURCE (original logic)
-    if (dataSource === CHART_DATA_SOURCE.AGENTS) {
-      // Use mock data only if generateDataWhenNotExists is true
-      if (!agents || agents.length === 0 || agentError) {
-        if (generateDataWhenNotExists) {
-          return { lines: MOCK_AGENTS_DATA, useMockData: true };
-        }
-        return { lines: [], useMockData: false };
-      }
-
-      // If still loading or no data
-      if (agentLoading || !snapshotsData) {
-        if (generateDataWhenNotExists) {
-          return { lines: MOCK_AGENTS_DATA, useMockData: true };
-        }
-        return { lines: [], useMockData: false };
-      }
-
-      // Transform real snapshot data
-      const transformedAgents = agents.map((agent) => {
-        const snapshots = snapshotsData[agent.id] || [];
-        const percentData = agentSnapshotService.calculatePercentChange(
-          snapshots,
-          parseFloat(agent.initial_capital) || 10000
-        );
-
-        // Normalize timestamps to 0-1 range for x-axis
-        const timeMin = percentData[0]?.timestamp ? new Date(percentData[0].timestamp).getTime() : Date.now();
-        const timeMax = percentData[percentData.length - 1]?.timestamp
-          ? new Date(percentData[percentData.length - 1].timestamp).getTime()
-          : Date.now();
-        const timeRange = timeMax - timeMin || 1;
-
-        const normalizedData = percentData.map(point => ({
-          time: (new Date(point.timestamp).getTime() - timeMin) / timeRange,
-          value: point.percent,
-        }));
-
-        // Ensure we have at least start and end points
-        if (normalizedData.length === 0) {
-          normalizedData.push({ time: 0, value: 0 }, { time: 1, value: 0 });
-        } else if (normalizedData.length === 1) {
-          normalizedData.unshift({ time: 0, value: 0 });
-        }
-
-        return {
-          id: agent.id,
-          name: agent.name,
-          color: getProviderColor(agent.llm_provider),
-          data: normalizedData,
-        };
-      });
-
-      return { lines: transformedAgents, useMockData: false };
-    }
-
-    return { lines: [], useMockData: false };
-  }, [dataSource, agents, snapshotsData, agentLoading, agentError, accountData, generateDataWhenNotExists, positiveColor]);
-
-  const { lines } = chartData;
+    return groups;
+  }, [lines]);
 
   // Calculate interpolated values at touch position
   const touchValues = useMemo(() => {
@@ -345,35 +213,68 @@ const SvgChart = ({
     }));
   }, [touchActive, touchX, lines]);
 
-  const { yMin, yMax, yTicks, timeLabels } = useMemo(() => {
-    // Calculate y-axis range
-    const allValues = lines.flatMap((line) => line.data.map((d) => d.value ?? d.percent)).filter(v => typeof v === 'number' && !isNaN(v) && isFinite(v));
+  // Calculate axis ranges and ticks for each axis group
+  const axisConfig = useMemo(() => {
+    const calculateAxisRange = (groupLines) => {
+      const allValues = groupLines
+        .flatMap((line) => line.data.map((d) => d.value ?? d.percent))
+        .filter(v => typeof v === 'number' && !isNaN(v) && isFinite(v));
 
-    // Fallback to safe defaults if no valid values
-    if (allValues.length === 0) {
-      allValues.push(0, 10);
+      if (allValues.length === 0) {
+        return { yMin: -10, yMax: 10 };
+      }
+
+      const min = Math.min(...allValues, 0);
+      const max = Math.max(...allValues, 0);
+      const range = max - min;
+      const padding = range * 0.1 || 1;
+
+      let yMin = min - padding;
+      let yMax = max + padding;
+
+      if (!isFinite(yMin) || isNaN(yMin)) yMin = -10;
+      if (!isFinite(yMax) || isNaN(yMax)) yMax = 10;
+
+      return { yMin, yMax };
+    };
+
+    const generateTicks = (yMin, yMax) => {
+      const tickCount = 5;
+      return Array.from({ length: tickCount }, (_, i) => {
+        const value = yMin + ((yMax - yMin) / (tickCount - 1)) * i;
+        return value;
+      });
+    };
+
+    const config = {};
+
+    // Configure left axis
+    if (axisGroups.left.length > 0) {
+      const { yMin, yMax } = calculateAxisRange(axisGroups.left);
+      config.left = {
+        yMin,
+        yMax,
+        yTicks: generateTicks(yMin, yMax),
+        lines: axisGroups.left
+      };
     }
 
-    const min = Math.min(...allValues, 0);
-    const max = Math.max(...allValues, 0);
-    const range = max - min;
-    const padding = range * 0.1 || 1;
+    // Configure right axis
+    if (axisGroups.right.length > 0) {
+      const { yMin, yMax } = calculateAxisRange(axisGroups.right);
+      config.right = {
+        yMin,
+        yMax,
+        yTicks: generateTicks(yMin, yMax),
+        lines: axisGroups.right
+      };
+    }
 
-    let yMin = min - padding;
-    let yMax = max + padding;
+    return config;
+  }, [axisGroups]);
 
-    // Ensure valid numbers
-    if (!isFinite(yMin) || isNaN(yMin)) yMin = -10;
-    if (!isFinite(yMax) || isNaN(yMax)) yMax = 10;
-
-    // Generate y-axis ticks
-    const tickCount = 5;
-    const yTicks = Array.from({ length: tickCount }, (_, i) => {
-      const value = yMin + ((yMax - yMin) / (tickCount - 1)) * i;
-      return value;
-    });
-
-    // Generate time labels based on timeframe using locale string
+  // Generate time labels based on timeframe
+  const timeLabels = useMemo(() => {
     const now = new Date();
     const getTimeLabel = (normalizedTime) => {
       const date = new Date(now);
@@ -391,57 +292,44 @@ const SvgChart = ({
       return '';
     };
 
-    const timeLabels = [0, 0.5, 1].map(getTimeLabel);
+    return [0, 0.5, 1].map(getTimeLabel);
+  }, [timeframe]);
 
-    return { yMin, yMax, yTicks, timeLabels };
-  }, [lines, timeframe]);
+  // Create scale functions for each axis
+  const scaleY = useCallback((value, axisGroup = 'left') => {
+    const axis = axisConfig[axisGroup];
+    if (!axis) return PADDING.top + plotHeight / 2;
 
-  const scaleY = (value) => {
-    // Validate input
     if (!isFinite(value) || isNaN(value)) return PADDING.top + plotHeight / 2;
 
-    const normalized = (value - yMin) / (yMax - yMin);
+    const normalized = (value - axis.yMin) / (axis.yMax - axis.yMin);
 
-    // Validate result
     if (!isFinite(normalized) || isNaN(normalized)) return PADDING.top + plotHeight / 2;
 
     const result = PADDING.top + plotHeight - normalized * plotHeight;
     return isFinite(result) ? result : PADDING.top + plotHeight / 2;
-  };
+  }, [axisConfig, plotHeight]);
 
-  const scaleX = (time) => {
-    // Validate input
+  const scaleX = useCallback((time) => {
     if (!isFinite(time) || isNaN(time)) return PADDING.left;
-
     const result = PADDING.left + time * plotWidth;
     return isFinite(result) ? result : PADDING.left;
-  };
+  }, [plotWidth]);
 
-  // Determine axis label
-  const axisLabel = yAxisLabel || (dataSource === CHART_DATA_SOURCE.ACCOUNT_BALANCE ? '$' : '%');
-
-  // Determine value formatter
+  // Default value formatter
   const defaultFormatter = (val) => {
-    // Ensure val is a valid number
     if (typeof val !== 'number' || !isFinite(val) || isNaN(val)) {
-      return '0.0%';
+      return '0.0';
     }
-
-    if (dataSource === CHART_DATA_SOURCE.ACCOUNT_BALANCE) {
-      return `${val >= 0 ? '+' : ''}${val.toFixed(1)}%`;
-    }
-    return `${val.toFixed(1)}%`;
+    return `${val.toFixed(1)}`;
   };
-  const valueFormatter = formatValue || defaultFormatter;
 
-  const isLoading = dataSource === CHART_DATA_SOURCE.AGENTS && agentLoading;
-
-  if (isLoading) {
+  // No data to display
+  if (lines.length === 0) {
     return (
       <View sx={{ marginTop: 4, alignItems: 'center', paddingVertical: 8 }}>
-        <ActivityIndicator size="small" />
-        <Text sx={{ fontSize: 12, color: 'secondary500', marginTop: 2 }}>
-          Loading performance data...
+        <Text sx={{ fontSize: 12, color: 'secondary500' }}>
+          No data available
         </Text>
       </View>
     );
@@ -455,134 +343,153 @@ const SvgChart = ({
         sx={{ position: 'relative', width: '100%' }}
       >
         <Svg width={chartWidth} height={chartHeight}>
-
-        {yTicks.map((tick, i) => {
-          const y = scaleY(tick);
-          return (
-            <Line
-              key={`grid-${i}`}
-              x1={PADDING.left}
-              y1={y}
-              x2={PADDING.left + plotWidth}
-              y2={y}
-              stroke={withOpacity(mutedColor, 0.15)}
-              strokeWidth={1}
-            />
-          );
-        })}
-
-
-        {yTicks.map((tick, i) => {
-          const y = scaleY(tick);
-          return (
-            <SvgText
-              key={`y-label-${i}`}
-              x={PADDING.left + plotWidth + 6}
-              y={y + 4}
-              fontSize={10}
-              fill={mutedColor}
-              textAnchor="start"
-            >
-              {valueFormatter(tick)}
-            </SvgText>
-          );
-        })}
-
-
-        <Line
-          x1={PADDING.left}
-          y1={scaleY(0)}
-          x2={PADDING.left + plotWidth}
-          y2={scaleY(0)}
-          stroke={withOpacity(mutedColor, 0.8)}
-          strokeWidth={1.5}
-          strokeDasharray="3,3"
-        />
-
-
-        {lines.map((line) => {
-          // Filter out invalid data points
-          const validData = (line.data || []).filter(d => {
-            if (!d) return false;
-            const hasValidTime = typeof d.time === 'number' && isFinite(d.time) && !isNaN(d.time);
-            const hasValidValue = (typeof d.value === 'number' && isFinite(d.value) && !isNaN(d.value)) ||
-                                  (typeof d.percent === 'number' && isFinite(d.percent) && !isNaN(d.percent));
-            return hasValidTime && hasValidValue;
-          });
-
-          // Skip rendering if no valid data
-          if (validData.length === 0) return null;
-
-          const points = validData
-            .map((d) => {
-              const x = scaleX(d.time);
-              const yValue = d.value ?? d.percent;
-              const y = scaleY(yValue);
-              return `${x.toFixed(2)},${y.toFixed(2)}`;
-            })
-            .join(' ');
-
-          const lastPoint = validData[validData.length - 1];
-
-          return (
-            <React.Fragment key={line.id}>
-              <Polyline
-                points={points}
-                fill="none"
-                stroke={line.color}
-                strokeWidth={2}
-                strokeLinejoin="round"
-                strokeLinecap="round"
-                strokeDasharray="1,1"
-                opacity={0.9}
-              />
-
-              {!touchActive && lastPoint && (
-                <AnimatedCircle
-                  cx={scaleX(lastPoint.time)}
-                  cy={scaleY(lastPoint.value ?? lastPoint.percent)}
-                  r={pulseAnim.interpolate({
-                    inputRange: [1, 1.5],
-                    outputRange: [4, 6],
-                  })}
-                  fill={line.color}
-                  opacity={pulseAnim.interpolate({
-                    inputRange: [1, 1.5],
-                    outputRange: [0.9, 0.6],
-                  })}
+          {/* Grid lines and Y-axis labels for left axis */}
+          {axisConfig.left && axisConfig.left.yTicks.map((tick, i) => {
+            const y = scaleY(tick, 'left');
+            return (
+              <React.Fragment key={`left-${i}`}>
+                <Line
+                  x1={PADDING.left}
+                  y1={y}
+                  x2={PADDING.left + plotWidth}
+                  y2={y}
+                  stroke={withOpacity(mutedColor, 0.15)}
+                  strokeWidth={1}
                 />
-              )}
-            </React.Fragment>
-          );
-        })}
+                <SvgText
+                  x={PADDING.left - 6}
+                  y={y + 4}
+                  fontSize={10}
+                  fill={mutedColor}
+                  textAnchor="end"
+                >
+                  {(axisConfig.left.lines[0]?.formatValue || defaultFormatter)(tick)}
+                </SvgText>
+              </React.Fragment>
+            );
+          })}
 
+          {/* Grid lines and Y-axis labels for right axis */}
+          {axisConfig.right && axisConfig.right.yTicks.map((tick, i) => {
+            const y = scaleY(tick, 'right');
+            return (
+              <React.Fragment key={`right-${i}`}>
+                <SvgText
+                  x={PADDING.left + plotWidth + 6}
+                  y={y + 4}
+                  fontSize={10}
+                  fill={mutedColor}
+                  textAnchor="start"
+                >
+                  {(axisConfig.right.lines[0]?.formatValue || defaultFormatter)(tick)}
+                </SvgText>
+              </React.Fragment>
+            );
+          })}
 
-        {touchActive && (
-          <>
-
+          {/* Zero line for left axis */}
+          {axisConfig.left && (
             <Line
-              x1={scaleX(touchX)}
-              y1={PADDING.top}
-              x2={scaleX(touchX)}
-              y2={PADDING.top + plotHeight}
-              stroke={withOpacity(secondaryTextColor ?? mutedColor, 0.6)}
+              x1={PADDING.left}
+              y1={scaleY(0, 'left')}
+              x2={PADDING.left + plotWidth}
+              y2={scaleY(0, 'left')}
+              stroke={withOpacity(mutedColor, 0.8)}
               strokeWidth={1.5}
-              strokeDasharray="4,4"
+              strokeDasharray="3,3"
             />
+          )}
 
-            {touchValues.map((line) => (
-              <Circle
-                key={line.id}
-                cx={scaleX(touchX)}
-                cy={scaleY(line.value)}
-                r={5}
-                fill={line.color}
-                stroke={withOpacity(palette.surface ?? palette.background, 0.8)}
-                strokeWidth={2}
+
+          {/* Render lines */}
+          {lines.map((line) => {
+            const axisGroup = line.axisGroup || 'left';
+
+            // Filter out invalid data points
+            const validData = (line.data || []).filter(d => {
+              if (!d) return false;
+              const hasValidTime = typeof d.time === 'number' && isFinite(d.time) && !isNaN(d.time);
+              const hasValidValue = (typeof d.value === 'number' && isFinite(d.value) && !isNaN(d.value)) ||
+                                    (typeof d.percent === 'number' && isFinite(d.percent) && !isNaN(d.percent));
+              return hasValidTime && hasValidValue;
+            });
+
+            // Skip rendering if no valid data
+            if (validData.length === 0) return null;
+
+            const points = validData
+              .map((d) => {
+                const x = scaleX(d.time);
+                const yValue = d.value ?? d.percent;
+                const y = scaleY(yValue, axisGroup);
+                return `${x.toFixed(2)},${y.toFixed(2)}`;
+              })
+              .join(' ');
+
+            const lastPoint = validData[validData.length - 1];
+
+            return (
+              <React.Fragment key={line.id}>
+                <Polyline
+                  points={points}
+                  fill="none"
+                  stroke={line.color}
+                  strokeWidth={2}
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                  strokeDasharray="1,1"
+                  opacity={0.9}
+                />
+
+                {!touchActive && lastPoint && (
+                  <AnimatedCircle
+                    cx={scaleX(lastPoint.time)}
+                    cy={scaleY(lastPoint.value ?? lastPoint.percent, axisGroup)}
+                    r={pulseAnim.interpolate({
+                      inputRange: [1, 1.5],
+                      outputRange: [4, 6],
+                    })}
+                    fill={line.color}
+                    opacity={pulseAnim.interpolate({
+                      inputRange: [1, 1.5],
+                      outputRange: [0.9, 0.6],
+                    })}
+                  />
+                )}
+              </React.Fragment>
+            );
+          })}
+
+
+          {/* Touch interaction */}
+          {touchActive && (
+            <>
+              <Line
+                x1={scaleX(touchX)}
+                y1={PADDING.top}
+                x2={scaleX(touchX)}
+                y2={PADDING.top + plotHeight}
+                stroke={withOpacity(secondaryTextColor ?? mutedColor, 0.6)}
+                strokeWidth={1.5}
+                strokeDasharray="4,4"
               />
-            ))}
-          </>
-        )}
+
+              {touchValues.map((line) => {
+                const axisGroup = line.axisGroup || 'left';
+                return (
+                  <Circle
+                    key={line.id}
+                    cx={scaleX(touchX)}
+                    cy={scaleY(line.value, axisGroup)}
+                    r={5}
+                    fill={line.color}
+                    stroke={withOpacity(palette.surface ?? palette.background, 0.8)}
+                    strokeWidth={2}
+                  />
+                );
+              })}
+            </>
+          )}
         </Svg>
 
 
@@ -623,6 +530,7 @@ const SvgChart = ({
 
             {touchValues.map((line) => {
               const isPositive = line.value >= 0;
+              const formatter = line.formatValue || defaultFormatter;
               return (
                 <View
                   key={line.id}
@@ -652,7 +560,7 @@ const SvgChart = ({
                       marginLeft: 3,
                     }}
                   >
-                    {valueFormatter(line.value)}
+                    {formatter(line.value)}
                   </Text>
                 </View>
               );

@@ -17,7 +17,7 @@ export default function BalanceTab() {
       contentContainerStyle={{ paddingBottom: 100 }}
       showsVerticalScrollIndicator={false}
     >
-      
+
       <View sx={{ marginBottom: 6 }}>
         <View sx={{}}>
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 4 }}>
@@ -25,7 +25,7 @@ export default function BalanceTab() {
               Balance
             </Text>
 
-            
+
             <View sx={{ flexDirection: 'row', gap: 2 }}>
               {['1h', '24h', '7d'].map((tf) => (
                 <TouchableOpacity
@@ -51,7 +51,7 @@ export default function BalanceTab() {
           </View>
 
           <SvgChart
-            dataSource={CHART_DATA_SOURCE.ACCOUNT_BALANCE}
+            chartData={{ lines: [] }}
             accountData={accountBalanceData}
             timeframe={timeframe}
           />

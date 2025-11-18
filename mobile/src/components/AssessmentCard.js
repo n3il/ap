@@ -149,11 +149,6 @@ function AssessmentCard({ assessment }) {
   const thesis = hasContent(headline?.thesis) ? headline.thesis.trim() : '';
   const fallbackText = hasContent(assessment?.llm_response_text) ? assessment.llm_response_text.trim() : '';
 
-  const previewText =
-    getFirstLine(shortSummary) ||
-    getFirstLine(extendedSummary) ||
-    getFirstLine(fallbackText);
-
   const overviewSections = useMemo(
     () => [
       { key: 'macro', label: 'Macro', content: overview?.macro },
@@ -196,13 +191,6 @@ function AssessmentCard({ assessment }) {
             <Text variant="xs" tone="muted">
               {formatRelativeDate(assessment.timestamp) || ''}
             </Text>
-            {sentimentLabel ? (
-              <View sx={{ }}>
-                <StatusBadge variant={sentimentVariant} size="small" sx={{ borderWidth: 0 }}>
-                  {sentimentLabel}
-                </StatusBadge>
-              </View>
-            ) : null}
           </View>
         </View>
 
@@ -223,103 +211,95 @@ function AssessmentCard({ assessment }) {
         )}
 
         {sentimentLabel ? (
-          <View sx={{ }}>
-            <StatusBadge variant={sentimentVariant} size="small">
-              {sentimentLabel}
-            </StatusBadge>
-          </View>
+          <StatusBadge variant={sentimentVariant} size="small" sx={{
+            borderWidth: 0,
+            marginTop: 2,
+            paddingHorizontal: 0,
+          }} textSx={{
+            fontStyle: 'italic',
+          }}>
+            {sentimentLabel}
+          </StatusBadge>
         ) : null}
 
-        <View
-          sx={{
-            borderRadius: 'lg',
-            fontFamily: 'monospace',
-            marginTop: 3,
-          }}
-        >
-          {!expanded ? (
-            <>
-              {hasContent(previewText) ? (
-                <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
-                  {previewText}
-                </Text>
-              ) : fallbackText ? (
-                <Markdown style={markdownStyles}>
-                  {fallbackText.split('\n').slice(0, 1).join('\n')}
-                </Markdown>
-              ) : (
-                <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
-                  No analysis available
-                </Text>
-              )}
-            </>
-          ) : (
-            <>
-              {showStructured ? (
-                <View sx={{ gap: 2 }}>
-                  {shortSummary && (
-                    <Text variant="md" sx={{ fontWeight: '500', lineHeight: 24 }}>
-                      {shortSummary}
+        {shortSummary && (
+          <Text variant="md" sx={{ fontWeight: '500', lineHeight: 24, marginTop: 2 }}>
+            {shortSummary}
+          </Text>
+        )}
+
+        {expanded ? (
+            <View
+              sx={{
+                borderRadius: 'lg',
+                fontFamily: 'monospace',
+                marginTop: 3,
+              }}
+            >
+            {showStructured ? (
+              <View sx={{ gap: 2 }}>
+                {thesis && (
+                  <Text variant="sm" tone="muted" sx={{ fontStyle: 'italic' }}>
+                    {thesis}
+                  </Text>
+                )}
+
+                {extendedSummary && (
+                  <Markdown style={markdownStyles}>
+                    {extendedSummary}
+                  </Markdown>
+                )}
+
+                {overviewSections.map((section) => (
+                  <View key={section.key} sx={{ }}>
+                    <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
+                      {section.label}
                     </Text>
-                  )}
-
-                  {sentimentLabel ? (
-                    <View sx={{ }}>
-                      <StatusBadge variant={sentimentVariant} size="small">
-                        {sentimentLabel}
-                      </StatusBadge>
-                    </View>
-                  ) : null}
-
-                  {thesis && (
-                    <Text variant="sm" tone="muted" sx={{ fontStyle: 'italic' }}>
-                      {thesis}
-                    </Text>
-                  )}
-
-                  {extendedSummary && (
                     <Markdown style={markdownStyles}>
-                      {extendedSummary}
+                      {section.content}
                     </Markdown>
-                  )}
+                  </View>
+                ))}
+              </View>
+            ) : fallbackText ? (
+              <Markdown style={markdownStyles}>
+                {fallbackText}
+              </Markdown>
+            ) : (
+              <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
+                No analysis available
+              </Text>
+            )}
 
-                  {overviewSections.map((section) => (
-                    <View key={section.key} sx={{ }}>
-                      <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
-                        {section.label}
-                      </Text>
-                      <Markdown style={markdownStyles}>
-                        {section.content}
-                      </Markdown>
-                    </View>
-                  ))}
-                </View>
-              ) : fallbackText ? (
-                <Markdown style={markdownStyles}>
-                  {fallbackText}
-                </Markdown>
-              ) : (
-                <Text variant="" tone="primary" sx={{ lineHeight: 24, fontWeight: 300 }}>
-                  No analysis available
-                </Text>
-              )}
-
-              <TouchableOpacity
-                onPress={() => setExpanded(!expanded)}
-                style={{
-                  backgroundColor: withOpacity(palette.background ?? palette.surface, 0.2),
-                  borderRadius: 8,
-                  padding: 8,
-                  marginTop: 8,
-                }}
-              >
-                <Text variant="xs" sx={{ textAlign: 'center', color: 'textPrimary' }}>
-                  Show Less
-                </Text>
-              </TouchableOpacity>
-            </>
-          )}
-        </View>
+            <TouchableOpacity
+              onPress={() => setExpanded(!expanded)}
+              style={{
+                backgroundColor: withOpacity(palette.background ?? palette.surface, 0.2),
+                borderRadius: 8,
+                padding: 8,
+                marginTop: 8,
+              }}
+            >
+              <Text variant="xs" sx={{ textAlign: 'center', color: 'textPrimary' }}>
+                Show Less
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={() => setExpanded(expanded)}
+            style={{
+              backgroundColor: withOpacity(palette.background ?? palette.surface, 0.2),
+              borderRadius: 8,
+              padding: 8,
+              marginTop: 8,
+            }}
+          >
+            <Text variant="xs" sx={{ textAlign: 'center', color: 'textPrimary' }}>
+              Expand
+            </Text>
+          </TouchableOpacity>
+        )}
       </TouchableOpacity>
     </Card>
   );

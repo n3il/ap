@@ -92,7 +92,7 @@ export default function TabsLayout() {
         }}
       >
         <Label>Account</Label>
-        <Icon sf="wallet.bifold.fill" drawable="custom_android_drawable" />
+        <Icon sf="magnifyingglass" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
     </NativeTabs>
   );
