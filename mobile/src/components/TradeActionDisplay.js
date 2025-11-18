@@ -97,54 +97,52 @@ export default function TradeActionDisplay({ actionData, showReason = true }) {
   return (
     <View
       sx={{
-        marginBottom: 3,
+        borderBottomWidth: 1,
+        borderColor: palette.border,
+        paddingVertical: 2,
       }}
     >
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 2 : 0 }}>
-          <View sx={{ flex: 1 }}>
-            <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
-              {actionData.asset || 'N/A'}
-            </Text>
+          <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
+            {actionData.asset.replace('-PERP', '/USDC') || 'N/A'}
+          </Text>
 
+          <View sx={{ flexGrow: 0, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
             {(sizeValue !== undefined || leverageValue !== undefined) && (
-              <View sx={{ flexDirection: 'row', gap: 1, marginTop: 1 }}>
+              <View sx={{ flexDirection: 'row', gap: 2 }}>
                 {sizeValue !== undefined && (
                   <Text variant="xs" tone="muted">
                     {formatCurrency(sizeValue, 0)}
                   </Text>
                 )}
                 {leverageValue !== undefined && (
-                  <Text variant="xs" tone="muted">
+                  <Text variant="xs" tone="foreground" sx={{ fontWeight: '500' }}>
                     {`${leverageValue}x`}
                   </Text>
                 )}
               </View>
             )}
-          </View>
 
-          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-            <StatusBadge fontWeight="600" sx={{ borderColor: config.color, marginRight: 2 }} textSx={{ color: config.color }}>
-              {config.label}
-            </StatusBadge>
-
-            <View
-              sx={{
-                width: 24,
-                height: 24,
-                borderRadius: 'full',
-                borderColor: config.color,
-                borderWidth: 1,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
-              <MaterialCommunityIcons
-                name={config.icon}
-                size={16}
-                color={config.color}
-              />
-            </View>
+              <View sx={{ flexGrow: 0, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: config.color, borderRadius: 30, paddingHorizontal: 2, paddingVertical: .5, gap: 1 }}>
+                <Text style={{ borderWidth: 0, padding: 0, color: config.color, fontSize: 12, lineHeight: 15 }}>
+                  {config.label}
+                </Text>
+                <View
+                  sx={{
+                    width: 16,
+                    height: 16,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name={config.icon}
+                    size={16}
+                    color={config.color}
+                  />
+                </View>
+              </View>
           </View>
         </View>
       </TouchableOpacity>

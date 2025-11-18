@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useCallback } from 'react';
 import { View, Text, ActivityIndicator, FlatList, Animated } from 'react-native';
 import AssessmentCard from '@/components/AssessmentCard';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -69,119 +69,11 @@ export default function ThoughtsTab({
     parentOnRefresh?.();
   };
 
-  const renderSectionHeader = () => (
-    <SectionTitle>
-      All Assessments ({totalCount + (pendingAssessment ? 1 : 0)})
-    </SectionTitle>
-  );
+  const renderItem = useCallback(({ item }) => (
+    <AssessmentCard assessment={item} />
+  ), []);
 
-  const renderHeader = () => (
-    <>
-      {headerContent}
-      {renderSectionHeader()}
-
-      {isLoading && (
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, justifyContent: 'center', paddingVertical: 16 }}>
-          <ActivityIndicator size="small" color={info} />
-          <Text style={{ color: '#999', fontSize: 12 }}>
-            Loading assessments...
-          </Text>
-        </View>
-      )}
-
-      {error && (
-        <GlassView
-          variant="glass"
-          style={{
-            borderRadius: 16,
-            padding: 16,
-            marginBottom: 16,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <MaterialCommunityIcons
-              name="alert-circle"
-              size={24}
-              color={errorColor}
-            />
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  color: '#ff6b6b',
-                  fontWeight: '600',
-                  fontSize: 14,
-                  marginBottom: 4,
-                }}
-              >
-                Failed to Load Assessments
-              </Text>
-              <Text
-                style={{
-                  color: '#999',
-                  fontSize: 12,
-                }}
-              >
-                {error.message || 'An error occurred while loading assessments'}
-              </Text>
-            </View>
-          </View>
-        </GlassView>
-      )}
-
-      {!isLoading && !error && pendingAssessment && (
-        <GlassView
-          variant="glass"
-          style={{
-            borderRadius: 16,
-            padding: 16,
-            marginBottom: 16,
-            paddingVertical: 4,
-          }}
-        >
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
-            <ActivityIndicator size="small" color={info} />
-            <View style={{ flex: 1 }}>
-              <Text
-                style={{
-                  color: '#4dabf7',
-                  fontWeight: '600',
-                  fontSize: 14,
-                  marginBottom: 4,
-                }}
-              >
-                Assessment Running...
-              </Text>
-              <Text
-                style={{
-                  color: '#999',
-                  fontSize: 12,
-                }}
-              >
-                Your agent is analyzing the market and generating insights
-              </Text>
-            </View>
-            <MaterialCommunityIcons
-              name="timer-sand"
-              size={24}
-              color={info}
-            />
-          </View>
-        </GlassView>
-      )}
-    </>
-  );
-
-  const renderFooter = () => {
-    if (!isFetchingNextPage) return null;
-
-    return (
-      <View style={{ paddingVertical: 16, alignItems: 'center' }}>
-        <ActivityIndicator size="small" color={info} />
-      </View>
-    );
-  };
-
-  const renderEmpty = () => {
+  const renderEmpty = useCallback(() => {
     if (isLoading) return null;
 
     return (
@@ -189,7 +81,9 @@ export default function ThoughtsTab({
         No assessments yet
       </Text>
     );
-  };
+  }, [isLoading]);
+
+  const keyExtractor = useCallback((item) => item.id, []);
 
   if (error && !data) {
     return (
@@ -203,35 +97,16 @@ export default function ThoughtsTab({
 
   return (
     <View style={{ flex: 1 }}>
-      <Animated.View
-        style={{
-          position: 'absolute',
-          top: 90,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          transform: [{
-            translateY: scrollY.interpolate({
-              inputRange: [-100, 0, 100],
-              outputRange: [200, 100, 0],
-            })
-          }],
-        }}
-      >
-        {tabBar}
-      </Animated.View>
       <Animated.FlatList
         data={assessments}
-        keyExtractor={(item) => item.id}
-        renderItem={({ item }) => <AssessmentCard assessment={item} />}
-        ListHeaderComponent={renderHeader}
-        ListFooterComponent={renderFooter}
+        keyExtractor={keyExtractor}
+        renderItem={renderItem}
         ListEmptyComponent={renderEmpty}
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.5}
         refreshing={isRefetching || parentRefreshing}
         onRefresh={handleRefresh}
-        contentContainerStyle={{ gap: 16, paddingBottom: '40%', paddingTop: 30 }}
+        contentContainerStyle={{ gap: 16, paddingBottom: '40%' }}
         showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],

@@ -15,7 +15,7 @@ const getFirstLine = (text) => {
     .find(Boolean) || '';
 };
 
-export default function AssessmentCard({ assessment }) {
+function AssessmentCard({ assessment }) {
   const [expanded, setExpanded] = useState(false);
   const { colors: palette, withOpacity } = useColors();
 
@@ -189,16 +189,29 @@ export default function AssessmentCard({ assessment }) {
           <Avatar
             backgroundColor={palette.providers[assessment.agent?.llm_provider]}
             name={assessment.agent?.name}
-            email={assessment.agent?.model_name}
+            // email={assessment.agent?.model_name}
             size="sm"
           />
-          <Text variant="xs" tone="muted">
-            {formatRelativeDate(assessment.timestamp) || ''}
-          </Text>
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+            <Text variant="xs" tone="muted">
+              {formatRelativeDate(assessment.timestamp) || ''}
+            </Text>
+            {sentimentLabel ? (
+              <View sx={{ }}>
+                <StatusBadge variant={sentimentVariant} size="small" sx={{ borderWidth: 0 }}>
+                  {sentimentLabel}
+                </StatusBadge>
+              </View>
+            ) : null}
+          </View>
         </View>
 
         {tradeActions.length > 0 && (
-          <View sx={{ marginVertical: 3, gap: 2 }}>
+          <View sx={{
+            marginTop: 3,
+            borderColor: palette.border,
+            borderTopWidth: 1,
+          }}>
             {tradeActions.map((action, index) => (
               <TradeActionDisplay
                 key={`${action.asset ?? 'action'}-${index}`}
@@ -209,10 +222,19 @@ export default function AssessmentCard({ assessment }) {
           </View>
         )}
 
+        {sentimentLabel ? (
+          <View sx={{ }}>
+            <StatusBadge variant={sentimentVariant} size="small">
+              {sentimentLabel}
+            </StatusBadge>
+          </View>
+        ) : null}
+
         <View
           sx={{
             borderRadius: 'lg',
             fontFamily: 'monospace',
+            marginTop: 3,
           }}
         >
           {!expanded ? (
@@ -230,10 +252,6 @@ export default function AssessmentCard({ assessment }) {
                   No analysis available
                 </Text>
               )}
-
-              <Text variant="xs" tone="muted">
-                Tap to view full analysis
-              </Text>
             </>
           ) : (
             <>
@@ -246,7 +264,7 @@ export default function AssessmentCard({ assessment }) {
                   )}
 
                   {sentimentLabel ? (
-                    <View sx={{ marginBottom: 1 }}>
+                    <View sx={{ }}>
                       <StatusBadge variant={sentimentVariant} size="small">
                         {sentimentLabel}
                       </StatusBadge>
@@ -254,7 +272,7 @@ export default function AssessmentCard({ assessment }) {
                   ) : null}
 
                   {thesis && (
-                    <Text variant="sm" tone="muted" sx={{ fontStyle: 'italic', marginBottom: 2 }}>
+                    <Text variant="sm" tone="muted" sx={{ fontStyle: 'italic' }}>
                       {thesis}
                     </Text>
                   )}
@@ -266,7 +284,7 @@ export default function AssessmentCard({ assessment }) {
                   )}
 
                   {overviewSections.map((section) => (
-                    <View key={section.key} sx={{ marginTop: 2 }}>
+                    <View key={section.key} sx={{ }}>
                       <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase', letterSpacing: 1 }}>
                         {section.label}
                       </Text>
@@ -306,3 +324,5 @@ export default function AssessmentCard({ assessment }) {
     </Card>
   );
 }
+
+export default React.memo(AssessmentCard);

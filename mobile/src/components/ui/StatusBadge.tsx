@@ -30,7 +30,14 @@ const sizeStyles: Record<BadgeSize, { paddingHorizontal: number; paddingVertical
   regular: { paddingHorizontal: 3, paddingVertical: 1, textVariant: 'xs' },
 };
 
-const StatusBadge: React.FC<StatusBadgeProps> = ({ children, variant = 'accent', size = 'regular', sx = {}, textSx = {}, fontWeight = '300' }) => {
+const StatusBadge: React.FC<StatusBadgeProps> = ({
+  children,
+  variant = 'accent',
+  size = 'regular',
+  sx = {},
+  textSx = {},
+  fontWeight = '300',
+}) => {
   const styles = badgeStyles[variant];
   const sizeStyle = sizeStyles[size];
 

@@ -10,8 +10,6 @@ export default function PositionsTab({
   trades = [],
   stats,
   isOwnAgent,
-  headerContent,
-  tabBar,
   onRefresh,
   refreshing = false
 }) {
@@ -21,23 +19,6 @@ export default function PositionsTab({
 
   return (
     <View style={{ flex: 1 }}>
-      <Animated.View
-        style={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          transform: [{
-            translateY: scrollY.interpolate({
-              inputRange: [-100, 0, 100],
-              outputRange: [200, 100, 0],
-            })
-          }],
-        }}
-      >
-        {tabBar}
-      </Animated.View>
       <Animated.ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
@@ -55,62 +36,60 @@ export default function PositionsTab({
         )}
         scrollEventThrottle={16}
       >
-        {headerContent}
+        {stats && isOwnAgent ? (
+          <View sx={{ flex: 1, paddingHorizontal: 4, marginBottom: 4, flexDirection: 'row', justifyContent: 'space-between' }}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+              <StatCard
+                label="Total P&L"
+                value={`${
+                  stats.totalPnL >= 0 ? '+' : ''
+                }$${Math.abs(stats.totalPnL).toLocaleString()}`}
+                trend={`${stats.totalTrades} trades`}
+                trendColor="successLight"
+              />
+              <StatCard
+                label="Win Rate"
+                value={`${stats.winRate.toFixed(1)}%`}
+                trend={`${stats.closedTrades} closed`}
+                trendColor="brand300"
+              />
+              <StatCard
+                label="Open"
+                value={stats.openPositions}
+                trend="Positions"
+                trendColor="brand300"
+              />
+              <StatCard
+                label="Capital"
+                value={`$${parseFloat(agent.initial_capital).toLocaleString()}`}
+                trend="Initial"
+                trendColor="mutedForeground"
+              />
+            </ScrollView>
+          </View>
+        ) : null}
 
-      {stats && isOwnAgent ? (
-        <View sx={{ flex: 1, paddingHorizontal: 4, marginBottom: 4, flexDirection: 'row', justifyContent: 'space-between' }}>
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-            <StatCard
-              label="Total P&L"
-              value={`${
-                stats.totalPnL >= 0 ? '+' : ''
-              }$${Math.abs(stats.totalPnL).toLocaleString()}`}
-              trend={`${stats.totalTrades} trades`}
-              trendColor="successLight"
-            />
-            <StatCard
-              label="Win Rate"
-              value={`${stats.winRate.toFixed(1)}%`}
-              trend={`${stats.closedTrades} closed`}
-              trendColor="brand300"
-            />
-            <StatCard
-              label="Open"
-              value={stats.openPositions}
-              trend="Positions"
-              trendColor="brand300"
-            />
-            <StatCard
-              label="Capital"
-              value={`$${parseFloat(agent.initial_capital).toLocaleString()}`}
-              trend="Initial"
-              trendColor="mutedForeground"
-            />
-          </ScrollView>
+        <View sx={{ paddingHorizontal: 4 }}>
+          {isOwnAgent ? (
+            <>
+              <SectionTitle>
+                Open Positions ({openTrades.length})
+              </SectionTitle>
+              {openTrades.length === 0 ? (
+                <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
+                  No open positions
+                </Text>
+              ) : (
+                openTrades.map((trade) => <TradeCard key={trade.id} trade={trade} />)
+              )}
+            </>
+          ) : (
+            <Text variant="sm" sx={{ color: 'secondary500', fontSize: 12, lineHeight: 18 }}>
+              The creator's trading telemetry stays private. Clone this agent to run MARKET_SCAN → POSITION_REVIEW
+              loops under your credentials and generate your own stats.
+            </Text>
+          )}
         </View>
-      ) : null}
-
-      <View sx={{ paddingHorizontal: 4 }}>
-        {isOwnAgent ? (
-          <>
-            <SectionTitle>
-              Open Positions ({openTrades.length})
-            </SectionTitle>
-            {openTrades.length === 0 ? (
-              <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
-                No open positions
-              </Text>
-            ) : (
-              openTrades.map((trade) => <TradeCard key={trade.id} trade={trade} />)
-            )}
-          </>
-        ) : (
-          <Text variant="sm" sx={{ color: 'secondary500', fontSize: 12, lineHeight: 18 }}>
-            The creator's trading telemetry stays private. Clone this agent to run MARKET_SCAN → POSITION_REVIEW
-            loops under your credentials and generate your own stats.
-          </Text>
-        )}
-      </View>
       </Animated.ScrollView>
     </View>
   );

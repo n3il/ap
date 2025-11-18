@@ -59,11 +59,11 @@ export function PositionRow({
 
   const positionValueLabel = positionValue !== null
     ? `$${positionValue.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`
-    : 'N/A';
+    : '-';
 
   const entryPriceLabel = hasEntryPrice
     ? `$${entryPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
-    : '';
+    : '-';
   const currentPriceLabel = hasCurrentPrice
     ? `$${currentPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
     : '';
@@ -116,7 +116,7 @@ export function PositionRow({
 
           <View sx={{ flex: 1 }}>
             <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
-              {assetLabel.replace('-PERP', '')}
+              {assetLabel.replace('-PERP', '/USDC')}
             </Text>
           </View>
 
@@ -209,8 +209,8 @@ export default function PositionList({ positions = [] }) {
           <PositionRow key={position?.id || position?.symbol || i} {...position} />
         ))
       ) : (
-        <Text variant="xs" tone="muted">
-          No positions available.
+        <Text variant="xs" tone="muted" sx={{ textAlign: 'right', width: '100%', fontStyle: 'italic' }}>
+          no active positions
         </Text>
       )}
     </View>

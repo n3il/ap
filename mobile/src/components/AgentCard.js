@@ -83,9 +83,11 @@ export default function AgentCard({
                   {agent.name}
                 </Text>
              </View>
-               <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'} sx={{ fontFamily: 'monospace', borderWidth: 0 }}>
-                {isPublished ? 'PUBLIC' : 'PRIVATE'}
-              </StatusBadge>
+              {shortView ? (
+                <StatusBadge size="small" variant={isPublished ? 'info' : 'muted'} sx={{ fontFamily: 'monospace', borderWidth: 0 }}>
+                  {isPublished ? 'PUBLIC' : 'PRIVATE'}
+                </StatusBadge>
+              ) : null}
             </View>
             <Text variant="xs" tone="muted" sx={{ flex: 1, fontFamily: 'monospace' }}>
               {providerMeta}

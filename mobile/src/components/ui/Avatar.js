@@ -73,7 +73,6 @@ export default function Avatar({
           borderWidth: 0,
           borderColor: resolvedBackground,
           alignSelf: 'flex-start',
-          marginTop: 1,
         }}
       >
         {imgSrc ? (

@@ -30,7 +30,7 @@ export default function TabsLayout() {
 
   return (
     <NativeTabs
-      minimizeBehavior='automatic'
+      minimizeBehavior='onScrollDown'
       backgroundColor={theme.colors.tabBackground}
       badgeBackgroundColor={theme.colors.info.DEFAULT}
       labelStyle={{
@@ -62,7 +62,6 @@ export default function TabsLayout() {
       >
         <Label>Agents</Label>
         <Icon sf="doc.text.magnifyingglass" drawable="custom_android_drawable" />
-        
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
         name="performance"
@@ -78,6 +77,17 @@ export default function TabsLayout() {
         name="(profile)"
         options={{
           title: 'Settings',
+          headerShown: false,
+        }}
+      >
+        <Label>Account</Label>
+        <Icon sf="wallet.bifold.fill" drawable="custom_android_drawable" />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger
+        name="(search)"
+        role="search"
+        options={{
+          title: 'Search',
           headerShown: false,
         }}
       >

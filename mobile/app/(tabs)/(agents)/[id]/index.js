@@ -288,7 +288,7 @@ const AgentReadScreen = () => {
   }
 
   const renderHeaderContent = () => (
-    <PaddedView style={{ marginBottom: 22 }}>
+    <PaddedView>
       <AgentCard
         agent={agent}
         shortView
@@ -323,7 +323,7 @@ const AgentReadScreen = () => {
   );
 
   const renderTabBar = (tabsArray) => (
-    <View style={{ backgroundColor: colors.colors.background, zIndex: 10 }}>
+    <View style={{ backgroundColor: colors.colors.background, zIndex: 10, paddingVertical: 16 }}>
       <RNScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -334,7 +334,6 @@ const AgentReadScreen = () => {
           style={{
             flexDirection: 'row',
             gap: 8,
-            marginBottom: 18,
             paddingHorizontal: 16,
           }}
         >
@@ -385,8 +384,6 @@ const AgentReadScreen = () => {
           agentId={agentId}
           isOwnAgent={isOwnAgent}
           pendingAssessment={pendingAssessment}
-          headerContent={renderHeaderContent()}
-          tabBar={renderTabBar(tabsConfig)}
           onRefresh={handleRefresh}
           refreshing={refreshing}
         />
@@ -402,8 +399,6 @@ const AgentReadScreen = () => {
           trades={trades}
           stats={stats}
           isOwnAgent={isOwnAgent}
-          headerContent={renderHeaderContent()}
-          tabBar={renderTabBar(tabsConfig)}
           onRefresh={handleRefresh}
           refreshing={refreshing}
         />
@@ -417,8 +412,6 @@ const AgentReadScreen = () => {
         <TradesTab
           trades={trades}
           isOwnAgent={isOwnAgent}
-          headerContent={renderHeaderContent()}
-          tabBar={renderTabBar(tabsConfig)}
           onRefresh={handleRefresh}
           refreshing={refreshing}
         />
@@ -432,8 +425,6 @@ const AgentReadScreen = () => {
         <WalletTab
           agent={agent}
           isOwnAgent={isOwnAgent}
-          headerContent={renderHeaderContent()}
-          tabBar={renderTabBar(tabsConfig)}
           onRefresh={handleRefresh}
           refreshing={refreshing}
         />
@@ -446,6 +437,8 @@ const AgentReadScreen = () => {
 
   return (
     <ContainerView style={{ flex: 1, backgroundColor: colors.background, position: 'relative' }}>
+      {renderHeaderContent()}
+      {renderTabBar(tabsConfig)}
       <SwipeableTabs
         tabs={TABS}
         initialIndex={page}
