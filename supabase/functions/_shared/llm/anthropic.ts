@@ -1,5 +1,5 @@
-import type { GeminiPrompt, LLMResponse } from './gemini.ts'
-import { buildLLMResponsePayload } from './gemini.ts'
+import type { GeminiPrompt, LLMResponse } from '../llm/gemini.ts'
+import { tryParseText } from "./providers.ts";
 
 const DEFAULT_MODEL = 'claude-3-5-haiku-20241022'
 const API_URL = 'https://api.anthropic.com/v1/messages'
@@ -62,11 +62,10 @@ export async function callAnthropicAPI(
     throw new Error('No response from Anthropic API')
   }
 
-  const { parsed, action } = buildLLMResponsePayload(text)
+  const parsed = tryParseText(text)
 
   return {
     text,
-    action,
     parsed,
     rawResponse: data,
   }

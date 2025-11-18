@@ -1,3 +1,5 @@
+import { OpenPosition, Trade } from "./types.ts";
+
 /**
  * Pure function to calculate PnL for a single trade
  * Works for both open and closed positions
@@ -27,7 +29,7 @@ export function calculateTradePnL(
  * Calculate realized PnL from closed trades
  */
 export function calculateRealizedPnL(
-  closedTrades: Array<{ realized_pnl: string | number }>
+  closedTrades: Trade[]
 ): number {
   return closedTrades.reduce(
     (sum, trade) => sum + (parseFloat(String(trade.realized_pnl || 0))),
@@ -48,13 +50,7 @@ export function createPriceMap(
  * Calculate unrealized PnL for all open positions
  */
 export function calculateUnrealizedPnL(
-  openPositions: Array<{
-    asset: string;
-    side: 'LONG' | 'SHORT';
-    size: string | number;
-    entry_price: string | number;
-    leverage: string | number;
-  }>,
+  openPositions: OpenPosition[],
   priceMap: Map<string, number>
 ): number {
   return openPositions.reduce((sum, position) => {
@@ -88,11 +84,7 @@ export function calculatePositionMargin(
  * Calculate total margin used across all open positions
  */
 export function calculateTotalMarginUsed(
-  openPositions: Array<{
-    asset: string;
-    size: string | number;
-    leverage: string | number;
-  }>,
+  openPositions: OpenPosition[],
   priceMap: Map<string, number>
 ): number {
   return openPositions.reduce((sum, position) => {
@@ -120,14 +112,8 @@ export interface PnLMetrics {
 
 export function calculatePnLMetrics(
   initialCapital: number,
-  closedTrades: Array<{ realized_pnl: string | number }>,
-  openPositions: Array<{
-    asset: string;
-    side: 'LONG' | 'SHORT';
-    size: string | number;
-    entry_price: string | number;
-    leverage: string | number;
-  }>,
+  closedTrades: Trade[],
+  openPositions: OpenPosition[],
   marketData: Array<{ symbol: string; price: number }>
 ): PnLMetrics {
   const realizedPnl = calculateRealizedPnL(closedTrades);

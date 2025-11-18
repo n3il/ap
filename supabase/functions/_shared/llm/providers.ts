@@ -1,8 +1,8 @@
-import { callGeminiAPI } from '../gemini.ts';
-import { callDeepseekAPI } from '../deepseek.ts';
-import { callOpenAIAPI } from '../openai.ts';
-import { callAnthropicAPI } from '../anthropic.ts';
-import type { LLMPrompt, LLMResponse, LLMProvider } from './types.ts';
+import { callGeminiAPI } from './gemini.ts';
+import { callDeepseekAPI } from './deepseek.ts';
+import { callOpenAIAPI } from './openai.ts';
+import { callAnthropicAPI } from './anthropic.ts';
+import type { LLMPrompt, LLMResponse, LLMProvider, ParsedLLMResponse } from './types.ts';
 
 /**
  * Routes LLM call to the appropriate provider
@@ -31,9 +31,11 @@ export async function callLLMProvider(
   }
 }
 
-/**
- * Determines prompt type based on open positions
- */
-export function determinePromptType(hasOpenPositions: boolean): 'POSITION_REVIEW' | 'MARKET_SCAN' {
-  return hasOpenPositions ? 'POSITION_REVIEW' : 'MARKET_SCAN';
+export function tryParseText(text: string): ParsedLLMResponse | null {
+  try {
+    return JSON.parse(text)
+  } catch (e) {
+    console.error('Error parsing text:', e)
+    return null
+  }
 }

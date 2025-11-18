@@ -1,13 +1,12 @@
 import { createSupabaseServiceClient } from '../../_shared/supabase.ts';
-import type { MarketDataSnapshot } from './data.ts';
-import type { PromptType, LLMResponse, LLMTradeAction } from '../../_shared/llm/types.ts';
+import type { MarketDataSnapshot } from '../../_shared/lib/types.ts';
+import type { LLMResponse, LLMTradeAction } from '../../_shared/llm/types.ts';
 import type { PnLMetrics } from '../../_shared/lib/pnl.ts';
 
 export interface Assessment {
   id: string;
   agent_id: string;
   timestamp: string;
-  type: PromptType;
   market_data_snapshot: MarketDataSnapshot;
   llm_prompt_used: string;
   llm_response_text: string;
@@ -20,7 +19,6 @@ export interface Assessment {
  */
 export async function saveAssessment(
   agentId: string,
-  promptType: PromptType,
   marketSnapshot: MarketDataSnapshot,
   prompt: { systemInstruction: string; userQuery: string },
   llmResponse: LLMResponse,
@@ -43,7 +41,6 @@ export async function saveAssessment(
     .insert([{
       agent_id: agentId,
       timestamp: new Date().toISOString(),
-      type: promptType,
       market_data_snapshot: marketSnapshot,
       llm_prompt_used: `${prompt.systemInstruction}\n\n${prompt.userQuery}`,
       llm_response_text: llmResponse.text,

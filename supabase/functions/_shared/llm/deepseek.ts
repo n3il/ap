@@ -1,5 +1,5 @@
 import type { GeminiPrompt, LLMResponse } from './gemini.ts'
-import { buildLLMResponsePayload } from './gemini.ts'
+import { tryParseText } from './llm/providers.ts'
 
 const DEFAULT_MODEL = 'deepseek-chat'
 const API_URL = 'https://api.deepseek.com/chat/completions'
@@ -46,11 +46,10 @@ export async function callDeepseekAPI(
     throw new Error('No response from DeepSeek API')
   }
 
-  const { parsed, action } = buildLLMResponsePayload(text)
+  const parsed = tryParseText(text)
 
   return {
     text,
-    action,
     parsed,
     rawResponse: data,
   }

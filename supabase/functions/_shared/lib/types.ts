@@ -8,10 +8,11 @@ export interface Agent {
   user_id: string;
   is_active: boolean | string;
   initial_capital: string | number;
-  llm_provider?: string;
-  model_name?: string;
-  hyperliquid_address?: string;
-  prompt_id?: string | null;
+  llm_provider: string;
+  model_name: string;
+  hyperliquid_address: string;
+  prompt_id: string;
+  simulate: boolean;
 }
 
 export interface Trade {
@@ -27,6 +28,14 @@ export interface Trade {
   entry_timestamp: string;
   exit_timestamp?: string;
   realized_pnl?: string | number;
+}
+
+export interface OpenPosition {
+    asset: string;
+    side: 'LONG' | 'SHORT';
+    size: string | number;
+    entry_price: string | number;
+    leverage: string | number;
 }
 
 export interface MarketAsset {
@@ -50,4 +59,10 @@ export interface HyperliquidTradeResult {
   fee?: number;
   orderId?: string;
   message?: string;
+}
+
+export interface MarketDataSnapshot {
+  timestamp: string;
+  market_prices: MarketAsset[];
+  open_positions: Trade[];
 }

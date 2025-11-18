@@ -193,6 +193,9 @@ CREATE TRIGGER update_prompts_updated_at
 ALTER TABLE agents
   ADD COLUMN IF NOT EXISTS prompt_id UUID REFERENCES prompts(id) ON DELETE SET NULL;
 
+ALTER TABLE agents
+  ADD COLUMN IF NOT EXISTS simulate BOOLEAN DEFAULT true;
+
 CREATE INDEX IF NOT EXISTS idx_agents_prompt ON agents(prompt_id);
 
 ALTER TABLE assessments

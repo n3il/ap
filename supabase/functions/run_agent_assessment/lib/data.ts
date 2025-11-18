@@ -1,29 +1,6 @@
 import { createSupabaseServiceClient } from '../../_shared/supabase.ts';
 import { fetchHyperliquidMarketData, fetchAllCandleData } from '../../_shared/hyperliquid.ts';
-
-export interface Trade {
-  id: string;
-  agent_id: string;
-  asset: string;
-  side: 'LONG' | 'SHORT';
-  size: string | number;
-  entry_price: string | number;
-  leverage: string | number;
-  status: 'OPEN' | 'CLOSED';
-  realized_pnl?: string | number;
-}
-
-export interface MarketAsset {
-  symbol: string;
-  price: number;
-  [key: string]: any;
-}
-
-export interface MarketDataSnapshot {
-  timestamp: string;
-  market_prices: MarketAsset[];
-  open_positions: Trade[];
-}
+import { MarketAsset, Trade, MarketDataSnapshot } from "../../_shared/lib/types.ts";
 
 /**
  * Fetches all open positions for an agent

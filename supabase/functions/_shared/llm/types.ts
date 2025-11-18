@@ -52,7 +52,6 @@ export interface LLMPrompt {
 
 export interface LLMResponse {
   text: string;
-  action: string;
   parsed: ParsedLLMResponse | null;
   rawResponse?: unknown;
 }

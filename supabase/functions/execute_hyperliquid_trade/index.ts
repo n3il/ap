@@ -9,14 +9,14 @@ console.log('Execute Hyperliquid Trade function started');
 interface TradePayload {
   agent_id: string;
   action: string;
-  hyperliquid_address: string;
+  simulate: boolean;
 }
 
 /**
  * Main handler for executing Hyperliquid trades
  */
 async function handleTrade(payload: TradePayload) {
-  validateRequiredFields(payload, ['agent_id', 'action', 'hyperliquid_address']);
+  validateRequiredFields(payload, ['agent_id', 'action', 'simulate']);
 
   console.log('Executing trade:', { agent_id: payload.agent_id, action: payload.action });
 
@@ -34,13 +34,13 @@ async function handleTrade(payload: TradePayload) {
 
   // Route to appropriate trade execution handler
   if (actionResult.type === 'OPEN') {
-    const result = await executeOpenTrade(agent, payload.action, payload.hyperliquid_address);
+    const result = await executeOpenTrade(agent, payload.action, payload.simulate);
     return {
       success: true,
       ...result,
     };
   } else if (actionResult.type === 'CLOSE') {
-    const result = await executeCloseTrade(agent, payload.action, payload.hyperliquid_address);
+    const result = await executeCloseTrade(agent, payload.action, payload.simulate);
     return {
       success: true,
       ...result,
