@@ -1,58 +1,9 @@
 import { createSupabaseServiceClient } from '../supabase.ts';
 import { executeHyperliquidTrade, closePosition } from '../hyperliquid.ts';
-import { parseTradeAction } from './parser.ts';
 import { calculateTradePnL } from './pnl.ts';
 import { ensureTradingAccount, recordLedgerExecution } from './ledger.ts';
 import type { Agent } from './types.ts';
-import type { LLMTradeAction } from '../_shared/llm/types.ts';
-
-/**
- * Calls the execute_hyperliquid_trade edge function
- * Used by run_agent_assessment to trigger trades
- */
-export async function callTradeExecutionFunction(
-  agentId: string,
-  action: LLMTradeAction,
-  simulate: boolean
-): Promise<any | null> {
-  if (!action || action === 'NO_ACTION') {
-    console.log('No trade action to execute');
-    return null;
-  }
-
-  console.log('Executing trade action:', action);
-
-  try {
-    const response = await fetch(
-      `${Deno.env.get('SUPABASE_URL')}/functions/v1/execute_hyperliquid_trade`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`,
-        },
-        body: JSON.stringify({
-          agent_id: agentId,
-          action,
-          simulate,
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Trade execution failed:', errorText);
-      return null;
-    }
-
-    const result = await response.json();
-    console.log('Trade executed successfully');
-    return result;
-  } catch (error) {
-    console.error('Trade execution error:', error);
-    return null;
-  }
-}
+import type { LLMTradeAction } from '../llm/types.ts';
 
 /**
  * Executes an OPEN trade action
@@ -65,13 +16,29 @@ export async function executeOpenTrade(
 ) {
   const supabase = createSupabaseServiceClient();
 
-  if (!actionResult || actionResult.type !== 'OPEN' || !actionResult.side) {
-    throw new Error('Invalid OPEN action');
+  // Validate action - early return for NO_ACTION
+  if (!action || !action.action || action.action === 'NO_ACTION') {
+    return {
+      success: true,
+      message: 'No trade action to execute',
+      skipped: true,
+    };
   }
 
-  // Determine if this is a paper or real trade based on agent.simulate
+  if (action.action !== 'OPEN_LONG' && action.action !== 'OPEN_SHORT') {
+    throw new Error(`Invalid OPEN action: ${action.action}`);
+  }
+
+  if (!action.asset) {
+    throw new Error('Asset is required for OPEN action');
+  }
+
+  // Determine side from action
+  const side = action.action === 'OPEN_LONG' ? 'LONG' : 'SHORT';
+
+  // Determine if this is a paper or real trade
   const tradingMode = simulate === false ? 'real' : 'paper';
-  console.log(`Opening ${tradingMode.toUpperCase()} trade: ${actionResult.side} ${actionResult.asset}`);
+  console.log(`Opening ${tradingMode.toUpperCase()} trade: ${side} ${action.asset}`);
 
   // Ensure trading account exists
   const ledgerAccount = await ensureTradingAccount({
@@ -87,10 +54,10 @@ export async function executeOpenTrade(
   if (tradingMode === 'real') {
     tradeResult = await executeHyperliquidTrade(
       {
-        action: actionString,
-        asset: actionResult.asset,
-        side: actionResult.side,
-        size: actionResult.size || 0.01,
+        action: `OPEN_${side}_${action.asset}${action.leverage && action.leverage > 1 ? `_${Math.round(action.leverage)}X` : ''}`,
+        asset: action.asset,
+        side: side,
+        size: action.size,
       },
       agent.hyperliquid_address
     );
@@ -99,11 +66,12 @@ export async function executeOpenTrade(
       throw new Error(tradeResult.error || 'Trade execution failed');
     }
   } else {
-    // Paper trade - simulate with current market price (you may want to fetch actual price)
+    // Paper trade - use entry price from action or 0
     tradeResult = {
       success: true,
-      price: action
-      fee: 0,
+      price: action.entry,
+      size: action.size,
+      fee: (action.size || 0) * 0.045,
       orderId: `PAPER_${Date.now()}`,
       message: 'Paper trade executed',
     };
@@ -115,13 +83,13 @@ export async function executeOpenTrade(
     .insert([
       {
         agent_id: agent.id,
-        asset: actionResult.asset,
-        side: actionResult.side,
+        asset: action.asset,
+        side: side,
         status: 'OPEN',
-        size: actionResult.size || 0.01,
+        size: action.size || 0.01,
         entry_price: tradeResult.price,
         entry_timestamp: new Date().toISOString(),
-        leverage: actionResult.leverage || 1,
+        leverage: action.leverage,
       },
     ])
     .select()
@@ -135,21 +103,27 @@ export async function executeOpenTrade(
     accountId: ledgerAccount.id,
     agentId: agent.id,
     userId: agent.user_id,
-    symbol: actionResult.asset,
-    executionSide: actionResult.side === 'LONG' ? 'BUY' : 'SELL',
-    quantity: actionResult.size || 0.01,
+    symbol: action.asset,
+    executionSide: side === 'LONG' ? 'BUY' : 'SELL',
+    quantity: action.size || 0.01,
     price: tradeResult.price || 0,
     fee: tradeResult.fee ?? 0,
     clientOrderId: tradeResult.orderId,
     realizedPnL: 0,
     metadata: {
       source: 'execute_hyperliquid_trade',
-      action: actionString,
+      action: action.action,
+      asset: action.asset,
       hyperliquidOrderId: tradeResult.orderId,
       message: tradeResult.message,
       mode: tradingMode,
+      leverage: action.leverage,
+      stopLoss: action.stopLoss,
+      takeProfit: action.takeProfit,
+      confidenceScore: action.confidenceScore,
+      reasoning: action.reasoning,
     },
-    description: `Opened ${actionResult.side} ${actionResult.asset}`,
+    description: `Opened ${side} ${action.asset}`,
     type: tradingMode,
   });
 
@@ -172,19 +146,31 @@ export async function executeOpenTrade(
  */
 export async function executeCloseTrade(
   agent: Agent,
-  actionString: string,
-  hyperliquidAddress: string
+  action: LLMTradeAction,
+  simulate: boolean
 ) {
   const supabase = createSupabaseServiceClient();
-  const actionResult = parseTradeAction(actionString);
 
-  if (!actionResult || actionResult.type !== 'CLOSE') {
-    throw new Error('Invalid CLOSE action');
+  // Validate action - early return for NO_ACTION
+  if (!action || !action.action || action.action === 'NO_ACTION') {
+    return {
+      success: true,
+      message: 'No trade action to execute',
+      skipped: true,
+    };
   }
 
-  // Determine if this is a paper or real trade based on agent.simulate
-  const tradingMode = agent.simulate === false ? 'real' : 'paper';
-  console.log(`Closing ${tradingMode.toUpperCase()} trade: ${actionResult.asset}`);
+  if (action.action !== 'CLOSE_LONG' && action.action !== 'CLOSE_SHORT') {
+    throw new Error(`Invalid CLOSE action: ${action.action}`);
+  }
+
+  if (!action.asset) {
+    throw new Error('Asset is required for CLOSE action');
+  }
+
+  // Determine if this is a paper or real trade
+  const tradingMode = simulate === false ? 'real' : 'paper';
+  console.log(`Closing ${tradingMode.toUpperCase()} trade: ${action.asset}`);
 
   // Ensure trading account exists
   const ledgerAccount = await ensureTradingAccount({
@@ -200,28 +186,29 @@ export async function executeCloseTrade(
     .from('trades')
     .select('*')
     .eq('agent_id', agent.id)
-    .eq('asset', actionResult.asset)
+    .eq('asset', action.asset)
     .eq('status', 'OPEN')
     .single();
 
   if (findError || !existingTrade) {
-    throw new Error(`No open position found for ${actionResult.asset}`);
+    throw new Error(`No open position found for ${action.asset}`);
   }
 
   // Close position on Hyperliquid (only for real trades)
   let closeResult;
   if (tradingMode === 'real') {
-    closeResult = await closePosition(actionResult.asset, hyperliquidAddress);
+    closeResult = await closePosition(action.asset, agent.hyperliquid_address);
 
     if (!closeResult.success) {
       throw new Error(closeResult.error || 'Position close failed');
     }
   } else {
-    // Paper trade - simulate close with current market price (you may want to fetch actual price)
+    // Paper trade - use entry price from action or 0
     closeResult = {
       success: true,
-      price: 0, // You may want to fetch current market price here
-      fee: 0,
+      price: action.entry || 0,
+      size: action.size,
+      fee: (action.size || 0) * 0.045,
       orderId: `PAPER_CLOSE_${Date.now()}`,
       message: 'Paper position closed',
     };
@@ -259,7 +246,7 @@ export async function executeCloseTrade(
     accountId: ledgerAccount.id,
     agentId: agent.id,
     userId: agent.user_id,
-    symbol: actionResult.asset,
+    symbol: action.asset,
     executionSide: closeSide,
     quantity: parseFloat(String(existingTrade.size)),
     price: closeResult.price || 0,
@@ -268,14 +255,16 @@ export async function executeCloseTrade(
     realizedPnL: pnl,
     metadata: {
       source: 'execute_hyperliquid_trade',
-      action: actionString,
+      action: action.action,
+      asset: action.asset,
       hyperliquidOrderId: closeResult.orderId,
       message: closeResult.message,
       mode: tradingMode,
       entry_price: existingTrade.entry_price,
       exit_price: closeResult.price,
+      reasoning: action.reasoning,
     },
-    description: `Closed ${existingTrade.side} ${actionResult.asset}`,
+    description: `Closed ${existingTrade.side} ${action.asset}`,
     type: tradingMode,
   });
 

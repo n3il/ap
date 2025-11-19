@@ -41,7 +41,7 @@ export default function TabsLayout() {
         default: theme.colors.tabIcon,
         selected: theme.colors.tabIconSelected,
       }}
-      blurEffect={isDark ? 'dark' : 'extraLight'}
+      blurEffect="systemMaterialDark"
     >
       <NativeTabs.Trigger
         name="(explore)"

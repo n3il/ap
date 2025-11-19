@@ -51,6 +51,10 @@ export default function ExploreScreen() {
             timeframe={timeframe}
           />
 
+
+        </PaddedView>
+
+        <PaddedView sx={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
           <Text
             variant="xs"
             tone="muted"
@@ -58,22 +62,16 @@ export default function ExploreScreen() {
               textTransform: 'uppercase',
               fontWeight: '600',
               letterSpacing: 2,
-              marginTop: 4
             }}
           >
             Explore Agents
           </Text>
-        </PaddedView>
-
-        <View sx={{ alignItems: 'flex-end' }}>
           <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
-        </View>
-        <View sx={{ marginTop: 4 }}>
+        </PaddedView>
+        <View sx={{ backgroundColor: 'surface', marginTop: 2 }}>
           <SvgChart timeframe={timeframe} />
         </View>
         <PaddedView sx={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 3 }}>
-          <SectionTitle title="Agents" />
-          <SectionTitle title="Trades" sx={{ color: "muted" }} />
         </PaddedView>
         <View style={{ flex: 1 }}>
           <CategoryAgentsListPager />

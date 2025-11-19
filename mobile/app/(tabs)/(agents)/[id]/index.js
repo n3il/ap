@@ -26,6 +26,7 @@ import SwipeableTabs from '@/components/ui/SwipeableTabs';
 import AgentCard from '@/components/AgentCard';
 import { Button } from '@/components/ui';
 import { PROVIDER_COLORS } from '@/theme/base';
+import AgentHeader from '@/components/agent/Header';
 
 const AgentReadScreen = () => {
   const colors = useColors();
@@ -437,7 +438,7 @@ const AgentReadScreen = () => {
 
   return (
     <ContainerView style={{ flex: 1, backgroundColor: colors.background, position: 'relative' }}>
-      {renderHeaderContent()}
+      <AgentHeader agent={agent} />
       {renderTabBar(tabsConfig)}
       <SwipeableTabs
         tabs={TABS}

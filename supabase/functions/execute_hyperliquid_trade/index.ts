@@ -1,53 +1,51 @@
 import { corsPreflightResponse, successResponse, handleError } from '../_shared/lib/http.ts';
 import { validateRequiredFields } from '../_shared/lib/validation.ts';
-import { parseTradeAction } from '../_shared/lib/parser.ts';
 import { fetchAgent } from '../_shared/lib/agent.ts';
 import { executeOpenTrade, executeCloseTrade } from '../_shared/lib/trade.ts';
+import type { LLMTradeAction } from '../_shared/llm/types.ts';
 
 console.log('Execute Hyperliquid Trade function started');
 
 interface TradePayload {
   agent_id: string;
-  action: string;
+  action: LLMTradeAction;
   simulate: boolean;
 }
 
 /**
  * Main handler for executing Hyperliquid trades
+ * This edge function provides an HTTP endpoint for external trade execution
  */
 async function handleTrade(payload: TradePayload) {
   validateRequiredFields(payload, ['agent_id', 'action', 'simulate']);
 
-  console.log('Executing trade:', { agent_id: payload.agent_id, action: payload.action });
+  console.log('Executing trade:', {
+    agent_id: payload.agent_id,
+    action: payload.action.action,
+    asset: payload.action.asset,
+    simulate: payload.simulate,
+  });
 
   const agent = await fetchAgent(payload.agent_id);
-  const actionResult = parseTradeAction(payload.action);
+  const action = payload.action;
 
-  if (!actionResult) {
-    return {
-      success: true,
-      message: 'No trade action to execute',
-    };
-  }
-
-  console.log('Parsed action:', actionResult);
-
-  // Route to appropriate trade execution handler
-  if (actionResult.type === 'OPEN') {
-    const result = await executeOpenTrade(agent, payload.action, payload.simulate);
+  // Route to appropriate trade execution handler based on action type
+  // Validation is handled in the shared trade functions
+  if (action.action === 'OPEN_LONG' || action.action === 'OPEN_SHORT') {
+    const result = await executeOpenTrade(agent, action, payload.simulate);
     return {
       success: true,
       ...result,
     };
-  } else if (actionResult.type === 'CLOSE') {
-    const result = await executeCloseTrade(agent, payload.action, payload.simulate);
+  } else if (action.action === 'CLOSE_LONG' || action.action === 'CLOSE_SHORT') {
+    const result = await executeCloseTrade(agent, action, payload.simulate);
     return {
       success: true,
       ...result,
     };
   }
 
-  throw new Error('Unknown action type');
+  throw new Error(`Unknown action type: ${action.action}`);
 }
 
 /**

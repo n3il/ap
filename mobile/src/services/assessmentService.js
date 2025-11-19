@@ -102,8 +102,6 @@ export const assessmentService = {
         if (agentIds.length === 0) {
           return {
             totalAssessments: 0,
-            marketScans: 0,
-            positionReviews: 0,
             actionsTriggered: 0,
           };
         }
@@ -116,8 +114,6 @@ export const assessmentService = {
 
       return {
         totalAssessments: assessments.length,
-        marketScans: assessments.filter(a => a.type === 'MARKET_SCAN').length,
-        positionReviews: assessments.filter(a => a.type === 'POSITION_REVIEW').length,
         actionsTriggered: assessments.filter(a => a.trade_action_taken && a.trade_action_taken !== 'NO_ACTION').length,
       };
     } catch (error) {

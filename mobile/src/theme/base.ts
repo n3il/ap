@@ -88,7 +88,7 @@ const darkTheme = {
     accentPalette,
     accentForeground: accentPalette.foreground,
     // Semantic colors for dark mode
-    background: '#040404ff',
+    background: '#1f2436ff',
     backgroundSecondary: '#101a2c',
     surface: '#0f172a',
     foreground: '#f8fafc',

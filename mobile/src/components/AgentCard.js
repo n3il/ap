@@ -89,9 +89,9 @@ export default function AgentCard({
                 </StatusBadge>
               ) : null}
             </View>
-            <Text variant="xs" tone="muted" sx={{ flex: 1, fontFamily: 'monospace' }}>
+            {/* <Text variant="xs" tone="muted" sx={{ flex: 1, fontFamily: 'monospace' }}>
               {providerMeta}
-            </Text>
+            </Text> */}
           </View>
         </View>
 

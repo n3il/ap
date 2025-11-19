@@ -51,7 +51,6 @@ export default function ForgotPasswordScreen() {
   };
 
   return (
-    <ContainerView>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         sx={{ flex: 1 }}
@@ -148,6 +147,5 @@ export default function ForgotPasswordScreen() {
           </View>
         </View>
       </KeyboardAvoidingView>
-    </ContainerView>
   );
 }

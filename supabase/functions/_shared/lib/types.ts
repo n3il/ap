@@ -6,13 +6,14 @@ export interface Agent {
   id: string;
   name: string;
   user_id: string;
-  is_active: boolean | string;
+  is_active: Date | string;
   initial_capital: string | number;
   llm_provider: string;
   model_name: string;
   hyperliquid_address: string;
   prompt_id: string;
   simulate: boolean;
+  published_at: string;
 }
 
 export interface Trade {

@@ -1,5 +1,5 @@
 import type { GeminiPrompt, LLMResponse } from './gemini.ts'
-import { tryParseText } from './llm/providers.ts'
+import { tryParseText } from "./providers.ts";
 
 const DEFAULT_MODEL = 'deepseek-chat'
 const API_URL = 'https://api.deepseek.com/chat/completions'

@@ -16,6 +16,7 @@ import TouchableOpacity from '@/components/ui/TouchableOpacity';
 import ScrollView from '@/components/ui/ScrollView';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
 import { GLOBAL_PADDING } from '@/components/ContainerView';
+import { useTheme } from '@/contexts/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const SCREEN_WIDTH = width;
@@ -63,6 +64,7 @@ export default function SwipeableTabs({
   refreshing = false,
   hideTabBar = false,
 }: SwipeableTabsProps) {
+  const { theme } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(new Animated.Value(initialIndex * SCREEN_WIDTH)).current;
@@ -126,22 +128,25 @@ export default function SwipeableTabs({
           <GlassContainer
             spacing={10}
             style={[
-              { flexDirection: 'row', gap: 8, marginBottom: 18, paddingHorizontal: GLOBAL_PADDING },
+              { flexDirection: 'row', gap: 8, marginBottom: 12, paddingHorizontal: GLOBAL_PADDING },
               tabContainerStyle,
             ]}
           >
             {tabs.map((tab, index) => (
               <GlassView
                 key={tab.key}
-                glassEffectStyle="regular"
+                glassEffectStyle="clear"
                 style={[
                   {
                     borderRadius: 32,
                     paddingHorizontal: 8,
+                    paddingVertical: 4,
                     marginHorizontal: 4,
+
                   },
                   tabWrapperStyle,
                 ]}
+                tintColor={theme.colors.surface}
               >
                 <TouchableOpacity
                   key={tab.key}

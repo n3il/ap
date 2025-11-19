@@ -9,7 +9,7 @@ export const formatCurrency = (value) => {
   const formatter = new Intl.NumberFormat('en-US', {
     style: 'currency',
     currency: 'USD',
-    minimumFractionDigits: value >= 100 ? 0 : 2,
+    minimumFractionDigits: value >= 100 ? 2 : 2,
     maximumFractionDigits: value >= 1 ? 2 : 4,
   });
 

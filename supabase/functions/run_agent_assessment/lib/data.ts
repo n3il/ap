@@ -1,6 +1,6 @@
 import { createSupabaseServiceClient } from '../../_shared/supabase.ts';
-import { fetchHyperliquidMarketData, fetchAllCandleData } from '../../_shared/hyperliquid.ts';
 import { MarketAsset, Trade, MarketDataSnapshot } from "../../_shared/lib/types.ts";
+import { fetchHyperliquidMarketData, fetchAllCandleData } from "../../_shared/hyperliquid.ts";
 
 /**
  * Fetches all open positions for an agent

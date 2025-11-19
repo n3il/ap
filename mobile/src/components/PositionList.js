@@ -16,19 +16,20 @@ function PositionDetailRow({ label, value, valueStyle }) {
   );
 }
 
-export function PositionRow({
-  id = '',
-  asset = '',
-  symbol = '',
-  coin = '',
-  side = '',
-  size = '',
-  szi = '',
-  entry_price = '',
-  currentPrice = '',
-  unrealizedPnl = '',
-  pnlPercent = '',
-}) {
+export function PositionRow(position) {
+  const {
+    id = '',
+    asset = '',
+    symbol = '',
+    coin = '',
+    side = '',
+    size = '',
+    szi = '',
+    entry_price = '',
+    currentPrice = '',
+    unrealizedPnl = '',
+    pnlPercent = '',
+  } = position;
   const [expanded, setExpanded] = useState(false);
 
   const {

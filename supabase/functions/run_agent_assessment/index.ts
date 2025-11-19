@@ -13,7 +13,7 @@ import {
   createMarketSnapshot,
 } from './lib/data.ts';
 import { saveAssessment, savePnLSnapshot } from './lib/persistence.ts';
-import { callTradeExecutionFunction } from '../_shared/lib/trade.ts';
+import { executeOpenTrade, executeCloseTrade } from '../_shared/lib/trade.ts';
 import { createSupabaseServiceClient } from '../_shared/supabase.ts';
 
 console.log('Run Agent Assessment function started.');
@@ -89,15 +89,21 @@ async function runAgentAssessment(agentId: string, authHeader: string) {
     console.error('PnL snapshot error (non-fatal):', error);
   }
 
-  // 11. Execute trades for all non-NO_ACTION trade actions
+  // 11. Execute trades directly (no HTTP hop)
   const tradeResults = [];
   for (const tradeAction of tradeActions) {
     if (tradeAction.action && tradeAction.action !== 'NO_ACTION') {
-      const result = await callTradeExecutionFunction(
-        agentId,
-        tradeAction,
-        agent.simulate,
-      );
+      let result;
+
+      // Route to appropriate trade execution handler based on action type
+      if (tradeAction.action === 'OPEN_LONG' || tradeAction.action === 'OPEN_SHORT') {
+        result = await executeOpenTrade(agent, tradeAction, agent.simulate);
+      } else if (tradeAction.action === 'CLOSE_LONG' || tradeAction.action === 'CLOSE_SHORT') {
+        result = await executeCloseTrade(agent, tradeAction, agent.simulate);
+      } else {
+        console.warn(`Unknown action type: ${tradeAction.action}`);
+        continue;
+      }
 
       tradeResults.push({
         action: tradeAction,

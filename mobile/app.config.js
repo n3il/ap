@@ -6,7 +6,7 @@ export default {
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
-    userInterfaceStyle: "automatic",
+    userInterfaceStyle: "dark",
     newArchEnabled: true,
     splash: {
       image: "./assets/icons/Icon-App-iTunes.png",
@@ -16,7 +16,7 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.puppetai.app",
-      deploymentTarget: "16.0",
+      deploymentTarget: "26.0",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSAppTransportSecurity: {

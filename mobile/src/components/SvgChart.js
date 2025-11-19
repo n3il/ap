@@ -324,15 +324,25 @@ const SvgChart = ({
     return `${val.toFixed(1)}`;
   };
 
-  // No data to display
   if (lines.length === 0) {
-    return (
-      <View sx={{ marginTop: 4, alignItems: 'center', paddingVertical: 8 }}>
-        <Text sx={{ fontSize: 12, color: 'secondary500' }}>
-          No data available
-        </Text>
-      </View>
-    );
+    lines = [
+      {
+        id: 'agent-1',
+        name: 'Agent 1',
+        color: '#10b981',
+        data: [{ time: 0, value: 10 }, { time: 1, value: 10 }],
+        axisGroup: 'left',
+        formatValue: (val) => `${val.toFixed(1)}%`
+      },
+      {
+        id: 'balance',
+        name: 'Balance',
+        color: '#3b82f6',
+        data: [{ time: 0, value: 1000 }, { time: 1, value: 10 }],
+        axisGroup: 'right',
+        formatValue: (val) => `$${val.toFixed(0)}`
+      }
+    ]
   }
 
   return (

@@ -2,7 +2,7 @@ import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/config/supabase';
 
-export function useAccountBalance(agentId, hideOpenPositions) {
+export function useAccountBalance(agentId, hideOpenPositions = false) {
   // Fetch agent data for initial capital
   const { data: agent } = useQuery({
     queryKey: ['agent', agentId],
@@ -50,7 +50,7 @@ export function useAccountBalance(agentId, hideOpenPositions) {
 
   // Fetch current market prices for open positions
   const positionSymbols = useMemo(() => {
-    return openPositions.map(p => p.asset).filter(Boolean);
+    return openPositions.map(p => p.asset?.replace('-PERP', '')).filter(Boolean);
   }, [openPositions]);
 
   const { data: marketPrices = {} } = useQuery({
@@ -85,7 +85,7 @@ export function useAccountBalance(agentId, hideOpenPositions) {
   // Calculate enriched positions with current prices and P&L
   const enrichedPositions = useMemo(() => {
     return openPositions.map(position => {
-      const symbol = position.asset;
+      const symbol = position.asset.replace('-PERP', '');
       const currentPrice = marketPrices[symbol];
       const entryPrice = parseFloat(position.entry_price) || 0;
       const size = parseFloat(position.size) || 0;
