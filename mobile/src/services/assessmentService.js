@@ -1,16 +1,52 @@
 import { supabase } from '@/config/supabase';
 
+/**
+ * Parse timeframe string (e.g., '1d', '7d', '1h', '30m') to milliseconds
+ */
+const parseTimeframe = (timeframe) => {
+  if (!timeframe) return null;
+
+  const match = timeframe.match(/^(\d+)([mhd])$/);
+  if (!match) return null;
+
+  const [, value, unit] = match;
+  const num = parseInt(value, 10);
+
+  switch (unit) {
+    case 'm': return num * 60 * 1000; // minutes
+    case 'h': return num * 60 * 60 * 1000; // hours
+    case 'd': return num * 24 * 60 * 60 * 1000; // days
+    default: return null;
+  }
+};
+
 export const assessmentService = {
   // Fetch all assessments for a specific agent
-  async getAssessmentsByAgent(agentId, { pageParam = 0, pageSize = 10 } = {}) {
+  async getAssessmentsByAgent(agentId, { pageParam = 0, pageSize = 10, timeframe = null, after = null } = {}) {
     try {
       const from = pageParam * pageSize;
       const to = from + pageSize - 1;
 
-      const { data, error, count } = await supabase
+      let query = supabase
         .from('assessments')
         .select('*, agent:agents(*)', { count: 'exact' })
-        .eq('agent_id', agentId)
+        .eq('agent_id', agentId);
+
+      // Filter by timeframe if provided
+      if (timeframe) {
+        const ms = parseTimeframe(timeframe);
+        if (ms) {
+          const cutoffDate = new Date(Date.now() - ms).toISOString();
+          query = query.gte('timestamp', cutoffDate);
+        }
+      }
+
+      // Filter for assessments after a specific timestamp (for polling)
+      if (after) {
+        query = query.gt('timestamp', after);
+      }
+
+      const { data, error, count } = await query
         .order('timestamp', { ascending: false })
         .range(from, to);
 

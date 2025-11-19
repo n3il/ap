@@ -14,23 +14,6 @@ export default function Layout() {
       <Stack.Screen name="index" />
       <Stack.Screen
         name="[id]/index"
-        options={{
-          headerShown: false,
-          presentation: 'card',
-          headerTitle: '',
-          headerBackButtonDisplayMode: 'minimal',
-          headerTransparent: true,
-          headerBlurEffect: 'dark',
-          headerTintColor: colors.colors.foreground,
-          headerBackTitleVisible: false,
-          headerShadowVisible: false,
-          headerLargeStyle: true,
-          preferLargeTitle: true,
-          headerLargeTitleStyle: {
-            fontSize: 32,
-            fontWeight: '600',
-          }
-        }}
       />
       <Stack.Screen name="[id]/manage" />
     </Stack>

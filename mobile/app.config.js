@@ -7,7 +7,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
     userInterfaceStyle: "dark",
-    newArchEnabled: true,
+    newArchEnabled: false, // Disable if using Expo Go. Enable for Dev Client.
     splash: {
       image: "./assets/icons/Icon-App-iTunes.png",
       resizeMode: "contain",
@@ -16,12 +16,10 @@ export default {
     ios: {
       supportsTablet: true,
       bundleIdentifier: "com.puppetai.app",
-      deploymentTarget: "26.0",
+      deploymentTarget: "13.0",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false,
-        NSAppTransportSecurity: {
-          NSAllowsArbitraryLoads: true
-        }
+        ITSAppUsesNonExemptEncryption: false
+        // Remove ATS override unless truly required.
       }
     },
     android: {
@@ -31,7 +29,8 @@ export default {
       },
       edgeToEdgeEnabled: true,
       package: "com.puppetai.app",
-      usesCleartextTraffic: true
+      // Only needed for debugging:
+      usesCleartextTraffic: false
     },
     web: {
       favicon: "./assets/favicon.png",
@@ -55,7 +54,7 @@ export default {
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       eas: {
-        projectId: "5f885227-49e3-4a41-be3b-9571706c061e",
+        projectId: "5f885227-49e3-4a41-be3b-9571706c061e"
       }
     },
     owner: "neildesh-vimana"

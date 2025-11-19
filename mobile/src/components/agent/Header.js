@@ -51,19 +51,17 @@ export default function AgentHeader({
 
   return (
     <View style={{ flex: 1, backgroundColor: "#000" }}>
-      {/* BACKGROUND IMAGE */}
-      <Animated.Image
-        source={require("@assets/mountains.png")}
+      <Animated.View
         style={[
           styles.headerImage,
           {
             transform: [{ scale: imageScale }, { translateY: imageTranslateY }]
           }
         ]}
-        resizeMode="cover"
-      />
+      >
+        <HeaderChart agentId={agent.id} timeframe="24h" />
+      </Animated.View>
 
-      {/* FLOATING BUTTONS */}
       <View style={styles.topButtonsContainer}>
         <TouchableOpacity style={styles.iconButton}>
           <Text style={{ color: "#fff", fontSize: 22 }}>＋</Text>
@@ -74,7 +72,6 @@ export default function AgentHeader({
         </TouchableOpacity>
       </View>
 
-      {/* SCROLLING CONTENT */}
       <Animated.ScrollView
         contentContainerStyle={{ paddingTop: HEADER_HEIGHT }}
         scrollEventThrottle={16}
@@ -84,8 +81,9 @@ export default function AgentHeader({
         )}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>Playing Robots Into Heaven</Text>
-          <Text style={styles.artist}>James Blake</Text>
+          <Text style={styles.title}>{agent.name}</Text>
+          <Text style={styles.artist}>{agent.llm_provider}</Text>
+          <Text style={styles.artist}>{agent.model_name}</Text>
 
           {Array.from({ length: 30 }).map((_, i) => (
             <Text key={i} style={styles.textItem}>

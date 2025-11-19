@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StatusBadge, LabelValue } from '@/components/ui';
+import { View, Text, TouchableOpacity, StatusBadge, LabelValue, Card } from '@/components/ui';
 import { LLM_PROVIDERS } from './CreateAgentModal';
 import WalletAddressCard from './WalletAddressCard';
 import { GlassView } from 'expo-glass-effect';
@@ -7,6 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/config/supabase';
 import { useAccountBalance } from '@/hooks/useAccountBalance';
 import PositionList from './PositionList';
+import { Clipboard } from 'react-native';
 
 export default function AgentCard({
   agent,
@@ -62,11 +63,7 @@ export default function AgentCard({
   const providerMeta = `${agent.llm_provider} ${agent.model_name}`;
 
   return (
-    <GlassView
-      variant="glass"
-      glassEffectStyle="regular"
-      tintColor={tintColor}
-      isInteractive
+    <Card
       style={{
         paddingVertical: 18,
         paddingHorizontal: 18,
@@ -133,6 +130,6 @@ export default function AgentCard({
         </View> */}
       </TouchableOpacity>
       {extraContent}
-    </GlassView>
+    </Card>
   );
 }

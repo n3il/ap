@@ -10,10 +10,6 @@ import { assessmentService } from '@/services/assessmentService';
 
 export default function ThoughtsTab({
   agentId,
-  isOwnAgent,
-  pendingAssessment = false,
-  headerContent,
-  tabBar,
   onRefresh: parentOnRefresh,
   refreshing: parentRefreshing = false
 }) {
@@ -36,7 +32,7 @@ export default function ThoughtsTab({
       assessmentService.getAssessmentsByAgent(agentId, { pageParam, pageSize: 10 }),
     getNextPageParam: (lastPage) => lastPage?.nextPage ?? undefined,
     initialPageParam: 0,
-    enabled: !!agentId && isOwnAgent,
+    enabled: !!agentId,
   });
 
   // Flatten the paginated data and deduplicate by ID

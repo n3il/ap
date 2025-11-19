@@ -139,11 +139,18 @@ const SvgChart = ({
 
   const handleLayout = useCallback((event) => {
     const { width } = event.nativeEvent.layout;
-    if (!width) return;
-    setChartWidth((prevWidth) => (Math.abs(prevWidth - width) > 0.5 ? width : prevWidth));
+    if (!width || !isFinite(width) || width <= 0) return;
+    setChartWidth((prevWidth) => {
+      // Only update if difference is significant to prevent layout thrashing
+      const shouldUpdate = Math.abs(prevWidth - width) > 1;
+      return shouldUpdate ? width : prevWidth;
+    });
   }, []);
 
   useEffect(() => {
+    // Only animate if we can render
+    if (!isFinite(chartWidth) || chartWidth <= 0) return;
+
     const pulse = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
@@ -159,8 +166,11 @@ const SvgChart = ({
       ])
     );
     pulse.start();
-    return () => pulse.stop();
-  }, [pulseAnim]);
+    return () => {
+      pulse.stop();
+      pulseAnim.setValue(1);
+    };
+  }, [pulseAnim, chartWidth]);
 
   // Pan responder for touch interaction
   const panResponder = useMemo(() => {
@@ -316,6 +326,14 @@ const SvgChart = ({
     return isFinite(result) ? result : PADDING.left;
   }, [plotWidth]);
 
+  // Memoize vertical grid line positions
+  const verticalGridPositions = useMemo(() => {
+    return [0, 0.25, 0.5, 0.75, 1].map(pos => ({
+      position: pos,
+      x: scaleX(pos)
+    }));
+  }, [scaleX]);
+
   // Default value formatter
   const defaultFormatter = (val) => {
     if (typeof val !== 'number' || !isFinite(val) || isNaN(val)) {
@@ -345,6 +363,25 @@ const SvgChart = ({
     ]
   }
 
+  // Safety check: prevent rendering with invalid dimensions
+  const canRender = isFinite(chartWidth) &&
+                    isFinite(chartHeight) &&
+                    chartWidth > 0 &&
+                    chartHeight > 0 &&
+                    plotWidth > 0 &&
+                    plotHeight > 0;
+
+  if (!canRender) {
+    return (
+      <View
+        onLayout={handleLayout}
+        sx={{ width: '100%', height: 150, justifyContent: 'center', alignItems: 'center' }}
+      >
+        <Text sx={{ color: 'mutedForeground' }}>Loading chart...</Text>
+      </View>
+    );
+  }
+
   return (
     <>
       <View
@@ -353,7 +390,20 @@ const SvgChart = ({
         sx={{ position: 'relative', width: '100%' }}
       >
         <Svg width={chartWidth} height={chartHeight}>
-          {/* Grid lines and Y-axis labels for left axis */}
+          {/* Vertical grid lines for time intervals */}
+          {verticalGridPositions.map((grid, i) => (
+            <Line
+              key={`vgrid-${i}`}
+              x1={grid.x}
+              y1={PADDING.top}
+              x2={grid.x}
+              y2={PADDING.top + plotHeight}
+              stroke={withOpacity(mutedColor, 0.1)}
+              strokeWidth={1}
+            />
+          ))}
+
+          {/* Horizontal grid lines and Y-axis labels for left axis */}
           {axisConfig.left && axisConfig.left.yTicks.map((tick, i) => {
             const y = scaleY(tick, 'left');
             return (
@@ -363,7 +413,7 @@ const SvgChart = ({
                   y1={y}
                   x2={PADDING.left + plotWidth}
                   y2={y}
-                  stroke={withOpacity(mutedColor, 0.15)}
+                  stroke={withOpacity(mutedColor, 0.3)}
                   strokeWidth={1}
                 />
                 <SvgText
@@ -617,4 +667,4 @@ const SvgChart = ({
   );
 };
 
-export default SvgChart;
+export default React.memo(SvgChart);

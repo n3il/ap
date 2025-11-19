@@ -82,27 +82,16 @@ const Card: React.FC<CardProps> = ({
   }
 
   return (
-      <GlassView
-        tintColor={defaultTintColor}
-        glassEffectStyle={glassEffectStyle}
-        isInteractive={isInteractive}
-        style={{
-          borderRadius,
-          paddingHorizontal: 6,
-          paddingVertical: 8,
-        }}
-      >
-        <View
-          sx={{
-            ...baseStyles,
-            ...variantStyles[variant],
-            ...sx,
-          }}
-          style={style}
-        >
-          {children}
-        </View>
-      </GlassView>
+    <View
+      sx={{
+        ...baseStyles,
+        ...variantStyles[variant],
+        ...sx,
+      }}
+      style={style}
+    >
+      {children}
+    </View>
   );
 };
 

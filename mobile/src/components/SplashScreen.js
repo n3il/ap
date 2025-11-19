@@ -8,7 +8,6 @@ export default function SplashScreen() {
     <LinearGradient
       colors={[
         theme.colors.background,
-        theme.colors.backgroundSecondary ?? theme.colors.surface,
         theme.colors.background,
         theme.colors.backgroundSecondary ?? theme.colors.surface,
       ]}
