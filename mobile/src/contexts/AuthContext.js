@@ -25,12 +25,19 @@ export const AuthProvider = ({ children }) => {
       setSession(session);
       setUser(session?.user ?? null);
 
-      // Check if user has completed onboarding
+      // Check onboarding status from user metadata or fallback to database query
       if (session?.user) {
-        checkOnboardingStatus(session.user.id);
+        const onboardingFromMetadata = session.user.user_metadata?.onboarding_completed;
+        if (onboardingFromMetadata !== undefined) {
+          setHasCompletedOnboarding(onboardingFromMetadata);
+          setLoading(false);
+        } else {
+          // Fallback: query profiles table and sync to metadata
+          checkOnboardingStatus(session.user.id).finally(() => setLoading(false));
+        }
+      } else {
+        setLoading(false);
       }
-
-      setLoading(false);
     });
 
     // Listen for auth changes
@@ -39,7 +46,13 @@ export const AuthProvider = ({ children }) => {
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        checkOnboardingStatus(session.user.id);
+        const onboardingFromMetadata = session.user.user_metadata?.onboarding_completed;
+        if (onboardingFromMetadata !== undefined) {
+          setHasCompletedOnboarding(onboardingFromMetadata);
+        } else {
+          // Fallback: query profiles table
+          checkOnboardingStatus(session.user.id);
+        }
       } else {
         setHasCompletedOnboarding(false);
       }
@@ -64,7 +77,13 @@ export const AuthProvider = ({ children }) => {
         return;
       }
 
-      setHasCompletedOnboarding(data?.onboarding_completed || false);
+      const onboardingCompleted = data?.onboarding_completed || false;
+      setHasCompletedOnboarding(onboardingCompleted);
+
+      // Sync to user metadata for future sessions
+      await supabase.auth.updateUser({
+        data: { onboarding_completed: onboardingCompleted }
+      });
     } catch (error) {
       throw error
     }
@@ -76,7 +95,10 @@ export const AuthProvider = ({ children }) => {
         email,
         password,
         options: {
-          data: metadata,
+          data: {
+            ...metadata,
+            onboarding_completed: false,
+          },
         },
       });
 
@@ -253,7 +275,8 @@ export const AuthProvider = ({ children }) => {
     try {
       if (!user) throw new Error('No user logged in');
 
-      const { error } = await supabase
+      // Update profiles table
+      const { error: profileError } = await supabase
         .from('profiles')
         .upsert({
           id: user.id,
@@ -262,7 +285,15 @@ export const AuthProvider = ({ children }) => {
           updated_at: new Date().toISOString(),
         });
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Update user metadata to sync with session
+      const { error: metadataError } = await supabase.auth.updateUser({
+        data: { onboarding_completed: true }
+      });
+
+      if (metadataError) throw metadataError;
+
       setHasCompletedOnboarding(true);
       return { error: null };
     } catch (error) {

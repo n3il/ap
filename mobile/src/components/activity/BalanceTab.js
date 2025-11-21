@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { View, Text, ScrollView, TouchableOpacity } from '@/components/ui';
 import { useColors } from '@/theme';
 import SvgChart, { CHART_DATA_SOURCE } from '@/components/SvgChart';
+import { useTimeframeStore } from '@/stores/useTimeframeStore';
 
 export default function BalanceTab() {
-  const [timeframe, setTimeframe] = useState('7d'); // '1h', '24h', '7d'
+  const { timeframe, setTimeframe } = useTimeframeStore();
   const { success, withOpacity } = useColors();
 
   // Fetch user's account balance history (mock for now)
@@ -53,7 +54,6 @@ export default function BalanceTab() {
           <SvgChart
             chartData={{ lines: [] }}
             accountData={accountBalanceData}
-            timeframe={timeframe}
           />
         </View>
       </View>

@@ -178,7 +178,13 @@ function AssessmentCard({ assessment }) {
   const showStructured = Boolean(parsedResponse);
 
   return (
-    <Card isInteractive={expanded} glassEffectStyle="clear" variant="glass" sx={{ marginBottom: 3 }}>
+    <Card
+      isInteractive={expanded}
+      glassEffectStyle="regular"
+      variant="glass"
+      sx={{ marginBottom: 3 }}
+      glassTintColor={withOpacity("#000", 0.9)}
+    >
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
         <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
           <Avatar

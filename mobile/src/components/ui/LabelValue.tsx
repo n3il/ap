@@ -26,7 +26,7 @@ const LabelValue: React.FC<LabelValueProps> = ({ label, value, orientation = 've
         {label}
       </Text>
       <Text variant="body" sx={{ fontWeight: '300', ...textStyle }}>
-        {value}
+        {value || '-'}
       </Text>
     </View>
   );

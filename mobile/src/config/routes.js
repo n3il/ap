@@ -32,19 +32,9 @@ export const ROUTES = {
     requiresAuthentication: false,
   },
 
-  // Neuralink Routes - Allow if REQUIRE_AUTH=false
-  NEURALINK_INDEX: {
-    path: '/(neuralink)/index',
-    requiresAuthentication: 'optional',
-  },
-  NEURALINK_PROBLEM: {
-    path: '/(neuralink)/problem',
-    requiresAuthentication: 'optional',
-  },
-
   // Tabs Routes - Some optional, some always require auth
   TABS_INDEX: {
-    path: '/(tabs)/index',
+    path: '/(tabs)',
     requiresAuthentication: 'optional',
   },
   // Explore Routes - Always require auth
@@ -145,11 +135,14 @@ export function isRouteAccessible(path, isAuthenticated, requireAuth = true) {
  * @param {boolean} requireAuth - Value of REQUIRE_AUTH env var
  * @returns {string} - The path to redirect to
  */
-export function getDefaultUnauthenticatedRoute(requireAuth = true) {
-  if (!requireAuth) {
-    // REQUIRE_AUTH=false, send to explore
-    return ROUTES.TABS_EXPLORE_INDEX.path;
+export function getDefaultUnauthenticatedRoute(
+  requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === 'true',
+  showGetStartedScreen = false,
+) {
+  if (requireAuth) {
+    return ROUTES.INDEX.path;
+  } else if (!showGetStartedScreen) {
+    return ROUTES.TABS_INDEX.path;
   }
-  // REQUIRE_AUTH=true, send to auth
-  return ROUTES.AUTH_INDEX.path;
+  return ROUTES.TABS_INDEX.path;
 }

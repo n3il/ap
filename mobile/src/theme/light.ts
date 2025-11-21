@@ -29,6 +29,9 @@ const lightTheme = {
     },
     border: '#e2e8f0',
     input: '#cbd5f5',
+
+    glassTint: 'rgba(255, 255, 255, 0.1)',
+
   },
   glass: {
     intensity: 25,

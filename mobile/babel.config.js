@@ -13,7 +13,7 @@ module.exports = function (api) {
             "@": "./src",
             "@assets": "./assets",
           },
-          extensions: [".ts", ".tsx", ".js", ".jsx", ".json", ".lottie"],
+          extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
         },
       ],
     ],

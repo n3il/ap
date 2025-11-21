@@ -27,7 +27,7 @@ function TradeActionRow({ label, value, valueStyle }) {
   );
 }
 
-export default function TradeActionDisplay({ actionData, showReason = true }) {
+export default function TradeActionDisplay({ actionData, showReason = true, groupedByAction = false }) {
   if (!actionData) return null;
 
   const [expanded, setExpanded] = useState(false);
@@ -83,6 +83,98 @@ export default function TradeActionDisplay({ actionData, showReason = true }) {
     };
   };
 
+  // Helper component to render a single action item
+  const ActionItem = ({ action, showDetails = false }) => {
+    const config = getActionConfig(action.action);
+    const sizeValue = asNumber(action.size);
+    const leverageValue = asNumber(action.leverage);
+
+    return (
+      <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: showDetails ? 2 : 1 }}>
+        <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
+          {action.asset.replace('-PERP', '/USDC') || 'N/A'}
+        </Text>
+
+        <View sx={{ flexGrow: 0, flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+          {(sizeValue !== undefined || leverageValue !== undefined) && (
+            <View sx={{ flexDirection: 'row', gap: 2 }}>
+              {sizeValue !== undefined && (
+                <Text variant="xs" tone="muted">
+                  {formatCurrency(sizeValue, 0)}
+                </Text>
+              )}
+              {leverageValue !== undefined && (
+                <Text variant="xs" tone="foreground" sx={{ fontWeight: '500' }}>
+                  {`${leverageValue}x`}
+                </Text>
+              )}
+            </View>
+          )}
+
+          <View sx={{ flexGrow: 0, flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: config.color, borderRadius: 30, paddingHorizontal: 2, paddingVertical: .5, gap: 1 }}>
+            <Text style={{ borderWidth: 0, padding: 0, color: config.color, fontSize: 12, lineHeight: 15 }}>
+              {config.label}
+            </Text>
+            <View
+              sx={{
+                width: 16,
+                height: 16,
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <MaterialCommunityIcons
+                name={config.icon}
+                size={16}
+                color={config.color}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  };
+
+  // Grouped view rendering
+  if (groupedByAction) {
+    const actions = Array.isArray(actionData) ? actionData : [actionData];
+    const firstAction = actions[0];
+    const reasoning = firstAction?.reasoning;
+
+    return (
+      <View
+        sx={{
+          borderBottomWidth: 1,
+          borderColor: palette.border,
+          paddingVertical: 2,
+        }}
+      >
+        <View>
+          {actions.map((action, index) => (
+            <ActionItem key={index} action={action} />
+          ))}
+        </View>
+
+        {showReason && reasoning && (
+          <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
+            <View sx={{ marginTop: 2, borderTopWidth: 1, borderColor: palette.border, paddingTop: 2 }}>
+              {expanded ? (
+                <Text variant="sm" sx={{ lineHeight: 14, fontSize: 10, fontWeight: 300 }}>
+                  {reasoning}
+                </Text>
+              ) : (
+                <Text variant="sm" tone="muted" sx={{ textAlign: 'center', fontSize: 11 }}>
+                  Expand
+                </Text>
+              )}
+            </View>
+          </TouchableOpacity>
+        )}
+      </View>
+    );
+  }
+
+  // Single action view (original behavior)
   const config = getActionConfig(actionData.action);
   const entryPrice = asNumber(actionData.entry ?? actionData.entry_price);
   const stopLoss = asNumber(actionData.stopLoss ?? actionData.stop_loss);

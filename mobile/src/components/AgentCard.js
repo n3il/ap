@@ -96,7 +96,7 @@ export default function AgentCard({
           <View sx={{ alignItems: 'flex-start' }}>
             <LabelValue
               label="Balance"
-              value={balanceLabel}
+              value={equity.toLocaleString('en-US', { maximumFractionDigits: 0 })}
             />
           </View>
           <View sx={{ alignItems: 'center' }}>
@@ -119,9 +119,12 @@ export default function AgentCard({
             />
           </View>
         </View>
-        {showPositions && (
+        {!hideOpenPositions && (
           <View sx={{ marginTop: 6, borderTopColor: 'muted', borderTopWidth: 1 }}>
-            <PositionList positions={enrichedPositions} />
+            <PositionList positions={enrichedPositions} top={3} />
+            <Text variant="xxs" tone="muted" sx={{ textAlign: 'left', fontStyle: 'italic' }}>
+              {enrichedPositions.length > 3 ? `+ ${enrichedPositions.length - 3} more positions` : null}
+            </Text>
           </View>
         )}
 

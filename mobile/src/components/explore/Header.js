@@ -4,12 +4,13 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
 import { useRouter } from 'expo-router';
 import { useMarketPrices } from '@/hooks/useMarketPrices';
+import { useTimeframeStore } from '@/stores/useTimeframeStore';
 
 export default function ExploreHeader({
   tickers,
   sx: customSx,
-  timeframe
 }) {
+  const { timeframe } = useTimeframeStore();
   const compact = true;
   const { colors } = useColors();
   const router = useRouter();
@@ -33,13 +34,6 @@ export default function ExploreHeader({
     }
     return null;
   }, [isUpdating, isLoading, lastUpdated]);
-
-  const handleMore = () => {
-    router.push({
-      pathname: '/(tabs)/(explore)/Markets',
-      params: { tickers: normalizedTickers.join(','), timeframe },
-    });
-  };
 
   return (
     <View
@@ -92,38 +86,6 @@ export default function ExploreHeader({
             <Text sx={{ fontSize: 11, color: 'mutedForeground' }}>
               {statusLabel}
             </Text>
-          )}
-          {!compact && (
-            <Button
-              variant="outline"
-              size="xs"
-              sx={{
-                borderRadius: 'full',
-                flexDirection: 'row',
-                alignItems: 'center',
-                paddingHorizontal: 2,
-                gap: 1,
-              }}
-              textProps={{
-                sx: {
-                  fontSize: 11,
-                  fontWeight: '600',
-                  color: 'secondary'
-                }
-              }}
-              onPress={handleMore}
-              accessibilityRole="button"
-              accessibilityLabel="Open full market view"
-            >
-              <MaterialCommunityIcons
-                name="lightning-bolt"
-                size={14}
-                color={colors.primary}
-              />
-              <Text sx={{ fontSize: 11, fontWeight: '600', color: 'primary' }}>
-                Buy / Sell
-              </Text>
-            </Button>
           )}
         </View>
       </View>

@@ -112,36 +112,8 @@ export default function InfoSlides({ onSlideChange }) {
             >
               {slide.titleSlide ? (
                 // Title Slide
-                <View sx={{ paddingVertical: 12 }}>
-                  <Text
-                    style={{
-                      fontWeight: '500',
-                      letterSpacing: 3,
-                      color: foreground,
-                      marginBottom: 16,
-                      fontSize: 30,
-                      lineHeight: 36,
-                      textShadowColor: withOpacity(background, 0.5),
-                      textShadowOffset: { width: 2, height: 2 },
-                      textShadowRadius: 2,
-                    }}
-                  >
-                    {slide.title}
-                  </Text>
+                <View sx={{ paddingVertical: 12, alignSelf: 'flex-start', marginBottom: 'auto' }}>
 
-                  <Text
-                    variant="h2"
-                    sx={{
-                      fontWeight: '300',
-                      color: 'accent',
-                      textShadowColor: withOpacity(background, 1),
-                      textShadowOffsetWidth: 0,
-                      textShadowOffsetHeight: 0,
-                      textShadowRadius: 20,
-                    }}
-                  >
-                    {slide.subtitle}
-                  </Text>
 
                   <View
                     style={{
@@ -201,7 +173,7 @@ export default function InfoSlides({ onSlideChange }) {
                     alignItems: 'center',
                   }}
                 >
-                  
+
                   {slide.icon && (
                     <View
                       style={{
@@ -244,7 +216,7 @@ export default function InfoSlides({ onSlideChange }) {
                     {slide.description}
                   </Text>
 
-                  
+
                   {slide.features && (
                     <View sx={{ gap: 3 }}>
                       {slide.features.map((feature, idx) => (

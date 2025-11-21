@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/config/supabase';
 import { useAccountBalance } from '@/hooks/useAccountBalance';
+import HeaderChart from "./HeaderChart";
 
 const HEADER_HEIGHT = 300;
 
@@ -59,7 +60,7 @@ export default function AgentHeader({
           }
         ]}
       >
-        <HeaderChart agentId={agent.id} timeframe="24h" />
+        <HeaderChart agentId={agent.id} />
       </Animated.View>
 
       <View style={styles.topButtonsContainer}>

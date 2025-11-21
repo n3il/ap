@@ -182,13 +182,19 @@ export async function executeCloseTrade(
   });
 
   // Find existing open trade
-  const { data: existingTrade, error: findError } = await supabase
+  // For paper trades, also match on leverage to close the specific position
+  let query = supabase
     .from('trades')
     .select('*')
     .eq('agent_id', agent.id)
     .eq('asset', action.asset)
-    .eq('status', 'OPEN')
-    .single();
+    .eq('status', 'OPEN');
+
+  if (tradingMode === 'paper' && action.leverage) {
+    query = query.eq('leverage', action.leverage);
+  }
+
+  const { data: existingTrade, error: findError } = await query.single();
 
   if (findError || !existingTrade) {
     throw new Error(`No open position found for ${action.asset}`);

@@ -1,11 +1,14 @@
 import { useMemo } from "react";
 import { useAgentAssessments } from "@/hooks/useAgentAssessments";
-import SvgChart from "../SvgChart";
+import SvgChart from "@/components/SvgChart";
 import { useAgentSnapshots } from "@/hooks/useAgentSnapshots";
+import { useTimeframeStore } from "@/stores/useTimeframeStore";
 
-export default function HeaderChart({ agentId, timeframe = '24h', ...props }) {
+export default function HeaderChart({ agentId,  ...props }) {
+  const { timeframe } = useTimeframeStore();
   const { assessments } = useAgentAssessments(agentId, timeframe);
-  const { equity } = useAgentSnapshots(agentId, timeframe);
+  const {data, error, isLoading} = useAgentSnapshots(agentId, timeframe);
+  const equity = []
 
   // Memoize sentiment data transformation
   const sentimentData = useMemo(() => {
@@ -16,8 +19,8 @@ export default function HeaderChart({ agentId, timeframe = '24h', ...props }) {
         if (!assessment.parsed_llm_response?.headline?.sentiment_score) return null;
 
         return {
-          x: assessment.created_at,
-          y: assessment.parsed_llm_response.headline.sentiment_score,
+          time: assessment.created_at,
+          value: assessment.parsed_llm_response.headline.sentiment_score,
         };
       })
       .filter(Boolean);
@@ -25,13 +28,13 @@ export default function HeaderChart({ agentId, timeframe = '24h', ...props }) {
 
   // Memoize equity data transformation
   const equityData = useMemo(() => {
-    if (!equity?.length) return [];
+    if (!data?.length) return [];
 
-    return equity.map((snapshot) => ({
-      x: snapshot.timestamp || snapshot.created_at,
-      y: snapshot.equity_value || snapshot.value,
+    return data.map((snapshot) => ({
+      time: snapshot.timestamp || snapshot.created_at,
+      value: snapshot.equity || snapshot.value,
     }));
-  }, [equity]);
+  }, [data]);
 
   // Memoize final chart data structure
   const chartData = useMemo(() => {
@@ -39,15 +42,19 @@ export default function HeaderChart({ agentId, timeframe = '24h', ...props }) {
 
     if (sentimentData.length > 0) {
       lines.push({
+        id: 'Sentiment',
         name: 'Sentiment',
         data: sentimentData,
+        axisGroup: 'left',
       });
     }
 
     if (equityData.length > 0) {
       lines.push({
+        id: 'Equity',
         name: 'Equity',
         data: equityData,
+        axisGroup: 'right',
       });
     }
 
@@ -56,7 +63,7 @@ export default function HeaderChart({ agentId, timeframe = '24h', ...props }) {
 
   return (
     <SvgChart
-      chartData={chartData}
+      lines={chartData.lines}
       {...props}
     />
   );

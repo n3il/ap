@@ -1,26 +1,24 @@
+
 import React, { useRef } from "react";
-import { View, Text, Image, Animated, TouchableOpacity, ScrollView, StatusBadge } from "@/components/ui";
+import { View, Animated, Avatar, Text } from "@/components/ui";
 import { StyleSheet } from "react-native";
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/config/supabase';
 import { useAccountBalance } from '@/hooks/useAccountBalance';
-import { useLocalSearchParams } from "expo-router";
-import HeaderChart from '@/components/agent/HeaderChart';
+import HeaderChart from "@/components/agent/HeaderChart";
+import { useLocalSearchParams } from 'expo-router';
+import { useAgent } from '@/hooks/useAgent';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import GlassButton from "@/components/ui/GlassButton";
+import ThoughtsTab from "@/components/agents/ThoughtsTab";
+import { useColors } from "@/theme";
+import AgentCard from "@/components/AgentCard";
+import ContainerView from "@/components/ContainerView";
 
-const HEADER_HEIGHT = 300;
+const HEADER_HEIGHT = 400;
 
-export default function AgentScreen() {
-  const { id: agentId } = useLocalSearchParams();
-  const {
-    data: agent,
-    isLoading: agentLoading,
-    error: agentError,
-  } = useQuery({
-    queryKey: ['agent', agentId],
-    queryFn: () => agentService.getAgent(agentId),
-    enabled: !!agentId,
-  });
-
+export default function AgentReadScreen() {
+  const {colors} = useColors();
+  const { id } = useLocalSearchParams();
+  const { data: agent } = useAgent(id);
   const {
     wallet,
     equity,
@@ -30,21 +28,7 @@ export default function AgentScreen() {
     realizedPnl,
     enrichedPositions,
     isLoading,
-  } = useAccountBalance(agent.id)
-
-  // Fetch total trades count
-  const { data: tradesCount = 0 } = useQuery({
-    queryKey: ['agent-trades-count', agent.id],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('trades')
-        .select('*', { count: 'exact', head: true })
-        .eq('agent_id', agent.id);
-
-      if (error) throw error;
-      return count || 0;
-    },
-  });
+  } = useAccountBalance(agent?.id)
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -61,34 +45,47 @@ export default function AgentScreen() {
   });
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#000" }}>
-      {/* BACKGROUND IMAGE */}
-      <Animated.Image
-        source={require("@assets/mountains.png")}
+    <ContainerView style={{ flex: 1 }}>
+      <Animated.View
         style={[
           styles.headerImage,
           {
             transform: [{ scale: imageScale }, { translateY: imageTranslateY }]
           }
         ]}
-        resizeMode="cover"
-      />
+      >
+        <AgentCard agent={agent} hideOpenPositions />
+        <HeaderChart agentId={agent?.id} />
+      </Animated.View>
 
-      <HeaderChart agentId={agent.id} timeframe="24h" />
-
-      {/* FLOATING BUTTONS */}
       <View style={styles.topButtonsContainer}>
-        <TouchableOpacity style={styles.iconButton}>
-          <Text style={{ color: "#fff", fontSize: 22 }}>＋</Text>
-        </TouchableOpacity>
+        {/* <GlassButton onPress={() => {}}>
+          <MaterialCommunityIcons name="content-duplicate" size={24} color="white" />
+        </GlassButton>
+        <GlassButton onPress={() => {}}>
+          <MaterialCommunityIcons name="book-edit-outline" size={24} color="white" />
+        </GlassButton> */}
 
-        <TouchableOpacity style={styles.iconButton}>
-          <Text style={{ color: "#fff", fontSize: 22 }}>⋯</Text>
-        </TouchableOpacity>
+        <GlassButton onPress={() => {}}>
+          <MaterialCommunityIcons name="bookmark-check" size={24} color="white" />
+        </GlassButton>
       </View>
 
-      {/* SCROLLING CONTENT */}
-      <Animated.ScrollView
+      <ThoughtsTab
+        agentId={agent?.id}
+        listProps={{
+          contentContainerStyle: {
+            paddingTop: HEADER_HEIGHT,
+          },
+          scrollEventThrottle: 16,
+          onScroll: Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: true }
+          )
+        }}
+      />
+
+      {/* <Animated.ScrollView
         contentContainerStyle={{ paddingTop: HEADER_HEIGHT }}
         scrollEventThrottle={16}
         onScroll={Animated.event(
@@ -97,9 +94,9 @@ export default function AgentScreen() {
         )}
       >
         <View style={styles.content}>
-          <Text style={styles.title}>{agent.name}</Text>
-          <Text style={styles.artist}>{agent.llm_provider}</Text>
-          <Text style={styles.artist}>{agent.model_name}</Text>
+          <Text style={styles.title}>{agent?.name}</Text>
+          <Text style={styles.artist}>{agent?.llm_provider}</Text>
+          <Text style={styles.artist}>{agent?.model_name}</Text>
 
           {Array.from({ length: 30 }).map((_, i) => (
             <Text key={i} style={styles.textItem}>
@@ -107,17 +104,17 @@ export default function AgentScreen() {
             </Text>
           ))}
         </View>
-      </Animated.ScrollView>
-    </View>
+      </Animated.ScrollView> */}
+    </ContainerView>
   );
-}
+};
 
 const styles = StyleSheet.create({
   headerImage: {
     position: "absolute",
     width: "100%",
     height: HEADER_HEIGHT,
-    top: 0,
+    top: 50,
     left: 0,
   },
   topButtonsContainer: {
@@ -126,32 +123,5 @@ const styles = StyleSheet.create({
     right: 20,
     flexDirection: "row",
     zIndex: 50,
-  },
-  iconButton: {
-    backgroundColor: "rgba(0,0,0,0.4)",
-    padding: 10,
-    borderRadius: 50,
-    marginLeft: 10,
-  },
-  content: {
-    padding: 20,
-    backgroundColor: "#111",
-    minHeight: 2000,
-  },
-  title: {
-    color: "#fff",
-    fontSize: 28,
-    fontWeight: "bold",
-  },
-  artist: {
-    color: "#ccc",
-    fontSize: 18,
-    marginBottom: 20,
-  },
-  textItem: {
-    color: "#fff",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#333",
   },
 });

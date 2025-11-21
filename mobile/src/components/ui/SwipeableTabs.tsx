@@ -128,7 +128,7 @@ export default function SwipeableTabs({
           <GlassContainer
             spacing={10}
             style={[
-              { flexDirection: 'row', gap: 8, marginBottom: 12, paddingHorizontal: GLOBAL_PADDING },
+              { flexDirection: 'row', gap: 2, marginBottom: 12, paddingHorizontal: GLOBAL_PADDING },
               tabContainerStyle,
             ]}
           >

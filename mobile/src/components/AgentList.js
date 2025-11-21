@@ -143,10 +143,10 @@ export default function AgentList({
       emptyState || (
         <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
           <Text variant="lg" tone="muted" sx={{ marginBottom: 2, fontWeight: '600' }}>
-            No agents available
+            Umm,
           </Text>
           <Text variant="sm" tone="subtle" sx={{ textAlign: 'center' }}>
-            Create or publish an agent to see it appear here.
+            The robots are missing.
           </Text>
         </View>
       )

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
   View,
   Text,
@@ -18,12 +18,19 @@ import { useLocalization } from '@/hooks/useLocalization';
 import { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { AnimatedBox } from '@/components/ui/animated';
 import { useColors } from '@/theme';
+import LottieView from 'lottie-react-native';
+import { Dimensions } from 'react-native';
+import { getDefaultUnauthenticatedRoute } from '@/config/routes';
+
+const { width, height } = Dimensions.get('window');
 
 export default function OnboardingScreen() {
+  const animation = useRef<LottieView>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { completeOnboarding, user, signOut } = useAuth();
+
   const { t } = useLocalization();
   const colors = useColors();
 
@@ -106,11 +113,13 @@ export default function OnboardingScreen() {
       notifications_enabled: notificationsEnabled,
       theme,
     });
-    setLoading(false);
-    router.replace('/(tabs)/(explore)');
+    if (!error) {
+      router.replace(getDefaultUnauthenticatedRoute());
+    }
     if (error) {
       Alert.alert(t('common.error'), t('onboarding.errors.onboardingFailed'));
     }
+    setLoading(false);
   };
 
   const renderStep = () => {
@@ -119,25 +128,43 @@ export default function OnboardingScreen() {
     switch (step.id) {
       case 'welcome':
         return (
-          <AnimatedBox
-            key="welcome-step"
-            entering={FadeIn.duration(300)}
-            exiting={FadeOut.duration(200)}
-            style={{ gap: 8 }}
-          >
-            <Text sx={{ fontSize: 60, textAlign: 'center', marginBottom: 5 }}>👾</Text>
-            <Text variant="body" tone="muted" sx={{ textAlign: 'center', lineHeight: 24, marginBottom: 8 }}>
-              {t('onboarding.steps.welcome.description')}
-            </Text>
-            <Button
-              variant="surface"
-              sx={{ borderColor: 'primary', borderRadius: 'full' }}
-              textProps={{ style: { fontWeight: '600' } }}
-              onPress={handleNext}
+          <>
+            <LottieView
+              autoPlay
+              loop
+              resizeMode="cover"
+              style={{
+                width,
+                height,
+                position: 'absolute',
+                top: 0,
+                left: 0,
+                bottom: 0,
+                right: 0,
+                backgroundColor: 'transparent',
+              }}
+              source={require('@assets/animations/Rocket.json')}
+            />
+            <AnimatedBox
+              key="welcome-step"
+              entering={FadeIn.duration(300)}
+              exiting={FadeOut.duration(200)}
+              style={{ gap: 8, backgroundColor: 'transparent' }}
             >
-              {t('onboarding.steps.welcome.getStarted')}
-            </Button>
-          </AnimatedBox>
+
+              <Text variant="body" tone="muted" sx={{ textAlign: 'center', lineHeight: 24, marginBottom: 8 }}>
+                {t('onboarding.steps.welcome.description')}
+              </Text>
+              <Button
+                variant="surface"
+                sx={{ borderColor: 'primary', borderRadius: 'full' }}
+                textProps={{ style: { fontWeight: '600' } }}
+                onPress={handleNext}
+              >
+                {t('onboarding.steps.welcome.getStarted')}
+              </Button>
+            </AnimatedBox>
+          </>
         );
 
       case 'profile':
@@ -305,76 +332,72 @@ export default function OnboardingScreen() {
           paddingHorizontal: 16,
         }}
       >
-        <SafeAreaView style={{ flex: 1 }}>
-          <ScrollView
-            contentContainerStyle={{ flexGrow: 1 }}
-            keyboardShouldPersistTaps="handled"
+        <ScrollView
+          contentContainerStyle={{ flexGrow: 1 }}
+          keyboardShouldPersistTaps="handled"
+        >
+          <AnimatedBox
+            layout={LinearTransition.duration(300).springify()}
+            style={{ flex: 1, justifyContent: 'center', paddingVertical: 20 }}
           >
-            <AnimatedBox
-              layout={LinearTransition.duration(300).springify()}
-              style={{ flex: 1, justifyContent: 'center', paddingVertical: 20 }}
-            >
 
-              <View sx={{ marginBottom: 8, alignItems: 'center' }}>
-                <Text variant="h1" sx={{ fontWeight: 300, marginBottom: 2, textAlign: 'center' }}>
-                  {step.title}
-                </Text>
+            <View sx={{ marginBottom: 8, alignItems: 'center' }}>
+              <Text variant="h1" sx={{ fontWeight: 300, marginBottom: 2, textAlign: 'center' }}>
+                {step.title}
+              </Text>
 
-                <Text variant="body" tone="muted" sx={{ marginBottom: 5, textAlign: 'center' }}>
-                  {step.subtitle}
-                </Text>
+              <Text variant="body" tone="muted" sx={{ marginBottom: 5, textAlign: 'center' }}>
+                {step.subtitle}
+              </Text>
 
 
-                <View sx={{ flexDirection: 'row', gap: 2 }}>
-                  {STEPS.map((s, index) => (
-                    <View
-                      key={s.id}
-                      sx={{
-                        width: index === currentStep ? 24 : 8,
-                        height: 8,
-                        borderRadius: 'sm',
-                      }}
-                      style={{
-                        backgroundColor:
-                          index === currentStep
-                            ? colors.colors.foreground
-                            : index < currentStep
-                              ? colors.withOpacity(colors.colors.foreground, 0.7)
-                              : colors.withOpacity(colors.colors.foreground, 0.3),
-                      }}
-                    />
-                  ))}
-                </View>
+              <View sx={{ flexDirection: 'row', gap: 2 }}>
+                {STEPS.map((s, index) => (
+                  <View
+                    key={s.id}
+                    sx={{
+                      width: index === currentStep ? 24 : 8,
+                      height: 8,
+                      borderRadius: 'sm',
+                    }}
+                    style={{
+                      backgroundColor:
+                        index === currentStep
+                          ? colors.colors.foreground
+                          : index < currentStep
+                            ? colors.withOpacity(colors.colors.foreground, 0.7)
+                            : colors.withOpacity(colors.colors.foreground, 0.3),
+                    }}
+                  />
+                ))}
               </View>
+            </View>
 
+            {renderStep()}
 
-              {renderStep()}
-
-
-              {currentStep < STEPS.length - 1 && (
-                <View sx={{ marginTop: 8, alignItems: 'center' }}>
-                  <Text variant="xs" tone="subtle" sx={{ textAlign: 'center' }}>
-                    {`Signed in as ${getUserIdentifier()}.`}
-                  </Text>
-                  <Button
-                    variant="ghost"
-                    onPress={handleSignOut}
-                    sx={{ marginTop: 1, padding: 1 }}
-                  >
-                    <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-                      <Text variant="xs" tone="muted">
-                        Not you?&nbsp;
-                      </Text>
-                      <Text variant="xs" sx={{ textDecorationLine: 'underline', color: 'info' }}>
-                        Sign out
-                      </Text>
-                    </View>
-                  </Button>
-                </View>
-              )}
-            </AnimatedBox>
-          </ScrollView>
-        </SafeAreaView>
+            {currentStep < STEPS.length - 1 && (
+              <View sx={{ marginTop: 8, alignItems: 'center' }}>
+                <Text variant="xs" tone="muted" sx={{ textAlign: 'center' }}>
+                  {`Signed in as ${getUserIdentifier()}.`}
+                </Text>
+                <Button
+                  variant="ghost"
+                  onPress={handleSignOut}
+                  sx={{ marginTop: 1, padding: 1 }}
+                >
+                  <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text variant="xs" tone="muted">
+                      Not you?&nbsp;
+                    </Text>
+                    <Text variant="xs" sx={{ textDecorationLine: 'underline', color: 'info' }}>
+                      Sign out
+                    </Text>
+                  </View>
+                </Button>
+              </View>
+            )}
+          </AnimatedBox>
+        </ScrollView>
       </KeyboardAvoidingView>
     </ContainerView>
   );

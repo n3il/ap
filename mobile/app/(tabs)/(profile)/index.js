@@ -8,11 +8,12 @@ import { useRouter } from 'expo-router';
 import { FadeInDown } from 'react-native-reanimated';
 import SectionTitle from '@/components/SectionTitle';
 import { useColors } from '@/theme';
+import { ROUTES } from '@/config/routes';
 
 const { width } = Dimensions.get('window');
 
 export default function ProfileScreen() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, loading } = useAuth();
   const router = useRouter();
   const colors = useColors();
   const palette = colors.colors;
@@ -68,6 +69,24 @@ export default function ProfileScreen() {
     },
   ];
 
+  if (loading) {
+    return (
+      <ContainerView>
+        <ActivityIndicator size="large" color={palette.foreground} />
+      </ContainerView>
+    )
+  }
+
+  if (!user) {
+    return (
+      <ContainerView>
+        <View sx={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
+          <MaterialIcons name="lock" size={64} color={palette.muted} />
+        </View>
+      </ContainerView>
+    )
+  }
+
   return (
     <ContainerView>
       <ScrollView
@@ -75,10 +94,10 @@ export default function ProfileScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingHorizontal: 1, paddingTop: 6, paddingBottom: 150 }}
       >
-        
+
         <SectionTitle title="Profile" sx={{ fontSize: 16, padding: 6 }} />
 
-        
+
         <AnimatedBox
           entering={FadeInDown.delay(100).springify()}
           sx={{ marginHorizontal: 6, marginBottom: 6 }}
@@ -90,13 +109,13 @@ export default function ProfileScreen() {
             }}
           >
             <Avatar
-              name={user?.user_metadata?.full_name || 'User'}
-              email={user?.email || 'No email'}
+              name={user.user_metadata?.full_name}
+              email={user.email}
             />
           </Card>
         </AnimatedBox>
 
-        
+
         <View sx={{ paddingHorizontal: 6, marginBottom: 6, marginTop: 8 }}>
           <Text sx={{ fontSize: 18, fontWeight: '600', color: 'textPrimary', marginBottom: 4 }}>
             Settings
@@ -148,7 +167,7 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        
+
         <AnimatedBox
           entering={FadeInDown.delay(600).springify()}
           sx={{ paddingHorizontal: 6, marginBottom: 6 }}
@@ -171,7 +190,7 @@ export default function ProfileScreen() {
           </View>
         </AnimatedBox>
 
-        
+
         <AnimatedBox
           entering={FadeInDown.delay(700).springify()}
           sx={{ paddingHorizontal: 6, marginBottom: 12 }}

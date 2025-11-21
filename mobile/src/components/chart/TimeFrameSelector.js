@@ -1,51 +1,59 @@
 import React from 'react';
 import { TouchableOpacity, View, Text } from '@/components/ui';
-import { GlassView } from 'expo-glass-effect';
+import { GlassContainer, GlassView } from 'expo-glass-effect';
 import { Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useTimeframeStore } from '@/stores/useTimeframeStore';
 
 const TIMEFRAME_OPTIONS = [
+  { id: '5m', label: '5m' },
+  { id: '15m', label: '15m' },
   { id: '1h', label: '1H' },
-  { id: '24h', label: '24H' },
-  { id: '7d', label: '7D' },
-  { id: '1M', label: '1M' },
-  { id: '1Y', label: '1Y' },
+  { id: '4h', label: '4H' },
+  { id: '1d', label: '1D' },
+  // { id: '1M', label: '1M' },
+  // { id: '1Y', label: '1Y' },
 ];
 
-export default function TimeFrameSelector({ timeframe, onTimeframeChange }) {
+export default function TimeFrameSelector() {
   const { theme } = useTheme();
+  const { timeframe, setTimeframe } = useTimeframeStore();
   return (
-    <View sx={{ flexDirection: 'row', alignItems: 'center', marginBottom: 0 }}>
+    <GlassContainer
+      style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 0 }}
+    >
       {TIMEFRAME_OPTIONS.map((option) => {
         const isSelected = timeframe === option.id;
         return (
           <GlassView
             key={option.id}
-            glassEffectStyle="clear"
+            glassEffectStyle={isSelected ? 'clear' : 'regular'}
             style={[
               {
                 borderRadius: 32,
                 paddingHorizontal: 8,
-                paddingVertical: 4,
+                paddingVertical: 2,
                 marginHorizontal: 4,
+                marginVertical: 6,
               },
             ]}
             isInteractive
-            tintColor={theme.colors.surface}
+            tintColor={isSelected ? theme.colors.primary : theme.colors.surface}
           >
             <TouchableOpacity
               key={option.id}
-              onPress={() => onTimeframeChange(option.id)}
-              style={[
-                styles.tab,
-                isSelected && styles.activeTab,
-              ]}
+              onPress={() => setTimeframe(option.id)}
+              style={{
+                paddingHorizontal: 2,
+              }}
               activeOpacity={0.8}
             >
               <Text
                 style={[
                   styles.tabText,
-                  isSelected ? { color: theme.colors.text.primary } : {},
+                  {
+                    color: isSelected ? theme.colors.accent : theme.colors.foreground,
+                  },
                 ]}
               >
                 {option.label}
@@ -55,7 +63,7 @@ export default function TimeFrameSelector({ timeframe, onTimeframeChange }) {
 
         );
       })}
-    </View>
+    </GlassContainer>
   );
 }
 
@@ -72,12 +80,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     gap: 8,
   },
-  tab: {
-    alignSelf: 'flex-start',
-    borderRadius: 16,
-    paddingHorizontal: 8
-  },
-  activeTab: {},
+
   tabText: {
     fontSize: 10,
     fontWeight: '600',

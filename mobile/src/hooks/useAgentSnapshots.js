@@ -11,8 +11,8 @@ export function useAgentSnapshots(agentId, timeframe = '24h') {
     queryKey: ['agent-snapshots', agentId, timeframe],
     queryFn: () => agentSnapshotService.getAgentSnapshots(agentId, timeframe),
     enabled: !!agentId,
-    refetchInterval: 60000, // Refetch every minute
-    staleTime: 30000, // Data considered fresh for 30 seconds
+    // refetchInterval: 60000, // Refetch every minute
+    // staleTime: 30000, // Data considered fresh for 30 seconds
   });
 }
 

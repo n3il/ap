@@ -156,7 +156,9 @@ const darkTheme = {
     providers: {
       ...PROVIDER_COLORS,
       DEFAULT: PROVIDER_COLORS.default,
-    }
+    },
+
+    glassTint: 'rgba(0, 0, 0, 0.9)',
   },
   fontFamily: {
     sans: ['System'],
@@ -176,6 +178,7 @@ const darkTheme = {
     'caption': ['12px', { lineHeight: '16px', fontWeight: '400' }],
   },
   borderRadius: {
+    'xxs': '3px',
     'xs': '4px',
     'sm': '6px',
     'md': '8px',

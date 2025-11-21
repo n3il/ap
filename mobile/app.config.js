@@ -7,7 +7,6 @@ export default {
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
     userInterfaceStyle: "dark",
-    newArchEnabled: false, // Disable if using Expo Go. Enable for Dev Client.
     splash: {
       image: "./assets/icons/Icon-App-iTunes.png",
       resizeMode: "contain",
@@ -48,7 +47,7 @@ export default {
       ],
       "expo-localization",
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
     ],
     extra: {
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,

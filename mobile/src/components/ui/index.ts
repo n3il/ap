@@ -4,6 +4,7 @@ export { default as SafeAreaView } from './SafeAreaView';
 export { default as ScrollView } from './ScrollView';
 export { default as Text } from './Text';
 export { default as Button } from './Button';
+export { default as GlassButton } from './GlassButton';
 export { default as IconButton } from './IconButton';
 export { default as TextInput } from './TextInput';
 export { default as TouchableOpacity } from './TouchableOpacity';

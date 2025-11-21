@@ -11,7 +11,8 @@ import { assessmentService } from '@/services/assessmentService';
 export default function ThoughtsTab({
   agentId,
   onRefresh: parentOnRefresh,
-  refreshing: parentRefreshing = false
+  refreshing: parentRefreshing = false,
+  listProps = {},
 }) {
   const { info, error: errorColor } = useColors();
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -29,7 +30,7 @@ export default function ThoughtsTab({
   } = useInfiniteQuery({
     queryKey: ['agent-assessments', agentId],
     queryFn: ({ pageParam = 0 }) =>
-      assessmentService.getAssessmentsByAgent(agentId, { pageParam, pageSize: 10 }),
+      assessmentService.getAssessmentsByAgent(agentId, { pageParam, pageSize: 4 }),
     getNextPageParam: (lastPage) => lastPage?.nextPage ?? undefined,
     initialPageParam: 0,
     enabled: !!agentId,
@@ -109,6 +110,7 @@ export default function ThoughtsTab({
           { useNativeDriver: true }
         )}
         scrollEventThrottle={16}
+        {...listProps}
       />
     </View>
   );

@@ -2,19 +2,38 @@ import React, { useState } from 'react';
 import { View, Text, StatusBadge, TouchableOpacity } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
+import { formatCompact } from '@/utils/currency';
 
 function PositionDetailRow({ label, value, valueStyle }) {
   return (
     <View sx={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
-      <Text variant="sm" tone="muted">
+      <Text variant="xs" tone="muted">
         {label}
       </Text>
-      <Text variant="sm" sx={{ fontWeight: '500', ...valueStyle }}>
+      <Text variant="xs" sx={{ fontWeight: '500', ...valueStyle }}>
         {value}
       </Text>
     </View>
   );
 }
+
+// type Position = {
+//   agent_id: string;
+//   asset: string;
+//   currentPrice: number;
+//   entry_price: number;
+//   entry_timestamp: string;        // ISO datetime
+//   exit_price: number | null;
+//   exit_timestamp: string | null;  // ISO datetime or null
+//   id: string;
+//   leverage: number;
+//   pnlPercent: number;
+//   realized_pnl: number | null;
+//   side: "LONG" | "SHORT";
+//   size: number;
+//   status: "OPEN" | "CLOSED";
+//   unrealizedPnl: number;
+// };
 
 export function PositionRow(position) {
   const {
@@ -31,7 +50,6 @@ export function PositionRow(position) {
     pnlPercent = '',
   } = position;
   const [expanded, setExpanded] = useState(false);
-
   const {
     colors: palette,
     success,
@@ -59,14 +77,14 @@ export function PositionRow(position) {
     : null;
 
   const positionValueLabel = positionValue !== null
-    ? `$${positionValue.toLocaleString('en-US', { maximumFractionDigits: 2, minimumFractionDigits: 2 })}`
+    ? `$${formatCompact(positionValue)}`
     : '-';
 
   const entryPriceLabel = hasEntryPrice
-    ? `$${entryPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+    ? `$${formatCompact(entryPriceValue)}`
     : '-';
   const currentPriceLabel = hasCurrentPrice
-    ? `$${currentPriceValue.toLocaleString('en-US', { maximumFractionDigits: 2 })}`
+    ? `$${formatCompact(currentPriceValue)}`
     : '';
 
   const unrealizedPnlValue =
@@ -96,70 +114,78 @@ export function PositionRow(position) {
 
   const unrealizedPnlLabel =
     unrealizedPnlValue !== 0
-      ? `${positionPnlSign}$${Math.abs(unrealizedPnlValue).toLocaleString('en-US', {
-          maximumFractionDigits: 2,
-        })}`
+      ? `${positionPnlSign}${formatCompact(unrealizedPnlValue)}`
       : '$0.00';
 
   const pnlPercentLabel =
     typeof pnlPercentValue === 'number'
-      ? `${positionPnlSign}${Math.abs(pnlPercentValue).toFixed(2)}%`
+      ? `${positionPnlSign}${Math.abs(formatCompact(pnlPercentValue))}%`
       : '';
 
   return (
     <View
       sx={{
-        marginBottom: 3,
+        paddingBottom: 3
       }}
     >
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 2 : 0 }}>
+        <View sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        }}>
 
-          <View sx={{ flex: 1 }}>
+          <View sx={{ flex: 1, justifyContent: 'between' }}>
             <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
               {assetLabel.replace('-PERP', '/USDC')}
             </Text>
-          </View>
 
-          <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text variant="sm" sx={{ fontWeight: '500', marginRight: 2 }}>
-              {positionValueLabel}
-            </Text>
-
-            {side && (
-              <StatusBadge
-                fontWeight="600"
-                sx={{ borderWidth: 0, borderColor: sideColor }}
-                textSx={{ color: sideColor, fontWeight: '400' }}
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text
+                variant="xs"
+                sx={{ color: sideColor, fontWeight: '400' }}
               >
                 {side}
-              </StatusBadge>
-            )}
-
-            <View
-              sx={{
-                width: 24,
-                height: 24,
-                borderRadius: 'full',
-                borderColor: sideColor,
-                borderWidth: 0,
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
-            >
+              </Text>
               <MaterialCommunityIcons
                 name={sideIcon}
                 size={16}
                 color={sideColor}
               />
             </View>
+
+          </View>
+
+          <View sx={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
+            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+              <Text variant="sm" sx={{  }}>
+                {positionValueLabel}
+              </Text>
+
+              <Text variant="sm" sx={{ fontWeight: '500', color: positionPnlColor }}>
+                {pnlPercentLabel}
+              </Text>
+            </View>
+            <View sx={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
+              <Text variant="xs" sx={{  }} tone="muted">
+                {formatCompact(entryPriceValue * sizeValue, 'en-US', 1)}
+              </Text>
+
+              <Text variant="xs" sx={{ }} tone="muted">
+                ({unrealizedPnlLabel})
+              </Text>
+            </View>
           </View>
         </View>
       </TouchableOpacity>
 
-      <View>
         {expanded && (
-          <>
+          <View sx={{
+            borderLeftWidth: 2,
+            borderLeftColor: 'border',
+            paddingLeft: 4,
+            marginLeft: 2,
+          }}>
             <PositionDetailRow
               label="Size"
               value={sizeLabel}
@@ -194,19 +220,19 @@ export function PositionRow(position) {
                 valueStyle={{ color: positionPnlColor }}
               />
             )}
-          </>
+        </View>
         )}
-      </View>
     </View>
   );
 }
 
-export default function PositionList({ positions = [] }) {
+export default function PositionList({ positions = [], top = 3 }) {
   const safeEnrichedPositions = Array.isArray(positions) ? positions : [];
+  const topPositions = safeEnrichedPositions.sort((a, b) => b.size - a.size).slice(0, top);
   return (
     <View sx={{ marginTop: 3 }}>
-      {safeEnrichedPositions.length > 0 ? (
-        safeEnrichedPositions.map((position, i) => (
+      {topPositions.length > 0 ? (
+        topPositions.map((position, i) => (
           <PositionRow key={position?.id || position?.symbol || i} {...position} />
         ))
       ) : (

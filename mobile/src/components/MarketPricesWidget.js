@@ -1,6 +1,5 @@
-import React, { useMemo, useEffect, useRef, useState, useCallback } from 'react';
-import { View, Text, ActivityIndicator, Button } from '@/components/ui';
-import { useRouter } from 'expo-router';
+import React, { useMemo, useEffect, useRef, useCallback } from 'react';
+import { View, Text, ActivityIndicator, ScrollView, GlassButton } from '@/components/ui';
 import Svg, { Polyline } from 'react-native-svg';
 import { useMarketPrices, useMarketPricesStore } from '@/hooks/useMarketPrices';
 import { useMarketHistory } from '@/hooks/useMarketHistory';
@@ -8,18 +7,25 @@ import {
   formatCurrency,
   formatPercent,
 } from '@/utils/marketFormatting';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import SectionTitle from '@/components/SectionTitle';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
   withSequence,
   withTiming,
+  interpolate,
+  Extrapolation,
 } from 'react-native-reanimated';
 import { useColors } from '@/theme';
-import { Pressable, Image } from 'react-native';
+import { Dimensions } from 'react-native';
+import { GLOBAL_PADDING } from './ContainerView';
+import { GlassView } from 'expo-glass-effect';
+import { ROUTES } from '@/config/routes';
+import { useTimeframeStore } from '@/stores/useTimeframeStore';
+import { useRouter } from 'expo-router';
 
-const SPARKLINE_WIDTH = 88;
+const { width } = Dimensions.get('window');
+
+const SPARKLINE_WIDTH = (width - GLOBAL_PADDING * 4) / 3;
 const SPARKLINE_HEIGHT = 32;
 
 const Sparkline = ({ data = [], positiveColor, negativeColor, neutralColor }) => {
@@ -62,31 +68,32 @@ const Sparkline = ({ data = [], positiveColor, negativeColor, neutralColor }) =>
 
 const PriceColumn = ({
   symbol,
-  index,
   sparklineData,
   rangeDelta,
   rangePercent,
   isHistoryLoading,
-  compact,
-  isLast,
+  scrollY,
 }) => {
+  const router = useRouter();
   const {
     colors: palette,
     success,
     error: errorColor,
-    withOpacity,
   } = useColors();
 
   const positiveColor = success;
   const negativeColor = errorColor;
   const neutralColor = palette.mutedForeground;
 
-  // Get asset data from Zustand store - use a selector that returns just the asset
+  // Get asset data from Zustand store
   const asset = useMarketPricesStore(
     useCallback((state) => state.tickers[symbol]?.asset, [symbol])
   );
 
-  // Provide fallback asset if not yet loaded
+  const onPress = () => {
+    router.push(ROUTES.TABS_EXPLORE_MARKETS.path);
+  };
+
   const displayAsset = useMemo(() => asset ?? {
     id: symbol,
     symbol: symbol,
@@ -97,111 +104,157 @@ const PriceColumn = ({
   const hasChange = Number.isFinite(rangePercent);
   const changeIsPositive = hasChange && rangePercent >= 0;
   const changeColor = hasChange
-    ? changeIsPositive
-      ? positiveColor
-      : negativeColor
+    ? changeIsPositive ? positiveColor : negativeColor
     : neutralColor;
 
-  // Animated opacity for price flash effect
-  const priceOpacity = useSharedValue(0.8);
+  // Price flash effect
+  const priceOpacity = useSharedValue(1);
   const prevPrice = useRef(displayAsset?.price);
 
   useEffect(() => {
-    // Flash when price changes
     if (prevPrice.current !== displayAsset?.price && Number.isFinite(displayAsset?.price)) {
       priceOpacity.value = withSequence(
-        withTiming(1, { duration: 150 }),
-        withTiming(0.8, { duration: 300 })
+        withTiming(1, { duration: 500 }),
+        withTiming(.7, { duration: 200 })
       );
     }
     prevPrice.current = displayAsset?.price;
   }, [displayAsset?.price]);
 
-  const priceAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: priceOpacity.value,
-  }));
+  // Animated styles for each element
+  const symbolStyle = useAnimatedStyle(() => {
+    if (!scrollY) return { fontSize: 11 };
 
-  if (compact) {
-    return (
-      <View
-        sx={{
-          flex: 1,
-          paddingVertical: 1,
-          gap: 1,
-        }}
-      >
-        <Text
-          sx={{
-            fontSize: 11,
-            textTransform: 'uppercase',
-            letterSpacing: 1.2,
-            color: 'mutedForeground',
-          }}
-        >
-          {displayAsset?.symbol ?? '—'}
-        </Text>
-        <Animated.Text
-          style={[
-            {
-              color: palette.textPrimary,
-              fontSize: 14,
-              fontWeight: '500',
-            },
-            priceAnimatedStyle,
-          ]}
-        >
-          {formatCurrency(displayAsset?.price)}
-        </Animated.Text>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
-          <Text sx={{ fontSize: 11, fontWeight: '600', color: changeColor }}>
-            {hasChange ? formatPercent(rangePercent) : '—'}
-          </Text>
-          <Text sx={{ fontSize: 11, color: 'secondary500' }}>
-            ({Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'})
-          </Text>
-        </View>
-      </View>
-    );
-  }
+    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    return {
+      fontSize: interpolate(progress, [0, 1], [11, 10]),
+    };
+  }, [scrollY]);
+
+  const priceStyle = useAnimatedStyle(() => {
+    if (!scrollY) {
+      return {
+        fontSize: 16,
+        fontWeight: '400',
+        opacity: priceOpacity.value,
+      };
+    }
+
+    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    return {
+      fontSize: interpolate(progress, [0, 1], [16, 12]),
+      fontWeight: progress > 0.5 ? '400' : '500',
+      opacity: priceOpacity.value,
+    };
+  }, [scrollY]);
+
+  const changeContainerStyle = useAnimatedStyle(() => {
+    if (!scrollY) return { marginTop: 2 };
+
+    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    return {
+      marginTop: interpolate(progress, [0, 1], [2, 1]),
+    };
+  }, [scrollY]);
+
+  const changeTextStyle = useAnimatedStyle(() => {
+    if (!scrollY) return { fontSize: 11 };
+
+    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    return {
+      fontSize: interpolate(progress, [0, 1], [11, 10]),
+    };
+  }, [scrollY]);
+
+  const sparklineStyle = useAnimatedStyle(() => {
+    if (!scrollY) return { marginTop: 8, height: SPARKLINE_HEIGHT };
+
+    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    return {
+      marginTop: interpolate(progress, [0, 1], [8, 0]),
+      marginBottom: interpolate(progress, [0, 1], [8, 0]),
+      opacity: interpolate(progress, [0, 0.7, 1], [1, 0.3, 0], Extrapolation.CLAMP),
+      height: interpolate(progress, [0, 1], [SPARKLINE_HEIGHT, 0], Extrapolation.CLAMP),
+    };
+  }, [scrollY]);
 
   return (
-    <View sx={{ flex: 1 }}>
-      <Text
-        sx={{
-          fontSize: 12,
-          textTransform: 'uppercase',
-          letterSpacing: 1.5,
-          color: 'mutedForeground',
-          marginBottom: 1
-        }}
+    <GlassButton
+      style={{
+        flex: 1,
+        padding: 10,
+        paddingVertical: 8,
+        borderRadius: 12,
+        width: width / 3,
+        marginLeft: GLOBAL_PADDING,
+      }}
+      glassEffectStyle='regular'
+      onPress={onPress}
+      isInteractive
+    >
+      <Animated.Text
+        style={[
+          {
+            textTransform: 'uppercase',
+            letterSpacing: 1.2,
+            color: palette.mutedForeground,
+          },
+          symbolStyle,
+        ]}
       >
         {displayAsset?.symbol ?? '—'}
-      </Text>
+      </Animated.Text>
+
       <Animated.Text
         style={[
           {
             color: palette.textPrimary,
-            fontSize: 16,
-            fontWeight: '700',
+            marginTop: 2,
           },
-          priceAnimatedStyle,
+          priceStyle,
         ]}
         numberOfLines={1}
       >
         {formatCurrency(displayAsset?.price)}
       </Animated.Text>
-      {displayAsset?.price ? (
-        <View sx={{ marginTop: 2, flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'flex-end' }}>
-          <Text sx={{ fontSize: 12, fontWeight: '600', color: changeColor }}>
+
+      {displayAsset?.price && (
+        <Animated.View
+          style={[
+            {
+              flexDirection: 'row',
+              alignItems: 'baseline',
+              gap: 4,
+            },
+            changeContainerStyle,
+          ]}
+        >
+          <Animated.Text
+            style={[
+              {
+                fontWeight: '600',
+                color: changeColor,
+              },
+              changeTextStyle,
+            ]}
+          >
             {hasChange ? formatPercent(rangePercent) : '—'}
+          </Animated.Text>
+          <Text style={{ fontSize: 10, color: palette.mutedForeground }}>
+            {Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta) : '—'}
           </Text>
-          <Text sx={{ fontSize: 11, color: 'secondary500', marginLeft: 2 }}>
-            ({Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta).replace('$', '') : '—'})
-          </Text>
-        </View>
-      ) : null}
-      <View sx={{ marginTop: 3, height: SPARKLINE_HEIGHT }}>
-        {!isHistoryLoading && (
+        </Animated.View>
+      )}
+
+      <Animated.View
+        style={[
+          {
+            overflow: 'hidden',
+          },
+          sparklineStyle,
+        ]}
+      >
+        {!isHistoryLoading && sparklineData.length > 0 && (
           <Sparkline
             data={sparklineData}
             positiveColor={positiveColor}
@@ -209,41 +262,20 @@ const PriceColumn = ({
             neutralColor={neutralColor}
           />
         )}
-      </View>
-    </View>
+      </Animated.View>
+    </GlassButton>
   );
 };
 
 export default function MarketPricesWidget({
   tickers,
   sx: customSx,
-  timeframe,
+  scrollY,
 }) {
-  const [compact, setCompact] = useState(true);
-  const {
-    colors: palette,
-    success,
-    error: errorColor,
-    warning,
-    primary,
-    withOpacity,
-  } = useColors();
-  const neutralColor = palette.mutedForeground;
-  const router = useRouter();
-  const {
-    normalizedTickers,
-    assets,
-    isLoading,
-    isUpdating,
-    error,
-    lastUpdated,
-  } = useMarketPrices(tickers);
-
-  const {
-    data: historyData,
-    isFetching: historyFetching,
-    error: historyError,
-  } = useMarketHistory(normalizedTickers, timeframe);
+  const { colors: palette } = useColors();
+  const { timeframe } = useTimeframeStore();
+  const { normalizedTickers, assets, isLoading } = useMarketPrices(tickers);
+  const { data: historyData, isFetching: historyFetching } = useMarketHistory(normalizedTickers, timeframe);
 
   const displayAssets = useMemo(() => {
     if (!normalizedTickers.length) return assets;
@@ -261,12 +293,12 @@ export default function MarketPricesWidget({
   }, [assets, normalizedTickers]);
 
   return (
-    <Pressable onPress={() => setCompact(!compact)} sx={customSx}>
-      <View
-        sx={{
-          flexDirection: 'row',
-          gap: compact ? 2 : 4,
-        }}
+    <Animated.View style={[customSx]}>
+      <ScrollView
+        horizontal
+        scrollEventThrottle={16}
+        contentContainerStyle={[{ gap: 0, paddingRight: GLOBAL_PADDING, paddingVertical: 8 }]}
+        showsHorizontalScrollIndicator={false}
       >
         {displayAssets.length ? (
           displayAssets.map((asset, index) => {
@@ -288,25 +320,16 @@ export default function MarketPricesWidget({
               <PriceColumn
                 key={symbol ?? index}
                 symbol={symbol}
-                index={index}
                 sparklineData={sparklinePoints}
                 rangeDelta={rangeDelta}
                 rangePercent={rangePercent}
                 isHistoryLoading={historyFetching && !history.length}
-                compact={compact}
-                isLast={index === displayAssets.length - 1}
+                scrollY={scrollY}
               />
             );
           })
         ) : (
-          <View
-            sx={{
-              flex: compact ? undefined : 1,
-              width: '100%',
-              alignItems: 'center',
-              paddingVertical: compact ? 1 : 2,
-            }}
-          >
+          <View style={{ flex: 1, alignItems: 'center', paddingVertical: 16 }}>
             {isLoading ? (
               <ActivityIndicator size="small" color={palette.foreground} />
             ) : (
@@ -314,7 +337,7 @@ export default function MarketPricesWidget({
             )}
           </View>
         )}
-      </View>
-    </Pressable>
+      </ScrollView>
+    </Animated.View>
   );
 }

@@ -1,21 +1,27 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, RefreshControl } from '@/components/ui';
+import { View, Text, RefreshControl } from '@/components/ui';
+import { ScrollView } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedScrollHandler,
+} from 'react-native-reanimated';
 import ContainerView, { PaddedView } from '@/components/ContainerView';
-import AgentList from '@/components/AgentList';
 import MarketPricesWidget from '@/components/MarketPricesWidget';
 import { useQueryClient } from '@tanstack/react-query';
-import SvgChart from '@/components/SvgChart';
-import SectionTitle from '@/components/SectionTitle';
-import TimeFrameSelector from '@/components/TimeFrameSelector';
 import CategoryAgentsListPager from '@/components/explore/CategoryAgentsListPager';
 import { useColors } from '@/theme';
 import ExploreHeader from '@/components/explore/Header';
+import MultiAgentChart from '@/components/agents/MultiAgentChart';
+import { useTimeframeStore } from '@/stores/useTimeframeStore';
+
+const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ExploreScreen() {
   const [isFetching, setIsFetching] = useState(false);
   const queryClient = useQueryClient();
   const colors = useColors();
   const palette = colors.colors;
+  const { timeframe } = useTimeframeStore();
 
   const handleRefresh = useCallback(async () => {
     setIsFetching(true);
@@ -23,7 +29,13 @@ export default function ExploreScreen() {
     setIsFetching(false);
   }, []);
 
-  const [timeframe, setTimeframe] = useState('1h');
+  const scrollY = useSharedValue(0);
+
+  const scrollHandler = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollY.value = event.contentOffset.y;
+    },
+  });
 
   return (
     <ContainerView>
@@ -33,9 +45,10 @@ export default function ExploreScreen() {
           timeframe={timeframe}
         />
       </PaddedView>
-      <ScrollView
+      <AnimatedScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: '70%' }}
+        stickyHeaderIndices={[0]}
         refreshControl={
           <RefreshControl
             refreshing={isFetching}
@@ -44,39 +57,24 @@ export default function ExploreScreen() {
             size="small"
           />
         }
+        scrollEventThrottle={16}
+        onScroll={scrollHandler}
       >
-        <PaddedView>
-          <MarketPricesWidget
-            tickers={['BTC', 'ETH', 'SOL']}
-            timeframe={timeframe}
-          />
+        <MarketPricesWidget
+          tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
+          timeframe={timeframe}
+          scrollY={scrollY}
+        />
 
-
-        </PaddedView>
-
-        <PaddedView sx={{ alignItems: 'center', flexDirection: 'row', justifyContent: 'space-between' }}>
-          <Text
-            variant="xs"
-            tone="muted"
-            sx={{
-              textTransform: 'uppercase',
-              fontWeight: '600',
-              letterSpacing: 2,
-            }}
-          >
-            Explore Agents
-          </Text>
-          <TimeFrameSelector timeframe={timeframe} onTimeframeChange={setTimeframe} />
-        </PaddedView>
         <View sx={{ backgroundColor: 'surface', marginTop: 2 }}>
-          <SvgChart timeframe={timeframe} />
+          <MultiAgentChart timeframe={timeframe} />
         </View>
         <PaddedView sx={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 3 }}>
         </PaddedView>
         <View style={{ flex: 1 }}>
           <CategoryAgentsListPager />
         </View>
-      </ScrollView>
+      </AnimatedScrollView>
     </ContainerView>
   );
 }

@@ -14,7 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import InfoSlides from '@/components/InfoSlides';
 import useRouteAuth from '@/hooks/useRouteAuth';
-import { ROUTES } from '@/config/routes';
+import { getDefaultUnauthenticatedRoute, ROUTES } from '@/config/routes';
 import { useColors } from '@/theme';
 
 const { width, height } = Dimensions.get('window');
@@ -58,7 +58,8 @@ export default function GetStartedScreen() {
   };
 
   const handleContinueWithoutAuth = () => {
-    router.push(ROUTES.TABS_EXPLORE_INDEX.path);
+    console.log(getDefaultUnauthenticatedRoute())
+    router.push(getDefaultUnauthenticatedRoute());
   };
 
   const videoSrc = require('@/../assets/3571264-hd_1920_1080_30fps.mp4');
@@ -78,8 +79,6 @@ export default function GetStartedScreen() {
 
   return (
     <View sx={{ flex: 1, backgroundColor: 'black', }}>
-      <StatusBar barStyle={currentSlide?.statusBarStyle || 'light-content'} />
-
       <VideoView
         style={{
           width,
@@ -149,7 +148,7 @@ export default function GetStartedScreen() {
                   flex: 1,
                 }}
               >
-                <Text variant="lg" sx={{ fontWeight: 500, color: 'textPrimary' }}>
+                <Text variant="lg" sx={{ fontWeight: 500, color: 'accentForeground' }}>
                   Get Started
                 </Text>
               </Button>

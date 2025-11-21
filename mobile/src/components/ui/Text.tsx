@@ -9,6 +9,7 @@ export type TextTone = 'default' | 'muted' | 'subtle' | 'inverse' | 'accent';
 export type TextVariant =
   | 'body'
   | 'sm'
+  | 'xxs'
   | 'xs'
   | 'lg'
   | 'xl'

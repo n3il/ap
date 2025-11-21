@@ -2,8 +2,9 @@ import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react'
 import { View, Text, Button } from '@/components/ui';
 import { Animated, PanResponder } from 'react-native';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
+import ChartToolBar from '@/components/chart/ChartToolBar';
+import { useTimeframeStore } from '@/stores/useTimeframeStore';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -102,9 +103,9 @@ const interpolateValue = (data, targetX) => {
  */
 const SvgChart = ({
   lines = [],
-  timeframe = '1h',
+  style = {},
 }) => {
-
+  const { timeframe } = useTimeframeStore();
   const [expanded, setExpanded] = useState(false);
   const [touchActive, setTouchActive] = useState(false);
   const [touchX, setTouchX] = useState(0); // Normalized 0-1
@@ -387,7 +388,10 @@ const SvgChart = ({
       <View
         {...panResponder.panHandlers}
         onLayout={handleLayout}
-        sx={{ position: 'relative', width: '100%' }}
+        style={[{
+          position: 'relative',
+          width: '100%',
+        }, style]}
       >
         <Svg width={chartWidth} height={chartHeight}>
           {/* Vertical grid lines for time intervals */}
@@ -646,23 +650,7 @@ const SvgChart = ({
         ))}
       </View>
 
-
-      <View sx={{ alignItems: 'flex-end', marginTop: 0, width: '100%' }}>
-        <Button
-          variant="ghost"
-          size="sm"
-          onPress={() => setExpanded(!expanded)}
-          sx={{ opacity: 0.3 }}
-        >
-          {expanded
-          ? (
-            <MaterialCommunityIcons name="fullscreen-exit" size={24} color="white" />
-          )
-          : (
-            <MaterialCommunityIcons name="fullscreen" size={24} color="white" />
-          )}
-        </Button>
-      </View>
+      <ChartToolBar />
     </>
   );
 };

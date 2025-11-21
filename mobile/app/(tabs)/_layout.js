@@ -1,36 +1,14 @@
-import { NativeTabs, Icon, Label, VectorIcon, Badge } from 'expo-router/unstable-native-tabs';
-import { Platform } from '@/components/ui';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { useAuth } from '@/contexts/AuthContext';
-import { View, ActivityIndicator } from '@/components/ui';
+import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
 import { useTheme } from '@/contexts/ThemeContext';
-import { useColors } from '@/theme';
-import useRouteAuth from '@/hooks/useRouteAuth';
-import { ROUTES } from '@/config/routes';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { DynamicColorIOS } from 'react-native';
 
 export default function TabsLayout() {
-  const { loading } = useAuth();
-  const { theme, isDark } = useTheme();
-  const { canAccessRoute } = useRouteAuth();
-  const colors = useColors();
-
-  if (loading) {
-    return (
-      <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'background' }}>
-        <ActivityIndicator size="large" color={colors.success} />
-      </View>
-    );
-  }
-
-  // Check accessibility for each tab route
-  const canAccessExplore = canAccessRoute(ROUTES.TABS_EXPLORE_INDEX.path);
-  const canAccessAgents = canAccessRoute(ROUTES.TABS_AGENTS.path);
-  const canAccessPerformance = canAccessRoute(ROUTES.TABS_PERFORMANCE.path);
-  const canAccessProfile = canAccessRoute(ROUTES.TABS_PROFILE_INDEX.path);
+  const { theme } = useTheme();
 
   return (
     <NativeTabs
-      minimizeBehavior='onScrollDown'
+      minimizeBehavior='onScrollUp'
       backgroundColor={theme.colors.tabBackground}
       badgeBackgroundColor={theme.colors.info.DEFAULT}
       labelStyle={{
@@ -42,6 +20,10 @@ export default function TabsLayout() {
         selected: theme.colors.tabIconSelected,
       }}
       blurEffect="systemMaterialDark"
+      tintColor={DynamicColorIOS({
+        dark: 'black',
+        light: 'black',
+      })}
     >
       <NativeTabs.Trigger
         name="(explore)"
@@ -51,7 +33,7 @@ export default function TabsLayout() {
         }}
       >
         <Label>Explore</Label>
-        <Icon sf="network" drawable="custom_android_drawable" />
+        <Icon sf="globe.desk" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
         name="(agents)"
@@ -61,16 +43,16 @@ export default function TabsLayout() {
         }}
       >
         <Label>Agents</Label>
-        <Icon sf="doc.text.magnifyingglass" drawable="custom_android_drawable" />
+        <Icon sf="sparkles" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
-        name="performance"
+        name="(markets)"
         options={{
-          title: 'Activity',
+          title: 'Markets',
           headerShown: false,
         }}
       >
-        <Label>Activity</Label>
+        <Label>Markets</Label>
         <Icon sf="chart.line.uptrend.xyaxis" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
