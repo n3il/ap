@@ -8,7 +8,6 @@ import Animated, {
 } from 'react-native-reanimated';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { useColors } from '@/theme';
-import ChartToolBar from '@/components/chart/ChartToolBar';
 import { useTimeframeStore } from '@/stores/useTimeframeStore';
 
 const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
@@ -377,8 +376,7 @@ const SvgChart = ({
 
     const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
     return {
-      paddingVertical: interpolate(progress, [0, 1], [16, 4]),
-      height: interpolate(progress, [0, 1], [chartHeight, 150]),
+      height: interpolate(progress, [0, 1], [chartHeight, 100]),
     };
   }, [scrollY]);
 
@@ -434,11 +432,11 @@ const SvgChart = ({
                       strokeWidth={1}
                     />
                     <SvgText
-                      x={PADDING.left - 6}
+                      x={PADDING.left + 6}
                       y={y + 4}
                       fontSize={10}
                       fill={mutedColor}
-                      textAnchor="end"
+                      textAnchor="start"
                     >
                       {(axisConfig.left.lines[0]?.formatValue || defaultFormatter)(tick)}
                     </SvgText>
@@ -452,11 +450,11 @@ const SvgChart = ({
                 return (
                   <React.Fragment key={`right-${i}`}>
                     <SvgText
-                      x={PADDING.left + plotWidth + 6}
+                      x={PADDING.left + plotWidth - 6}
                       y={y + 4}
                       fontSize={10}
                       fill={mutedColor}
-                      textAnchor="start"
+                      textAnchor="end"
                     >
                       {(axisConfig.right.lines[0]?.formatValue || defaultFormatter)(tick)}
                     </SvgText>
@@ -661,8 +659,6 @@ const SvgChart = ({
           ))}
         </View>
       </Animated.View>
-
-      <ChartToolBar />
     </>
   );
 };

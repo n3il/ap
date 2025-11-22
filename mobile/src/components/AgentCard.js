@@ -31,8 +31,6 @@ export default function AgentCard({
       style={{
         paddingVertical: 18,
         paddingHorizontal: 18,
-        borderRadius: 16,
-        backgroundColor: 'none',
       }}
       {...props}
     >

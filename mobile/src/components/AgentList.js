@@ -155,9 +155,8 @@ export default function AgentList({
   }
 
   return (
-    <GlassContainer
-      spacing={8}
-      style={{ flex: 1, gap: 16 }}
+    <View
+      style={{ flex: 1, gap: 8, marginTop: 8 }}
     >
       {sortedAgents.map((agent) => (
         <AgentCard
@@ -168,6 +167,6 @@ export default function AgentList({
           onPress={() => onAgentPress?.(agent)}
         />
       ))}
-    </GlassContainer>
+    </View>
   );
 }

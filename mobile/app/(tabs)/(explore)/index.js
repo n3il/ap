@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, RefreshControl } from '@/components/ui';
+import { View, RefreshControl, GlassButton } from '@/components/ui';
 import { ScrollView } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -13,6 +13,9 @@ import ExploreHeader from '@/components/explore/Header';
 import MultiAgentChart from '@/components/agents/MultiAgentChart';
 import { useTimeframeStore } from '@/stores/useTimeframeStore';
 import AgentList from '@/components/AgentList';
+import { LinearGradient } from 'react-native-svg';
+import TimeFrameSelector from '@/components/chart/TimeFrameSelector';
+import GlassSelector from '@/components/ui/GlassSelector';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -60,16 +63,28 @@ export default function ExploreScreen() {
         scrollEventThrottle={16}
         onScroll={scrollHandler}
       >
-        <View sx={{  }}>
-          <MarketPricesWidget
-            tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
-            timeframe={timeframe}
-            scrollY={scrollY}
+        <View style={{ flex: 1, height: 400, zIndex: 1, width: 400 }}>
+          <LinearGradient
+            style={{ flex: 1, zIndex: 1000 }}
+            colors={[
+              palette.backgroundSecondary,
+              palette.background,
+              palette.backgroundSecondary ?? palette.surface,
+            ]}
+            locations={[0, 0.78, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 0, y: 1 }}
           />
-
-          <View sx={{ backgroundColor: 'surface', marginTop: 2 }} elevation={2}>
+            <MarketPricesWidget
+              tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
+              timeframe={timeframe}
+              scrollY={scrollY}
+            />
             <MultiAgentChart timeframe={timeframe} scrollY={scrollY} />
-          </View>
+            <PaddedView style={{ alignItems: 'flex-end', flexDirection: 'row', gap: 4 }}>
+              <GlassSelector />
+              <TimeFrameSelector />
+            </PaddedView>
         </View>
         <PaddedView both>
           <AgentList queryKey={['explore-agents']} />

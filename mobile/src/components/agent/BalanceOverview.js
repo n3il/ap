@@ -8,7 +8,7 @@ import { formatAmount, formatPercent } from '@/utils/currency';
 export default function BalanceOverview({ agentId, hideOpenPositions = false, variant = 'compact' }) {
   const accountData = useAccountBalance(agentId, hideOpenPositions);
 
-  if (variant === 'compact') {
+  if (true) {
     return (
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 2 }}>
         <View sx={{ alignItems: 'flex-start' }}>

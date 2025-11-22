@@ -45,7 +45,7 @@ function AuthNavigator() {
     async function prepare() {
       try {
         // Keep splash visible for minimum duration for smooth UX
-        await new Promise(resolve => setTimeout(resolve, 6000));
+        await new Promise(resolve => setTimeout(resolve, 300));
       } catch (e) {
         //
       } finally {
@@ -66,7 +66,6 @@ function AuthNavigator() {
       <Stack
         screenOptions={{
           headerShown: false,
-          gestureEnabled: true,
           presentation: 'card',
         }}
       >

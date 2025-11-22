@@ -39,7 +39,7 @@ export default function ContainerView({ children, style, noSafeArea, ...props }:
         <SafeAreaView style={{ flex: 1 }}>
           {children}
         </SafeAreaView>}
-        </LinearGradient>
+      </LinearGradient>
     </View>
   );
 }

@@ -4,9 +4,9 @@ import { GlassView } from "expo-glass-effect";
 import { Pressable } from "react-native";
 
 export default function GlassButton ({
-  style,
+  style = {},
+  onPress = () => {},
   children,
-  onPress,
   ...props
 }) {
   const { colors, withOpacity } = useColors();
@@ -21,7 +21,7 @@ export default function GlassButton ({
           paddingVertical: 8,
           marginHorizontal: 4,
         },
-        style
+        style,
       ]}
       tintColor={colors.glassTint}
       isInteractive
