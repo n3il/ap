@@ -4,6 +4,7 @@ import SvgChart from "@/components/SvgChart";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import { useMemo } from "react";
+import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
 
 export default function MultiAgentChart({ scrollY }) {
   const { colors } = useColors();
@@ -15,50 +16,31 @@ export default function MultiAgentChart({ scrollY }) {
   const lines = useMemo(() => {
     if (!data || agents.length === 0) return [];
 
-    // Collect ALL timestamps across ALL agents to find global min/max
-    const allTimestamps = [];
-    agents.forEach(agent => {
-      const snapshots = data[agent.id] || [];
-      snapshots.forEach(s => {
-        const ts = new Date(s.timestamp).getTime();
-        if (isFinite(ts)) allTimestamps.push(ts);
-      });
-    });
+    // Collect all snapshots across all agents
+    const allSnapshots = agents.flatMap(agent => data[agent.id] || []);
 
-    if (allTimestamps.length === 0) return [];
+    // Create time normalizer based on all data
+    const { normalizeTimestamp, hasData } = createTimeNormalizer([allSnapshots], 'timestamp');
 
-    // Global time range for ALL agents
-    const minTime = Math.min(...allTimestamps);
-    const maxTime = Math.max(...allTimestamps);
-    const timeRange = maxTime - minTime || 1;
+    if (!hasData) return [];
 
     // Create lines with globally normalized time
-    return agents.map((agent) => {
-      const snapshots = data[agent.id] || [];
+    return agents
+      .map((agent) => {
+        const snapshots = data[agent.id] || [];
+        const chartData = normalizeDataSeries(snapshots, normalizeTimestamp, 'timestamp', 'equity');
 
-      const chartData = snapshots
-        .map((snapshot) => {
-          const timestamp = new Date(snapshot.timestamp).getTime();
-          const equity = parseFloat(snapshot.equity);
+        if (chartData.length === 0) return null;
 
-          // Validate data
-          if (!isFinite(timestamp) || !isFinite(equity)) return null;
-
-          return {
-            time: (timestamp - minTime) / timeRange, // Normalized 0-1
-            value: equity,
-          };
-        })
-        .filter(d => d !== null); // Remove invalid entries
-
-      return {
-        id: agent.id,
-        name: agent.name,
-        data: chartData,
-        axisGroup: "right",
-        color: colors.providers[agent.llm_provider] || colors.primary,
-      };
-    }).filter(line => line.data.length > 0); // Only include agents with valid data
+        return {
+          id: agent.id,
+          name: agent.name,
+          data: chartData,
+          axisGroup: "right",
+          color: colors.providers[agent.llm_provider] || colors.primary,
+        };
+      })
+      .filter(line => line !== null);
   }, [data, agents, colors]);
 
   return (
@@ -66,7 +48,7 @@ export default function MultiAgentChart({ scrollY }) {
       lines={lines}
       timeframe={timeframe}
       scrollY={scrollY}
-      isLoading={isLoading || lines.length === 0}
+      isLoading={isLoading}
     />
   );
 }

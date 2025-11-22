@@ -23,7 +23,7 @@ export default function ContainerView({ children, style, noSafeArea, ...props }:
       {...props}
       style={style}
     >
-          <LinearGradient
+    <LinearGradient
       colors={[
         colors.backgroundSecondary,
         colors.background,

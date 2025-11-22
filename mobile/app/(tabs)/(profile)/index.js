@@ -9,6 +9,7 @@ import { FadeInDown } from 'react-native-reanimated';
 import SectionTitle from '@/components/SectionTitle';
 import { useColors } from '@/theme';
 import { ROUTES } from '@/config/routes';
+import { Pressable } from 'react-native';
 
 const { width } = Dimensions.get('window');
 
@@ -81,7 +82,9 @@ export default function ProfileScreen() {
     return (
       <ContainerView>
         <View sx={{ justifyContent: 'center', alignItems: 'center', flex: 1 }}>
-          <MaterialIcons name="lock" size={64} color={palette.muted} />
+          <Pressable onPress={() => router.push(ROUTES.AUTH_INDEX.path)}>
+            <MaterialIcons name="lock" size={64} color={palette.muted} />
+          </Pressable>
         </View>
       </ContainerView>
     )

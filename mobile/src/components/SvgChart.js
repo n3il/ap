@@ -15,7 +15,7 @@ const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
 
 const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 5;
-const PADDING = { top: 20, right: 50, bottom: 5, left: 50 };
+const PADDING = { top: 0, right: 15, bottom: 5, left: 15 };
 
 // Interpolate y value for a given x position in the data
 const interpolateValue = (data, targetX) => {
@@ -373,7 +373,7 @@ const SvgChart = ({
 
   const animatedStyle = useAnimatedStyle(() => {
     'worklet';
-    if (!scrollY || typeof scrollY.value === 'undefined') {
+    if (!scrollY) {
       return { paddingVertical: 16 };
     }
 

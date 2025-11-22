@@ -28,6 +28,8 @@ function AuthNavigator() {
         router.replace(getDefaultUnauthenticatedRoute())
       }
     }
+    console.log({loading, appIsReady})
+    console.log(getDefaultUnauthenticatedRoute())
   }, [user, hasCompletedOnboarding]);
 
   useEffect(() => {

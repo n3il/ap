@@ -102,10 +102,8 @@ const PriceColumn = ({
   }, [asset, symbol]);
 
   const hasChange = Number.isFinite(rangePercent);
-  const changeIsPositive = hasChange && rangePercent >= 0;
-  const changeColor = hasChange
-    ? changeIsPositive ? positiveColor : negativeColor
-    : neutralColor;
+  const changeIsPositive = hasChange && rangePercent > 0;
+  const changeColor = changeIsPositive ? positiveColor : (rangePercent < 0 ? negativeColor : neutralColor);
 
   // Price flash effect
   const priceOpacity = useSharedValue(1);

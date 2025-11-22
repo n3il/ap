@@ -8,6 +8,7 @@ export default function TabsLayout() {
 
   return (
     <NativeTabs
+      initialRouteName="(explore)"
       minimizeBehavior='onScrollUp'
       backgroundColor={theme.colors.tabBackground}
       badgeBackgroundColor={theme.colors.info.DEFAULT}
@@ -25,54 +26,23 @@ export default function TabsLayout() {
         light: 'black',
       })}
     >
-      <NativeTabs.Trigger
-        name="(explore)"
-        options={{
-          title: 'Explore',
-          headerShown: true,
-        }}
-      >
+      <NativeTabs.Trigger name="(explore)">
         <Label>Explore</Label>
         <Icon sf="globe.desk" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        name="(agents)"
-        options={{
-          title: 'Agents',
-          headerShown: false,
-        }}
-      >
+      <NativeTabs.Trigger name="(agents)">
         <Label>Agents</Label>
         <Icon sf="sparkles" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        name="(markets)"
-        options={{
-          title: 'Markets',
-          headerShown: false,
-        }}
-      >
+      <NativeTabs.Trigger name="(markets)">
         <Label>Markets</Label>
         <Icon sf="chart.line.uptrend.xyaxis" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        name="(profile)"
-        options={{
-          title: 'Settings',
-          headerShown: false,
-        }}
-      >
+      <NativeTabs.Trigger name="(profile)">
         <Label>Account</Label>
         <Icon sf="wallet.bifold.fill" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        name="(search)"
-        role="search"
-        options={{
-          title: 'Search',
-          headerShown: false,
-        }}
-      >
+      <NativeTabs.Trigger name="(search)" role="search">
         <Label>Account</Label>
         <Icon sf="magnifyingglass" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>

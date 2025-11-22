@@ -137,7 +137,7 @@ export function isRouteAccessible(path, isAuthenticated, requireAuth = true) {
  */
 export function getDefaultUnauthenticatedRoute(
   requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === 'true',
-  showGetStartedScreen = false,
+  showGetStartedScreen = process.env.EXPO_PUBLIC_SHOW_GET_STARTED === 'true',
 ) {
   if (requireAuth) {
     return ROUTES.INDEX.path;

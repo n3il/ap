@@ -2,8 +2,8 @@ import React from 'react';
 import { View, Text } from '@/components/ui';
 import LabelValue, { FormattedValueLabel } from '@/components/ui/LabelValue';
 import { useAccountBalance } from '@/hooks/useAccountBalance';
-import { formatAmount } from '@/utils/currency';
 import { formatCurrency } from '@/utils/marketFormatting';
+import { formatAmount } from '@/utils/currency';
 
 export default function BalanceOverview({ agentId, hideOpenPositions = false, variant = 'compact' }) {
   const accountData = useAccountBalance(agentId, hideOpenPositions);
@@ -34,84 +34,83 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
     );
   }
 
-  // Full detailed view matching the image
-  const openPnlPercent = accountData.equity ? ((accountData.unrealizedPnl || 0) / accountData.equity) * 100 : 0;
-  const marketValue = accountData.margin || 0;
+  // Full detailed view for crypto perpetual futures trading
+  const totalPnl = (accountData.realizedPnl || 0) + (accountData.unrealizedPnl || 0);
+  const totalPnlPercent = accountData.wallet ? (totalPnl / accountData.wallet) * 100 : 0;
+  const unrealizedPnlPercent = accountData.equity ? ((accountData.unrealizedPnl || 0) / accountData.equity) * 100 : 0;
+
+  // Calculate position value (total notional value of all positions)
+  const positionValue = accountData.enrichedPositions?.reduce((sum, position) => {
+    const size = parseFloat(position.size) || 0;
+    const currentPrice = position.currentPrice || parseFloat(position.entry_price) || 0;
+    return sum + (size * currentPrice);
+  }, 0) || 0;
+
+  // Calculate leverage ratio
+  const leverageRatio = accountData.equity ? (positionValue / accountData.equity) : 0;
 
   return (
     <View sx={{ gap: 4 }}>
-      {/* Header: Net Account Value */}
+      {/* Header: Account Equity */}
       <View sx={{ gap: 2 }}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase' }}>
-            Net Account Value
+            Account Equity
           </Text>
         </View>
-        <Text variant="2xl" sx={{ fontWeight: '600', fontFamily: 'monospace' }}>
+        <Text variant="xl" sx={{ fontWeight: '600', fontFamily: 'monospace' }}>
           {formatCurrency(accountData.equity)}
         </Text>
+
+        {/* Total P&L */}
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+          <Text variant="xs" tone="muted">Total P&L</Text>
+          <Text variant="sm" sx={{ fontFamily: 'monospace', color: totalPnl >= 0 ? 'success' : 'error' }}>
+            {`${formatAmount(totalPnl)} (${formatAmount(totalPnlPercent, true)}%)`}
+          </Text>
+        </View>
       </View>
 
-      {/* Row 1: Open P&L and Market Value */}
+      {/* Row 1: Unrealized P&L and Realized P&L */}
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
         <View sx={{ flex: 1, flexDirection: 'row'}}>
           <LabelValue
-            label="Open P&L"
+            label="Unrealized P&L"
             value={accountData.unrealizedPnl || 0}
           >
-            <FormattedValueLabel value={openPnlPercent} colorize />
+            <FormattedValueLabel value={unrealizedPnlPercent} colorize />
           </LabelValue>
         </View>
+
+                <View sx={{ flex: 1 }}>
+          <LabelValue
+            label="Position Value"
+            value={positionValue}
+          />
+        </View>
         <View sx={{ flex: 1, alignItems: 'flex-end' }}>
           <LabelValue
-            label="Market Value"
-            value={marketValue}
+            label="Realized P&L"
+            value={accountData.realizedPnl || 0}
             alignRight
+            colorize
           />
         </View>
       </View>
 
-      {/* Row 2: Cash Balance, Settled Cash, Unsettled Cash */}
+      {/* Row 2: Initial Capital, Margin Used, Free Collateral */}
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Cash Balance"
-            value={accountData.availableMargin || 0}
-          />
-        </View>
-        <View sx={{ flex: 1 }}>
-          <LabelValue
-            label="Settled Cash"
-            value={0}
+            label="Initial Capital"
+            value={accountData.wallet || 0}
           />
         </View>
         <View sx={{ flex: 1, alignItems: 'flex-end' }}>
           <LabelValue
-            label="Unsettled Cash"
-            value={accountData.availableMargin || 0}
+            label="Margin Ratio"
+            value={(accountData.margin / accountData.availableMargin) * 100 || 0}
             alignRight
-          />
-        </View>
-      </View>
-
-      {/* Row 3: Buying Power, Options BP, Event BP */}
-      <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
-        <View sx={{ flex: 1 }}>
-          <LabelValue
-            label="Buying Power"
-            value={accountData.availableMargin || 0}
-          />
-        </View>
-        <View sx={{ flex: 1 }}>
-          <LabelValue
-            label="Options BP"
-            value={accountData.availableMargin || 0}
-          />
-        </View>
-        <View sx={{ flex: 1, alignItems: 'flex-end' }}>
-          <LabelValue
-            label="Event BP"
-            value={0}
           />
         </View>
       </View>

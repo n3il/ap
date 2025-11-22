@@ -36,7 +36,7 @@ const LabelValue: React.FC<LabelValueProps> = ({
   textStyle,
   colorize,
   children,
-  alignRight
+  alignRight,
 }) => {
   return (
     <View
