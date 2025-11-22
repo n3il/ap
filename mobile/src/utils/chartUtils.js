@@ -65,6 +65,8 @@ export function createTimeNormalizer(dataSeries, timestampKey = 'timestamp') {
 export function normalizeDataSeries(data, normalizeTimestamp, timestampKey = 'timestamp', valueKey = 'value') {
   if (!data || !Array.isArray(data) || data.length === 0) return [];
 
+  console.log('---')
+  console.log(data)
   return data
     .map(item => {
       const normalizedTime = normalizeTimestamp(item[timestampKey]);

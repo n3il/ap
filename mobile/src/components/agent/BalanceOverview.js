@@ -3,7 +3,7 @@ import { View, Text } from '@/components/ui';
 import LabelValue, { FormattedValueLabel } from '@/components/ui/LabelValue';
 import { useAccountBalance } from '@/hooks/useAccountBalance';
 import { formatCurrency } from '@/utils/marketFormatting';
-import { formatAmount } from '@/utils/currency';
+import { formatAmount, formatPercent } from '@/utils/currency';
 
 export default function BalanceOverview({ agentId, hideOpenPositions = false, variant = 'compact' }) {
   const accountData = useAccountBalance(agentId, hideOpenPositions);
@@ -66,35 +66,37 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
           <Text variant="xs" tone="muted">Total P&L</Text>
           <Text variant="sm" sx={{ fontFamily: 'monospace', color: totalPnl >= 0 ? 'success' : 'error' }}>
-            {`${formatAmount(totalPnl)} (${formatAmount(totalPnlPercent, true)}%)`}
+            {`${formatAmount(totalPnl)} (${formatAmount(totalPnlPercent, { showSign: true })}%)`}
           </Text>
         </View>
       </View>
 
       {/* Row 1: Unrealized P&L and Realized P&L */}
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
-        <View sx={{ flex: 1, flexDirection: 'row'}}>
+        <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Unrealized P&L"
-            value={accountData.unrealizedPnl || 0}
-          >
-            <FormattedValueLabel value={unrealizedPnlPercent} colorize />
-          </LabelValue>
-        </View>
-
-                <View sx={{ flex: 1 }}>
-          <LabelValue
-            label="Position Value"
-            value={positionValue}
+            label="Initial Capital"
+            value={accountData.wallet || 0}
           />
         </View>
-        <View sx={{ flex: 1, alignItems: 'flex-end' }}>
+        <View sx={{ flex: 1 }}>
           <LabelValue
             label="Realized P&L"
             value={accountData.realizedPnl || 0}
             alignRight
-            colorize
           />
+        </View>
+        <View sx={{ flex: 1,  }}>
+
+          <LabelValue
+            label="Unrealized P&L"
+            value={accountData.unrealizedPnl || 0}
+            alignRight
+          >
+          <Text variant="sm" sx={{ fontFamily: 'monospace', color: accountData.unrealizedPnl > 0 ? 'success' : (accountData.unrealizedPnl < 0 ? 'error' : 'foreground') }}>
+            {`${formatAmount(accountData.unrealizedPnl)} (${formatPercent(unrealizedPnlPercent)})`}
+          </Text>
+          </LabelValue>
         </View>
       </View>
 
@@ -106,10 +108,16 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
             value={accountData.wallet || 0}
           />
         </View>
-        <View sx={{ flex: 1, alignItems: 'flex-end' }}>
+        <View sx={{ flex: 1 }}>
+          <LabelValue
+            label="Free Capital"
+            value={accountData.availableMargin || 0}
+          />
+        </View>
+        <View sx={{ flex: 1,  }}>
           <LabelValue
             label="Margin Ratio"
-            value={(accountData.margin / accountData.availableMargin) * 100 || 0}
+            value={(parseFloat(accountData.margin) / accountData.availableMargin) * 100 || 0}
             alignRight
           />
         </View>

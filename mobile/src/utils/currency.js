@@ -1,6 +1,9 @@
 const currencySymbol = "$";
 
-export function formatCompact(num, locale = "en-US", precision = 2) {
+export function formatCompact(num, {
+  locale = "en-US",
+  precision = 2,
+}) {
   const abs = Math.abs(num);
 
   const units = [
@@ -27,10 +30,25 @@ export function formatCompact(num, locale = "en-US", precision = 2) {
   }).format(num);
 }
 
-export function formatAmount(num, showSign = false) {
+export function formatAmount(num, {
+  showSign = false,
+  precision = 2,
+} = {}) {
   let signSymbol = '';
   if (showSign) {
     signSymbol = num > 0 ? "+" : num < 0 ? "-" : "";
   }
-  return `${signSymbol}${currencySymbol}${formatCompact(num)}`
+  return `${signSymbol}${currencySymbol}${formatCompact(num, { precision })}`
+}
+
+
+export function formatPercent(num, {
+  showSign = false,
+  precision = 2,
+} = {}) {
+  let signSymbol = '';
+  if (showSign) {
+    signSymbol = num > 0 ? "+" : num < 0 ? "-" : "";
+  }
+  return `${signSymbol}${formatCompact(num, { precision })}%`
 }

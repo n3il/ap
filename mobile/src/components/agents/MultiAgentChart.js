@@ -43,6 +43,7 @@ export default function MultiAgentChart({ scrollY }) {
       .filter(line => line !== null);
   }, [data, agents, colors]);
 
+  console.log({ lines })
   return (
     <SvgChart
       lines={lines}

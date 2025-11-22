@@ -22,23 +22,10 @@ export default function AgentCard({
 }) {
   const accountData = useAccountBalance(agent.id, hideOpenPositions)
 
-  // Fetch total trades count
-  const { data: tradesCount = 0 } = useQuery({
-    queryKey: ['agent-trades-count', agent.id],
-    queryFn: async () => {
-      const { count, error } = await supabase
-        .from('trades')
-        .select('*', { count: 'exact', head: true })
-        .eq('agent_id', agent.id);
-
-      if (error) throw error;
-      return count || 0;
-    },
-  });
-
   // Calculate total PnL (realized + unrealized)
   const isPublished = Boolean(agent.published_at);
 
+  console.log({ latestAssessment })
   return (
     <Card
       style={{
@@ -63,6 +50,9 @@ export default function AgentCard({
                   {isPublished ? 'PUBLIC' : 'PRIVATE'}
                 </StatusBadge>
               ) : null}
+              <Text variant="xxs" tone="muted" sx={{ textAlign: 'left', fontStyle: 'italic' }}>
+                {accountData.enrichedPositions.length > 3 ? `+ ${accountData.enrichedPositions.length - 3} more positions` : null}
+              </Text>
             </View>
           </View>
         </View>

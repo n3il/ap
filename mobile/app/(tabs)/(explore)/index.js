@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, RefreshControl } from '@/components/ui';
+import { View, RefreshControl } from '@/components/ui';
 import { ScrollView } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -8,11 +8,11 @@ import Animated, {
 import ContainerView, { PaddedView } from '@/components/ContainerView';
 import MarketPricesWidget from '@/components/MarketPricesWidget';
 import { useQueryClient } from '@tanstack/react-query';
-import CategoryAgentsListPager from '@/components/explore/CategoryAgentsListPager';
 import { useColors } from '@/theme';
 import ExploreHeader from '@/components/explore/Header';
 import MultiAgentChart from '@/components/agents/MultiAgentChart';
 import { useTimeframeStore } from '@/stores/useTimeframeStore';
+import AgentList from '@/components/AgentList';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -71,7 +71,9 @@ export default function ExploreScreen() {
             <MultiAgentChart timeframe={timeframe} scrollY={scrollY} />
           </View>
         </View>
-        <CategoryAgentsListPager />
+        <PaddedView both>
+          <AgentList queryKey={['explore-agents']} />
+        </PaddedView>
       </AnimatedScrollView>
     </ContainerView>
   );

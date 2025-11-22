@@ -44,13 +44,14 @@ export default function ContainerView({ children, style, noSafeArea, ...props }:
   );
 }
 
-export function PaddedView({ children, sx, style = {}, ...props }: ViewProps) {
+export function PaddedView({ children, sx, style = {}, both = false, ...props }: ViewProps) {
   return (
     <View
       {...props}
       sx={sx}
       style={{
         paddingHorizontal: GLOBAL_PADDING,
+        paddingVertical: both ? GLOBAL_PADDING : 0,
         ...style
       }}
     >

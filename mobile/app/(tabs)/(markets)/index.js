@@ -1,98 +1,151 @@
-import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity } from '@/components/ui';
-import { useRouter } from 'expo-router';
+import React, { useMemo, useState } from 'react';
+import { ScrollView } from '@/components/ui';
 import ContainerView from '@/components/ContainerView';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
-import SectionTitle from '@/components/SectionTitle';
-
-const MARKET_SECTIONS = [
-  {
-    key: 'trade',
-    title: 'Trade',
-    description: 'View charts and place orders',
-    route: '/(tabs)/(markets)/trade',
-  },
-  {
-    key: 'positions',
-    title: 'Positions',
-    description: 'Manage your open positions',
-    route: '/(tabs)/(markets)/positions',
-  },
-  {
-    key: 'history',
-    title: 'History',
-    description: 'View trade history',
-    route: '/(tabs)/(markets)/history',
-  },
-  {
-    key: 'account',
-    title: 'Account',
-    description: 'View account balance and statistics',
-    route: '/(tabs)/(markets)/account',
-  },
-];
+import { useMarketPrices } from '@/hooks/useMarketPrices';
+import { useTradingData } from '@/hooks/useTradingData';
+import { useMockAccountBalance } from '@/hooks/useMockAccountBalance';
+import {
+  AssetSelectorModal,
+  MarketAssetHeader,
+  MarketChartPanel,
+  MarketOrderBook,
+  MarketTabBar,
+  MarketTradesTable,
+  TradeActionModal,
+  TradeHistoryPanel,
+  MARKET_ASSETS,
+  MARKET_TABS,
+} from '@/components/markets';
+import { buildRecentTrades, buildTradeHistoryEntries } from '@/components/markets/utils';
 
 export default function MarketsScreen() {
-  const router = useRouter();
-  const { theme } = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const [selectedAssetId, setSelectedAssetId] = useState(MARKET_ASSETS[0].id);
+  const [activeTab, setActiveTab] = useState('chart');
+  const [timeframe, setTimeframe] = useState('1h');
+  const [assetSelectorOpen, setAssetSelectorOpen] = useState(false);
+  const [tradeModalOpen, setTradeModalOpen] = useState(false);
+  const [tradeSide, setTradeSide] = useState('buy');
+  const [favorites, setFavorites] = useState([]);
 
-  const handleNavigate = (route) => {
-    router.push(route);
+  const selectedAsset = useMemo(
+    () => MARKET_ASSETS.find((asset) => asset.id === selectedAssetId) ?? MARKET_ASSETS[0],
+    [selectedAssetId],
+  );
+
+  const { assets: priceAssets } = useMarketPrices(MARKET_ASSETS.map((asset) => asset.symbol));
+  const priceMap = useMemo(() => {
+    const map = {};
+    priceAssets.forEach((asset) => {
+      if (asset?.symbol) {
+        map[asset.symbol] = asset.price;
+      }
+    });
+    return map;
+  }, [priceAssets]);
+
+  const currentPrice = priceMap[selectedAsset.symbol] ?? selectedAsset.price;
+  const { trades, placeOrder, isPlacingOrder } = useTradingData({ ledgerType: 'paper' });
+  const accountBalance = useMockAccountBalance();
+
+  const historyEntries = useMemo(
+    () => buildTradeHistoryEntries(trades, selectedAsset.symbol),
+    [trades, selectedAsset.symbol],
+  );
+
+  const recentTrades = useMemo(
+    () => buildRecentTrades(trades, selectedAsset.symbol, currentPrice),
+    [trades, selectedAsset.symbol, currentPrice],
+  );
+
+  const availableBalance = accountBalance?.availableMargin ?? accountBalance?.wallet ?? 0;
+
+  const handleToggleFavorite = (assetOrId) => {
+    const id = typeof assetOrId === 'string' ? assetOrId : assetOrId?.id;
+    if (!id) return;
+    setFavorites((prev) =>
+      prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
+    );
+  };
+
+  const handleSelectAsset = (asset) => {
+    if (!asset) return;
+    setSelectedAssetId(asset.id);
+    setAssetSelectorOpen(false);
+  };
+
+  const handleOpenTrade = (side) => {
+    setTradeSide(side);
+    setTradeModalOpen(true);
+  };
+
+  const handlePlaceOrder = (payload) => {
+    placeOrder(payload);
+    setTradeModalOpen(false);
   };
 
   return (
     <ContainerView>
-      <View sx={{ alignSelf: 'flex-start', marginBottom: 3 }}>
-        <SectionTitle>Markets</SectionTitle>
-      </View>
+      <ScrollView
+        contentContainerStyle={{
+          padding: 20,
+          paddingBottom: 40,
+          gap: 24,
+        }}
+        showsVerticalScrollIndicator={false}
+      >
+        <MarketAssetHeader
+          asset={selectedAsset}
+          price={currentPrice}
+          priceChange={selectedAsset.change24h}
+          onSelectAsset={() => setAssetSelectorOpen(true)}
+          onOpenTrade={handleOpenTrade}
+          onToggleFavorite={handleToggleFavorite}
+          favorites={favorites}
+        />
 
-      <View style={styles.grid}>
-        {MARKET_SECTIONS.map((section) => (
-          <TouchableOpacity
-            key={section.key}
-            style={styles.card}
-            onPress={() => handleNavigate(section.route)}
-          >
-            <Text style={styles.cardTitle}>{section.title}</Text>
-            <Text style={styles.cardDescription}>{section.description}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+        <MarketTabBar tabs={MARKET_TABS} activeTab={activeTab} onChange={setActiveTab} />
+
+        {activeTab === 'chart' && (
+          <MarketChartPanel
+            asset={selectedAsset}
+            price={currentPrice}
+            volume={selectedAsset.volume24h}
+            timeframe={timeframe}
+            onChangeTimeframe={setTimeframe}
+          />
+        )}
+
+        {activeTab === 'orderBook' && (
+          <MarketOrderBook symbol={selectedAsset.symbol} price={currentPrice} />
+        )}
+
+        {activeTab === 'trades' && (
+          <MarketTradesTable trades={recentTrades} symbol={selectedAsset.symbol} />
+        )}
+
+        <TradeHistoryPanel trades={historyEntries} />
+      </ScrollView>
+
+      <AssetSelectorModal
+        visible={assetSelectorOpen}
+        onClose={() => setAssetSelectorOpen(false)}
+        assets={MARKET_ASSETS}
+        favorites={favorites}
+        onSelect={handleSelectAsset}
+        onToggleFavorite={(id) => handleToggleFavorite(id)}
+        priceMap={priceMap}
+      />
+
+      <TradeActionModal
+        visible={tradeModalOpen}
+        onClose={() => setTradeModalOpen(false)}
+        asset={selectedAsset}
+        price={currentPrice}
+        availableBalance={availableBalance}
+        defaultSide={tradeSide}
+        onSubmit={handlePlaceOrder}
+        isSubmitting={isPlacingOrder}
+      />
     </ContainerView>
   );
 }
-
-const createStyles = (theme) => {
-  const { colors } = theme;
-  const divider = withOpacity(colors.border, 0.16);
-  return {
-    grid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 16,
-      marginTop: 16,
-    },
-    card: {
-      flex: 1,
-      minWidth: '45%',
-      backgroundColor: withOpacity(colors.card.DEFAULT, 0.92),
-      borderRadius: 20,
-      padding: 24,
-      borderWidth: 1,
-      borderColor: divider,
-    },
-    cardTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      color: colors.text.primary,
-      marginBottom: 8,
-    },
-    cardDescription: {
-      fontSize: 14,
-      color: colors.text.secondary,
-      lineHeight: 20,
-    },
-  };
-};

@@ -14,16 +14,16 @@ export default function CategoryAgentsListPager() {
       title: 'Top',
       content: <AgentList queryKey={['explore-agents']} />,
     },
-    {
-      key: 'popular',
-      title: 'Popular',
-      content: <AgentList queryKey={['explore-agents', 'popular']} />,
-    },
-    {
-      key: 'new',
-      title: 'New',
-      content: <AgentList queryKey={['explore-agents', 'new']} />,
-    },
+    // {
+    //   key: 'popular',
+    //   title: 'Popular',
+    //   content: <AgentList queryKey={['explore-agents', 'popular']} />,
+    // },
+    // {
+    //   key: 'new',
+    //   title: 'New',
+    //   content: <AgentList queryKey={['explore-agents', 'new']} />,
+    // },
   ];
 
   return (

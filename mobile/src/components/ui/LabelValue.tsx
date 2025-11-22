@@ -14,8 +14,10 @@ export interface LabelValueProps {
   colorize?: boolean;
   children?: React.ReactNode;
 }
-export const FormattedValueLabel = ({ value, colorize }: { value: number; colorize?: boolean }) => {
-  const formattedValue = formatAmount(value);
+export const FormattedValueLabel = ({
+  value, colorize, showSign , formatter = formatAmount
+}: { value: number; colorize?: boolean; showSign?: boolean; formatter?: (value: number, options?: { showSign?: boolean }) => string }) => {
+  const formattedValue = formatter(value, {showSign});
   return (
     <Text variant="body" sx={{
       fontWeight: '300',
@@ -23,7 +25,7 @@ export const FormattedValueLabel = ({ value, colorize }: { value: number; colori
         color: value > 0 ? 'success' : value < 0 ? 'error' : 'foreground',
       } : {}),
     }}>
-      {formattedValue || '-'}
+      {value == undefined ? '-' : formattedValue}
     </Text>
   );
 };
@@ -51,10 +53,15 @@ const LabelValue: React.FC<LabelValueProps> = ({
         {label}
       </Text>
 
-      <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, justifyContent: alignRight ? 'flex-end' : 'flex-start' }}>
-        <FormattedValueLabel value={value} colorize={colorize} />
+      {value ? (
+        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 1, justifyContent: alignRight ? 'flex-end' : 'flex-start' }}>
+        <FormattedValueLabel value={value} colorize={colorize}  />
         {children}
       </View>
+      ) : (
+        children
+
+      )}
     </View>
   );
 };
