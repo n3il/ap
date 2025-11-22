@@ -60,20 +60,18 @@ export default function ExploreScreen() {
         scrollEventThrottle={16}
         onScroll={scrollHandler}
       >
-        <MarketPricesWidget
-          tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
-          timeframe={timeframe}
-          scrollY={scrollY}
-        />
+        <View sx={{  }}>
+          <MarketPricesWidget
+            tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
+            timeframe={timeframe}
+            scrollY={scrollY}
+          />
 
-        <View sx={{ backgroundColor: 'surface', marginTop: 2 }}>
-          <MultiAgentChart timeframe={timeframe} />
+          <View sx={{ backgroundColor: 'surface', marginTop: 2 }} elevation={2}>
+            <MultiAgentChart timeframe={timeframe} scrollY={scrollY} />
+          </View>
         </View>
-        <PaddedView sx={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 3 }}>
-        </PaddedView>
-        <View style={{ flex: 1 }}>
-          <CategoryAgentsListPager />
-        </View>
+        <CategoryAgentsListPager />
       </AnimatedScrollView>
     </ContainerView>
   );

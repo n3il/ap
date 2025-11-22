@@ -5,7 +5,6 @@ export default function Layout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="index" />
-      <Stack.Screen name="Markets" options={{ presentation: 'card' }} />
     </Stack>
   );
 }

@@ -27,7 +27,7 @@ function TradeActionRow({ label, value, valueStyle }) {
   );
 }
 
-export default function TradeActionDisplay({ actionData, showReason = true, groupedByAction = false }) {
+export default function TradeActionDisplay({ actionData, showReason = true, groupedByAction = true }) {
   if (!actionData) return null;
 
   const [expanded, setExpanded] = useState(false);
@@ -197,7 +197,7 @@ export default function TradeActionDisplay({ actionData, showReason = true, grou
       <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: expanded ? 2 : 0 }}>
           <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
-            {actionData.asset.replace('-PERP', '/USDC') || 'N/A'}
+            {actionData.asset.replace('-PERP', '') || 'N/A'}
           </Text>
 
           <View sx={{ flexGrow: 0, flexDirection: 'row', alignItems: 'center', gap: 2 }}>

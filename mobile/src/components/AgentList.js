@@ -42,6 +42,12 @@ export default function AgentList({
     },
   });
 
+  useEffect(() => {
+    if (agents?.length) {
+      setAgents(agents);
+    }
+  }, [agents]);
+
   // Fetch latest assessments for each agent
   const assessmentQueryKey = Array.isArray(queryKey)
     ? [...queryKey, 'assessments', userId, published]
@@ -115,11 +121,6 @@ export default function AgentList({
     return sorted;
   }, [agents, category, latestAssessments]);
 
-  // Update the explore agents store whenever sortedAgents changes
-  useEffect(() => {
-    setAgents(sortedAgents);
-  }, [sortedAgents, setAgents]);
-
   const onAgentPress = useCallback(
     (agent) => {
       router.push({
@@ -145,8 +146,8 @@ export default function AgentList({
           <Text variant="lg" tone="muted" sx={{ marginBottom: 2, fontWeight: '600' }}>
             Umm,
           </Text>
-          <Text variant="sm" tone="subtle" sx={{ textAlign: 'center' }}>
-            The robots are missing.
+          <Text variant="sm" tone="muted" sx={{ textAlign: 'center' }}>
+            the robots went missing.
           </Text>
         </View>
       )

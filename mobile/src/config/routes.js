@@ -42,8 +42,8 @@ export const ROUTES = {
     path: '/(tabs)/(explore)/index',
     requiresAuthentication: 'optional',
   },
-  TABS_EXPLORE_MARKETS: {
-    path: '/(tabs)/(explore)/Markets',
+  TABS_MARKETS_TRADE: {
+    path: '/(tabs)/(markets)/trade',
     requiresAuthentication: 'optional',
   },
   TABS_EXPLORE_AGENT: {

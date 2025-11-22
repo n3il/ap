@@ -1,16 +1,21 @@
 import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
 import { View, Text, Button } from '@/components/ui';
-import { Animated, PanResponder } from 'react-native';
+import { Animated as RNAnimated, PanResponder } from 'react-native';
+import Animated, {
+  useAnimatedStyle,
+  interpolate,
+  Extrapolation,
+} from 'react-native-reanimated';
 import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
 import { useColors } from '@/theme';
 import ChartToolBar from '@/components/chart/ChartToolBar';
 import { useTimeframeStore } from '@/stores/useTimeframeStore';
 
-const AnimatedCircle = Animated.createAnimatedComponent(Circle);
+const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
 
 const DEFAULT_CHART_WIDTH = 350;
-const CHART_ASPECT_RATIO = 3 / 7;
-const PADDING = { top: 20, right: 50, bottom: 5, left: 12 };
+const CHART_ASPECT_RATIO = 3 / 5;
+const PADDING = { top: 20, right: 50, bottom: 5, left: 50 };
 
 // Interpolate y value for a given x position in the data
 const interpolateValue = (data, targetX) => {
@@ -103,13 +108,15 @@ const interpolateValue = (data, targetX) => {
  */
 const SvgChart = ({
   lines = [],
+  scrollY,
   style = {},
+  isLoading = false,
 }) => {
   const { timeframe } = useTimeframeStore();
   const [expanded, setExpanded] = useState(false);
   const [touchActive, setTouchActive] = useState(false);
   const [touchX, setTouchX] = useState(0); // Normalized 0-1
-  const pulseAnim = useRef(new Animated.Value(1)).current;
+  const pulseAnim = useRef(new RNAnimated.Value(1)).current;
   const [chartWidth, setChartWidth] = useState(DEFAULT_CHART_WIDTH);
   const {
     colors: palette,
@@ -152,14 +159,14 @@ const SvgChart = ({
     // Only animate if we can render
     if (!isFinite(chartWidth) || chartWidth <= 0) return;
 
-    const pulse = Animated.loop(
-      Animated.sequence([
-        Animated.timing(pulseAnim, {
+    const pulse = RNAnimated.loop(
+      RNAnimated.sequence([
+        RNAnimated.timing(pulseAnim, {
           toValue: 1.5,
           duration: 418,
           useNativeDriver: false,
         }),
-        Animated.timing(pulseAnim, {
+        RNAnimated.timing(pulseAnim, {
           toValue: 1,
           duration: 418,
           useNativeDriver: false,
@@ -364,6 +371,24 @@ const SvgChart = ({
     ]
   }
 
+  const animatedStyle = useAnimatedStyle(() => {
+    'worklet';
+    if (!scrollY || typeof scrollY.value === 'undefined') {
+      return { paddingVertical: 16 };
+    }
+
+    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    return {
+      paddingVertical: interpolate(progress, [0, 1], [16, 4]),
+      opacity: interpolate(progress, [0, 0.5, 1], [1, 0, 0], Extrapolation.CLAMP),
+      transform: [
+        {
+          scaleY: interpolate(progress, [0, 1], [1, 0.6], Extrapolation.CLAMP),
+        },
+      ],
+    };
+  }, [scrollY]);
+
   // Safety check: prevent rendering with invalid dimensions
   const canRender = isFinite(chartWidth) &&
                     isFinite(chartHeight) &&
@@ -372,7 +397,7 @@ const SvgChart = ({
                     plotWidth > 0 &&
                     plotHeight > 0;
 
-  if (!canRender) {
+  if (!canRender || isLoading) {
     return (
       <View
         onLayout={handleLayout}
@@ -385,14 +410,15 @@ const SvgChart = ({
 
   return (
     <>
-      <View
-        {...panResponder.panHandlers}
-        onLayout={handleLayout}
-        style={[{
-          position: 'relative',
-          width: '100%',
-        }, style]}
-      >
+      <Animated.View style={animatedStyle}>
+        <View
+          {...panResponder.panHandlers}
+          onLayout={handleLayout}
+          style={[{
+            position: 'relative',
+            width: '100%',
+          }, style]}
+        >
         <Svg width={chartWidth} height={chartHeight}>
           {/* Vertical grid lines for time intervals */}
           {verticalGridPositions.map((grid, i) => (
@@ -648,7 +674,8 @@ const SvgChart = ({
             {label}
           </Text>
         ))}
-      </View>
+        </View>
+      </Animated.View>
 
       <ChartToolBar />
     </>

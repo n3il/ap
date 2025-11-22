@@ -103,7 +103,6 @@ export default function ProfileScreen() {
           sx={{ marginHorizontal: 6, marginBottom: 6 }}
         >
           <Card
-            variant="glass"
             sx={{
               borderRadius: 24,
             }}
@@ -111,6 +110,7 @@ export default function ProfileScreen() {
             <Avatar
               name={user.user_metadata?.full_name}
               email={user.email}
+              size="lg"
             />
           </Card>
         </AnimatedBox>

@@ -91,7 +91,7 @@ const PriceColumn = ({
   );
 
   const onPress = () => {
-    router.push(ROUTES.TABS_EXPLORE_MARKETS.path);
+    router.push(ROUTES.TABS_MARKETS_TRADE.path);
   };
 
   const displayAsset = useMemo(() => asset ?? {

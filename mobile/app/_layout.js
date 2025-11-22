@@ -7,7 +7,7 @@ import DebugOverlay from '@/components/DebugOverlay';
 import SplashScreen from '@/components/SplashScreen';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as ExpoSplashScreen from 'expo-splash-screen';
-import { getDefaultUnauthenticatedRoute } from '@/config/routes';
+import { getDefaultUnauthenticatedRoute, ROUTES } from '@/config/routes';
 
 // Prevent native splash screen from auto-hiding
 ExpoSplashScreen.preventAutoHideAsync();
@@ -18,7 +18,7 @@ function AuthNavigator() {
   const { user, loading, hasCompletedOnboarding } = useAuth();
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
-  console.log({ user, hasCompletedOnboarding })
+
   // Handle navigation based on auth state
   useEffect(() => {
     if (!loading && appIsReady) {

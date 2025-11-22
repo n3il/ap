@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { isRouteAccessible } from '@/config/routes';
 import { usePathname } from 'expo-router';
+import { ROUTES } from '@/config/routes';
 
 /**
  * Hook to check route accessibility based on authentication state
@@ -29,11 +30,14 @@ export default function useRouteAuth() {
     [isAuthenticated, loading, requireAuth],
   );
 
+  console.log({ pathname })
+
   return {
     isAuthenticated,
     loading,
     requireAuth,
     canAccessRoute,
     canAccessCurrentRoute: canAccessRoute(pathname),
+    authRoute: ROUTES.AUTH_INDEX.path,
   };
 }

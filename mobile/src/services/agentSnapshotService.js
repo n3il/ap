@@ -3,9 +3,10 @@ import { supabase } from '@/config/supabase';
 export const agentSnapshotService = {
   /**
    * Get PnL snapshots for an agent over a time range
+   * Aggregated into exactly 30 time buckets for consistent charting
    * @param {string} agentId - Agent UUID
    * @param {string} timeframe - '1h', '24h', '7d', '30d'
-   * @returns {Promise<Array>} Array of snapshots with timestamp, equity, realized_pnl, unrealized_pnl
+   * @returns {Promise<Array>} Array of 30 aggregated snapshots with bucket_timestamp, equity, realized_pnl, unrealized_pnl
    */
   async getAgentSnapshots(agentId, timeframe = '24h') {
     try {
@@ -30,15 +31,24 @@ export const agentSnapshotService = {
           startTime.setHours(now.getHours() - 24);
       }
 
-      const { data, error } = await supabase
-        .from('agent_pnl_snapshots')
-        .select('timestamp, equity, realized_pnl, unrealized_pnl, open_positions_count, margin_used')
-        .eq('agent_id', agentId)
-        .gte('timestamp', startTime.toISOString())
-        .order('timestamp', { ascending: true });
+      const { data, error } = await supabase.rpc('get_agent_snapshots_bucketed', {
+        p_agent_id: agentId,
+        p_start_time: startTime.toISOString(),
+        p_end_time: now.toISOString(),
+        p_num_buckets: 30,
+      });
 
       if (error) throw error;
-      return data || [];
+
+      // Transform bucket_timestamp to timestamp for consistency with existing code
+      return (data || []).map(row => ({
+        timestamp: row.bucket_timestamp,
+        equity: parseFloat(row.equity),
+        realized_pnl: parseFloat(row.realized_pnl),
+        unrealized_pnl: parseFloat(row.unrealized_pnl),
+        open_positions_count: row.open_positions_count,
+        margin_used: parseFloat(row.margin_used),
+      }));
     } catch (error) {
       throw error;
     }
@@ -46,9 +56,10 @@ export const agentSnapshotService = {
 
   /**
    * Get snapshots for multiple agents (for comparison charts)
+   * Aggregated into exactly 30 time buckets per agent for consistent charting
    * @param {Array<string>} agentIds - Array of agent UUIDs
    * @param {string} timeframe - '1h', '24h', '7d', '30d'
-   * @returns {Promise<Object>} Object with agentId as key, snapshots array as value
+   * @returns {Promise<Object>} Object with agentId as key, array of 30 snapshots as value
    */
   async getMultiAgentSnapshots(agentIds, timeframe = '24h') {
     try {
@@ -72,22 +83,35 @@ export const agentSnapshotService = {
           startTime.setHours(now.getHours() - 24);
       }
 
-      const { data, error } = await supabase
-        .from('agent_pnl_snapshots')
-        .select('agent_id, timestamp, equity, realized_pnl, unrealized_pnl, margin_used')
-        .in('agent_id', agentIds)
-        .gte('timestamp', startTime.toISOString())
-        .order('timestamp', { ascending: true });
+      const { data, error } = await supabase.rpc('get_multi_agent_snapshots_bucketed', {
+        p_agent_ids: agentIds,
+        p_start_time: startTime.toISOString(),
+        p_end_time: now.toISOString(),
+        p_num_buckets: 30,
+      });
 
       if (error) throw error;
 
-      // Group by agent_id
+      // Group by agent_id with transformed timestamps
       const grouped = {};
-      (data || []).forEach((snapshot) => {
-        if (!grouped[snapshot.agent_id]) {
-          grouped[snapshot.agent_id] = [];
+      (data || []).forEach((row) => {
+        if (!grouped[row.agent_id]) {
+          grouped[row.agent_id] = [];
         }
-        grouped[snapshot.agent_id].push(snapshot);
+        grouped[row.agent_id].push({
+          timestamp: row.bucket_timestamp,
+          equity: parseFloat(row.equity),
+          realized_pnl: parseFloat(row.realized_pnl),
+          unrealized_pnl: parseFloat(row.unrealized_pnl),
+          margin_used: parseFloat(row.margin_used),
+        });
+      });
+
+      // Ensure all agents have entries (even if empty)
+      agentIds.forEach(agentId => {
+        if (!grouped[agentId]) {
+          grouped[agentId] = [];
+        }
       });
 
       return grouped;

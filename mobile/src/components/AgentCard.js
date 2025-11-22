@@ -1,13 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StatusBadge, LabelValue, Card } from '@/components/ui';
+import { View, Text, TouchableOpacity, StatusBadge, Card } from '@/components/ui';
 import { LLM_PROVIDERS } from './CreateAgentModal';
-import WalletAddressCard from './WalletAddressCard';
-import { GlassView } from 'expo-glass-effect';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/config/supabase';
 import { useAccountBalance } from '@/hooks/useAccountBalance';
 import PositionList from './PositionList';
-import { Clipboard } from 'react-native';
+import { formatAmount, formatCompact } from '@/utils/currency';
+import BalanceOverview from './agent/BalanceOverview';
 
 export default function AgentCard({
   agent,
@@ -21,12 +20,7 @@ export default function AgentCard({
   tintColor = 'rgba(0, 0, 0, .1)',
   ...props
 }) {
-  const {
-    equity,
-    unrealizedPnl,
-    realizedPnl,
-    enrichedPositions,
-  } = useAccountBalance(agent.id, hideOpenPositions)
+  const accountData = useAccountBalance(agent.id, hideOpenPositions)
 
   // Fetch total trades count
   const { data: tradesCount = 0 } = useQuery({
@@ -43,24 +37,7 @@ export default function AgentCard({
   });
 
   // Calculate total PnL (realized + unrealized)
-  const totalPnl = (realizedPnl || 0) + (unrealizedPnl || 0);
-  const providerLabel = LLM_PROVIDERS[agent.llm_provider] || 'Unknown';
   const isPublished = Boolean(agent.published_at);
-
-  const safeTradesCount = typeof tradesCount === 'number' ? tradesCount : 0;
-  const safeEnrichedPositions = Array.isArray(enrichedPositions) ? enrichedPositions : [];
-  const safeEquity = Number.isFinite(equity) ? equity : 0;
-  const safeTotalPnl = Number.isFinite(totalPnl) ? totalPnl : 0;
-  const pnlColor = safeTotalPnl > 0 ? 'success' : safeTotalPnl < 0 ? 'error' : 'foreground';
-  const pnlSign = safeTotalPnl > 0 ? '+' : '';
-  const balanceLabel = `$${safeEquity.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
-  const positionsCountLabel = safeEnrichedPositions.length > 0 ? String(safeEnrichedPositions.length) : '-';
-  const tradesCountLabel = String(safeTradesCount);
-  const pnlValueLabel = safeTotalPnl !== 0
-    ? `${pnlSign}$${Math.abs(safeTotalPnl).toLocaleString('en-US', { maximumFractionDigits: 0 })}`
-    : '-';
-
-  const providerMeta = `${agent.llm_provider} ${agent.model_name}`;
 
   return (
     <Card
@@ -68,6 +45,7 @@ export default function AgentCard({
         paddingVertical: 18,
         paddingHorizontal: 18,
         borderRadius: 16,
+        backgroundColor: 'none',
       }}
       {...props}
     >
@@ -86,44 +64,15 @@ export default function AgentCard({
                 </StatusBadge>
               ) : null}
             </View>
-            {/* <Text variant="xs" tone="muted" sx={{ flex: 1, fontFamily: 'monospace' }}>
-              {providerMeta}
-            </Text> */}
           </View>
         </View>
 
-        <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 2 }}>
-          <View sx={{ alignItems: 'flex-start' }}>
-            <LabelValue
-              label="Balance"
-              value={equity.toLocaleString('en-US', { maximumFractionDigits: 0 })}
-            />
-          </View>
-          <View sx={{ alignItems: 'center' }}>
-            <LabelValue
-              label="Positions"
-              value={positionsCountLabel}
-            />
-          </View>
-          <View sx={{ alignItems: 'center' }}>
-            <LabelValue
-              label="Trades"
-              value={tradesCountLabel}
-            />
-          </View>
-          <View sx={{ alignItems: 'flex-end' }}>
-            <LabelValue
-              label="P&L"
-              value={pnlValueLabel}
-              sx={{ color: pnlColor }}
-            />
-          </View>
-        </View>
+        <BalanceOverview agentId={agent.id} hideOpenPositions={hideOpenPositions} variant="full" />
         {!hideOpenPositions && (
           <View sx={{ marginTop: 6, borderTopColor: 'muted', borderTopWidth: 1 }}>
-            <PositionList positions={enrichedPositions} top={3} />
+            <PositionList positions={accountData.enrichedPositions} top={3} />
             <Text variant="xxs" tone="muted" sx={{ textAlign: 'left', fontStyle: 'italic' }}>
-              {enrichedPositions.length > 3 ? `+ ${enrichedPositions.length - 3} more positions` : null}
+              {accountData.enrichedPositions.length > 3 ? `+ ${accountData.enrichedPositions.length - 3} more positions` : null}
             </Text>
           </View>
         )}

@@ -26,8 +26,8 @@ export function useMultiAgentSnapshots(agentIds, timeframe = '24h') {
     queryKey: ['multi-agent-snapshots', agentIds, timeframe],
     queryFn: () => agentSnapshotService.getMultiAgentSnapshots(agentIds, timeframe),
     enabled: agentIds && agentIds.length > 0,
-    refetchInterval: 60000,
-    staleTime: 30000,
+    // refetchInterval: 60000,
+    // staleTime: 30000,
   });
 }
 

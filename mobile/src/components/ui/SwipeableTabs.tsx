@@ -44,6 +44,8 @@ interface SwipeableTabsProps {
   onRefresh?: () => void;
   refreshing?: boolean;
   hideTabBar?: boolean;
+  stickyTabBar?: boolean;
+  contentContainerStyle?: ViewStyle;
 }
 
 export default function SwipeableTabs({
@@ -63,6 +65,8 @@ export default function SwipeableTabs({
   onRefresh,
   refreshing = false,
   hideTabBar = false,
+  stickyTabBar = false,
+  contentContainerStyle,
 }: SwipeableTabsProps) {
   const { theme } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
@@ -117,66 +121,70 @@ export default function SwipeableTabs({
     []
   );
 
+  const tabBarContent = !hideTabBar && (
+    <View style={stickyTabBar ? { backgroundColor: theme.colors.background } : undefined}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ flexGrow: 0 }}
+      >
+        <GlassContainer
+          spacing={10}
+          style={[
+            { flexDirection: 'row', gap: 2, paddingVertical: 12, paddingHorizontal: GLOBAL_PADDING },
+            tabContainerStyle,
+          ]}
+        >
+          {tabs.map((tab, index) => (
+            <GlassView
+              key={tab.key}
+              glassEffectStyle="clear"
+              style={[
+                {
+                  borderRadius: 32,
+                  paddingHorizontal: 8,
+                  paddingVertical: 4,
+                  marginHorizontal: 4,
+
+                },
+                tabWrapperStyle,
+              ]}
+              tintColor={theme.colors.surface}
+            >
+              <TouchableOpacity
+                key={tab.key}
+                onPress={() => handleTabPress(index)}
+                style={[
+                  styles.tab,
+                  tabStyle,
+                  currentIndex === index && [styles.activeTab, activeTabStyle],
+                ]}
+                activeOpacity={0.8}
+              >
+                {renderTab ? (
+                  renderTab(tab, index, currentIndex === index)
+                ) : (
+                  <Text
+                    style={[
+                      styles.tabText,
+                      tabTextStyle,
+                      currentIndex === index && [styles.activeTabText, activeTabTextStyle],
+                    ]}
+                  >
+                    {tab.title}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </GlassView>
+          ))}
+        </GlassContainer>
+      </ScrollView>
+    </View>
+  );
+
   return (
     <>
-      {!hideTabBar && (
-        <ScrollView
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          style={{ flexGrow: 0 }}
-        >
-          <GlassContainer
-            spacing={10}
-            style={[
-              { flexDirection: 'row', gap: 2, marginBottom: 12, paddingHorizontal: GLOBAL_PADDING },
-              tabContainerStyle,
-            ]}
-          >
-            {tabs.map((tab, index) => (
-              <GlassView
-                key={tab.key}
-                glassEffectStyle="clear"
-                style={[
-                  {
-                    borderRadius: 32,
-                    paddingHorizontal: 8,
-                    paddingVertical: 4,
-                    marginHorizontal: 4,
-
-                  },
-                  tabWrapperStyle,
-                ]}
-                tintColor={theme.colors.surface}
-              >
-                <TouchableOpacity
-                  key={tab.key}
-                  onPress={() => handleTabPress(index)}
-                  style={[
-                    styles.tab,
-                    tabStyle,
-                    currentIndex === index && [styles.activeTab, activeTabStyle],
-                  ]}
-                  activeOpacity={0.8}
-                >
-                  {renderTab ? (
-                    renderTab(tab, index, currentIndex === index)
-                  ) : (
-                    <Text
-                      style={[
-                        styles.tabText,
-                        tabTextStyle,
-                        currentIndex === index && [styles.activeTabText, activeTabTextStyle],
-                      ]}
-                    >
-                      {tab.title}
-                    </Text>
-                  )}
-                </TouchableOpacity>
-              </GlassView>
-            ))}
-          </GlassContainer>
-        </ScrollView>
-      )}
+      {tabBarContent}
 
       <FlatList
         ref={flatListRef}
@@ -194,7 +202,7 @@ export default function SwipeableTabs({
         initialScrollIndex={initialIndex}
         bounces={false}
         decelerationRate="fast"
-        style={{ flex: 1, paddingVertical: 2 }}
+        style={[{ flex: 1, paddingVertical: 2 }, contentContainerStyle]}
       />
     </>
   );

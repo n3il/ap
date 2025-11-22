@@ -21,16 +21,15 @@ export default function SplashScreen() {
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
-
-        <Image
-          source={require('@assets/puppet-bare-icon-w-s.svg')}
-          style={{
-            width: 300,
-            height: 300,
-          }}
-          contentFit="contain"
-          tintColor={theme.colors.background}
-        />
+      <Image
+        source={require('@assets/puppet-bare-icon-w-s.svg')}
+        style={{
+          width: 300,
+          height: 300,
+          opacity: 0.2,
+        }}
+        contentFit="contain"
+      />
     </LinearGradient>
   );
 }

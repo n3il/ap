@@ -1,4 +1,4 @@
-
+const currencySymbol = "$";
 
 export function formatCompact(num, locale = "en-US", precision = 2) {
   const abs = Math.abs(num);
@@ -25,4 +25,12 @@ export function formatCompact(num, locale = "en-US", precision = 2) {
     minimumFractionDigits: 0,
     maximumFractionDigits: precision
   }).format(num);
+}
+
+export function formatAmount(num, showSign = false) {
+  let signSymbol = '';
+  if (showSign) {
+    signSymbol = num > 0 ? "+" : num < 0 ? "-" : "";
+  }
+  return `${signSymbol}${currencySymbol}${formatCompact(num)}`
 }

@@ -2,6 +2,10 @@ import React, { createContext, useState, useEffect, useContext } from 'react';
 import { supabase } from '@/config/supabase';
 import * as WebBrowser from 'expo-web-browser';
 import { makeRedirectUri } from 'expo-auth-session';
+import { isRouteAccessible, ROUTES } from '@/config/routes';
+import { useRouter } from 'expo-router';
+// import useRouteAuth from '@/hooks/useRouteAuth';
+// import { useRouter } from 'expo-router';
 
 const AuthContext = createContext({});
 
@@ -18,6 +22,15 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+
+  // const router = useRouter();
+
+  // useEffect(() => {
+  //   console.log(router.pathname)
+  //   if (!isRouteAccessible(router.pathname)) {
+  //     return router.push(ROUTES.AUTH_INDEX.path);
+  //   }
+  // }, [router])
 
   useEffect(() => {
     // Get initial session

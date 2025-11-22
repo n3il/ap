@@ -2,6 +2,7 @@ import React from 'react';
 import { SwipeableTabs, View } from '@/components/ui';
 import { useTheme } from '@/contexts/ThemeContext';
 import AgentList from '../AgentList';
+import { GLOBAL_PADDING } from '@/components/ContainerView';
 
 export default function CategoryAgentsListPager() {
   const { theme } = useTheme();
@@ -32,6 +33,9 @@ export default function CategoryAgentsListPager() {
       tabTextStyle={{ color: theme.colors.text.secondary }}
       activeTabTextStyle={{ color: theme.colors.accent }}
       indicatorColor={theme.colors.accent}
+      stickyTabBar
+      tabContainerStyle={{ paddingHorizontal: GLOBAL_PADDING, backgroundColor: theme.colors.background, zIndex: 10 }}
+      contentContainerStyle={{ paddingVertical: 2, backgroundColor: theme.colors.background, zIndex: 10 }}
     />
   );
 }
