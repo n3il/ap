@@ -32,6 +32,11 @@ const lightTheme = {
 
     glassTint: 'rgba(255, 255, 255, 0.1)',
 
+    tabBackground: '#fff',
+    tabIcon: '#111',
+    tabLabel: '#94a3b8',
+    tabIconSelected: '#3de478ff',
+    tabLabelSelected: '#3de478ff',
   },
   glass: {
     intensity: 25,
@@ -39,6 +44,9 @@ const lightTheme = {
     effectStyle: 'clear' as const,
     borderRadius: 16,
   },
+
+
+
 };
 
 export default lightTheme;

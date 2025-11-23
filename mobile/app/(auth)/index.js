@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
+  GlassButton,
 } from '@/components/ui';
 import ContainerView from '@/components/ContainerView';
 import { TextInput } from '@/components/ui';
@@ -17,6 +18,7 @@ import { useRouter, useLocalSearchParams } from 'expo-router';
 import { useAuth } from '@/contexts/AuthContext';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useLocalization } from '@/hooks/useLocalization';
+import SectionTitle from '@/components/SectionTitle';
 
 export default function Auth() {
   const { type = "login" } = useLocalSearchParams();
@@ -123,7 +125,12 @@ export default function Auth() {
       >
         <AnimatedBox
           layout={LinearTransition.duration(300).springify()}
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}
+          style={{
+            flex: 1,
+            justifyContent: 'flex-start',
+            alignItems: 'stretch',
+            paddingTop: '20%',
+          }}
         >
           {authMode === 'phone' && (
             <AnimatedBox
@@ -133,11 +140,9 @@ export default function Auth() {
               style={{ gap: 8 }}
             >
               <View sx={{ marginBottom: 4 }}>
-                <Text variant="h3" sx={{ fontWeight: 300 }} tone="muted">
-                  {t('login.phoneNumber')}
-                </Text>
+                <SectionTitle title={t('login.phoneNumber')} />
                 <TextInput
-                  style={{ marginTop: 12,paddingVertical: 12, fontSize: 30, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1 }}
+                  style={{ marginTop: 0, paddingVertical: 12, fontSize: 24, fontWeight: 300, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1, textAlign: 'center' }}
                   sx={{borderBottomColor: 'foreground'}}
                   autoFocus
                   selectionColor={palette.foreground}
@@ -160,7 +165,7 @@ export default function Auth() {
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="white" />
+                  <ActivityIndicator color={palette.foreground} />
                 ) : (
                   t('login.sendCode')
                 )}
@@ -180,11 +185,9 @@ export default function Auth() {
               style={{ gap: 8 }}
             >
               <View sx={{ marginBottom: 4 }}>
-                <Text variant="h3" sx={{ fontWeight: 300 }} tone="muted">
-                  {t('login.email')}
-                </Text>
+                <SectionTitle title={t('login.email')} />
                 <TextInput
-                  style={{ marginTop: 12,paddingVertical: 12, fontSize: 30, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1 }}
+                  style={{ marginTop: 0, paddingVertical: 12, fontSize: 24, fontWeight: 300, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1, textAlign: 'center' }}
                   sx={{borderBottomColor: 'foreground'}}
                   selectionColor={palette.foreground}
                   textContentType="emailAddress"
@@ -201,7 +204,7 @@ export default function Auth() {
 
               <Button
                 variant="surface"
-                sx={{ borderColor: 'primary', borderRadius: 'full' }}
+                sx={{ borderColor: 'primary', borderRadius: 'full', borderWidth: 2 }}
                 textProps={{ style: { fontWeight: '600' } }}
                 onPress={handleEmailSubmit}
                 disabled={loading}
@@ -233,18 +236,24 @@ export default function Auth() {
                   key="toggle-email"
                   entering={FadeIn.duration(200)}
                   exiting={FadeOut.duration(150)}
-                  sx={{ flexDirection: 'row', alignItems: 'center' }}
+                  sx={{ flexDirection: 'row', alignItems: 'center', flexGrow: 1 }}
                 >
-                  <MaterialIcons name="email" size={22} color={palette.foreground} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+                    <MaterialIcons name="email" size={22} color={palette.foreground} />
+                    <Text variant="md" sx={{ fontWeight: '600', textAlign: 'center' }}>Email</Text>
+                  </View>
                 </AnimatedBox>
               ) : (
                 <AnimatedBox
                   key="toggle-sms"
                   entering={FadeIn.duration(200)}
                   exiting={FadeOut.duration(150)}
-                  sx={{ flexDirection: 'row', alignItems: 'center' }}
+                  sx={{ flexDirection: 'row', alignItems: 'center', flexGrow: 1 }}
                 >
-                  <MaterialIcons name="phonelink-ring" size={22} color={palette.foreground} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+                    <MaterialIcons name="phonelink-ring" size={22} color={palette.foreground} />
+                    <Text variant="md" sx={{ fontWeight: '600', textAlign: 'center' }}>Phone Number</Text>
+                  </View>
                 </AnimatedBox>
               )}
             </Button>
@@ -253,7 +262,7 @@ export default function Auth() {
               variant="secondary"
               onPress={handleGoogleSignIn}
               disabled={loading}
-              sx={{ flex: 1, borderRadius: 'full' }}
+              sx={{ borderRadius: 'full' }}
             >
               <AntDesign name="google" size={22} color={colors.error} />
             </Button>
@@ -262,7 +271,7 @@ export default function Auth() {
               variant="secondary"
               onPress={handleAppleSignIn}
               disabled={loading}
-              sx={{ flex: 1, borderRadius: 'full' }}
+              sx={{ borderRadius: 'full' }}
             >
               <AntDesign name="apple" size={22} color={palette.foreground} />
             </Button>

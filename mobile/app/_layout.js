@@ -78,7 +78,7 @@ function AuthNavigator() {
         />
         <Stack.Screen name="(tabs)" />
       </Stack>
-      <DebugOverlay />
+      {false && <DebugOverlay />}
     </>
   );
 }

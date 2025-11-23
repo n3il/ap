@@ -4,6 +4,8 @@ import { formatRelativeDate } from '@/utils/date';
 import TradeActionDisplay from './TradeActionDisplay';
 import { useColors } from '@/theme';
 import Markdown from 'react-native-markdown-display';
+import { Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 
 const hasContent = (value) => typeof value === 'string' && value.trim().length > 0;
 
@@ -16,6 +18,7 @@ const getFirstLine = (text) => {
 };
 
 function AssessmentCard({ assessment }) {
+  const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const { colors: palette, withOpacity } = useColors();
 
@@ -180,7 +183,7 @@ function AssessmentCard({ assessment }) {
   return (
     <Card
       isInteractive={expanded}
-      glassEffectStyle="regular"
+      glassEffectStyle="clear"
       variant="glass"
       sx={{ marginBottom: 3 }}
       glassTintColor={withOpacity("#000", 0.9)}
@@ -193,11 +196,13 @@ function AssessmentCard({ assessment }) {
             // email={assessment.agent?.model_name}
             size="sm"
           />
-          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+          <Pressable onPress={() => {
+            router.push(`/agents/${assessment.agent?.id}/${assessment.id}`)
+          }} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
             <Text variant="xs" tone="muted">
               {formatRelativeDate(assessment.timestamp) || ''}
             </Text>
-          </View>
+          </Pressable>
         </View>
 
         {tradeActions.length > 0 && (
@@ -291,21 +296,7 @@ function AssessmentCard({ assessment }) {
               </Text>
             </TouchableOpacity>
           </View>
-        ) : (
-          <TouchableOpacity
-            onPress={() => setExpanded(expanded)}
-            style={{
-              backgroundColor: withOpacity(palette.background ?? palette.surface, 0.2),
-              borderRadius: 8,
-              padding: 8,
-              marginTop: 8,
-            }}
-          >
-            <Text variant="xs" sx={{ textAlign: 'center', color: 'textPrimary' }}>
-              Expand
-            </Text>
-          </TouchableOpacity>
-        )}
+        ) : (null)}
       </TouchableOpacity>
     </Card>
   );

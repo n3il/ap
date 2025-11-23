@@ -156,4 +156,68 @@ export const assessmentService = {
       throw error;
     }
   },
+
+  // Get assessment by ID
+  async getAssessmentById(id) {
+    try {
+      const { data, error } = await supabase
+        .from('assessments')
+        .select(`
+          *,
+          agents (
+            name,
+            model_name
+          )
+        `)
+        .eq('id', id)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
+      return data;
+    } catch (error) {
+      throw error;
+    }
+  },
+
+  // Get sentiment scores for agents (performant, JSON column selection)
+  async getSentimentScores(agentIds, { timeframe = null, limit = 100 } = {}) {
+    try {
+      // Ensure agentIds is an array
+      const ids = Array.isArray(agentIds) ? agentIds : [agentIds];
+
+      if (ids.length === 0) return [];
+
+      let query = supabase
+        .from('assessments')
+        .select('id, created_at, agent_id, parsed_llm_response->headline->sentiment_score')
+        .in('agent_id', ids);
+
+      // Filter by timeframe if provided
+      if (timeframe) {
+        const ms = parseTimeframe(timeframe);
+        if (ms) {
+          const cutoffDate = new Date(Date.now() - ms).toISOString();
+          query = query.gte('created_at', cutoffDate);
+        }
+      }
+
+      const { data, error } = await query
+        .order('created_at', { ascending: false })
+        .limit(limit);
+
+      if (error) throw error;
+
+      // Filter out null sentiment scores and format the response
+      return data
+        .filter(item => item.sentiment_score !== null && item.sentiment_score !== undefined)
+        .map(item => ({
+          id: item.id,
+          agent_id: item.agent_id,
+          created_at: item.created_at,
+          sentiment_score: item.sentiment_score,
+        }));
+    } catch (error) {
+      throw error;
+    }
+  },
 };

@@ -185,36 +185,40 @@ const PriceColumn = ({
         borderRadius: 12,
         width: width / 3,
         marginLeft: GLOBAL_PADDING,
+        flexDirection: 'column'
       }}
       glassEffectStyle='regular'
       onPress={onPress}
       isInteractive
+      enabled={false}
     >
-      <Animated.Text
-        style={[
-          {
-            textTransform: 'uppercase',
-            letterSpacing: 1.2,
-            color: palette.mutedForeground,
-          },
-          symbolStyle,
-        ]}
-      >
-        {displayAsset?.symbol ?? '—'}
-      </Animated.Text>
+      <View>
+        <Animated.Text
+          style={[
+            {
+              textTransform: 'uppercase',
+              letterSpacing: 1.2,
+              color: palette.mutedForeground,
+            },
+            symbolStyle,
+          ]}
+        >
+          {displayAsset?.symbol ?? '—'}
+        </Animated.Text>
 
-      <Animated.Text
-        style={[
-          {
-            color: palette.textPrimary,
-            marginTop: 2,
-          },
-          priceStyle,
-        ]}
-        numberOfLines={1}
-      >
-        {formatCurrency(displayAsset?.price)}
-      </Animated.Text>
+        <Animated.Text
+          style={[
+            {
+              color: palette.textPrimary,
+              marginTop: 2,
+            },
+            priceStyle,
+          ]}
+          numberOfLines={1}
+        >
+          {formatCurrency(displayAsset?.price)}
+        </Animated.Text>
+      </View>
 
       {displayAsset?.price && (
         <Animated.View

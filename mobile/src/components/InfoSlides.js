@@ -263,6 +263,7 @@ export default function InfoSlides({ onSlideChange }) {
           alignItems: 'center',
           marginBottom: 6,
           gap: 2,
+          opacity: activeSlide > 0 ? 1 : 0,
         }}
       >
         {slides.map((item, index) => {
@@ -274,8 +275,9 @@ export default function InfoSlides({ onSlideChange }) {
                 width: isActive ? 32 : 8,
                 height: 8,
                 borderRadius: 4,
-                backgroundColor: isActive ? accent : withOpacity(foreground, 0.3),
+                backgroundColor: isActive ? "#fff" : "#fff",
                 transform: [{ scale: isActive ? 1 : 0.8 }],
+                opacity: 0.3,
               }}
             />
           );

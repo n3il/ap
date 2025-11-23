@@ -16,6 +16,7 @@ import AgentList from '@/components/AgentList';
 import { LinearGradient } from 'react-native-svg';
 import TimeFrameSelector from '@/components/chart/TimeFrameSelector';
 import GlassSelector from '@/components/ui/GlassSelector';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -25,6 +26,7 @@ export default function ExploreScreen() {
   const colors = useColors();
   const palette = colors.colors;
   const { timeframe } = useTimeframeStore();
+  const safeAreaInsets = useSafeAreaInsets();
 
   const handleRefresh = useCallback(async () => {
     setIsFetching(true);
@@ -41,12 +43,9 @@ export default function ExploreScreen() {
   });
 
   return (
-    <ContainerView>
+    <View style={{ flex: 1, paddingTop: safeAreaInsets.top, backgroundColor: palette.backgroundSecondary }}>
       <PaddedView style={{ marginBottom: 6 }}>
-        <ExploreHeader
-          tickers={['BTC', 'ETH', 'SOL']}
-          timeframe={timeframe}
-        />
+        <ExploreHeader />
       </PaddedView>
       <AnimatedScrollView
         showsVerticalScrollIndicator={false}
@@ -62,38 +61,39 @@ export default function ExploreScreen() {
         }
         scrollEventThrottle={16}
         onScroll={scrollHandler}
+        snapToAlignment="center"
       >
-        <View style={{ flex: 1, height: 400, zIndex: 1, width: 400 }}>
-          <LinearGradient
-            style={{ flex: 1, zIndex: 1000 }}
-            colors={[
-              palette.backgroundSecondary,
-              palette.background,
-              palette.backgroundSecondary ?? palette.surface,
-            ]}
-            locations={[0, 0.78, 1]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-          />
+        <View style={{ zIndex: 1000 }}>
+          <View style={{ flex: 1, backgroundColor: palette.backgroundSecondary }}>
             <MarketPricesWidget
               tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
               timeframe={timeframe}
               scrollY={scrollY}
+              sx={{
+                borderBottomWidth: 1,
+                borderBottomColor: palette.border,
+              }}
             />
-            <MultiAgentChart timeframe={timeframe} scrollY={scrollY} />
-            <PaddedView style={{
-              alignItems: 'center',
-              flexDirection: 'row',
-              gap: 4,
-            }}>
-              <GlassSelector />
-              <TimeFrameSelector />
-            </PaddedView>
+            <MultiAgentChart
+              timeframe={timeframe}
+              scrollY={scrollY}
+            />
+          </View>
+
+          <PaddedView style={{
+            alignItems: 'center',
+            flexDirection: 'row',
+            gap: 4,
+            paddingTop: 8,
+          }}>
+            <GlassSelector />
+            <TimeFrameSelector />
+          </PaddedView>
         </View>
-        <PaddedView both>
-          <AgentList queryKey={['explore-agents']} />
+        <PaddedView style={{ zIndex: -1 }}>
+          <AgentList queryKey={['explore-agents']} compactView scrollY={scrollY} />
         </PaddedView>
       </AnimatedScrollView>
-    </ContainerView>
+    </View>
   );
 }

@@ -11,36 +11,25 @@ import GlassButton from "@/components/ui/GlassButton";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
 import { useColors } from "@/theme";
 import AgentCard from "@/components/AgentCard";
-import ContainerView from "@/components/ContainerView";
+import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
 
-const HEADER_HEIGHT = 400;
+const HEADER_HEIGHT = 400 + 30;
 
 export default function AgentReadScreen() {
-  const {colors} = useColors();
   const { id } = useLocalSearchParams();
   const { data: agent } = useAgent(id);
-  const {
-    wallet,
-    equity,
-    margin,
-    availableMargin,
-    unrealizedPnl,
-    realizedPnl,
-    enrichedPositions,
-    isLoading,
-  } = useAccountBalance(agent?.id)
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
   const imageScale = scrollY.interpolate({
     inputRange: [-200, 0, 200],
-    outputRange: [1.4, 1, 0.8],
+    outputRange: [1.1, 1, 0.8],
     extrapolate: "clamp",
   });
 
   const imageTranslateY = scrollY.interpolate({
-    inputRange: [0, HEADER_HEIGHT],
-    outputRange: [0, -100],
+    inputRange: [0, 200],
+    outputRange: [0, 0],
     extrapolate: "clamp",
   });
 
@@ -54,7 +43,7 @@ export default function AgentReadScreen() {
           }
         ]}
       >
-        <AgentCard agent={agent} hideOpenPositions />
+        <AgentCard agent={agent} hideOpenPositions transparent />
         <HeaderChart agentId={agent?.id} />
       </Animated.View>
 
@@ -76,6 +65,7 @@ export default function AgentReadScreen() {
         listProps={{
           contentContainerStyle: {
             paddingTop: HEADER_HEIGHT,
+            paddingHorizontal: GLOBAL_PADDING
           },
           scrollEventThrottle: 16,
           onScroll: Animated.event(
@@ -84,27 +74,6 @@ export default function AgentReadScreen() {
           )
         }}
       />
-
-      {/* <Animated.ScrollView
-        contentContainerStyle={{ paddingTop: HEADER_HEIGHT }}
-        scrollEventThrottle={16}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
-        )}
-      >
-        <View style={styles.content}>
-          <Text style={styles.title}>{agent?.name}</Text>
-          <Text style={styles.artist}>{agent?.llm_provider}</Text>
-          <Text style={styles.artist}>{agent?.model_name}</Text>
-
-          {Array.from({ length: 30 }).map((_, i) => (
-            <Text key={i} style={styles.textItem}>
-              Content line {i + 1}
-            </Text>
-          ))}
-        </View>
-      </Animated.ScrollView> */}
     </ContainerView>
   );
 };
@@ -119,7 +88,7 @@ const styles = StyleSheet.create({
   },
   topButtonsContainer: {
     position: "absolute",
-    top: 50,
+    top: 64,
     right: 20,
     flexDirection: "row",
     zIndex: 50,

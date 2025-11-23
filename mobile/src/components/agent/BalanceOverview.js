@@ -11,16 +11,25 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
   if (variant === 'compact') {
     return (
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 2 }}>
-        <View sx={{ alignItems: 'flex-start' }}>
-          <LabelValue
-            label="Balance"
-            value={accountData.equity}
-          />
+        <View sx={{ gap: 2 }}>
+          <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 0 }}>
+            <Text variant="xs" tone="muted">
+              AUM
+            </Text>
+          </View>
+          <Text variant="md" sx={{ fontWeight: '600', fontFamily: 'monospace' }}>
+            {formatAmount(accountData.equity)}
+          </Text>
         </View>
+
         <View sx={{ alignItems: 'flex-end' }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
             <LabelValue
-              label="All P&L"
+              label="P&L"
+              value={(accountData.realizedPnl || 0) + (accountData.unrealizedPnl || 0)}
+            />
+            <LabelValue
+              label="M/R"
               value={(accountData.realizedPnl || 0) + (accountData.unrealizedPnl || 0)}
             />
             <LabelValue
@@ -54,18 +63,18 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
       {/* Header: Account Equity */}
       <View sx={{ gap: 2 }}>
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          <Text variant="xs" tone="muted" sx={{ textTransform: 'uppercase' }}>
-            Account Equity
+          <Text variant="xs" tone="muted" sx={{  }}>
+            AUM
           </Text>
         </View>
         <Text variant="xl" sx={{ fontWeight: '600', fontFamily: 'monospace' }}>
-          {formatCurrency(accountData.equity)}
+          {formatAmount(accountData.equity)}
         </Text>
 
         {/* Total P&L */}
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          <Text variant="xs" tone="muted">Total P&L</Text>
-          <Text variant="sm" sx={{ fontFamily: 'monospace', color: totalPnl >= 0 ? 'success' : 'error' }}>
+          <Text variant="xs" tone="muted">All-Time P&L</Text>
+          <Text variant="sm" sx={{ color: totalPnl > 0 ? 'success' : (totalPnl < 0 ? 'error' : 'foreground') }}>
             {`${formatAmount(totalPnl)} (${formatAmount(totalPnlPercent, { showSign: true })}%)`}
           </Text>
         </View>
@@ -89,12 +98,13 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
         <View sx={{ flex: 1,  }}>
 
           <LabelValue
-            label="Unrealized P&L"
+            label="Open P&L"
             value={accountData.unrealizedPnl || 0}
             alignRight
+            colorize
           >
-          <Text variant="sm" sx={{ fontFamily: 'monospace', color: accountData.unrealizedPnl > 0 ? 'success' : (accountData.unrealizedPnl < 0 ? 'error' : 'foreground') }}>
-            {`${formatAmount(accountData.unrealizedPnl)} (${formatPercent(unrealizedPnlPercent)})`}
+          <Text variant="sm" sx={{ color: accountData.unrealizedPnl > 0 ? 'success' : (accountData.unrealizedPnl < 0 ? 'error' : 'foreground') }}>
+            {`(${formatPercent(unrealizedPnlPercent)})`}
           </Text>
           </LabelValue>
         </View>
@@ -104,8 +114,8 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Initial Capital"
-            value={accountData.wallet || 0}
+            label="Trades"
+            value={undefined}
           />
         </View>
         <View sx={{ flex: 1 }}>
@@ -117,8 +127,9 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
         <View sx={{ flex: 1,  }}>
           <LabelValue
             label="Margin Ratio"
-            value={leverageRatio}
+            value={leverageRatio?.toFixed(2) || '-'}
             alignRight
+            formatter={l => l}
           />
         </View>
       </View>

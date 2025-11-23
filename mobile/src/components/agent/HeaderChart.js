@@ -1,31 +1,33 @@
 import { useMemo } from "react";
-import { useAgentAssessments } from "@/hooks/useAgentAssessments";
+import { useQuery } from "@tanstack/react-query";
+import { assessmentService } from "@/services/assessmentService";
 import SvgChart from "@/components/SvgChart";
 import { useAgentSnapshots } from "@/hooks/useAgentSnapshots";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
 
 export default function HeaderChart({ agentId, ...props }) {
-  const { timeframe } = useTimeframeStore();
-  const { assessments } = useAgentAssessments(agentId, timeframe);
+  // const { timeframe } = useTimeframeStore();
+  const timeframe = '30d';
+
+  // Fetch sentiment scores using performant JSON column selection
+  const { data: sentimentScores = [] } = useQuery({
+    queryKey: ['sentimentScores', agentId, timeframe],
+    queryFn: () => assessmentService.getSentimentScores(agentId, {
+      timeframe,
+      limit: 100
+    }),
+    enabled: !!agentId,
+  });
+
+  console.log('sentimentScores', sentimentScores);
+
   const { data: snapshots, isLoading } = useAgentSnapshots(agentId, timeframe);
 
   // Prepare raw data sources
   const rawSentimentData = useMemo(() => {
-    if (!assessments?.length) return [];
-
-    return assessments
-      .map((assessment) => {
-        const score = assessment.parsed_llm_response?.headline?.sentiment_score;
-        if (score === undefined || score === null) return null;
-
-        return {
-          created_at: assessment.created_at,
-          sentiment_score: score,
-        };
-      })
-      .filter(Boolean);
-  }, [assessments]);
+    return sentimentScores; // Already filtered and formatted by the service
+  }, [sentimentScores]);
 
   const rawEquityData = useMemo(() => {
     if (!snapshots?.length) return [];

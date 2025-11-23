@@ -9,37 +9,33 @@ import { Gradient } from 'dripsy/gradient'
 type ContainerViewProps = ViewProps & {
   children: React.ReactNode;
   noSafeArea?: boolean;
+  transparent?: boolean;
 };
 
 export const GLOBAL_PADDING = 12;
 
-export default function ContainerView({ children, style, noSafeArea, ...props }: ContainerViewProps) {
+export default function ContainerView({
+  children,
+  style,
+  noSafeArea,
+  transparent,
+  ...props
+}: ContainerViewProps) {
   const { background } = useColors();
   const { isDark, theme: { colors } } = useTheme()
 
   return (
     <View
-      sx={{ flex: 1, backgroundColor: background }}
+      sx={{ flex: 1, backgroundColor: transparent ? 'transparent' : background }}
       {...props}
       style={style}
     >
-    <LinearGradient
-      colors={[
-        colors.backgroundSecondary,
-        colors.background,
-        colors.backgroundSecondary ?? colors.surface,
-      ]}
-      locations={[0, 0.78, 1]}
-      style={{ flex: 1 }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+
         {noSafeArea ?
         children :
         <SafeAreaView style={{ flex: 1 }}>
           {children}
         </SafeAreaView>}
-      </LinearGradient>
     </View>
   );
 }
@@ -49,11 +45,10 @@ export function PaddedView({ children, sx, style = {}, both = false, ...props }:
     <View
       {...props}
       sx={sx}
-      style={{
+      style={[{
         paddingHorizontal: GLOBAL_PADDING,
         paddingVertical: both ? GLOBAL_PADDING : 0,
-        ...style
-      }}
+      }, style]}
     >
       {children}
     </View>

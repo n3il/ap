@@ -1,39 +1,19 @@
-import React, { useMemo } from 'react';
-import { View, Text, ActivityIndicator, Button, Image } from '@/components/ui';
+import React from 'react';
+import { View, Text, ActivityIndicator, Image } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
-import { useRouter } from 'expo-router';
-import { useMarketPrices } from '@/hooks/useMarketPrices';
-import { useTimeframeStore } from '@/stores/useTimeframeStore';
+import { useMarketPricesStore } from '@/hooks/useMarketPrices';
 
-export default function ExploreHeader({
-  tickers,
-  sx: customSx,
-}) {
-  const { timeframe } = useTimeframeStore();
+export default function ExploreHeader() {
   const compact = true;
   const { colors } = useColors();
-  const router = useRouter();
-  const {
-    normalizedTickers,
-    assets,
-    isLoading,
-    isUpdating,
-    error,
-    lastUpdated,
-  } = useMarketPrices(tickers);
+  const { connectionStatus, connectionStrength } = useMarketPricesStore();
 
-  const statusLabel = useMemo(() => {
-    if (isUpdating && !isLoading) return 'Updating…';
-    if (lastUpdated) {
-      const formatted = new Date(lastUpdated).toLocaleTimeString([], {
-        hour: '2-digit',
-        minute: '2-digit',
-      });
-      return `${formatted}`;
-    }
-    return null;
-  }, [isUpdating, isLoading, lastUpdated]);
+  const connectionStrengthIndicator = {
+    'strong': colors.success,
+    'moderate': colors.warning,
+    'weak': colors.error
+  }[connectionStrength]
 
   return (
     <View
@@ -75,16 +55,20 @@ export default function ExploreHeader({
           </Text>
         </View>
         <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          {isLoading ? (
+          {connectionStatus === 'connecting' ? (
             <ActivityIndicator size="small" color={colors.mutedForeground} />
-          ) : error ? (
-            <MaterialCommunityIcons name="alert-circle-outline" size={16} color={colors.warning} />
+          ) : connectionStatus === 'error' ? (
+            <MaterialCommunityIcons name="signal-off" size={16} color={colors.warning} />
           ) : (
-            <MaterialCommunityIcons name="signal" size={16} color={colors.success} />
+            <MaterialCommunityIcons
+              name="signal"
+              size={16}
+              color={connectionStrengthIndicator}
+            />
           )}
-          {statusLabel && (
+          {connectionStatus === 'error' && (
             <Text sx={{ fontSize: 11, color: 'mutedForeground' }}>
-              {statusLabel}
+              {connectionStatus}
             </Text>
           )}
         </View>

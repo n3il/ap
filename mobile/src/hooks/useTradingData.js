@@ -4,32 +4,20 @@ import { tradeService } from '@/services/tradeService';
 import { supabase } from '@/config/supabase';
 import { Alert } from '@/components/ui';
 
-export function useTradingData({
-  agentId = null,
-  ledgerType = 'paper',
-  ledgerAccountId = null,
-} = {}) {
-  const queryClient = useQueryClient();
-
-  // Fetch all trades
-  const {
-    data: trades = [],
-    isLoading: tradesLoading,
-    error: tradesError,
-  } = useQuery({
+// Hook for fetching trades
+export function useTrades(agentId = null) {
+  return useQuery({
     queryKey: agentId ? ['trades', agentId] : ['trades'],
     queryFn: () =>
       agentId
         ? tradeService.getTradesByAgent(agentId)
         : tradeService.getAllTrades(),
   });
+}
 
-  // Fetch open positions
-  const {
-    data: positions = [],
-    isLoading: positionsLoading,
-    error: positionsError,
-  } = useQuery({
+// Hook for fetching open positions
+export function usePositions(agentId = null) {
+  return useQuery({
     queryKey: agentId ? ['positions', agentId] : ['positions'],
     queryFn: async () => {
       if (agentId) {
@@ -40,27 +28,23 @@ export function useTradingData({
       return allTrades.filter((t) => t.status === 'OPEN');
     },
   });
+}
 
-  // Fetch trade stats
-  const {
-    data: stats = { totalTrades: 0, openPositions: 0, totalPnL: 0, winRate: 0 },
-    isLoading: statsLoading,
-  } = useQuery({
+// Hook for fetching trade statistics
+export function useTradeStats(agentId = null) {
+  return useQuery({
     queryKey: agentId ? ['trade-stats', agentId] : ['trade-stats'],
     queryFn: () => tradeService.getTradeStats(agentId),
   });
+}
 
-  const {
-    data: ledgerSnapshot = {
-      accounts: [],
-      positions: [],
-      orders: [],
-      trades: [],
-      transactions: [],
-    },
-    isLoading: ledgerLoading,
-    error: ledgerError,
-  } = useQuery({
+// Hook for fetching trading ledger snapshot
+export function useTradingLedgerSnapshot({
+  agentId = null,
+  ledgerType = 'paper',
+  ledgerAccountId = null,
+} = {}) {
+  return useQuery({
     queryKey: [
       'trading-ledger',
       ledgerType,
@@ -74,8 +58,11 @@ export function useTradingData({
         accountId: ledgerAccountId,
       }),
   });
+}
 
-  const ledgerData = useMemo(() => {
+// Hook for formatting ledger data
+export function useFormattedLedgerData(ledgerSnapshot) {
+  return useMemo(() => {
     const accountMap = new Map(
       (ledgerSnapshot?.accounts ?? []).map((account) => [account.id, account]),
     );
@@ -212,9 +199,13 @@ export function useTradingData({
       assets,
     };
   }, [ledgerSnapshot]);
+}
 
-  // Place order mutation
-  const placeOrderMutation = useMutation({
+// Hook for placing orders
+export function usePlaceOrder() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: async (order) => {
       // This would call your edge function to execute the trade
       const { data, error } = await supabase.functions.invoke(
@@ -246,9 +237,13 @@ export function useTradingData({
       Alert.alert('Error', `Failed to place order: ${error.message}`);
     },
   });
+}
 
-  // Close position mutation
-  const closePositionMutation = useMutation({
+// Hook for closing positions
+export function useClosePosition() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
     mutationFn: async (position) => {
       const { data, error } = await supabase.functions.invoke(
         'execute_hyperliquid_trade',
@@ -276,6 +271,48 @@ export function useTradingData({
       Alert.alert('Error', `Failed to close position: ${error.message}`);
     },
   });
+}
+
+// Main composite hook that combines all individual hooks
+// This is kept for backward compatibility
+export function useTradingData({
+  agentId = null,
+  ledgerType = 'paper',
+  ledgerAccountId = null,
+} = {}) {
+  const {
+    data: trades = [],
+    isLoading: tradesLoading,
+    error: tradesError,
+  } = useTrades(agentId);
+
+  const {
+    data: positions = [],
+    isLoading: positionsLoading,
+    error: positionsError,
+  } = usePositions(agentId);
+
+  const {
+    data: stats = { totalTrades: 0, openPositions: 0, totalPnL: 0, winRate: 0 },
+    isLoading: statsLoading,
+  } = useTradeStats(agentId);
+
+  const {
+    data: ledgerSnapshot = {
+      accounts: [],
+      positions: [],
+      orders: [],
+      trades: [],
+      transactions: [],
+    },
+    isLoading: ledgerLoading,
+    error: ledgerError,
+  } = useTradingLedgerSnapshot({ agentId, ledgerType, ledgerAccountId });
+
+  const ledgerData = useFormattedLedgerData(ledgerSnapshot);
+
+  const placeOrderMutation = usePlaceOrder();
+  const closePositionMutation = useClosePosition();
 
   return {
     trades,

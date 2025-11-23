@@ -6,21 +6,28 @@ import { useQuery } from '@tanstack/react-query';
 import { agentService } from '@/services/agentService';
 import { assessmentService } from '@/services/assessmentService';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useEffect } from 'react';
-import { GlassContainer } from 'expo-glass-effect';
+import { useCallback, useMemo, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'dripsy';
 import { useExploreAgentsStore } from '@/stores/useExploreAgentsStore';
+import { Dimensions } from 'react-native';
+import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
+
+const SCREEN_HEIGHT = Dimensions.get('window').height;
+const ACTIVE_ZONE_OFFSET = SCREEN_HEIGHT * 0.4; // Top 30% of screen
 
 export default function AgentList({
   queryKey,
   emptyState,
   userId = undefined,
   published = true,
-  listTitle = undefined,
   hideOpenPositions = false,
+  compactView = false,
+  scrollY = null, // Animated scroll position
 }) {
   const router = useRouter();
   const setAgents = useExploreAgentsStore((state) => state.setAgents);
+  const [activeAgentId, setActiveAgentId] = useState(null);
+  const itemLayoutsRef = useRef({});
 
   // Extract category from queryKey if it exists (e.g., ['explore-agents', 'top'])
   const category = Array.isArray(queryKey) ? queryKey[queryKey.length - 1] : null;
@@ -131,6 +138,45 @@ export default function AgentList({
     [router]
   );
 
+  // Calculate which agent is active based on scroll position
+  const calculateActiveAgent = useCallback((scrollPosition) => {
+    let closestAgent = null;
+    let smallestDistance = Infinity;
+
+    Object.entries(itemLayoutsRef.current).forEach(([agentId, layout]) => {
+      // Calculate distance from active zone (top 30% of screen)
+      const itemMiddle = layout.y + layout.height / 2;
+      const distance = Math.abs(itemMiddle - scrollPosition - ACTIVE_ZONE_OFFSET);
+
+      if (distance < smallestDistance) {
+        smallestDistance = distance;
+        closestAgent = agentId;
+      }
+    });
+
+    if (closestAgent !== activeAgentId) {
+      setActiveAgentId(closestAgent);
+    }
+  }, [activeAgentId]);
+
+  // Track scroll position changes with Reanimated
+  useAnimatedReaction(
+    () => {
+      return scrollY ? scrollY.value : 0;
+    },
+    (currentScroll, previous) => {
+      if (scrollY && currentScroll !== previous) {
+        runOnJS(calculateActiveAgent)(currentScroll);
+      }
+    }
+  );
+
+  // Handle item layout
+  const handleItemLayout = useCallback((agentId, event) => {
+    const { y, height } = event.nativeEvent.layout;
+    itemLayoutsRef.current[agentId] = { y, height };
+  }, []);
+
   if (isLoading || isFetching) {
     return (
       <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
@@ -159,13 +205,19 @@ export default function AgentList({
       style={{ flex: 1, gap: 8, marginTop: 8 }}
     >
       {sortedAgents.map((agent) => (
-        <AgentCard
+        <View
           key={agent.id}
-          agent={agent}
-          hideOpenPositions={hideOpenPositions}
-          latestAssessment={latestAssessmentByAgent[agent.id]}
-          onPress={() => onAgentPress?.(agent)}
-        />
+          onLayout={(event) => handleItemLayout(agent.id, event)}
+        >
+          <AgentCard
+            agent={agent}
+            hideOpenPositions={hideOpenPositions}
+            latestAssessment={latestAssessmentByAgent[agent.id]}
+            onPress={() => onAgentPress?.(agent)}
+            compactView={compactView}
+            isActive={activeAgentId === agent.id}
+          />
+        </View>
       ))}
     </View>
   );

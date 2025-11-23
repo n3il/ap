@@ -61,18 +61,9 @@ export default function AgentsScreen() {
       content: (
         <AgentList
           queryKey="active-agents"
+          compactView
           userId={user?.id}
           published={false}
-          emptyState={(
-            <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-              <Text sx={{ color: 'textSecondary', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
-                No active agents yet
-              </Text>
-              <Text sx={{ color: 'secondary500', fontSize: 14, textAlign: 'center' }}>
-                Create your first agent to get started.
-              </Text>
-            </View>
-          )}
         />
       ),
     },
@@ -82,17 +73,8 @@ export default function AgentsScreen() {
       content: (
         <AgentList
           queryKey="shared-agents"
+          compactView
           published={true}
-          emptyState={(
-            <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-              <Text sx={{ color: 'textSecondary', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
-                No shared agents available
-              </Text>
-              <Text sx={{ color: 'secondary500', fontSize: 14, textAlign: 'center' }}>
-                Check back later for community-shared agents.
-              </Text>
-            </View>
-          )}
         />
       ),
     },
@@ -102,17 +84,8 @@ export default function AgentsScreen() {
       content: (
         <AgentList
           queryKey="all-agents"
+          compactView
           userId={user?.id}
-          emptyState={(
-            <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 20 }}>
-              <Text sx={{ color: 'textSecondary', fontSize: 18, fontWeight: '600', textAlign: 'center', marginBottom: 2 }}>
-                No agents found
-              </Text>
-              <Text sx={{ color: 'secondary500', fontSize: 14, textAlign: 'center' }}>
-                Create or explore agents to see them here.
-              </Text>
-            </View>
-          )}
         />
       ),
     },

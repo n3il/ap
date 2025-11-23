@@ -86,7 +86,11 @@ const AnimatedOption = ({
           paddingHorizontal: 16,
         }}
       >
-        <Text>
+        <Text sx={{
+          flex: 1,
+          whiteSpace: 'pre',
+          fontSize: 12
+        }}>
           {option.label}
         </Text>
       </Pressable>
@@ -157,7 +161,6 @@ export default function GlassSelector ({
       </GlassButton>
       {open &&
         <GlassView
-          glassEffectStyle={"clear"}
           style={[
             {
               borderRadius: 8,
@@ -165,9 +168,10 @@ export default function GlassSelector ({
               top: 40,
               left: 0,
               right: 0,
-              overflow: 'hidden',
             },
           ]}
+          glassEffectStyle="regular"
+          tintColor={colors.surface}
           isInteractive
           {...props}
         >

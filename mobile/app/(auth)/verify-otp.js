@@ -136,18 +136,6 @@ export default function VerifyOTPScreen() {
           style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}
         >
 
-          <View sx={{ position: 'absolute', top: 12, left: 0, zIndex: 10 }}>
-            <Button
-              variant="ghost"
-              onPress={handleGoBack}
-              disabled={loading}
-              sx={{ width: 60, height: 60, padding: 0 }}
-            >
-              <MaterialIcons name="arrow-back" size={30} color={palette.foreground} />
-            </Button>
-          </View>
-
-
           <View sx={{ marginBottom: 8 }}>
             <Text variant="h1" sx={{ fontWeight: 300, marginBottom: 2 }}>
               Verify Code
@@ -236,6 +224,18 @@ export default function VerifyOTPScreen() {
             </Text>
           </Button>
         </AnimatedBox>
+
+          <View sx={{marginBottom: 2 }}>
+            <Button
+              variant="outline"
+              onPress={handleGoBack}
+              disabled={loading}
+              sx={{ width: 60, height: 60, padding: 0, borderRadius: 'full' }}
+            >
+              <MaterialIcons name="arrow-back" size={20} color={palette.foreground} />
+            </Button>
+          </View>
+
       </KeyboardAvoidingView>
     </ContainerView>
   );

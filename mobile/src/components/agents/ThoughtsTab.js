@@ -74,8 +74,15 @@ export default function ThoughtsTab({
     if (isLoading) return null;
 
     return (
-      <Text style={{ color: '#999', textAlign: 'center', paddingVertical: 12, fontSize: 12 }}>
-        No assessments yet
+      <Text style={{
+        color: '#999',
+        textAlign: 'center',
+        paddingVertical: 12,
+        fontSize: 12,
+        fontStyle: 'italic',
+        marginTop: 18
+      }}>
+        empty
       </Text>
     );
   }, [isLoading]);

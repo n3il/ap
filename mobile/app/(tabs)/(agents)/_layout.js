@@ -12,9 +12,8 @@ export default function Layout() {
       gestureEnabled: true,
     }}>
       <Stack.Screen name="index" />
-      <Stack.Screen
-        name="[id]/index"
-      />
+      <Stack.Screen name="[id]/index" />
+      <Stack.Screen name="[id]/[assessmentId]" />
       <Stack.Screen name="[id]/manage" />
     </Stack>
   );

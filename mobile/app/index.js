@@ -8,6 +8,7 @@ import {
   Animated,
   SafeAreaView,
   Button,
+  GlassButton,
 } from '@/components/ui';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -16,6 +17,7 @@ import InfoSlides from '@/components/InfoSlides';
 import useRouteAuth from '@/hooks/useRouteAuth';
 import { getDefaultUnauthenticatedRoute, ROUTES } from '@/config/routes';
 import { useColors } from '@/theme';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const { width, height } = Dimensions.get('window');
 
@@ -123,52 +125,56 @@ export default function GetStartedScreen() {
 
           <View sx={{ paddingHorizontal: 8, paddingBottom: 4 }}>
             <View sx={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', gap: 3 }}>
-              <Button
-                variant="secondary"
+              <GlassButton
                 onPress={() => handleAuth('login')}
-                activeOpacity={0.8}
-                sx={{
-                  borderColor: 'border',
-                  borderRadius: 'full',
+                style={{
                   flex: 1,
+                  textAlign: 'center',
                 }}
+                tintColor={withOpacity(palette.surface, 0.8)}
+                glassEffectStyle="regular"
               >
-                <Text variant="lg" sx={{ fontWeight: 300, color: 'foreground' }}>
+                <Text variant="lg" sx={{ fontWeight: 300, color: 'foreground', textAlign: 'center' }}>
                   Log in
                 </Text>
-              </Button>
+              </GlassButton>
 
-              <Button
-                variant="primary"
+              <GlassButton
                 onPress={() => handleAuth('signup')}
-                activeOpacity={0.8}
-                sx={{
-                  borderColor: 'border',
-                  borderRadius: 'full',
-                  flex: 1,
+                style={{
+                  flexGrow: 1,
                 }}
+                tintColor={palette.primary500}
+                glassEffectStyle="clear"
               >
-                <Text variant="lg" sx={{ fontWeight: 500, color: 'accentForeground' }}>
-                  Get Started
-                </Text>
-              </Button>
+                <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
+                  <Text variant="lg" sx={{ fontWeight: 500, color: 'foreground', textAlign: 'center' }}>
+                    Get started
+                  </Text>
+                  <MaterialCommunityIcons name="arrow-right" size={24} color={palette.foreground} />
+                </View>
+              </GlassButton>
             </View>
 
             {true && (
-              <Button
-                variant="ghost"
-                sx={{
+              <GlassButton
+                style={{
                   alignItems: 'center',
                   justifyContent: 'center',
-                  height: 48,
                   marginTop: 3,
+                  borderRadius: 36,
+                  alignSelf: 'center',
+                  paddingHorizontal: 16,
+                  marginTop: 16,
                 }}
                 onPress={handleContinueWithoutAuth}
                 activeOpacity={0.8}
               >
 
-                Continue without account
-              </Button>
+                <Text>
+                  Continue without account
+                </Text>
+              </GlassButton>
             )}
           </View>
         </SafeAreaView>
