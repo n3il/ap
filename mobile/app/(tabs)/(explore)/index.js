@@ -81,7 +81,11 @@ export default function ExploreScreen() {
               scrollY={scrollY}
             />
             <MultiAgentChart timeframe={timeframe} scrollY={scrollY} />
-            <PaddedView style={{ alignItems: 'flex-end', flexDirection: 'row', gap: 4 }}>
+            <PaddedView style={{
+              alignItems: 'center',
+              flexDirection: 'row',
+              gap: 4,
+            }}>
               <GlassSelector />
               <TimeFrameSelector />
             </PaddedView>

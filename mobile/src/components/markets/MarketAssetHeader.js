@@ -57,20 +57,6 @@ export default function MarketAssetHeader({
           style={{ flexDirection: 'row', gap: 12, alignItems: 'center', flex: 1 }}
           activeOpacity={0.85}
         >
-          <View
-            style={{
-              width: 46,
-              height: 46,
-              borderRadius: 23,
-              backgroundColor: withOpacity(colors.primary.DEFAULT, 0.2),
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
-            <Text style={{ color: colors.primary.DEFAULT, fontWeight: '700' }}>
-              {asset?.symbol?.slice(0, 3)}
-            </Text>
-          </View>
           <View style={{ flex: 1 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
               <Text style={{ color: colors.text.primary, fontSize: 20, fontWeight: '700' }}>
@@ -91,13 +77,11 @@ export default function MarketAssetHeader({
             color={isFavorite ? colors.primary.DEFAULT : colors.text.secondary}
             onPress={() => onToggleFavorite?.(asset)}
           />
-          <IconButton icon="bell-ring" color={colors.text.secondary} />
-          <IconButton icon="share-variant" color={colors.text.secondary} />
         </View>
       </View>
 
       <View>
-        <Text style={{ color: colors.text.primary, fontSize: 36, fontWeight: '800' }}>
+        <Text style={{ color: colors.text.primary, fontSize: 36, lineHeight: 36, fontWeight: '700' }}>
           {displayPrice}
         </Text>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>

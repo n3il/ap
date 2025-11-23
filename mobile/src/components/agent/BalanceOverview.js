@@ -8,7 +8,7 @@ import { formatAmount, formatPercent } from '@/utils/currency';
 export default function BalanceOverview({ agentId, hideOpenPositions = false, variant = 'compact' }) {
   const accountData = useAccountBalance(agentId, hideOpenPositions);
 
-  if (true) {
+  if (variant === 'compact') {
     return (
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 2 }}>
         <View sx={{ alignItems: 'flex-start' }}>
@@ -117,7 +117,7 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
         <View sx={{ flex: 1,  }}>
           <LabelValue
             label="Margin Ratio"
-            value={(parseFloat(accountData.margin) / accountData.availableMargin) * 100 || 0}
+            value={leverageRatio}
             alignRight
           />
         </View>

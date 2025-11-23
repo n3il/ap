@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { GlassContainer, GlassView } from "expo-glass-effect";
 import GlassButton from "@/components/ui/GlassButton";
 import Text from "@/components/ui/Text";
 import { useColors } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
-import { Pressable, View } from "react-native";
+import { Pressable, View, Animated } from "react-native";
 
 const options = [
   {
@@ -21,22 +21,116 @@ const options = [
   }
 ]
 
+const AnimatedOption = ({
+  option,
+  index,
+  onPress,
+  isClosing
+}: {
+  option: typeof options[0],
+  index: number,
+  onPress: () => void,
+  isClosing: boolean
+}) => {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(-10)).current;
+
+  useEffect(() => {
+    if (isClosing) {
+      // Reverse stagger - last item animates out first
+      const reverseIndex = options.length - 1 - index;
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 150,
+          delay: reverseIndex * 40,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: -10,
+          duration: 150,
+          delay: reverseIndex * 40,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      // Opening animation
+      Animated.parallel([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 200,
+          delay: index * 50,
+          useNativeDriver: true,
+        }),
+        Animated.timing(translateY, {
+          toValue: 0,
+          duration: 200,
+          delay: index * 50,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isClosing]);
+
+  return (
+    <Animated.View
+      style={{
+        opacity,
+        transform: [{ translateY }],
+      }}
+    >
+      <Pressable
+        onPress={onPress}
+        style={{
+          paddingVertical: 12,
+          paddingHorizontal: 16,
+        }}
+      >
+        <Text>
+          {option.label}
+        </Text>
+      </Pressable>
+    </Animated.View>
+  );
+};
+
 export default function GlassSelector ({
   ...props
 }) {
   const { colors } = useColors();
   const [activeSelection, setActiveSelection] = useState(options[0]);
   const [open, setOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
+
+  const handleClose = () => {
+    setIsClosing(true);
+    // Wait for the closing animation to complete
+    // Total time = (options.length - 1) * delay + duration
+    const animationTime = (options.length - 1) * 40 + 150;
+    setTimeout(() => {
+      setOpen(false);
+      setIsClosing(false);
+    }, animationTime);
+  };
+
+  const handleToggle = () => {
+    if (open) {
+      handleClose();
+    } else {
+      setOpen(true);
+    }
+  };
 
   return (
     <GlassContainer style={props.style} spacing={100}>
       <GlassButton
-        onPress={() => setOpen(!open)}
+        onPress={handleToggle}
         style={{
           flexDirection: 'row',
           alignItems: 'center',
           gap: 4,
           borderRadius: 100,
+          paddingVertical: 3,
         }}
       >
         <View
@@ -48,10 +142,17 @@ export default function GlassSelector ({
         >
           <Ionicons
             name="chevron-down-outline"
-            size={20}
+            size={14}
             color={colors.foreground}
           />
-          <Text>{activeSelection.label}</Text>
+          <Text
+            sx={{
+              fontFamily: 'monospace',
+              fontSize: 12,
+            }}
+          >
+            {activeSelection.label}
+          </Text>
         </View>
       </GlassButton>
       {open &&
@@ -64,20 +165,23 @@ export default function GlassSelector ({
               top: 40,
               left: 0,
               right: 0,
+              overflow: 'hidden',
             },
           ]}
           isInteractive
           {...props}
         >
-          {options.map((option) => (
-            <Pressable
+          {options.map((option, index) => (
+            <AnimatedOption
               key={option.value}
-              onPress={() => setActiveSelection(option)}
-            >
-              <Text>
-                {option.label}
-              </Text>
-            </Pressable>
+              option={option}
+              index={index}
+              isClosing={isClosing}
+              onPress={() => {
+                setActiveSelection(option);
+                handleClose();
+              }}
+            />
           ))}
         </GlassView>
       }

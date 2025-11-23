@@ -13,8 +13,8 @@ import { useTimeframeStore } from '@/stores/useTimeframeStore';
 const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
 
 const DEFAULT_CHART_WIDTH = 350;
-const CHART_ASPECT_RATIO = 3 / 5;
-const PADDING = { top: 0, right: 15, bottom: 5, left: 15 };
+const CHART_ASPECT_RATIO = 3 / 7;
+const PADDING = { top: 15, right: 15, bottom: 15, left: 15 };
 
 // Interpolate y value for a given x position in the data
 const interpolateValue = (data, targetX) => {
@@ -218,14 +218,41 @@ const SvgChart = ({
     return groups;
   }, [lines]);
 
+  // Find the closest data point time to the touch position
+  const snappedTouchX = useMemo(() => {
+    if (!touchActive || lines.length === 0 || !lines[0].data || lines[0].data.length === 0) {
+      return touchX;
+    }
+
+    const referenceData = lines[0].data.filter(d =>
+      d && typeof d.time === 'number' && isFinite(d.time)
+    );
+
+    if (referenceData.length === 0) return touchX;
+
+    // Find the closest time value
+    let closestTime = referenceData[0].time;
+    let minDistance = Math.abs(touchX - closestTime);
+
+    for (const point of referenceData) {
+      const distance = Math.abs(touchX - point.time);
+      if (distance < minDistance) {
+        minDistance = distance;
+        closestTime = point.time;
+      }
+    }
+
+    return closestTime;
+  }, [touchActive, touchX, lines]);
+
   // Calculate interpolated values at touch position
   const touchValues = useMemo(() => {
     if (!touchActive) return [];
     return lines.map((line) => ({
       ...line,
-      value: interpolateValue(line.data, touchX),
+      value: interpolateValue(line.data, snappedTouchX),
     }));
-  }, [touchActive, touchX, lines]);
+  }, [touchActive, snappedTouchX, lines]);
 
   // Calculate axis ranges and ticks for each axis group
   const axisConfig = useMemo(() => {
@@ -374,7 +401,7 @@ const SvgChart = ({
       return { paddingVertical: 16, height: chartHeight };
     }
 
-    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    const progress = interpolate(scrollY.value, [100, 200], [0, 1], Extrapolation.CLAMP);
     return {
       height: interpolate(progress, [0, 1], [chartHeight, 100]),
     };
@@ -539,9 +566,9 @@ const SvgChart = ({
               {touchActive && (
                 <>
                   <Line
-                    x1={scaleX(touchX)}
+                    x1={scaleX(snappedTouchX)}
                     y1={PADDING.top}
-                    x2={scaleX(touchX)}
+                    x2={scaleX(snappedTouchX)}
                     y2={PADDING.top + plotHeight}
                     stroke={withOpacity(secondaryTextColor ?? mutedColor, 0.6)}
                     strokeWidth={1.5}
@@ -553,7 +580,7 @@ const SvgChart = ({
                     return (
                       <Circle
                         key={line.id}
-                        cx={scaleX(touchX)}
+                        cx={scaleX(snappedTouchX)}
                         cy={scaleY(line.value, axisGroup)}
                         r={5}
                         fill={line.color}
@@ -588,13 +615,13 @@ const SvgChart = ({
                     const now = new Date();
                     const date = new Date(now);
                     if (timeframe === '1h') {
-                      date.setMinutes(date.getMinutes() - 60 + (touchX * 60));
+                      date.setMinutes(date.getMinutes() - 60 + (snappedTouchX * 60));
                       return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                     } else if (timeframe === '24h') {
-                      date.setHours(date.getHours() - 24 + (touchX * 24));
+                      date.setHours(date.getHours() - 24 + (snappedTouchX * 24));
                       return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                     } else if (timeframe === '7d') {
-                      date.setDate(date.getDate() - 7 + (touchX * 7));
+                      date.setDate(date.getDate() - 7 + (snappedTouchX * 7));
                       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric' });
                     }
                     return '';
@@ -650,6 +677,8 @@ const SvgChart = ({
             justifyContent: 'space-between',
             paddingLeft: PADDING.left,
             paddingRight: PADDING.right,
+            position: 'absolute',
+            bottom: 0,
           }}
         >
           {timeLabels.map((label, i) => (
