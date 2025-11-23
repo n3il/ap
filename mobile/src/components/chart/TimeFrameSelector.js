@@ -1,5 +1,5 @@
 import React from 'react';
-import { TouchableOpacity, View, Text } from '@/components/ui';
+import { TouchableOpacity, View, Text, ScrollView } from '@/components/ui';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
 import { Pressable, StyleSheet } from 'react-native';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -19,8 +19,10 @@ export default function TimeFrameSelector() {
   const { theme } = useTheme();
   const { timeframe, setTimeframe } = useTimeframeStore();
   return (
-    <GlassContainer
-      style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 0 }}
+    <ScrollView
+      contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', marginBottom: 0 }}
+      horizontal
+      showsHorizontalScrollIndicator={false}
     >
       {TIMEFRAME_OPTIONS.map((option) => {
         const isSelected = timeframe === option.id;
@@ -63,7 +65,7 @@ export default function TimeFrameSelector() {
 
         );
       })}
-    </GlassContainer>
+    </ScrollView>
   );
 }
 

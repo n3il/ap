@@ -8,15 +8,15 @@ import { Pressable, View, Animated } from "react-native";
 
 const options = [
   {
-    label: 'Top Performing Agents',
+    label: 'Top Performing',
     value: 'top'
   },
   {
-    label: 'Popular Agents',
+    label: 'Top Popular',
     value: 'popular'
   },
   {
-    label: 'New Agents',
+    label: 'Top New',
     value: 'new'
   }
 ]
