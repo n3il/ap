@@ -25,11 +25,10 @@ function AuthNavigator() {
       if (user && !hasCompletedOnboarding) {
         router.replace(ROUTES.AUTH_ONBOARDING.path);
       } else {
-        router.replace(getDefaultUnauthenticatedRoute())
+        // router.replace(getDefaultUnauthenticatedRoute())
+        router.replace(ROUTES.TABS_EXPLORE_INDEX.path)
       }
     }
-    console.log({loading, appIsReady})
-    console.log(getDefaultUnauthenticatedRoute())
   }, [user, hasCompletedOnboarding]);
 
   useEffect(() => {

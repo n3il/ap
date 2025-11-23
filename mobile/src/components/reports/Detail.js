@@ -18,7 +18,7 @@ export default function ReportDetail({ assessment }) {
     : JSON.parse(assessment.llm_response_text);
     } catch (e) {
       return {
-        headline: assessment.llm_response_text,
+        headline: assessment?.llm_response_text,
         overview: null,
         tradeActions: [],
       };

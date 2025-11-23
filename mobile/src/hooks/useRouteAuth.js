@@ -30,8 +30,6 @@ export default function useRouteAuth() {
     [isAuthenticated, loading, requireAuth],
   );
 
-  console.log({ pathname })
-
   return {
     isAuthenticated,
     loading,

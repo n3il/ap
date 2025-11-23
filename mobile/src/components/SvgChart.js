@@ -336,7 +336,6 @@ const SvgChart = ({
     return [0, 0.5, 1].map(getTimeLabel);
   }, [timeframe]);
 
-  console.log({ plotHeight })
   // Create scale functions for each axis
   const scaleY = useCallback((value, axisGroup = 'left') => {
     const axis = axisConfig[axisGroup];

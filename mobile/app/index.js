@@ -60,7 +60,6 @@ export default function GetStartedScreen() {
   };
 
   const handleContinueWithoutAuth = () => {
-    console.log(getDefaultUnauthenticatedRoute())
     router.push(getDefaultUnauthenticatedRoute());
   };
 
