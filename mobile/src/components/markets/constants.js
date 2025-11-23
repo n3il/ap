@@ -13,6 +13,15 @@ export const MARKET_INFO_TABS = [
   { key: 'funding', label: 'Funding H' },
 ];
 
+export const MARKET_SECTION_TABS = [
+  { key: 'markets', label: 'Markets' },
+  { key: 'activity', label: 'Activity' },
+  { key: 'holders', label: 'Holders (354)' },
+  { key: 'traders', label: 'Traders' },
+  { key: 'orders', label: 'Order' },
+  { key: 'history', label: 'History' },
+];
+
 export const ASSET_CATEGORIES = [
   { key: 'all', label: 'All Coins' },
   { key: 'perps', label: 'Perps' },
@@ -26,6 +35,22 @@ export const CHART_TIMEFRAMES = [
   { key: '5m', label: '5m' },
   { key: '1h', label: '1h' },
   { key: '1d', label: 'D' },
+];
+
+export const QUICK_TIMEFRAMES = [
+  { key: '1s', label: '1s' },
+  { key: '30s', label: '30s' },
+  { key: '1m', label: '1m' },
+  { key: '1h', label: '1h' },
+  { key: 'more', label: 'More' },
+];
+
+export const INDICATOR_CHIPS = ['MA', 'EMA', 'BOLL', 'SAR', 'VOL', 'MACD', 'KDJ', 'RSI', 'StochRsi', 'TRIX', 'OBV'];
+
+export const ORDER_TICKET_TABS = [
+  { key: 'instant', label: 'Instant' },
+  { key: 'market', label: 'Market' },
+  { key: 'limit', label: 'Limit' },
 ];
 
 export const MARKET_ASSETS = [
@@ -45,6 +70,10 @@ export const MARKET_ASSETS = [
     price: 0.20068,
     contractAddress: '0x2c54...5a99',
     defaultSizeCap: 12_000,
+    score: 0.89,
+    holders: 354,
+    top10: 18.38,
+    liquidity: 20_230_000,
   },
   {
     id: 'btc-usdc-perp',

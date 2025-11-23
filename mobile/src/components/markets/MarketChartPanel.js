@@ -1,10 +1,9 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from '@/components/ui';
+import { View, Text } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import TradingViewChart from '@/components/trading/TradingViewChart';
 import { useTheme } from '@/contexts/ThemeContext';
 import { withOpacity } from '@/theme/utils';
-import { CHART_TIMEFRAMES } from './constants';
 import { formatCompactNumber, formatPriceDisplay } from './utils';
 
 const TOOLBAR_ICONS = [
@@ -20,7 +19,6 @@ export default function MarketChartPanel({
   price,
   volume,
   timeframe,
-  onChangeTimeframe,
 }) {
   const { theme } = useTheme();
   const { colors } = theme;
@@ -41,92 +39,13 @@ export default function MarketChartPanel({
           flexDirection: 'row',
           justifyContent: 'space-between',
           alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: 12,
         }}
       >
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          {CHART_TIMEFRAMES.map((option) => {
-            const isActive = option.key === timeframe;
-            return (
-              <TouchableOpacity
-                key={option.key}
-                style={{
-                  paddingHorizontal: 14,
-                  paddingVertical: 6,
-                  borderRadius: 12,
-                  backgroundColor: isActive
-                    ? withOpacity(colors.primary.DEFAULT, 0.2)
-                    : withOpacity(colors.backgroundSecondary, 0.55),
-                  borderWidth: isActive ? 1 : 0,
-                  borderColor: isActive
-                    ? withOpacity(colors.primary.DEFAULT, 0.45)
-                    : 'transparent',
-                }}
-                onPress={() => onChangeTimeframe?.(option.key)}
-                activeOpacity={0.85}
-              >
-                <Text
-                  style={{
-                    fontSize: 13,
-                    fontWeight: '700',
-                    textTransform: 'uppercase',
-                    letterSpacing: 0.6,
-                    color: isActive
-                      ? colors.primary.DEFAULT
-                      : colors.text.secondary,
-                  }}
-                >
-                  {option.label}
-                </Text>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        <View style={{ flexDirection: 'row', gap: 8 }}>
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 12,
-              backgroundColor: withOpacity(colors.backgroundSecondary, 0.6),
-            }}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons
-              name="tune-variant"
-              size={16}
-              color={colors.text.secondary}
-            />
-            <Text style={{ color: colors.text.secondary, fontWeight: '600' }}>
-              Indicators
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              gap: 6,
-              paddingHorizontal: 12,
-              paddingVertical: 8,
-              borderRadius: 12,
-              backgroundColor: withOpacity(colors.backgroundSecondary, 0.6),
-            }}
-            activeOpacity={0.8}
-          >
-            <MaterialCommunityIcons
-              name="arrow-expand-all"
-              size={16}
-              color={colors.text.secondary}
-            />
-            <Text style={{ color: colors.text.secondary, fontWeight: '600' }}>
-              Expand
-            </Text>
-          </TouchableOpacity>
+        <Text style={{ color: colors.text.secondary, fontWeight: '600' }}>Chart</Text>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <IconPill name="tune-variant" colors={colors} />
+          <IconPill name="dots-grid" colors={colors} />
+          <IconPill name="fullscreen" colors={colors} />
         </View>
       </View>
 
@@ -198,3 +117,18 @@ export default function MarketChartPanel({
     </View>
   );
 }
+
+const IconPill = ({ name, colors }) => (
+  <View
+    style={{
+      width: 34,
+      height: 34,
+      borderRadius: 12,
+      backgroundColor: withOpacity(colors.backgroundSecondary, 0.5),
+      alignItems: 'center',
+      justifyContent: 'center',
+    }}
+  >
+    <MaterialCommunityIcons name={name} size={16} color={colors.text.secondary} />
+  </View>
+);

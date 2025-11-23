@@ -64,6 +64,25 @@ export default function MarketAssetHeader({
               </Text>
               <MaterialCommunityIcons name="chevron-down" size={22} color={colors.text.secondary} />
             </View>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 4 }}>
+              {asset?.score ? (
+                <View
+                  style={{
+                    paddingHorizontal: 8,
+                    paddingVertical: 2,
+                    borderRadius: 10,
+                    backgroundColor: withOpacity(colors.success.DEFAULT, 0.25),
+                  }}
+                >
+                  <Text style={{ color: colors.success.DEFAULT, fontWeight: '700', fontSize: 11 }}>
+                    {(asset.score * 100).toFixed(0)}%
+                  </Text>
+                </View>
+              ) : null}
+              <Text style={{ color: colors.text.secondary, fontSize: 12 }}>
+                {asset?.contractAddress}
+              </Text>
+            </View>
             <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
               <Tag text={(asset?.type ?? 'Spot').toUpperCase()} colors={colors} />
               <Tag text={asset?.leverage ?? '—'} colors={colors} tinted />
@@ -125,12 +144,12 @@ export default function MarketAssetHeader({
           style={{
             flex: 1,
             borderRadius: 18,
-            backgroundColor: colors.primary.DEFAULT,
+            backgroundColor: colors.long,
             paddingVertical: 14,
           }}
         >
           <Text style={{ textAlign: 'center', fontWeight: '700', color: colors.surface }}>
-            Trade
+            Buy
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
@@ -139,12 +158,12 @@ export default function MarketAssetHeader({
             flex: 1,
             borderRadius: 18,
             borderWidth: 1,
-            borderColor: withOpacity(colors.primary.DEFAULT, 0.4),
+            borderColor: colors.short,
             paddingVertical: 14,
           }}
         >
           <Text style={{ textAlign: 'center', fontWeight: '700', color: colors.primary.DEFAULT }}>
-            Quick Sell
+            Sell
           </Text>
         </TouchableOpacity>
       </View>

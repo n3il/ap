@@ -1,27 +1,32 @@
 import React, { useMemo, useState } from 'react';
-import { ScrollView } from '@/components/ui';
+import { ScrollView, View, TouchableOpacity } from '@/components/ui';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import ContainerView from '@/components/ContainerView';
 import { useMarketPrices } from '@/hooks/useMarketPrices';
 import { useTradingData } from '@/hooks/useTradingData';
 import { useMockAccountBalance } from '@/hooks/useMockAccountBalance';
+import { useTheme } from '@/contexts/ThemeContext';
+import { withOpacity } from '@/theme/utils';
 import {
   AssetSelectorModal,
   MarketAssetHeader,
   MarketChartPanel,
-  MarketOrderBook,
-  MarketTabBar,
-  MarketTradesTable,
+  MarketSectionTabs,
+  MarketStatsStrip,
+  MarketOrderTicket,
+  IndicatorChips,
   TradeActionModal,
-  TradeHistoryPanel,
   MARKET_ASSETS,
-  MARKET_TABS,
+  MARKET_SECTION_TABS,
+  QUICK_TIMEFRAMES,
+  INDICATOR_CHIPS,
 } from '@/components/markets';
-import { buildRecentTrades, buildTradeHistoryEntries } from '@/components/markets/utils';
+import TimeframeShortcutRow from '@/components/markets/TimeframeShortcutRow';
 
 export default function MarketsScreen() {
   const [selectedAssetId, setSelectedAssetId] = useState(MARKET_ASSETS[0].id);
-  const [activeTab, setActiveTab] = useState('chart');
-  const [timeframe, setTimeframe] = useState('1h');
+  const [activeSection, setActiveSection] = useState('markets');
+  const [timeframe, setTimeframe] = useState('1m');
   const [assetSelectorOpen, setAssetSelectorOpen] = useState(false);
   const [tradeModalOpen, setTradeModalOpen] = useState(false);
   const [tradeSide, setTradeSide] = useState('buy');
@@ -44,18 +49,8 @@ export default function MarketsScreen() {
   }, [priceAssets]);
 
   const currentPrice = priceMap[selectedAsset.symbol] ?? selectedAsset.price;
-  const { trades, placeOrder, isPlacingOrder } = useTradingData({ ledgerType: 'paper' });
+  const { placeOrder, isPlacingOrder } = useTradingData({ ledgerType: 'paper' });
   const accountBalance = useMockAccountBalance();
-
-  const historyEntries = useMemo(
-    () => buildTradeHistoryEntries(trades, selectedAsset.symbol),
-    [trades, selectedAsset.symbol],
-  );
-
-  const recentTrades = useMemo(
-    () => buildRecentTrades(trades, selectedAsset.symbol, currentPrice),
-    [trades, selectedAsset.symbol, currentPrice],
-  );
 
   const availableBalance = accountBalance?.availableMargin ?? accountBalance?.wallet ?? 0;
 
@@ -86,11 +81,7 @@ export default function MarketsScreen() {
   return (
     <ContainerView>
       <ScrollView
-        contentContainerStyle={{
-          padding: 20,
-          paddingBottom: 40,
-          gap: 24,
-        }}
+        contentContainerStyle={{ padding: 18, paddingBottom: 40, gap: 18 }}
         showsVerticalScrollIndicator={false}
       >
         <MarketAssetHeader
@@ -103,27 +94,43 @@ export default function MarketsScreen() {
           favorites={favorites}
         />
 
-        <MarketTabBar tabs={MARKET_TABS} activeTab={activeTab} onChange={setActiveTab} />
+        <MarketSectionTabs
+          sections={MARKET_SECTION_TABS}
+          active={activeSection}
+          onChange={setActiveSection}
+        />
 
-        {activeTab === 'chart' && (
-          <MarketChartPanel
-            asset={selectedAsset}
-            price={currentPrice}
-            volume={selectedAsset.volume24h}
-            timeframe={timeframe}
-            onChangeTimeframe={setTimeframe}
+        <MarketStatsStrip asset={selectedAsset} />
+
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+          <TimeframeShortcutRow
+            options={QUICK_TIMEFRAMES}
+            active={timeframe}
+            onChange={setTimeframe}
           />
-        )}
+          <View style={{ flexDirection: 'row', gap: 12 }}>
+            <TouchableIcon name="swap-horizontal" />
+            <TouchableIcon name="chart-line" />
+            <TouchableIcon name="dots-horizontal" />
+          </View>
+        </View>
 
-        {activeTab === 'orderBook' && (
-          <MarketOrderBook symbol={selectedAsset.symbol} price={currentPrice} />
-        )}
+        <MarketChartPanel
+          asset={selectedAsset}
+          price={currentPrice}
+          volume={selectedAsset.volume24h}
+          timeframe={timeframe}
+        />
 
-        {activeTab === 'trades' && (
-          <MarketTradesTable trades={recentTrades} symbol={selectedAsset.symbol} />
-        )}
+        <IndicatorChips indicators={INDICATOR_CHIPS} />
 
-        <TradeHistoryPanel trades={historyEntries} />
+        <MarketOrderTicket
+          asset={selectedAsset}
+          price={currentPrice}
+          availableBalance={availableBalance}
+          onSubmit={handlePlaceOrder}
+          isSubmitting={isPlacingOrder}
+        />
       </ScrollView>
 
       <AssetSelectorModal
@@ -147,5 +154,25 @@ export default function MarketsScreen() {
         isSubmitting={isPlacingOrder}
       />
     </ContainerView>
+  );
+}
+
+function TouchableIcon({ name }) {
+  const { theme } = useTheme();
+  const { colors } = theme;
+  return (
+    <TouchableOpacity
+      activeOpacity={0.8}
+      style={{
+        width: 36,
+        height: 36,
+        borderRadius: 12,
+        backgroundColor: withOpacity(colors.backgroundSecondary, 0.4),
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <MaterialCommunityIcons name={name} size={18} color={colors.text.secondary} />
+    </TouchableOpacity>
   );
 }
