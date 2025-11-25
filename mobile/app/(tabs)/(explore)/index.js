@@ -44,6 +44,8 @@ export default function ExploreScreen() {
 
   return (
     <View style={{ flex: 1, paddingTop: safeAreaInsets.top, backgroundColor: palette.backgroundSecondary }}>
+
+
       <PaddedView style={{ marginBottom: 6 }}>
         <ExploreHeader />
       </PaddedView>
@@ -64,7 +66,15 @@ export default function ExploreScreen() {
         snapToAlignment="center"
       >
         <View style={{ zIndex: 1000 }}>
-          <View style={{ flex: 1, backgroundColor: palette.backgroundSecondary }}>
+          <View style={{
+            flex: 1,
+            backgroundColor: palette.backgroundSecondary,
+            elevation: 10,
+            shadowColor: palette.background,
+            shadowOffset: { width: 0, height: 1 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+          }}>
             <MarketPricesWidget
               tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
               timeframe={timeframe}
@@ -78,17 +88,19 @@ export default function ExploreScreen() {
               timeframe={timeframe}
               scrollY={scrollY}
             />
+
+            <PaddedView style={{
+              alignItems: 'center',
+              flexDirection: 'row',
+              gap: 4,
+              paddingTop: 8,
+            }}>
+              <GlassSelector />
+              <TimeFrameSelector />
+            </PaddedView>
           </View>
 
-          <PaddedView style={{
-            alignItems: 'center',
-            flexDirection: 'row',
-            gap: 4,
-            paddingTop: 8,
-          }}>
-            <GlassSelector />
-            <TimeFrameSelector />
-          </PaddedView>
+
         </View>
         <PaddedView style={{ zIndex: -1 }}>
           <AgentList queryKey={['explore-agents']} compactView scrollY={scrollY} />

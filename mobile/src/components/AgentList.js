@@ -11,6 +11,7 @@ import { ActivityIndicator } from 'dripsy';
 import { useExploreAgentsStore } from '@/stores/useExploreAgentsStore';
 import { Dimensions } from 'react-native';
 import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
+import { scheduleOnRN } from 'react-native-worklets';
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
 const ACTIVE_ZONE_OFFSET = SCREEN_HEIGHT * 0.4; // Top 30% of screen
@@ -166,7 +167,7 @@ export default function AgentList({
     },
     (currentScroll, previous) => {
       if (scrollY && currentScroll !== previous) {
-        runOnJS(calculateActiveAgent)(currentScroll);
+        scheduleOnRN(calculateActiveAgent, currentScroll);
       }
     }
   );
@@ -204,6 +205,8 @@ export default function AgentList({
     <View
       style={{ flex: 1, gap: 8, marginTop: 8 }}
     >
+
+
       {sortedAgents.map((agent) => (
         <View
           key={agent.id}

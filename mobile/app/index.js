@@ -130,8 +130,8 @@ export default function GetStartedScreen() {
                   flex: 1,
                   textAlign: 'center',
                 }}
-                tintColor={withOpacity(palette.surface, 0.8)}
-                glassEffectStyle="regular"
+                tintColor={withOpacity(palette.surface, 0.9)}
+                glassEffectStyle="clear"
               >
                 <Text variant="lg" sx={{ fontWeight: 300, color: 'foreground', textAlign: 'center' }}>
                   Log in
@@ -144,7 +144,7 @@ export default function GetStartedScreen() {
                   flexGrow: 1,
                 }}
                 tintColor={palette.primary500}
-                glassEffectStyle="clear"
+                glassEffectStyle="regular"
               >
                 <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
                   <Text variant="lg" sx={{ fontWeight: 500, color: 'foreground', textAlign: 'center' }}>
@@ -171,7 +171,7 @@ export default function GetStartedScreen() {
               >
 
                 <Text>
-                  Continue without account
+                  Continue without an account
                 </Text>
               </GlassButton>
             )}

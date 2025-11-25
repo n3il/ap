@@ -3,20 +3,37 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 import { GlassView } from "expo-glass-effect";
 import { Pressable } from "react-native";
-import { Text } from "@/components/ui";
+import Text from "@/components/ui/Text";
+
+const styleVariants = {
+  default: {},
+  paddedFull: {
+    paddingHorizontal: 8,
+    paddingVertical: 8,
+    marginHorizontal: 0,
+    flexGrow: 1,
+    justifyContent: 'center',
+    alignContent: 'center',
+    flexDirection: 'row'
+  },
+}
+
 
 export default function GlassButton ({
-  style = {},
-  onPress = () => {},
   children,
+  disabled = false,
   enabled = true,
-  ...props
+  onPress = () => {},
+  style = {},
+  styleVariant = 'default',
+  ...props // glassProps
 }) {
-  const { colors, withOpacity } = useColors();
+  const { colors } = useColors();
 
   const PressableComponent = (
       <Pressable
         onPress={onPress}
+        disabled={disabled}
       >
         {(typeof children === "string")
         ? <Text style={{ fontWeight: '600', textAlign: 'center' }}>{children}</Text>
@@ -49,6 +66,7 @@ export default function GlassButton ({
           paddingHorizontal: 8,
           paddingVertical: 8,
           marginHorizontal: 4,
+          ...styleVariants[styleVariant]
         },
         style,
       ]}

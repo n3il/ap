@@ -1,4 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
+import PhoneInput from "react-native-phone-number-input";
 import {
   View,
   Text,
@@ -11,7 +13,6 @@ import {
 } from '@/components/ui';
 import ContainerView from '@/components/ContainerView';
 import { TextInput } from '@/components/ui';
-import { FadeIn, FadeOut, LinearTransition } from 'react-native-reanimated';
 import { AnimatedBox } from '@/components/ui/animated';
 import { useColors } from '@/theme';
 import { useRouter, useLocalSearchParams } from 'expo-router';
@@ -19,11 +20,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { AntDesign, MaterialIcons } from '@expo/vector-icons';
 import { useLocalization } from '@/hooks/useLocalization';
 import SectionTitle from '@/components/SectionTitle';
+import PhoneInputAutoDetect from '@/components/ui/PhoneInputAutoDetect';
 
 export default function Auth() {
-  const { type = "login" } = useLocalSearchParams();
   const [authMode, setAuthMode] = useState('phone'); // 'phone' or 'email'
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState({ raw: null, formatted: null, e164: null });
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -43,14 +44,13 @@ export default function Auth() {
   };
 
   const handlePhoneSubmit = async () => {
-    const cleanPhone = phoneNumber.replace(/[\s()-]/g, '');
-    if (!validatePhoneNumber(cleanPhone)) {
+    if (!validatePhoneNumber(phoneNumber.raw)) {
       Alert.alert(t('common.error'), t('login.errors.invalidPhoneNumber'));
       return;
     }
 
     setLoading(true);
-    const { error } = await signInWithPhone(cleanPhone);
+    const { error } = await signInWithPhone(phoneNumber.e164);
     setLoading(false);
 
     if (error) {
@@ -59,7 +59,7 @@ export default function Auth() {
       // Navigate to OTP verification screen
       router.push({
         pathname: 'verify-otp',
-        params: { phoneNumber: cleanPhone, type: 'phone' }
+        params: { phoneNumber: phoneNumber.formatted, type: 'phone' }
       });
     }
   };
@@ -119,7 +119,7 @@ export default function Auth() {
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         style={{
-          flex: 1,
+          flexGrow: 1,
           paddingHorizontal: 16,
         }}
       >
@@ -127,9 +127,8 @@ export default function Auth() {
           layout={LinearTransition.duration(300).springify()}
           style={{
             flex: 1,
-            justifyContent: 'flex-start',
-            alignItems: 'stretch',
-            paddingTop: '20%',
+            justifyContent: 'center',
+            paddingTop: '-20%',
           }}
         >
           {authMode === 'phone' && (
@@ -139,41 +138,14 @@ export default function Auth() {
               exiting={FadeOut.duration(200)}
               style={{ gap: 8 }}
             >
-              <View sx={{ marginBottom: 4 }}>
-                <SectionTitle title={t('login.phoneNumber')} />
-                <TextInput
-                  style={{ marginTop: 0, paddingVertical: 12, fontSize: 24, fontWeight: 300, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1, textAlign: 'center' }}
-                  sx={{borderBottomColor: 'foreground'}}
-                  autoFocus
-                  selectionColor={palette.foreground}
-                  textContentType="telephoneNumber"
-                  placeholder={t('login.phonePlaceholder')}
-                  value={phoneNumber}
-                  onChangeText={setPhoneNumber}
-                  keyboardType="phone-pad"
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  editable={!loading}
+              <View sx={{ marginBottom: 4, gap: 4 }}>
+                <SectionTitle title={t('login.phoneNumber')} sx={{ fontSize: 12 }} />
+
+                <PhoneInputAutoDetect
+                  value={phoneNumber.raw}
+                  onChange={setPhoneNumber}
                 />
               </View>
-
-              <Button
-                variant="surface"
-                sx={{ borderColor: 'primary', borderRadius: 'full' }}
-                textProps={{ style: { fontWeight: '600' } }}
-                onPress={handlePhoneSubmit}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color={palette.foreground} />
-                ) : (
-                  t('login.sendCode')
-                )}
-              </Button>
-
-              <Text variant="xs" tone="subtle" sx={{ textAlign: 'center', paddingHorizontal: 14, marginTop: 2 }}>
-                {t('login.smsLegal')}
-              </Text>
             </AnimatedBox>
           )}
 
@@ -184,11 +156,27 @@ export default function Auth() {
               exiting={FadeOut.duration(200)}
               style={{ gap: 8 }}
             >
-              <View sx={{ marginBottom: 4 }}>
+              <View sx={{ marginBottom: 4, gap: 4 }}>
                 <SectionTitle title={t('login.email')} />
                 <TextInput
-                  style={{ marginTop: 0, paddingVertical: 12, fontSize: 24, fontWeight: 300, backgroundColor: 'transparent', borderWidth: 0, borderRadius: 0, borderBottomWidth: 1, textAlign: 'center' }}
-                  sx={{borderBottomColor: 'foreground'}}
+                  style={{
+                    marginTop: 0,
+                    paddingVertical: 12,
+                    fontSize: 24,
+                    fontWeight: 300,
+                    backgroundColor: 'transparent',
+                    borderWidth: 0,
+                    borderRadius: 0,
+                    // borderBottomWidth: 1,
+                    textAlign: 'center',
+
+                    // backgroundColor: palette.surface,
+                    // borderRadius: 999,
+                    // borderWidth: 0,
+                    // textAlign: 'center',
+                    // borderColor: palette.border,
+                    // borderWidth: 1,
+                  }}
                   selectionColor={palette.foreground}
                   textContentType="emailAddress"
                   placeholder={t('login.emailPlaceholder')}
@@ -201,35 +189,25 @@ export default function Auth() {
                   editable={!loading}
                 />
               </View>
-
-              <Button
-                variant="surface"
-                sx={{ borderColor: 'primary', borderRadius: 'full', borderWidth: 2 }}
-                textProps={{ style: { fontWeight: '600' } }}
-                onPress={handleEmailSubmit}
-                disabled={loading}
-              >
-                {loading ? (
-                  <ActivityIndicator color="white" />
-                ) : (
-                  t('login.sendCode')
-                )}
-              </Button>
             </AnimatedBox>
           )}
 
-          <View sx={{ flexDirection: 'row', alignItems: 'center', marginVertical: 5 }}>
-            <View sx={{ flex: 1, height: 1, backgroundColor: 'border' }} />
-            <Text variant="sm" tone="muted" sx={{ marginHorizontal: 3 }}>{t('login.orContinueWith')}</Text>
-            <View sx={{ flex: 1, height: 1, backgroundColor: 'border' }} />
+          <View sx={{
+            flexDirection: 'row',
+            justifyContent: 'center',
+            marginVertical: 4,
+            // borderTopWidth: 1,
+            // borderTopColor: palette.border,
+            // paddingTop: 4,
+          }}>
+            <SectionTitle title={t('login.orContinueWith')} />
           </View>
 
           <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 3, marginBottom: 3 }}>
-            <Button
-              variant="surface"
+            <GlassButton
               onPress={toggleAuthMode}
               disabled={loading}
-              sx={{ flex: 1, borderRadius: 'full' }}
+              styleVariant="paddedFull"
             >
               {authMode === 'phone' ? (
                 <AnimatedBox
@@ -238,9 +216,9 @@ export default function Auth() {
                   exiting={FadeOut.duration(150)}
                   sx={{ flexDirection: 'row', alignItems: 'center', flexGrow: 1 }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexGrow: 1 }}>
                     <MaterialIcons name="email" size={22} color={palette.foreground} />
-                    <Text variant="md" sx={{ fontWeight: '600', textAlign: 'center' }}>Email</Text>
+                    <Text variant="md" sx={{ fontWeight: '400', textAlign: 'center' }}>Email</Text>
                   </View>
                 </AnimatedBox>
               ) : (
@@ -250,33 +228,84 @@ export default function Auth() {
                   exiting={FadeOut.duration(150)}
                   sx={{ flexDirection: 'row', alignItems: 'center', flexGrow: 1 }}
                 >
-                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 2, flexGrow: 1 }}>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flexGrow: 1 }}>
                     <MaterialIcons name="phonelink-ring" size={22} color={palette.foreground} />
-                    <Text variant="md" sx={{ fontWeight: '600', textAlign: 'center' }}>Phone Number</Text>
+                    <Text variant="md" sx={{ fontWeight: '400', textAlign: 'center' }}>Phone Number</Text>
                   </View>
                 </AnimatedBox>
               )}
-            </Button>
+            </GlassButton>
 
-            <Button
-              variant="secondary"
+            <GlassButton
+              styleVariant="paddedFull"
               onPress={handleGoogleSignIn}
               disabled={loading}
-              sx={{ borderRadius: 'full' }}
             >
               <AntDesign name="google" size={22} color={colors.error} />
-            </Button>
+            </GlassButton>
 
-            <Button
-              variant="secondary"
+            <GlassButton
+              styleVariant="paddedFull"
               onPress={handleAppleSignIn}
               disabled={loading}
-              sx={{ borderRadius: 'full' }}
             >
               <AntDesign name="apple" size={22} color={palette.foreground} />
-            </Button>
+            </GlassButton>
           </View>
         </AnimatedBox>
+
+        {authMode === 'phone' && (
+          <View
+            key="phone-mode"
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(200)}
+            style={{ gap: 8 }}
+          >
+            <Text variant="xs" tone="subtle" sx={{ textAlign: 'center', paddingHorizontal: 6, marginBottom: 2 }}>
+              {t('login.smsLegal')}
+            </Text>
+
+            <GlassButton
+              onPress={handlePhoneSubmit}
+              disabled={loading}
+              styleVariant="paddedFull"
+              tintColor={palette.surface}
+              glassEffectStyle="regular"
+              style={{
+                paddingVertical: 14
+              }}
+            >
+              {loading ? (
+                <ActivityIndicator color={palette.foreground} />
+              ) : (
+                t('login.sendCode')
+              )}
+            </GlassButton>
+          </View>
+        )}
+
+        {authMode === 'email' && (
+          <AnimatedBox
+            key="email-mode"
+            entering={FadeIn.duration(300)}
+            exiting={FadeOut.duration(200)}
+            style={{ gap: 8}}
+          >
+            <Button
+              variant="surface"
+              sx={{ borderColor: 'primary', borderRadius: 'full', borderWidth: 2, marginBottom: 4  }}
+              textProps={{ style: { fontWeight: '600' } }}
+              onPress={handleEmailSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                t('login.sendCode')
+              )}
+            </Button>
+          </AnimatedBox>
+        )}
       </KeyboardAvoidingView>
     </ContainerView>
   );

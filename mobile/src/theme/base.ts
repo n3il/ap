@@ -109,7 +109,7 @@ const darkTheme = {
       DEFAULT: '#334155',
       foreground: '#94a3b8',
     },
-    border: '#1f2835ff',
+    border: '#3C435E',
     input: '#334155',
     ring: purplePalette[400],
     // Status colors
