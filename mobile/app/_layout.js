@@ -21,15 +21,20 @@ function AuthNavigator() {
 
   // Handle navigation based on auth state
   useEffect(() => {
-    if (!loading && appIsReady) {
-      if (user && !hasCompletedOnboarding) {
-        router.replace(ROUTES.AUTH_ONBOARDING.path);
-      } else {
-        // router.replace(getDefaultUnauthenticatedRoute())
-        router.replace(ROUTES.TABS_EXPLORE_INDEX.path)
+    if (loading || !appIsReady) {
+      return;
+    }
+    if (user && !hasCompletedOnboarding) {
+      router.replace(ROUTES.AUTH_ONBOARDING.path);
+    } else {
+      const requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === 'true'
+      const showGetStartedScreen = process.env.EXPO_PUBLIC_SHOW_GET_STARTED === 'true';
+      if (requireAuth || showGetStartedScreen) {
+        router.replace(ROUTES.INDEX.path);
       }
     }
-  }, [user, hasCompletedOnboarding]);
+    router.replace(ROUTES.TABS_INDEX.path);
+  }, [loading, appIsReady, user, hasCompletedOnboarding]);
 
   useEffect(() => {
     async function prepare() {

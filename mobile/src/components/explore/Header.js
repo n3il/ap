@@ -4,8 +4,38 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
 import { useMarketPricesStore } from '@/hooks/useMarketPrices';
 
-export default function ExploreHeader() {
-  const compact = true;
+export const AppLogo = () => {
+  const { colors } = useColors();
+
+  return (
+    <View sx={{
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 2.5,
+    }}>
+      <Image
+        source={require('@assets/puppet-bare-icon-w-s.svg')}
+        style={{
+          width: 30,
+          height: 30,
+        }}
+        contentFit="contain"
+        tintColor={colors.accent700}
+      />
+      <Text sx={{
+        fontSize: 16,
+        fontWeight: '600',
+        color: 'accent700',
+        letterSpacing: 3,
+      }}>
+        {process.env.EXPO_PUBLIC_APP_NAME}
+      </Text>
+    </View>
+  )
+}
+
+export const ConnectionIndicator = () => {
   const { colors } = useColors();
   const { connectionStatus, connectionStrength } = useMarketPricesStore();
 
@@ -15,6 +45,31 @@ export default function ExploreHeader() {
     'weak': colors.error
   }[connectionStrength]
 
+
+  return (
+    <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+      {connectionStatus === 'connecting' ? (
+        <ActivityIndicator size="small" color={colors.mutedForeground} />
+      ) : connectionStatus === 'error' ? (
+        <MaterialCommunityIcons name="signal-off" size={16} color={colors.warning} />
+      ) : (
+        <MaterialCommunityIcons
+          name="signal"
+          size={16}
+          color={connectionStrengthIndicator}
+        />
+      )}
+      {connectionStatus === 'error' && (
+        <Text sx={{ fontSize: 11, color: 'mutedForeground' }}>
+          {connectionStatus}
+        </Text>
+      )}
+    </View>
+  )
+}
+
+export default function ExploreHeader() {
+  const compact = true;
   return (
     <View
       sx={{
@@ -30,48 +85,8 @@ export default function ExploreHeader() {
         gap: 2,
         justifyContent: 'space-between',
       }}>
-        <View sx={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: 2.5,
-        }}>
-          <Image
-            source={require('@assets/puppet-bare-icon-w-s.svg')}
-            style={{
-              width: 30,
-              height: 30,
-            }}
-            contentFit="contain"
-            tintColor={colors.accent700}
-          />
-          <Text sx={{
-            fontSize: 16,
-            fontWeight: '600',
-            color: 'accent700',
-            letterSpacing: 3,
-          }}>
-            {process.env.EXPO_PUBLIC_APP_NAME}
-          </Text>
-        </View>
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-          {connectionStatus === 'connecting' ? (
-            <ActivityIndicator size="small" color={colors.mutedForeground} />
-          ) : connectionStatus === 'error' ? (
-            <MaterialCommunityIcons name="signal-off" size={16} color={colors.warning} />
-          ) : (
-            <MaterialCommunityIcons
-              name="signal"
-              size={16}
-              color={connectionStrengthIndicator}
-            />
-          )}
-          {connectionStatus === 'error' && (
-            <Text sx={{ fontSize: 11, color: 'mutedForeground' }}>
-              {connectionStatus}
-            </Text>
-          )}
-        </View>
+        <AppLogo />
+        <ConnectionIndicator />
       </View>
     </View>
   );

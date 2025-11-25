@@ -9,12 +9,10 @@ import { useRouter } from 'expo-router';
 import { useCallback, useMemo, useEffect, useRef, useState } from 'react';
 import { ActivityIndicator } from 'dripsy';
 import { useExploreAgentsStore } from '@/stores/useExploreAgentsStore';
-import { Dimensions } from 'react-native';
-import { useAnimatedReaction, runOnJS } from 'react-native-reanimated';
+import { useAnimatedReaction } from 'react-native-reanimated';
 import { scheduleOnRN } from 'react-native-worklets';
 
-const SCREEN_HEIGHT = Dimensions.get('window').height;
-const ACTIVE_ZONE_OFFSET = SCREEN_HEIGHT * 0.4; // Top 30% of screen
+const ANIM_COMPLETE_SCROLL_Y = 200;
 
 export default function AgentList({
   queryKey,
@@ -147,7 +145,7 @@ export default function AgentList({
     Object.entries(itemLayoutsRef.current).forEach(([agentId, layout]) => {
       // Calculate distance from active zone (top 30% of screen)
       const itemMiddle = layout.y + layout.height / 2;
-      const distance = Math.abs(itemMiddle - scrollPosition - ACTIVE_ZONE_OFFSET);
+      const distance = Math.abs(itemMiddle - scrollPosition - ANIM_COMPLETE_SCROLL_Y);
 
       if (distance < smallestDistance) {
         smallestDistance = distance;
@@ -205,8 +203,6 @@ export default function AgentList({
     <View
       style={{ flex: 1, gap: 8, marginTop: 8 }}
     >
-
-
       {sortedAgents.map((agent) => (
         <View
           key={agent.id}

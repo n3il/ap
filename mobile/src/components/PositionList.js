@@ -3,6 +3,7 @@ import { View, Text, StatusBadge, TouchableOpacity } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
 import { formatCompact } from '@/utils/currency';
+import { formatRelativeDate } from '@/utils/date';
 
 function PositionDetailRow({ label, value, valueStyle }) {
   return (
@@ -138,6 +139,9 @@ export function PositionRow(position) {
           <View sx={{ flex: 1, justifyContent: 'between' }}>
             <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
               {assetLabel.replace('-PERP', '/USDC')}
+            </Text>
+            <Text>
+              {formatRelativeDate(position.entry_timestamp)}
             </Text>
 
             <View style={{ flexDirection: 'row', alignItems: 'center' }}>

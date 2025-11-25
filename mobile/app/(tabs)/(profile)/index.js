@@ -1,23 +1,22 @@
 import React, {  } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Alert, Dimensions, Card, Avatar } from '@/components/ui';
+import { View, Text, ScrollView, TouchableOpacity, Alert, Card, Avatar } from '@/components/ui';
 import ContainerView from '@/components/ContainerView';
 import { AnimatedBox } from '@/components/ui/animated';
 import { useAuth } from '@/contexts/AuthContext';
-import { MaterialIcons, Ionicons, Feather } from '@expo/vector-icons';
+import { MaterialIcons, Ionicons, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { FadeInDown } from 'react-native-reanimated';
 import SectionTitle from '@/components/SectionTitle';
 import { useColors } from '@/theme';
 import { ROUTES } from '@/config/routes';
 import { Pressable } from 'react-native';
-
-const { width } = Dimensions.get('window');
+import { useAnimationKey } from '@/hooks/useAnimationKey';
 
 export default function ProfileScreen() {
+  const animKey = useAnimationKey();
   const { user, signOut, loading } = useAuth();
   const router = useRouter();
-  const colors = useColors();
-  const palette = colors.colors;
+  const { colors: palette, withOpacity } = useColors();
 
   const handleLogout = async () => {
     Alert.alert(
@@ -95,15 +94,14 @@ export default function ProfileScreen() {
       <ScrollView
         sx={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 1, paddingTop: 6, paddingBottom: 150 }}
+        contentContainerStyle={{ paddingHorizontal: 12, paddingTop: 6, paddingBottom: 150 }}
       >
 
-        <SectionTitle title="Profile" sx={{ fontSize: 16, padding: 6 }} />
-
+        <SectionTitle title="Profile" sx={{ fontSize: 16, marginVertical: 6 }} />
 
         <AnimatedBox
           entering={FadeInDown.delay(100).springify()}
-          sx={{ marginHorizontal: 6, marginBottom: 6 }}
+          key={animKey}
         >
           <Card
             sx={{
@@ -113,20 +111,17 @@ export default function ProfileScreen() {
             <Avatar
               name={user.user_metadata?.full_name}
               email={user.email}
-              size="lg"
+              size="md"
             />
           </Card>
         </AnimatedBox>
 
 
-        <View sx={{ paddingHorizontal: 6, marginBottom: 6, marginTop: 8 }}>
-          <Text sx={{ fontSize: 18, fontWeight: '600', color: 'textPrimary', marginBottom: 4 }}>
-            Settings
-          </Text>
-
+        <SectionTitle title="Settings" sx={{ fontSize: 16, marginVertical: 6 }} />
+        <View sx={{ gap: 2 }}>
           {menuItems.map((item, index) => (
             <AnimatedBox
-              key={item.id}
+              key={`${item.id}-${animKey}`}
               entering={FadeInDown.delay(200 + index * 50).springify()}
               sx={{ marginBottom: 3 }}
             >
@@ -137,7 +132,7 @@ export default function ProfileScreen() {
                 <View
                   sx={{
                     borderRadius: 'lg',
-                    paddingVertical: 4
+                    padding: 4,
                   }}
                 >
                   <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -149,10 +144,10 @@ export default function ProfileScreen() {
                         alignItems: 'center',
                         justifyContent: 'center',
                         marginRight: 4,
-                        backgroundColor: colors.withOpacity(palette.brand500 ?? palette.info, 0.15)
+                        backgroundColor: withOpacity(palette.brand500 ?? palette.info, 0.15)
                       }}
                     >
-                      <Ionicons name={item.icon} size={24} color={palette.brand500 ?? colors.info} />
+                      <Ionicons name={item.icon} size={24} color={palette.brand500 ?? palette.info} />
                     </View>
                     <View sx={{ flex: 1 }}>
                       <Text sx={{ fontSize: 16, fontWeight: '600', color: 'textPrimary', marginBottom: 1 }}>
@@ -173,6 +168,7 @@ export default function ProfileScreen() {
 
         <AnimatedBox
           entering={FadeInDown.delay(600).springify()}
+          key={`${animKey}-version`}
           sx={{ paddingHorizontal: 6, marginBottom: 6 }}
         >
           <View
@@ -181,14 +177,14 @@ export default function ProfileScreen() {
               padding: 4
             }}
           >
-            <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 2 }}>
+            <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <Text sx={{ fontSize: 14, color: 'textSecondary' }}>App Version</Text>
-              <Text sx={{ fontSize: 14, color: 'textPrimary', fontWeight: '500' }}>1.0.0</Text>
+              <Text sx={{ fontSize: 14, color: 'textSecondary', fontWeight: '500' }}>1.0.0</Text>
             </View>
             <View sx={{ height: 1, backgroundColor: 'border', marginVertical: 2 }} />
-            <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingVertical: 2 }}>
+            <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
               <Text sx={{ fontSize: 14, color: 'textSecondary' }}>Build</Text>
-              <Text sx={{ fontSize: 14, color: 'textPrimary', fontWeight: '500' }}>2025.01.001</Text>
+              <Text sx={{ fontSize: 14, color: 'textSecondary', fontWeight: '500' }}>2025.01.001</Text>
             </View>
           </View>
         </AnimatedBox>
@@ -196,6 +192,7 @@ export default function ProfileScreen() {
 
         <AnimatedBox
           entering={FadeInDown.delay(700).springify()}
+          key={`${animKey}-logout`}
           sx={{ paddingHorizontal: 6, marginBottom: 12 }}
         >
           <TouchableOpacity
@@ -205,14 +202,14 @@ export default function ProfileScreen() {
               borderRadius: 'xl',
               overflow: 'hidden',
               marginBottom: 24,
-              backgroundColor: colors.withOpacity(colors.error, 0.15),
+              backgroundColor: withOpacity(palette.error, 0.15),
               borderWidth: 1,
-              borderColor: colors.withOpacity(colors.error, 0.3)
+              borderColor: withOpacity(palette.error, 0.3)
             }}
           >
             <View sx={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 4, paddingHorizontal: 6 }}>
-              <MaterialIcons name="logout" size={22} color={colors.errorLight} />
-              <Text sx={{ fontSize: 16, fontWeight: '600', color: 'errorLight', marginLeft: 2 }}>
+              <MaterialCommunityIcons name="logout" size={22} color={palette.errorLight} />
+              <Text sx={{ fontSize: 16, fontWeight: '600', color: palette.errorLight, marginLeft: 2 }}>
                 Sign Out
               </Text>
             </View>

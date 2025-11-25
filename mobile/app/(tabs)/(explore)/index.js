@@ -5,7 +5,7 @@ import Animated, {
   useSharedValue,
   useAnimatedScrollHandler,
 } from 'react-native-reanimated';
-import ContainerView, { PaddedView } from '@/components/ContainerView';
+import { PaddedView } from '@/components/ContainerView';
 import MarketPricesWidget from '@/components/MarketPricesWidget';
 import { useQueryClient } from '@tanstack/react-query';
 import { useColors } from '@/theme';
@@ -13,7 +13,6 @@ import ExploreHeader from '@/components/explore/Header';
 import MultiAgentChart from '@/components/agents/MultiAgentChart';
 import { useTimeframeStore } from '@/stores/useTimeframeStore';
 import AgentList from '@/components/AgentList';
-import { LinearGradient } from 'react-native-svg';
 import TimeFrameSelector from '@/components/chart/TimeFrameSelector';
 import GlassSelector from '@/components/ui/GlassSelector';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -44,9 +43,7 @@ export default function ExploreScreen() {
 
   return (
     <View style={{ flex: 1, paddingTop: safeAreaInsets.top, backgroundColor: palette.backgroundSecondary }}>
-
-
-      <PaddedView style={{ marginBottom: 6 }}>
+      <PaddedView>
         <ExploreHeader />
       </PaddedView>
       <AnimatedScrollView

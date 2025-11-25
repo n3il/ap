@@ -163,7 +163,7 @@ export default function GlassSelector ({
         <GlassView
           style={[
             {
-              borderRadius: 8,
+              borderRadius: 12,
               position: 'absolute',
               top: 40,
               left: 0,

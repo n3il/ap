@@ -2,9 +2,9 @@ import React from 'react';
 import View, { type ViewProps } from '@/components/ui/View';
 import { useColors } from '@/theme';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { LinearGradient } from 'expo-linear-gradient';
+// import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from '@/contexts/ThemeContext';
-import { Gradient } from 'dripsy/gradient'
+// import { Gradient } from 'dripsy/gradient'
 
 type ContainerViewProps = ViewProps & {
   children: React.ReactNode;
@@ -30,12 +30,11 @@ export default function ContainerView({
       {...props}
       style={style}
     >
-
-        {noSafeArea ?
-        children :
-        <SafeAreaView style={{ flex: 1 }}>
-          {children}
-        </SafeAreaView>}
+      {noSafeArea ?
+      children :
+      <SafeAreaView style={{ flex: 1 }}>
+        {children}
+      </SafeAreaView>}
     </View>
   );
 }

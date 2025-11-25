@@ -30,10 +30,6 @@ export default function AgentCard({
   const borderOpacity = useSharedValue(0);
 
   useEffect(() => {
-    scale.value = withSpring(isActive ? 1.02 : 1, {
-      damping: 30,
-      stiffness: 150,
-    });
     borderOpacity.value = withSpring(isActive ? 1 : 0.2, {
       damping: 30,
       stiffness: 150,
@@ -58,7 +54,6 @@ export default function AgentCard({
       }, animatedStyle]}
       {...props}
     >
-
 
     <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
       <View sx={{ marginBottom: 3, flexDirection: 'row', alignItems: 'center', gap: 2 }}>

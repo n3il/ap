@@ -12,10 +12,12 @@ import ThoughtsTab from "@/components/agents/ThoughtsTab";
 import { useColors } from "@/theme";
 import AgentCard from "@/components/AgentCard";
 import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
+import { LinearGradient } from "react-native-svg";
 
 const HEADER_HEIGHT = 400 + 30;
 
 export default function AgentReadScreen() {
+  const { colors: palette } = useColors();
   const { id } = useLocalSearchParams();
   const { data: agent } = useAgent(id);
 
@@ -35,6 +37,17 @@ export default function AgentReadScreen() {
 
   return (
     <ContainerView style={{ flex: 1 }}>
+      <LinearGradient
+        colors={[
+          palette.backgroundSecondary,
+          palette.background,
+          palette.backgroundSecondary ?? palette.surface,
+        ]}
+        locations={[0, 0.78, 1]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 0, y: 1 }}
+        style={{ flex: 1, position: 'absolute', left: 0, right: 0, bottom: 0 }}
+      />
       <Animated.View
         style={[
           styles.headerImage,

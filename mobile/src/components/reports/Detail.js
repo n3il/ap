@@ -66,6 +66,10 @@ export default function ReportDetail({ assessment }) {
 
   const showStructured = Boolean(parsedResponse);
 
+  if (!assessment) {
+    return <Text variant="md" tone="muted">Log in to view assessments</Text>;
+  }
+
   return (
     <View>
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
