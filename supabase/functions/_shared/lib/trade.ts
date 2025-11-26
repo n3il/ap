@@ -5,6 +5,9 @@ import { ensureTradingAccount, recordLedgerExecution } from './ledger.ts';
 import type { Agent } from './types.ts';
 import type { LLMTradeAction } from '../llm/types.ts';
 
+const normalizeOrderId = (orderId?: string | number | null) =>
+  orderId == null ? null : String(orderId);
+
 /**
  * Executes an OPEN trade action
  * Creates position in Hyperliquid and records in database
@@ -98,6 +101,8 @@ export async function executeOpenTrade(
   if (tradeError) throw tradeError;
 
   // Record in ledger
+  const normalizedOrderId = normalizeOrderId(tradeResult.orderId);
+
   const ledgerRecords = await recordLedgerExecution({
     supabase,
     accountId: ledgerAccount.id,
@@ -108,13 +113,13 @@ export async function executeOpenTrade(
     quantity: action.size || 0.01,
     price: tradeResult.price || 0,
     fee: tradeResult.fee ?? 0,
-    clientOrderId: tradeResult.orderId,
+    clientOrderId: normalizedOrderId,
     realizedPnL: 0,
     metadata: {
       source: 'execute_hyperliquid_trade',
       action: action.action,
       asset: action.asset,
-      hyperliquidOrderId: tradeResult.orderId,
+      hyperliquidOrderId: normalizedOrderId,
       message: tradeResult.message,
       mode: tradingMode,
       leverage: action.leverage,
@@ -153,6 +158,12 @@ export async function executeCloseTrade(
 
   const tradingMode = simulate === false ? 'real' : 'paper';
 
+  if (!action.asset) {
+    throw new Error('Asset is required for CLOSE action');
+  }
+
+  const asset = action.asset;
+
   // Ensure trading account exists
   const ledgerAccount = await ensureTradingAccount({
     supabase,
@@ -172,7 +183,7 @@ export async function executeCloseTrade(
   // Close position on Hyperliquid (only for real trades)
   let closeResult;
   if (tradingMode === 'real') {
-    closeResult = await closePosition(action.asset, agent.hyperliquid_address);
+    closeResult = await closePosition(asset, agent.hyperliquid_address);
 
     if (!closeResult.success) {
       throw new Error(closeResult.error || 'Position close failed');
@@ -216,30 +227,32 @@ export async function executeCloseTrade(
 
   // Record in ledger
   const closeSide = existingTrade.side === 'LONG' ? 'SELL' : 'BUY';
+  const normalizedCloseOrderId = normalizeOrderId(closeResult.orderId);
+
   const ledgerRecords = await recordLedgerExecution({
     supabase,
     accountId: ledgerAccount.id,
     agentId: agent.id,
     userId: agent.user_id,
-    symbol: action.asset,
+    symbol: asset,
     executionSide: closeSide,
     quantity: parseFloat(String(existingTrade.size)),
     price: closeResult.price || 0,
     fee: closeResult.fee ?? 0,
-    clientOrderId: closeResult.orderId,
+    clientOrderId: normalizedCloseOrderId,
     realizedPnL: pnl,
     metadata: {
       source: 'execute_hyperliquid_trade',
       action: action.action,
-      asset: action.asset,
-      hyperliquidOrderId: closeResult.orderId,
+      asset,
+      hyperliquidOrderId: normalizedCloseOrderId,
       message: closeResult.message,
       mode: tradingMode,
       entry_price: existingTrade.entry_price,
       exit_price: closeResult.price,
       reasoning: action.reasoning,
     },
-    description: `Closed ${existingTrade.side} ${action.asset}`,
+    description: `Closed ${existingTrade.side} ${asset}`,
     type: tradingMode,
   });
 

@@ -1,21 +1,73 @@
-import type HyperliquidTypes from '@nktkas/hyperliquid'
+import type { MarketAsset } from './lib/types.ts'
+
+type CandleInterval =
+  | '1m'
+  | '3m'
+  | '5m'
+  | '15m'
+  | '30m'
+  | '1h'
+  | '2h'
+  | '4h'
+  | '8h'
+  | '12h'
+  | '1d'
+  | '3d'
+  | '1w'
+  | '1M'
+
+const INTERVAL_MINUTES_TO_STRING: Record<number, CandleInterval> = {
+  1: '1m',
+  3: '3m',
+  5: '5m',
+  15: '15m',
+  30: '30m',
+  60: '1h',
+  120: '2h',
+  240: '4h',
+  480: '8h',
+  720: '12h',
+  1440: '1d',
+  4320: '3d',
+  10080: '1w',
+  43200: '1M',
+}
+
+const DEFAULT_CANDLE_INTERVAL: CandleInterval = '5m'
+
+type HyperliquidModule = {
+  HttpTransport: new (options?: Record<string, unknown>) => unknown
+  InfoClient: new (options: { transport: unknown }) => {
+    candleSnapshot(args: {
+      coin: string
+      interval: CandleInterval
+      startTime: number
+      endTime: number
+    }): Promise<any[]>
+    meta(): Promise<{ universe: Array<{ name: string; szDecimals?: number }> }>
+    metaAndAssetCtxs(): Promise<[unknown, Array<Record<string, unknown>>]>
+    allMids(): Promise<Record<string, string>>
+    webData2(params: { user: string }): Promise<any>
+  }
+  ExchangeClient: new (options: { wallet: string; transport: unknown }) => {
+    order(args: unknown): Promise<any>
+  }
+}
 
 const TRACKED_ASSETS = ['BTC', 'ETH', 'SOL', 'ARB', 'OP', 'AVAX', 'MATIC', 'DOGE', 'SUI']
-
-type HyperliquidModule = typeof HyperliquidTypes
+const HYPERLIQUID_MODULE_SPECIFIER = 'npm:@nktkas/' + 'hyperliquid'
 
 let hyperliquidModulePromise: Promise<HyperliquidModule> | null = null
-let transportPromise: Promise<InstanceType<HyperliquidModule['HttpTransport']>> | null = null
-let infoClientPromise: Promise<InstanceType<HyperliquidModule['InfoClient']>> | null = null
+let transportPromise: Promise<unknown> | null = null
+type InfoClientInstance = InstanceType<HyperliquidModule['InfoClient']>
+let infoClientPromise: Promise<InfoClientInstance> | null = null
 let assetMapPromise: Promise<Map<string, { index: number; szDecimals: number }>> | null = null
 
 const hyperliquidNetwork = (Deno.env.get('HYPERLIQUID_NETWORK') ?? '').toLowerCase()
 const hyperliquidApiUrl = Deno.env.get('HYPERLIQUID_API_URL')
 const hyperliquidRpcUrl = Deno.env.get('HYPERLIQUID_RPC_URL')
 
-export interface MarketData {
-  asset: string
-  price: number
+export interface MarketData extends MarketAsset {
   change_24h: number
   funding_rate?: number
   volume_24h?: number
@@ -41,15 +93,19 @@ export interface TradeAction {
 
 export interface TradeResult {
   success: boolean
-  orderId?: number
+  orderId?: string | number
   price?: number
   message?: string
   error?: string
+  fee?: number
 }
 
 async function loadHyperliquidModule(): Promise<HyperliquidModule> {
   if (!hyperliquidModulePromise) {
-    hyperliquidModulePromise = import('npm:@nktkas/hyperliquid')
+    hyperliquidModulePromise = (async () => {
+      const module = (await import(HYPERLIQUID_MODULE_SPECIFIER)) as unknown
+      return module as HyperliquidModule
+    })()
   }
   return hyperliquidModulePromise
 }
@@ -112,6 +168,17 @@ function formatNumber(value: number, decimals = 6) {
   return fixed.replace(/\.?0+$/, '')
 }
 
+function parseNumericValue(value: unknown): number | undefined {
+  if (typeof value === 'number') {
+    return value
+  }
+  if (typeof value === 'string') {
+    const parsed = parseFloat(value)
+    return Number.isNaN(parsed) ? undefined : parsed
+  }
+  return undefined
+}
+
 async function resolveAssetInfo(symbol: string) {
   const assetKey = symbol.toUpperCase()
   let assetMap = await getAssetMap()
@@ -142,6 +209,13 @@ export async function fetchCandleData(
   try {
     const infoClient = await getInfoClient()
     const assetSymbol = asset.replace('-PERP', '')
+    const intervalString = INTERVAL_MINUTES_TO_STRING[intervalMinutes] ?? DEFAULT_CANDLE_INTERVAL
+
+    if (!INTERVAL_MINUTES_TO_STRING[intervalMinutes]) {
+      console.warn(
+        `Unsupported interval ${intervalMinutes}m requested. Falling back to ${intervalString}.`
+      )
+    }
 
     const endTime = Date.now()
     const startTime = endTime - (lookbackHours * 60 * 60 * 1000)
@@ -153,7 +227,7 @@ export async function fetchCandleData(
 
     const candles = await infoClient.candleSnapshot({
       coin: assetSymbol,
-      interval: `${intervalMinutes}m`,
+      interval: intervalString,
       startTime,
       endTime,
     })
@@ -231,15 +305,18 @@ export async function fetchHyperliquidMarketData(): Promise<MarketData[]> {
       }
 
       const ctx = assetContexts?.find((entry: any) => entry.coin === symbol)
-      const fundingChange = ctx?.funding ? parseFloat(ctx.funding) * 100 : 0
+      const fundingValue = parseNumericValue(ctx?.funding)
+      const volumeValue = parseNumericValue(ctx?.dayNtlVlm)
+      const openInterestValue = parseNumericValue(ctx?.openInterest)
+      const fundingChange = typeof fundingValue === 'number' ? fundingValue * 100 : 0
 
       results.push({
-        asset: `${symbol}-PERP`,
+        symbol: `${symbol}-PERP`,
         price: parseFloat(mid),
         change_24h: fundingChange,
-        funding_rate: ctx?.funding ? parseFloat(ctx.funding) : undefined,
-        volume_24h: ctx?.dayNtlVlm ? parseFloat(ctx.dayNtlVlm) : undefined,
-        open_interest: ctx?.openInterest ? parseFloat(ctx.openInterest) : undefined,
+        funding_rate: fundingValue,
+        volume_24h: volumeValue,
+        open_interest: openInterestValue,
       })
     }
 

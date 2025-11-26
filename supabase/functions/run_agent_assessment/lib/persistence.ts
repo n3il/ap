@@ -34,7 +34,7 @@ export async function saveAssessment(
         }
         return `${ta.action} ${ta.asset}${ta.leverage ? ` ${ta.leverage}X` : ''}`;
       }).join(', ')
-    : llmResponse.action || 'NO_ACTION';
+    : 'NO_ACTION';
 
   const { data: assessment, error } = await serviceClient
     .from('assessments')
