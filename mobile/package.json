@@ -62,6 +62,7 @@
   "name": "ap",
   "version": "1.0.0",
   "devDependencies": {
+    "@biomejs/biome": "2.3.7",
     "@react-native/babel-preset": "^0.82.1",
     "@types/react": "~19.1.10",
     "babel-plugin-module-resolver": "^5.0.2",
