@@ -10,7 +10,7 @@ export default function AuthLayout() {
         presentation: 'transparentModal',
       }}
     >
-      <Stack.Screen name="index" />
+      <Stack.Screen name="index" backdropColor="rgba(0,0,0,0)" />
       <Stack.Screen name="verify-otp" />
       <Stack.Screen name="forgot-password" />
       <Stack.Screen name="onboarding" />
