@@ -3,8 +3,10 @@ import { validateRequiredFields } from '../_shared/lib/validation.ts';
 import { fetchAgent } from '../_shared/lib/agent.ts';
 import { executeOpenTrade, executeCloseTrade } from '../_shared/lib/trade.ts';
 import type { LLMTradeAction } from '../_shared/llm/types.ts';
+import initSentry from "../_shared/sentry.ts";
 
-console.log('Execute Hyperliquid Trade function started');
+const Sentry = initSentry();
+Sentry.setTag('edge_function', 'execute_hyperliquid_trade');
 
 interface TradePayload {
   agent_id: string;
@@ -18,13 +20,6 @@ interface TradePayload {
  */
 async function handleTrade(payload: TradePayload) {
   validateRequiredFields(payload, ['agent_id', 'action', 'simulate']);
-
-  console.log('Executing trade:', {
-    agent_id: payload.agent_id,
-    action: payload.action.action,
-    asset: payload.action.asset,
-    simulate: payload.simulate,
-  });
 
   const agent = await fetchAgent(payload.agent_id);
   const action = payload.action;
@@ -59,9 +54,10 @@ Deno.serve(async (req) => {
   try {
     const payload: TradePayload = await req.json();
     const result = await handleTrade(payload);
+
     return successResponse(result);
   } catch (error) {
-    console.error('Error in execute_hyperliquid_trade:', error);
-    return handleError(error);
+    Sentry.captureException(error);
+    return handleError(error as Error);
   }
 });

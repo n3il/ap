@@ -1,7 +1,9 @@
 import { successResponse, handleError } from '../_shared/lib/http.ts';
 import { fetchActiveAgents, runWithConcurrency } from './lib/scheduler.ts';
+import initSentry from "../_shared/sentry.ts";
 
-console.log('Agent Scheduler cron job started');
+const Sentry = initSentry();
+Sentry.setTag('edge_function', 'agent_scheduler');
 
 const CONCURRENCY_LIMIT = 50;
 
@@ -37,11 +39,11 @@ async function runScheduler() {
  */
 Deno.serve(async (_req) => {
   try {
-    console.log('Running agent scheduler...');
     const result = await runScheduler();
+
     return successResponse(result);
   } catch (error) {
-    console.error('Error in agent_scheduler:', error);
-    return handleError(error);
+    Sentry.captureException(error);
+    return handleError(error as Error);
   }
 });

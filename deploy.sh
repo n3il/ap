@@ -33,17 +33,7 @@ echo ""
 echo "📦 Deploying Edge Functions..."
 echo ""
 
-echo "Deploying create_agent..."
-supabase functions deploy create_agent --no-verify-jwt
-
-echo "Deploying run_agent_assessment..."
-supabase functions deploy run_agent_assessment --no-verify-jwt
-
-echo "Deploying execute_hyperliquid_trade..."
-supabase functions deploy execute_hyperliquid_trade --no-verify-jwt
-
-echo "Deploying agent_scheduler..."
-supabase functions deploy agent_scheduler --no-verify-jwt
+supabase functions deploy --no-verify-jwt
 
 echo ""
 echo "✅ All Edge Functions deployed successfully!"
