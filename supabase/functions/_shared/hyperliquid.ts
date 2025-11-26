@@ -1,4 +1,4 @@
-import type HyperliquidTypes from 'npm:@nktkas/hyperliquid'
+import type HyperliquidTypes from '@nktkas/hyperliquid'
 
 const TRACKED_ASSETS = ['BTC', 'ETH', 'SOL', 'ARB', 'OP', 'AVAX', 'MATIC', 'DOGE', 'SUI']
 

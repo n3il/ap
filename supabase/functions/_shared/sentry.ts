@@ -1,3 +1,5 @@
+import * as Sentry from '@sentry/deno'
+
 export default function initSentry() {
   Sentry.init({
     dsn: Deno.env.get('SENTRY_DSN'),
