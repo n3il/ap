@@ -66,11 +66,6 @@ export default function ExploreScreen() {
           <View style={{
             flex: 1,
             backgroundColor: palette.backgroundSecondary,
-            elevation: 10,
-            shadowColor: palette.shadow,
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.9,
-            shadowRadius: 3.84,
             paddingBottom: 4
           }}>
             <MarketPricesWidget
@@ -85,6 +80,13 @@ export default function ExploreScreen() {
             <MultiAgentChart
               timeframe={timeframe}
               scrollY={scrollY}
+              style={{
+                elevation: 10,
+                shadowColor: palette.shadow,
+                shadowOffset: { width: 0, height: 1 },
+                shadowOpacity: 0.9,
+                shadowRadius: 3.84,
+              }}
             />
 
             <PaddedView style={{

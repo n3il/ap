@@ -8,6 +8,19 @@ const asNumber = (value) => {
   return Number.isFinite(num) ? num : undefined;
 };
 
+type TradeActionType = {
+  action: string;
+  asset: string;
+  confidenceScore: number;
+  entry: number;
+  leverage: number;
+  reasoning: string;
+  size: number;
+  stopLoss: number;
+  takeProfit: number;
+  tradeId: string;
+}
+
 const formatCurrency = (value, maximumFractionDigits = 2) => {
   const num = asNumber(value);
   if (num === undefined) return null;
@@ -61,7 +74,7 @@ function getActionMeta(actionType) {
   }
 }
 
-export default function TradeActionDisplay({ actionData, showReason = true, groupedByAction = true }) {
+export default function TradeActionDisplay({ actionData, showReason = true }) {
   if (!actionData) return null;
 
   const [expanded, setExpanded] = useState(false);
@@ -70,17 +83,16 @@ export default function TradeActionDisplay({ actionData, showReason = true, grou
     colors: palette,
     success,
     error,
-    warning,
-    withOpacity,
   } = useColors();
 
-  const longColor = palette.long ?? success;
-  const shortColor = palette.short ?? error;
-  const closeColor = warning;
-  const neutralColor = palette.secondary ?? palette.secondary500 ?? palette.textTertiary;
-
   // Helper component to render a single action item
-  const ActionItem = ({ action, showDetails = false }) => {
+  const ActionItem = ({
+    action,
+    showDetails = false
+  }: {
+    action: TradeActionType,
+    showDetails: boolean
+  }) => {
     const config = getActionMeta(action.action);
     const sizeValue = asNumber(action.size);
     const leverageValue = asNumber(action.leverage);
@@ -131,47 +143,8 @@ export default function TradeActionDisplay({ actionData, showReason = true, grou
     );
   };
 
-  // Grouped view rendering
-  if (groupedByAction) {
-    const actions = Array.isArray(actionData) ? actionData : [actionData];
-    const firstAction = actions[0];
-    const reasoning = firstAction?.reasoning;
-
-    return (
-      <View
-        sx={{
-          borderBottomWidth: 1,
-          borderColor: palette.border,
-          paddingVertical: 2,
-        }}
-      >
-        <View>
-          {actions.map((action, index) => (
-            <ActionItem key={index} action={action} />
-          ))}
-        </View>
-
-        {showReason && reasoning && (
-          <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
-            <View sx={{ marginTop: 2, borderTopWidth: 1, borderColor: palette.border, paddingTop: 2 }}>
-              {expanded ? (
-                <Text variant="sm" sx={{ lineHeight: 14, fontSize: 10, fontWeight: 300 }}>
-                  {reasoning}
-                </Text>
-              ) : (
-                <Text variant="sm" tone="muted" sx={{ textAlign: 'center', fontSize: 11 }}>
-                  Expand
-                </Text>
-              )}
-            </View>
-          </TouchableOpacity>
-        )}
-      </View>
-    );
-  }
-
   // Single action view (original behavior)
-  const config = getActionConfig(actionData.action);
+  const config = getActionMeta(actionData.action);
   const entryPrice = asNumber(actionData.entry ?? actionData.entry_price);
   const stopLoss = asNumber(actionData.stopLoss ?? actionData.stop_loss);
   const takeProfit = asNumber(actionData.takeProfit ?? actionData.take_profit);

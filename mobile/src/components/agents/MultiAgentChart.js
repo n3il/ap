@@ -6,7 +6,7 @@ import { useColors } from "@/theme";
 import { useMemo } from "react";
 import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
 
-export default function MultiAgentChart({ scrollY }) {
+export default function MultiAgentChart({ scrollY, style }) {
   const { colors } = useColors();
   const { timeframe } = useTimeframeStore();
   const agents = useExploreAgentsStore((state) => state.agents);
@@ -49,6 +49,7 @@ export default function MultiAgentChart({ scrollY }) {
       timeframe={timeframe}
       scrollY={scrollY}
       isLoading={isLoading}
+      style={style}
     />
   );
 }
