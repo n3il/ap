@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import TradeCard from "@/components/TradeCard";
 import { Animated, RefreshControl, Text, View } from "@/components/ui";
 import { useColors } from "@/theme";

@@ -1,7 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
-import { StatusBadge, Text, TouchableOpacity, View } from "@/components/ui";
+import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useColors } from "@/theme";
 import { LLM_PROVIDERS } from "./CreateAgentModal";

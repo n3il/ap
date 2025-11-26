@@ -1,5 +1,5 @@
-import { GlassContainer, GlassView } from "expo-glass-effect";
-import React, { type ReactNode, useCallback, useRef, useState } from "react";
+import { GlassContainer } from "expo-glass-effect";
+import { type ReactNode, useCallback, useRef, useState } from "react";
 import {
   Animated,
   Dimensions,
@@ -15,7 +15,6 @@ import { GLOBAL_PADDING } from "@/components/ContainerView";
 import GlassButton from "@/components/ui/GlassButton";
 import ScrollView from "@/components/ui/ScrollView";
 import Text from "@/components/ui/Text";
-import TouchableOpacity from "@/components/ui/TouchableOpacity";
 import View from "@/components/ui/View";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -104,7 +103,7 @@ export default function SwipeableTabs({
 
   const tabWidth = SCREEN_WIDTH / tabs.length;
 
-  const indicatorTranslateX = scrollX.interpolate({
+  const _indicatorTranslateX = scrollX.interpolate({
     inputRange: tabs.map((_, i) => i * SCREEN_WIDTH),
     outputRange: tabs.map((_, i) => i * tabWidth),
     extrapolate: "clamp",

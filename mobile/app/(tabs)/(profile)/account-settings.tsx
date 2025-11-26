@@ -1,14 +1,13 @@
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import Animated, { FadeIn, FadeInDown } from "react-native-reanimated";
+import { useState } from "react";
+import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import {
   Alert,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -97,7 +96,7 @@ export default function AccountSettingsScreen() {
               );
               if (error) throw error;
               Alert.alert("Success", "Password reset link sent to your email");
-            } catch (error) {
+            } catch (_error) {
               Alert.alert("Error", "Failed to send password reset link");
             }
           },

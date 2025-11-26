@@ -37,7 +37,7 @@ const clearChunks = async (baseKey) => {
 };
 
 export const authStorage = {
-  getItem: async (key) => {
+  getItem: async (_key) => {
     try {
       // Try to get the count of chunks
       const chunkCount = await SecureStore.getItemAsync(
@@ -63,52 +63,44 @@ export const authStorage = {
       }
 
       return chunks.length > 0 ? chunks.join("") : null;
-    } catch (error) {
+    } catch (_error) {
       return null;
     }
   },
 
-  setItem: async (key, value) => {
-    try {
-      // Clear any existing chunks first
-      await clearChunks(SUPABASE_SESSION_KEY);
-      await SecureStore.deleteItemAsync(`${SUPABASE_SESSION_KEY}_count`);
+  setItem: async (_key, value) => {
+    // Clear any existing chunks first
+    await clearChunks(SUPABASE_SESSION_KEY);
+    await SecureStore.deleteItemAsync(`${SUPABASE_SESSION_KEY}_count`);
 
-      // If value is small enough, store directly
-      if (value.length <= CHUNK_SIZE) {
-        await SecureStore.setItemAsync(SUPABASE_SESSION_KEY, value);
-        return;
-      }
-
-      // Split into chunks
-      const chunks = chunkString(value, CHUNK_SIZE);
-
-      // Store each chunk
-      for (let i = 0; i < chunks.length; i++) {
-        await SecureStore.setItemAsync(
-          `${SUPABASE_SESSION_KEY}_chunk_${i}`,
-          chunks[i],
-        );
-      }
-
-      // Store the count
-      await SecureStore.setItemAsync(
-        `${SUPABASE_SESSION_KEY}_count`,
-        chunks.length.toString(),
-      );
-    } catch (error) {
-      throw error;
+    // If value is small enough, store directly
+    if (value.length <= CHUNK_SIZE) {
+      await SecureStore.setItemAsync(SUPABASE_SESSION_KEY, value);
+      return;
     }
+
+    // Split into chunks
+    const chunks = chunkString(value, CHUNK_SIZE);
+
+    // Store each chunk
+    for (let i = 0; i < chunks.length; i++) {
+      await SecureStore.setItemAsync(
+        `${SUPABASE_SESSION_KEY}_chunk_${i}`,
+        chunks[i],
+      );
+    }
+
+    // Store the count
+    await SecureStore.setItemAsync(
+      `${SUPABASE_SESSION_KEY}_count`,
+      chunks.length.toString(),
+    );
   },
 
-  removeItem: async (key) => {
-    try {
-      // Remove all chunks
-      await clearChunks(SUPABASE_SESSION_KEY);
-      await SecureStore.deleteItemAsync(`${SUPABASE_SESSION_KEY}_count`);
-      await SecureStore.deleteItemAsync(SUPABASE_SESSION_KEY);
-    } catch (error) {
-      throw error;
-    }
+  removeItem: async (_key) => {
+    // Remove all chunks
+    await clearChunks(SUPABASE_SESSION_KEY);
+    await SecureStore.deleteItemAsync(`${SUPABASE_SESSION_KEY}_count`);
+    await SecureStore.deleteItemAsync(SUPABASE_SESSION_KEY);
   },
 };

@@ -1,29 +1,14 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import TradeActionDisplay from "@/components/TradeActionDisplay";
-import {
-  Avatar,
-  StatusBadge,
-  Text,
-  TouchableOpacity,
-  View,
-} from "@/components/ui";
+import { Avatar, Text, TouchableOpacity, View } from "@/components/ui";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useColors } from "@/theme";
-import {
-  type AgentType,
-  AssessmentRecordType,
-  AssessmentType,
-} from "@/types/agent";
-import {
-  formatAmount,
-  numberToColor,
-  sentimentToColor,
-} from "@/utils/currency";
+import type { AgentType } from "@/types/agent";
+import { sentimentToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import BalanceOverview from "./agent/BalanceOverview";
 import PositionList from "./PositionList";
@@ -64,7 +49,7 @@ export default function AgentCard({
       damping: 30,
       stiffness: 150,
     });
-  }, [isActive]);
+  }, [isActive, borderOpacity]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -138,7 +123,14 @@ export default function AgentCard({
             paddingTop: 2,
           }}
         >
-          <View sx={{ flexDirection: "row", justifyContent: "space-between", alignItems: "flex-start", gap: 2 }}>
+          <View
+            sx={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "flex-start",
+              gap: 2,
+            }}
+          >
             <Text
               variant="xs"
               sx={{
@@ -160,7 +152,11 @@ export default function AgentCard({
 
             <Text
               variant="xs"
-              sx={{ fontWeight: "200", fontStyle: "italic", textAlign: "right" }}
+              sx={{
+                fontWeight: "200",
+                fontStyle: "italic",
+                textAlign: "right",
+              }}
             >
               {agent.latest_assessment?.timestamp
                 ? formatRelativeDate(agent.latest_assessment?.timestamp)
@@ -174,7 +170,6 @@ export default function AgentCard({
           >
             {parsedAssessment?.headline?.thesis}
           </Text>
-
         </View>
       ) : null}
 

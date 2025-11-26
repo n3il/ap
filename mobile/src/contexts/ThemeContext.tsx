@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DripsyProvider } from "dripsy";
-import React, {
+import {
   createContext,
   useCallback,
   useContext,
@@ -49,7 +49,7 @@ export const ThemeProvider = ({ children }) => {
           const next = normalizePreference(stored);
           return next === prev ? prev : next;
         });
-      } catch (error) {
+      } catch (_error) {
         // Non-fatal: fall back to system if storage fails.
       } finally {
         if (isMounted) {

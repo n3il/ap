@@ -12,7 +12,7 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import Svg, { Circle, Line, Polyline, Text as SvgText } from "react-native-svg";
-import { Button, Text, View } from "@/components/ui";
+import { Text, View } from "@/components/ui";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 
@@ -26,12 +26,16 @@ const getXValue = (point) => {
   if (!point) return null;
   if (
     typeof point.time === "number" &&
-    isFinite(point.time) &&
-    !isNaN(point.time)
+    Number.isFinite(point.time) &&
+    !Number.isNaN(point.time)
   ) {
     return point.time;
   }
-  if (typeof point.x === "number" && isFinite(point.x) && !isNaN(point.x)) {
+  if (
+    typeof point.x === "number" &&
+    Number.isFinite(point.x) &&
+    !Number.isNaN(point.x)
+  ) {
     return point.x;
   }
   return null;
@@ -45,16 +49,16 @@ const interpolateValue = (data, targetX) => {
   const validData = data.filter(
     (d) =>
       d &&
-      ((typeof d.time === "number" && isFinite(d.time)) ||
-        (typeof d.x === "number" && isFinite(d.x))) &&
-      ((typeof d.value === "number" && isFinite(d.value)) ||
-        (typeof d.percent === "number" && isFinite(d.percent))),
+      ((typeof d.time === "number" && Number.isFinite(d.time)) ||
+        (typeof d.x === "number" && Number.isFinite(d.x))) &&
+      ((typeof d.value === "number" && Number.isFinite(d.value)) ||
+        (typeof d.percent === "number" && Number.isFinite(d.percent))),
   );
 
   if (validData.length === 0) return 0;
   if (validData.length === 1) {
     const val = validData[0].percent || validData[0].value || 0;
-    return isFinite(val) ? val : 0;
+    return Number.isFinite(val) ? val : 0;
   }
 
   // Find the two points to interpolate between
@@ -76,11 +80,11 @@ const interpolateValue = (data, targetX) => {
 
   if (targetX <= validData[0][xKey]) {
     const val = validData[0][yKey];
-    return isFinite(val) ? val : 0;
+    return Number.isFinite(val) ? val : 0;
   }
   if (targetX >= validData[validData.length - 1][xKey]) {
     const val = validData[validData.length - 1][yKey];
-    return isFinite(val) ? val : 0;
+    return Number.isFinite(val) ? val : 0;
   }
 
   // Linear interpolation
@@ -90,7 +94,7 @@ const interpolateValue = (data, targetX) => {
   const ratio = xRange === 0 ? 0 : xOffset / xRange;
 
   const result = leftPoint[yKey] + yRange * ratio;
-  return isFinite(result) ? result : 0;
+  return Number.isFinite(result) ? result : 0;
 };
 
 /**
@@ -188,7 +192,7 @@ const SvgChart = ({
 
   const handleLayout = useCallback((event) => {
     const { width } = event.nativeEvent.layout;
-    if (!width || !isFinite(width) || width <= 0) return;
+    if (!width || !Number.isFinite(width) || width <= 0) return;
     setChartWidth((prevWidth) => {
       // Only update if difference is significant to prevent layout thrashing
       const shouldUpdate = Math.abs(prevWidth - width) > 1;
@@ -198,7 +202,7 @@ const SvgChart = ({
 
   useEffect(() => {
     // Only animate if we can render
-    if (!isFinite(chartWidth) || chartWidth <= 0) return;
+    if (!Number.isFinite(chartWidth) || chartWidth <= 0) return;
 
     const pulse = RNAnimated.loop(
       RNAnimated.sequence([
@@ -314,7 +318,10 @@ const SvgChart = ({
     const calculateAxisRange = (groupLines) => {
       const allValues = groupLines
         .flatMap((line) => line.data.map((d) => d.value ?? d.percent))
-        .filter((v) => typeof v === "number" && !isNaN(v) && isFinite(v));
+        .filter(
+          (v) =>
+            typeof v === "number" && !Number.isNaN(v) && Number.isFinite(v),
+        );
 
       if (allValues.length === 0) {
         return { yMin: -10, yMax: 10 };
@@ -328,8 +335,8 @@ const SvgChart = ({
       let yMin = min - padding;
       let yMax = max + padding;
 
-      if (!isFinite(yMin) || isNaN(yMin)) yMin = -10;
-      if (!isFinite(yMax) || isNaN(yMax)) yMax = 10;
+      if (!Number.isFinite(yMin) || Number.isNaN(yMin)) yMin = -10;
+      if (!Number.isFinite(yMax) || Number.isNaN(yMax)) yMax = 10;
 
       return { yMin, yMax };
     };
@@ -403,26 +410,27 @@ const SvgChart = ({
       const axis = axisConfig[axisGroup];
       if (!axis) return PADDING.top + plotHeight / 2;
 
-      if (!isFinite(value) || isNaN(value)) return PADDING.top + plotHeight / 2;
+      if (!Number.isFinite(value) || Number.isNaN(value))
+        return PADDING.top + plotHeight / 2;
 
       const normalized = (value - axis.yMin) / (axis.yMax - axis.yMin);
 
-      if (!isFinite(normalized) || isNaN(normalized))
+      if (!Number.isFinite(normalized) || Number.isNaN(normalized))
         return PADDING.top + plotHeight / 2;
 
       const result = PADDING.top + plotHeight - normalized * plotHeight;
-      return isFinite(result) ? result : PADDING.top + plotHeight / 2;
+      return Number.isFinite(result) ? result : PADDING.top + plotHeight / 2;
     },
     [axisConfig, plotHeight],
   );
 
   const scaleX = useCallback(
     (time) => {
-      if (!isFinite(time) || isNaN(time)) return PADDING.left;
+      if (!Number.isFinite(time) || Number.isNaN(time)) return PADDING.left;
       const clampedTime = Math.max(0, Math.min(time, xAxisMaxTime));
       const normalized = clampedTime / xAxisMaxTime;
       const result = PADDING.left + normalized * plotWidth;
-      return isFinite(result) ? result : PADDING.left;
+      return Number.isFinite(result) ? result : PADDING.left;
     },
     [plotWidth, xAxisMaxTime],
   );
@@ -437,7 +445,7 @@ const SvgChart = ({
 
   // Default value formatter
   const defaultFormatter = (val) => {
-    if (typeof val !== "number" || !isFinite(val) || isNaN(val)) {
+    if (typeof val !== "number" || !Number.isFinite(val) || Number.isNaN(val)) {
       return "0.0";
     }
     return `${val.toFixed(1)}`;
@@ -488,344 +496,338 @@ const SvgChart = ({
   }, [scrollY]);
 
   return (
-    <>
-      <Animated.View style={animatedStyle}>
-        {isLoading ? (
-          <View
-            onLayout={handleLayout}
-            sx={{
+    <Animated.View style={animatedStyle}>
+      {isLoading ? (
+        <View
+          onLayout={handleLayout}
+          sx={{
+            width: "100%",
+            height: chartHeight,
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Text sx={{ color: "mutedForeground" }}>Loading chart...</Text>
+        </View>
+      ) : (
+        <View
+          {...panResponder.panHandlers}
+          onLayout={handleLayout}
+          style={[
+            {
+              position: "relative",
               width: "100%",
-              height: chartHeight,
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Text sx={{ color: "mutedForeground" }}>Loading chart...</Text>
-          </View>
-        ) : (
-          <View
-            {...panResponder.panHandlers}
-            onLayout={handleLayout}
-            style={[
-              {
-                position: "relative",
-                width: "100%",
-              },
-              style,
-            ]}
-          >
-            <Svg width={chartWidth} height="100%">
-              {/* Vertical grid lines for time intervals */}
-              {verticalGridPositions.map((grid, i) => (
-                <Line
-                  key={`vgrid-${i}`}
-                  x1={grid.x}
-                  y1={PADDING.top}
-                  x2={grid.x}
-                  y2={PADDING.top + plotHeight}
-                  stroke={withOpacity(mutedColor, 0.1)}
-                  strokeWidth={1}
-                />
-              ))}
+            },
+            style,
+          ]}
+        >
+          <Svg width={chartWidth} height="100%">
+            {/* Vertical grid lines for time intervals */}
+            {verticalGridPositions.map((grid, i) => (
+              <Line
+                key={`vgrid-${i}`}
+                x1={grid.x}
+                y1={PADDING.top}
+                x2={grid.x}
+                y2={PADDING.top + plotHeight}
+                stroke={withOpacity(mutedColor, 0.1)}
+                strokeWidth={1}
+              />
+            ))}
 
-              {/* Horizontal grid lines and Y-axis labels for left axis */}
-              {axisConfig.left &&
-                axisConfig.left.yTicks.map((tick, i) => {
-                  const y = scaleY(tick, "left");
-                  return (
-                    <React.Fragment key={`left-${i}`}>
-                      <Line
-                        x1={PADDING.left}
-                        y1={y}
-                        x2={PADDING.left + plotWidth}
-                        y2={y}
-                        stroke={withOpacity(mutedColor, 0.3)}
-                        strokeWidth={1}
-                      />
-                      <SvgText
-                        x={PADDING.left + 6}
-                        y={y + 4}
-                        fontSize={10}
-                        fill={mutedColor}
-                        textAnchor="start"
-                      >
-                        {(
-                          axisConfig.left.lines[0]?.formatValue ||
-                          defaultFormatter
-                        )(tick)}
-                      </SvgText>
-                    </React.Fragment>
-                  );
-                })}
-
-              {/* Grid lines and Y-axis labels for right axis */}
-              {axisConfig.right &&
-                axisConfig.right.yTicks.map((tick, i) => {
-                  const y = scaleY(tick, "right");
-                  return (
-                    <React.Fragment key={`right-${i}`}>
-                      <SvgText
-                        x={PADDING.left + plotWidth - 6}
-                        y={y + 4}
-                        fontSize={10}
-                        fill={mutedColor}
-                        textAnchor="end"
-                      >
-                        {(
-                          axisConfig.right.lines[0]?.formatValue ||
-                          defaultFormatter
-                        )(tick)}
-                      </SvgText>
-                    </React.Fragment>
-                  );
-                })}
-
-              {/* Zero line for left axis */}
-              {axisConfig.left && (
-                <Line
-                  x1={PADDING.left}
-                  y1={scaleY(0, "left")}
-                  x2={PADDING.left + plotWidth}
-                  y2={scaleY(0, "left")}
-                  stroke={withOpacity(mutedColor, 0.8)}
-                  strokeWidth={1.5}
-                  strokeDasharray="3,3"
-                />
-              )}
-
-              {/* Render lines */}
-              {lines.map((line) => {
-                const axisGroup = line.axisGroup || "left";
-
-                // Filter out invalid data points
-                const validData = (line.data || []).filter((d) => {
-                  if (!d) return false;
-                  const hasValidTime =
-                    typeof d.time === "number" &&
-                    isFinite(d.time) &&
-                    !isNaN(d.time);
-                  const hasValidValue =
-                    (typeof d.value === "number" &&
-                      isFinite(d.value) &&
-                      !isNaN(d.value)) ||
-                    (typeof d.percent === "number" &&
-                      isFinite(d.percent) &&
-                      !isNaN(d.percent));
-                  return hasValidTime && hasValidValue;
-                });
-
-                // Skip rendering if no valid data
-                if (validData.length === 0) return null;
-
-                const points = validData
-                  .map((d) => {
-                    const x = scaleX(d.time);
-                    const yValue = d.value ?? d.percent;
-                    const y = scaleY(yValue, axisGroup);
-                    return `${x.toFixed(2)},${y.toFixed(2)}`;
-                  })
-                  .join(" ");
-
-                const lastPoint = validData[validData.length - 1];
-
-                return (
-                  <React.Fragment key={line.id}>
-                    <Polyline
-                      points={points}
-                      fill="none"
-                      stroke={line.color}
-                      strokeWidth={2}
-                      strokeLinejoin="round"
-                      strokeLinecap="round"
-                      strokeDasharray="1,1"
-                      opacity={0.9}
-                    />
-
-                    {!touchActive && lastPoint && (
-                      <AnimatedCircle
-                        cx={scaleX(lastPoint.time)}
-                        cy={scaleY(
-                          lastPoint.value ?? lastPoint.percent,
-                          axisGroup,
-                        )}
-                        r={pulseAnim.interpolate({
-                          inputRange: [1, 1.5],
-                          outputRange: [4, 6],
-                        })}
-                        fill={line.color}
-                        opacity={pulseAnim.interpolate({
-                          inputRange: [1, 1.5],
-                          outputRange: [0.9, 0.6],
-                        })}
-                      />
-                    )}
-                  </React.Fragment>
-                );
-              })}
-
-              {/* Touch interaction */}
-              {touchActive && (
-                <>
+            {/* Horizontal grid lines and Y-axis labels for left axis */}
+            {axisConfig.left?.yTicks.map((tick, i) => {
+              const y = scaleY(tick, "left");
+              return (
+                <React.Fragment key={`left-${i}`}>
                   <Line
-                    x1={scaleX(snappedTouchX)}
-                    y1={PADDING.top}
-                    x2={scaleX(snappedTouchX)}
-                    y2={PADDING.top + plotHeight}
-                    stroke={withOpacity(secondaryTextColor ?? mutedColor, 0.6)}
-                    strokeWidth={1.5}
-                    strokeDasharray="4,4"
+                    x1={PADDING.left}
+                    y1={y}
+                    x2={PADDING.left + plotWidth}
+                    y2={y}
+                    stroke={withOpacity(mutedColor, 0.3)}
+                    strokeWidth={1}
+                  />
+                  <SvgText
+                    x={PADDING.left + 6}
+                    y={y + 4}
+                    fontSize={10}
+                    fill={mutedColor}
+                    textAnchor="start"
+                  >
+                    {(
+                      axisConfig.left.lines[0]?.formatValue || defaultFormatter
+                    )(tick)}
+                  </SvgText>
+                </React.Fragment>
+              );
+            })}
+
+            {/* Grid lines and Y-axis labels for right axis */}
+            {axisConfig.right?.yTicks.map((tick, i) => {
+              const y = scaleY(tick, "right");
+              return (
+                <React.Fragment key={`right-${i}`}>
+                  <SvgText
+                    x={PADDING.left + plotWidth - 6}
+                    y={y + 4}
+                    fontSize={10}
+                    fill={mutedColor}
+                    textAnchor="end"
+                  >
+                    {(
+                      axisConfig.right.lines[0]?.formatValue || defaultFormatter
+                    )(tick)}
+                  </SvgText>
+                </React.Fragment>
+              );
+            })}
+
+            {/* Zero line for left axis */}
+            {axisConfig.left && (
+              <Line
+                x1={PADDING.left}
+                y1={scaleY(0, "left")}
+                x2={PADDING.left + plotWidth}
+                y2={scaleY(0, "left")}
+                stroke={withOpacity(mutedColor, 0.8)}
+                strokeWidth={1.5}
+                strokeDasharray="3,3"
+              />
+            )}
+
+            {/* Render lines */}
+            {lines.map((line) => {
+              const axisGroup = line.axisGroup || "left";
+
+              // Filter out invalid data points
+              const validData = (line.data || []).filter((d) => {
+                if (!d) return false;
+                const hasValidTime =
+                  typeof d.time === "number" &&
+                  Number.isFinite(d.time) &&
+                  !Number.isNaN(d.time);
+                const hasValidValue =
+                  (typeof d.value === "number" &&
+                    Number.isFinite(d.value) &&
+                    !Number.isNaN(d.value)) ||
+                  (typeof d.percent === "number" &&
+                    Number.isFinite(d.percent) &&
+                    !Number.isNaN(d.percent));
+                return hasValidTime && hasValidValue;
+              });
+
+              // Skip rendering if no valid data
+              if (validData.length === 0) return null;
+
+              const points = validData
+                .map((d) => {
+                  const x = scaleX(d.time);
+                  const yValue = d.value ?? d.percent;
+                  const y = scaleY(yValue, axisGroup);
+                  return `${x.toFixed(2)},${y.toFixed(2)}`;
+                })
+                .join(" ");
+
+              const lastPoint = validData[validData.length - 1];
+
+              return (
+                <React.Fragment key={line.id}>
+                  <Polyline
+                    points={points}
+                    fill="none"
+                    stroke={line.color}
+                    strokeWidth={2}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
+                    strokeDasharray="1,1"
+                    opacity={0.9}
                   />
 
-                  {touchValues.map((line) => {
-                    const axisGroup = line.axisGroup || "left";
-                    return (
-                      <Circle
-                        key={line.id}
-                        cx={scaleX(snappedTouchX)}
-                        cy={scaleY(line.value, axisGroup)}
-                        r={5}
-                        fill={line.color}
-                        stroke={withOpacity(
-                          palette.surface ?? palette.background,
-                          0.8,
-                        )}
-                        strokeWidth={2}
-                      />
-                    );
-                  })}
-                </>
-              )}
-            </Svg>
+                  {!touchActive && lastPoint && (
+                    <AnimatedCircle
+                      cx={scaleX(lastPoint.time)}
+                      cy={scaleY(
+                        lastPoint.value ?? lastPoint.percent,
+                        axisGroup,
+                      )}
+                      r={pulseAnim.interpolate({
+                        inputRange: [1, 1.5],
+                        outputRange: [4, 6],
+                      })}
+                      fill={line.color}
+                      opacity={pulseAnim.interpolate({
+                        inputRange: [1, 1.5],
+                        outputRange: [0.9, 0.6],
+                      })}
+                    />
+                  )}
+                </React.Fragment>
+              );
+            })}
 
+            {/* Touch interaction */}
             {touchActive && (
-              <View
-                pointerEvents="none"
-                sx={{
-                  position: "absolute",
-                  top: 8,
-                  left: 8,
-                  backgroundColor: withOpacity(
-                    palette.surface ?? palette.background,
-                    0.95,
-                  ),
-                  borderRadius: "lg",
-                  padding: 3,
-                  borderWidth: 1,
-                  borderColor: withOpacity(mutedColor, 0.3),
-                  minWidth: 160,
-                }}
-              >
-                <Text
-                  sx={{
-                    fontSize: 11,
-                    color: "mutedForeground",
-                    marginBottom: 2,
-                  }}
-                >
-                  {(() => {
-                    const now = new Date();
-                    const date = new Date(now);
-                    const normalizedPosition = Math.max(
-                      0,
-                      Math.min(snappedTouchX, 1),
-                    );
-                    if (timeframe === "1h") {
-                      date.setMinutes(
-                        date.getMinutes() - 60 + normalizedPosition * 60,
-                      );
-                      return date.toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      });
-                    } else if (timeframe === "24h") {
-                      date.setHours(
-                        date.getHours() - 24 + normalizedPosition * 24,
-                      );
-                      return date.toLocaleTimeString("en-US", {
-                        hour: "numeric",
-                        minute: "2-digit",
-                      });
-                    } else if (timeframe === "7d") {
-                      date.setDate(date.getDate() - 7 + normalizedPosition * 7);
-                      return date.toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "numeric",
-                      });
-                    }
-                    return "";
-                  })()}
-                </Text>
+              <>
+                <Line
+                  x1={scaleX(snappedTouchX)}
+                  y1={PADDING.top}
+                  x2={scaleX(snappedTouchX)}
+                  y2={PADDING.top + plotHeight}
+                  stroke={withOpacity(secondaryTextColor ?? mutedColor, 0.6)}
+                  strokeWidth={1.5}
+                  strokeDasharray="4,4"
+                />
 
                 {touchValues.map((line) => {
-                  const isPositive = line.value >= 0;
-                  const formatter = line.formatValue || defaultFormatter;
+                  const axisGroup = line.axisGroup || "left";
                   return (
-                    <View
+                    <Circle
                       key={line.id}
+                      cx={scaleX(snappedTouchX)}
+                      cy={scaleY(line.value, axisGroup)}
+                      r={5}
+                      fill={line.color}
+                      stroke={withOpacity(
+                        palette.surface ?? palette.background,
+                        0.8,
+                      )}
+                      strokeWidth={2}
+                    />
+                  );
+                })}
+              </>
+            )}
+          </Svg>
+
+          {touchActive && (
+            <View
+              pointerEvents="none"
+              sx={{
+                position: "absolute",
+                top: 8,
+                left: 8,
+                backgroundColor: withOpacity(
+                  palette.surface ?? palette.background,
+                  0.95,
+                ),
+                borderRadius: "lg",
+                padding: 3,
+                borderWidth: 1,
+                borderColor: withOpacity(mutedColor, 0.3),
+                minWidth: 160,
+              }}
+            >
+              <Text
+                sx={{
+                  fontSize: 11,
+                  color: "mutedForeground",
+                  marginBottom: 2,
+                }}
+              >
+                {(() => {
+                  const now = new Date();
+                  const date = new Date(now);
+                  const normalizedPosition = Math.max(
+                    0,
+                    Math.min(snappedTouchX, 1),
+                  );
+                  if (timeframe === "1h") {
+                    date.setMinutes(
+                      date.getMinutes() - 60 + normalizedPosition * 60,
+                    );
+                    return date.toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
+                  } else if (timeframe === "24h") {
+                    date.setHours(
+                      date.getHours() - 24 + normalizedPosition * 24,
+                    );
+                    return date.toLocaleTimeString("en-US", {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    });
+                  } else if (timeframe === "7d") {
+                    date.setDate(date.getDate() - 7 + normalizedPosition * 7);
+                    return date.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "numeric",
+                    });
+                  }
+                  return "";
+                })()}
+              </Text>
+
+              {touchValues.map((line) => {
+                const isPositive = line.value >= 0;
+                const formatter = line.formatValue || defaultFormatter;
+                return (
+                  <View
+                    key={line.id}
+                    sx={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginVertical: 1,
+                    }}
+                  >
+                    <View
                       sx={{
                         flexDirection: "row",
                         alignItems: "center",
-                        justifyContent: "space-between",
-                        marginVertical: 1,
+                        gap: 2,
                       }}
                     >
                       <View
                         sx={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          gap: 2,
+                          width: 8,
+                          height: 8,
+                          borderRadius: "full",
+                          backgroundColor: line.color,
                         }}
-                      >
-                        <View
-                          sx={{
-                            width: 8,
-                            height: 8,
-                            borderRadius: "full",
-                            backgroundColor: line.color,
-                          }}
-                        />
-                        <Text sx={{ fontSize: 12, color: "textSecondary" }}>
-                          {line.name}
-                        </Text>
-                      </View>
-                      <Text
-                        sx={{
-                          fontSize: 13,
-                          fontWeight: "600",
-                          color: isPositive ? "success" : "errorLight",
-                          marginLeft: 3,
-                        }}
-                      >
-                        {formatter(line.value)}
+                      />
+                      <Text sx={{ fontSize: 12, color: "textSecondary" }}>
+                        {line.name}
                       </Text>
                     </View>
-                  );
-                })}
-              </View>
-            )}
-          </View>
-        )}
-
-        <View
-          sx={{
-            width: "100%",
-            flexDirection: "row",
-            justifyContent: "space-between",
-            paddingLeft: PADDING.left,
-            paddingRight: PADDING.right,
-            position: "absolute",
-            bottom: 0,
-          }}
-        >
-          {timeLabels.map((label, i) => (
-            <Text key={i} sx={{ fontSize: 10, color: "secondary500" }}>
-              {label}
-            </Text>
-          ))}
+                    <Text
+                      sx={{
+                        fontSize: 13,
+                        fontWeight: "600",
+                        color: isPositive ? "success" : "errorLight",
+                        marginLeft: 3,
+                      }}
+                    >
+                      {formatter(line.value)}
+                    </Text>
+                  </View>
+                );
+              })}
+            </View>
+          )}
         </View>
-      </Animated.View>
-    </>
+      )}
+
+      <View
+        sx={{
+          width: "100%",
+          flexDirection: "row",
+          justifyContent: "space-between",
+          paddingLeft: PADDING.left,
+          paddingRight: PADDING.right,
+          position: "absolute",
+          bottom: 0,
+        }}
+      >
+        {timeLabels.map((label, i) => (
+          <Text key={i} sx={{ fontSize: 10, color: "secondary500" }}>
+            {label}
+          </Text>
+        ))}
+      </View>
+    </Animated.View>
   );
 };
 

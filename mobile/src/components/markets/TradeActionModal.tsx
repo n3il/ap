@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
 import { Modal, Text, TouchableOpacity, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";

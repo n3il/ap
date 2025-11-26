@@ -1,4 +1,3 @@
-import React from "react";
 import { Stack, Text, View } from "@/components/ui";
 import { SPACING } from "@/theme";
 

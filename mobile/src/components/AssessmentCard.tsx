@@ -148,7 +148,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         typeof assessment.parsed_llm_response === "object"
         ? assessment.parsed_llm_response
         : JSON.parse(assessment.llm_response_text);
-    } catch (e) {
+    } catch (_e) {
       return {
         headline: assessment.llm_response_text,
         overview: null,

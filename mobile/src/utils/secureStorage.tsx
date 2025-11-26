@@ -12,17 +12,13 @@ import * as SecureStore from "expo-secure-store";
  * @returns {Promise<void>}
  */
 export async function setSecureItem(key, value) {
-  try {
-    if (!key || typeof key !== "string") {
-      throw new Error("Key must be a non-empty string");
-    }
-    if (typeof value !== "string") {
-      throw new Error("Value must be a string");
-    }
-    await SecureStore.setItemAsync(key, value);
-  } catch (error) {
-    throw error;
+  if (!key || typeof key !== "string") {
+    throw new Error("Key must be a non-empty string");
   }
+  if (typeof value !== "string") {
+    throw new Error("Value must be a string");
+  }
+  await SecureStore.setItemAsync(key, value);
 }
 
 /**
@@ -37,7 +33,7 @@ export async function getSecureItem(key) {
     }
     const value = await SecureStore.getItemAsync(key);
     return value;
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -48,14 +44,10 @@ export async function getSecureItem(key) {
  * @returns {Promise<void>}
  */
 export async function deleteSecureItem(key) {
-  try {
-    if (!key || typeof key !== "string") {
-      throw new Error("Key must be a non-empty string");
-    }
-    await SecureStore.deleteItemAsync(key);
-  } catch (error) {
-    throw error;
+  if (!key || typeof key !== "string") {
+    throw new Error("Key must be a non-empty string");
   }
+  await SecureStore.deleteItemAsync(key);
 }
 
 /**
@@ -65,12 +57,8 @@ export async function deleteSecureItem(key) {
  * @returns {Promise<void>}
  */
 export async function setSecureObject(key, object) {
-  try {
-    const jsonString = JSON.stringify(object);
-    await setSecureItem(key, jsonString);
-  } catch (error) {
-    throw error;
-  }
+  const jsonString = JSON.stringify(object);
+  await setSecureItem(key, jsonString);
 }
 
 /**
@@ -83,7 +71,7 @@ export async function getSecureObject(key) {
     const jsonString = await getSecureItem(key);
     if (!jsonString) return null;
     return JSON.parse(jsonString);
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }

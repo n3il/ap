@@ -1,4 +1,3 @@
-import React from "react";
 import PromptManagerModal from "@/components/PromptManagerModal";
 import PromptPickerModal from "@/components/PromptPickerModal";
 

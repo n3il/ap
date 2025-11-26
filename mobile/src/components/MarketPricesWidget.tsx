@@ -1,6 +1,5 @@
-import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { Dimensions } from "react-native";
 import Animated, {
   Extrapolation,
@@ -134,7 +133,7 @@ const PriceColumn = ({
       );
     }
     prevPrice.current = displayAsset?.price;
-  }, [displayAsset?.price]);
+  }, [displayAsset?.price, priceOpacity]);
 
   // Animated styles for each element
   const symbolStyle = useAnimatedStyle(() => {
@@ -229,7 +228,7 @@ const PriceColumn = ({
   }, [scrollY]);
 
   const MINI_SPARKLINE_HEIGHT = 100;
-  const expandedStyle = {
+  const _expandedStyle = {
     height: MINI_SPARKLINE_HEIGHT,
   };
   const collapsedStyle = {

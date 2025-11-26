@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import React, { useCallback, useState } from "react";
+import { useCallback, useState } from "react";
 import { ScrollView } from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
@@ -12,7 +12,7 @@ import { PaddedView } from "@/components/ContainerView";
 import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
 import ExploreHeader from "@/components/explore/Header";
 import MarketPricesWidget from "@/components/MarketPricesWidget";
-import { GlassButton, RefreshControl, View } from "@/components/ui";
+import { RefreshControl, View } from "@/components/ui";
 import GlassSelector from "@/components/ui/GlassSelector";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
@@ -31,7 +31,7 @@ export default function ExploreScreen() {
     setIsFetching(true);
     await queryClient.invalidateQueries({ queryKey: ["explore-agents"] });
     setIsFetching(false);
-  }, []);
+  }, [queryClient.invalidateQueries]);
 
   const scrollY = useSharedValue(0);
 

@@ -1,7 +1,5 @@
-import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
-import { withOpacity } from "@/theme/utils";
 
 export default function MarketSectionTabs({ sections = [], active, onChange }) {
   const { theme } = useTheme();

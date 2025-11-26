@@ -60,7 +60,7 @@ const useMarketPricesStore = create((set, get) => ({
   },
 
   // Update both connection status and strength
-  updateConnectionState: (status, strength) => {
+  updateConnectionState: (status, _strength) => {
     const diff = Date.now() - get().lastConnectionChange;
     const updates = {
       connectionStatus: status,
@@ -122,7 +122,7 @@ const useMarketPricesStore = create((set, get) => ({
   },
 
   // Update multiple tickers at once
-  updateTickers: (assets, timestamp, raw) => {
+  updateTickers: (assets, timestamp, _raw) => {
     const current = get().tickers;
     const nextTickers = { ...current };
 
@@ -204,12 +204,9 @@ const useMarketPricesStore = create((set, get) => ({
  * @returns {number} reconnectAttempts - Number of reconnection attempts made
  */
 export function useMarketPrices(tickers) {
-  const normalizedTickers = useMemo(
-    () => normalizeTickers(tickers),
-    [Array.isArray(tickers) ? tickers.join(",") : tickers],
-  );
+  const normalizedTickers = useMemo(() => normalizeTickers(tickers), [tickers]);
 
-  const tickersKey = normalizedTickers.join(",");
+  const _tickersKey = normalizedTickers.join(",");
 
   const {
     tickers: allTickers,
@@ -328,7 +325,15 @@ export function useMarketPrices(tickers) {
 
       // Don't clear ticker data on unmount - keep it cached for other subscribers
     };
-  }, [tickersKey]);
+  }, [
+    incrementReconnectAttempts,
+    initTicker,
+    normalizedTickers, // Set connecting status
+    setConnectionStatus,
+    setError,
+    updateConnectionState,
+    updateTickers,
+  ]);
 
   // Get ticker data for the requested symbols
   const assets = useMemo(() => {

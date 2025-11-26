@@ -1,14 +1,7 @@
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import Markdown from "react-native-markdown-display";
 import TradeActionDisplay from "@/components/TradeActionDisplay";
-import {
-  Avatar,
-  Card,
-  StatusBadge,
-  Text,
-  TouchableOpacity,
-  View,
-} from "@/components/ui";
+import { Avatar, StatusBadge, Text, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatRelativeDate } from "@/utils/date";
 
@@ -16,7 +9,7 @@ const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;
 
 export default function ReportDetail({ assessment }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, _setExpanded] = useState(false);
   const { colors: palette, withOpacity } = useColors();
 
   const [parsedResponse, _] = useState(() => {
@@ -25,7 +18,7 @@ export default function ReportDetail({ assessment }) {
         typeof assessment.parsed_llm_response === "object"
         ? assessment.parsed_llm_response
         : JSON.parse(assessment.llm_response_text);
-    } catch (e) {
+    } catch (_e) {
       return {
         headline: assessment?.llm_response_text,
         overview: null,

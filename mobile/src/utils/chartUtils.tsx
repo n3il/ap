@@ -17,7 +17,7 @@ export function createTimeNormalizer(dataSeries, timestampKey = "timestamp") {
       if (!item || !item[timestampKey]) return;
 
       const ts = new Date(item[timestampKey]).getTime();
-      if (isFinite(ts)) {
+      if (Number.isFinite(ts)) {
         allTimestamps.push(ts);
       }
     });
@@ -46,7 +46,7 @@ export function createTimeNormalizer(dataSeries, timestampKey = "timestamp") {
     timeRange,
     normalizeTimestamp: (timestamp) => {
       const ts = new Date(timestamp).getTime();
-      if (!isFinite(ts)) return null;
+      if (!Number.isFinite(ts)) return null;
       return (ts - minTime) / timeRange;
     },
     hasData: true,
@@ -76,7 +76,7 @@ export function normalizeDataSeries(
       const value = parseFloat(item[valueKey]);
 
       // Validate both time and value
-      if (normalizedTime === null || !isFinite(value)) return null;
+      if (normalizedTime === null || !Number.isFinite(value)) return null;
 
       return {
         time: normalizedTime,

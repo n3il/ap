@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   FlatList,
   Modal,

@@ -1,7 +1,7 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { router } from "expo-router";
-import React, { useState } from "react";
+import { useState } from "react";
 import AgentList from "@/components/AgentList";
 import ContainerView from "@/components/ContainerView";
 import CreateAgentModal from "@/components/CreateAgentModal";
@@ -11,7 +11,6 @@ import {
   ScrollView,
   SwipeableTabs,
   Text,
-  TouchableOpacity,
   View,
 } from "@/components/ui";
 import { useAuth } from "@/contexts/AuthContext";
@@ -48,7 +47,7 @@ export default function AgentsScreen() {
       // Navigate to the new agent's detail page
       router.push(`/(tabs)/(agents)/${newAgent.id}`);
     },
-    onError: (error) => {
+    onError: (_error) => {
       alert("Failed to create agent. Please try again.");
     },
   });

@@ -1,4 +1,3 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { DynamicColorIOS } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";

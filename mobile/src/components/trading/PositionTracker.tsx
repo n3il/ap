@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -198,8 +198,8 @@ export default function PositionTracker({
 
 const createStyles = (theme) => {
   const { colors } = theme;
-  const longBackground = withOpacity(colors.success.DEFAULT, 0.15);
-  const shortBackground = withOpacity(colors.error.DEFAULT, 0.15);
+  const _longBackground = withOpacity(colors.success.DEFAULT, 0.15);
+  const _shortBackground = withOpacity(colors.error.DEFAULT, 0.15);
 
   return {
     container: {

@@ -1,7 +1,6 @@
 import { GlassView } from "expo-glass-effect";
 import { Pressable, View } from "react-native";
 import Text from "@/components/ui/Text";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 
 const styleVariants = {

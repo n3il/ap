@@ -1,8 +1,8 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { OtpInput } from "react-native-otp-entry";
-import { FadeIn, LinearTransition } from "react-native-reanimated";
+import { LinearTransition } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import {
   ActivityIndicator,
@@ -47,7 +47,7 @@ export default function VerifyOTPScreen() {
         clearInterval(countdownInterval.current);
       }
     };
-  }, []);
+  }, [startCountdown]);
 
   const startCountdown = () => {
     setCountdown(RESEND_COUNTDOWN);

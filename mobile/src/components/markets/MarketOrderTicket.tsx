@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Text, TextInput, TouchableOpacity, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";

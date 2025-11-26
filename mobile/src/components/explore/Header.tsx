@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
 import { ActivityIndicator, Image, Text, View } from "@/components/ui";
 import { useMarketPricesStore } from "@/hooks/useMarketPrices";
 import { useColors } from "@/theme";

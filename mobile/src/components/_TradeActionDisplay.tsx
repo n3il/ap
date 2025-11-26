@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { StatusBadge, Text, TouchableOpacity, View } from "@/components/ui";
+import { useState } from "react";
+import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 
 const asNumber = (value) => {
@@ -88,7 +88,7 @@ export default function TradeActionDisplay({ actionData, showReason = true }) {
   const { colors: palette, success, error } = useColors();
 
   // Helper component to render a single action item
-  const ActionItem = ({
+  const _ActionItem = ({
     action,
     showDetails = false,
   }: {

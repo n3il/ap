@@ -67,7 +67,7 @@ const notifyError = (error) => {
   });
 };
 
-const scheduleReconnect = () => {
+const _scheduleReconnect = () => {
   if (reconnectTimer || isConnecting || !listeners.size) {
     return;
   }

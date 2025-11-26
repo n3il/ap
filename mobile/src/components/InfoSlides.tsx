@@ -16,7 +16,7 @@ export default function InfoSlides({ onSlideChange }) {
   const { colors: palette, accent, primary, withOpacity } = useColors();
   const brandColor = palette.brand500 ?? primary;
   const foreground = palette.foreground ?? palette.textPrimary;
-  const background = palette.background ?? palette.surface ?? palette.input;
+  const _background = palette.background ?? palette.surface ?? palette.input;
 
   // Notify parent when slide changes
   useEffect(() => {
@@ -45,7 +45,7 @@ export default function InfoSlides({ onSlideChange }) {
         }),
       };
     });
-  }, [scrollX]);
+  }, [scrollX, slides.map]);
 
   const handleScroll = useMemo(
     () =>

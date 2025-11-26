@@ -1,7 +1,6 @@
-import { GlassContainer, GlassView } from "expo-glass-effect";
-import React from "react";
-import { Pressable, StyleSheet } from "react-native";
-import { ScrollView, Text, TouchableOpacity, View } from "@/components/ui";
+import { GlassView } from "expo-glass-effect";
+import { StyleSheet } from "react-native";
+import { ScrollView, Text, TouchableOpacity } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 

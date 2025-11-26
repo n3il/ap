@@ -3,7 +3,6 @@ import { useMemo } from "react";
 import SvgChart from "@/components/SvgChart";
 import { useAgentSnapshots } from "@/hooks/useAgentSnapshots";
 import { assessmentService } from "@/services/assessmentService";
-import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
 
 export default function HeaderChart({ agentId, ...props }) {

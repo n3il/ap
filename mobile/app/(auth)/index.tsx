@@ -1,7 +1,6 @@
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
-import PhoneInput from "react-native-phone-number-input";
+import { useRouter } from "expo-router";
+import { useState } from "react";
 import { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import SectionTitle from "@/components/SectionTitle";

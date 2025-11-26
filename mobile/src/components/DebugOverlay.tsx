@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -157,7 +157,7 @@ function DebugOverlayComponent() {
       try {
         const { data, error } = await supabase.auth.getUser();
 
-        if (error && error.message.includes("Invalid API key")) {
+        if (error?.message.includes("Invalid API key")) {
           results.push({
             test: "API Key Validation",
             status: "fail",
@@ -233,7 +233,7 @@ function DebugOverlayComponent() {
             }
           };
 
-          ws.onerror = (err) => {
+          ws.onerror = (_err) => {
             clearTimeout(timeout);
             reject(new Error("WebSocket connection error"));
           };
@@ -318,7 +318,7 @@ function DebugOverlayComponent() {
                   : null,
               },
             });
-          } catch (parseErr) {
+          } catch (_parseErr) {
             results.push({
               test: "SecureStore - Session",
               status: "warning",
@@ -371,7 +371,7 @@ function DebugOverlayComponent() {
     if (isOpen) {
       runDiagnostics();
     }
-  }, [isOpen]);
+  }, [isOpen, runDiagnostics]);
 
   const clearStorage = async () => {
     try {

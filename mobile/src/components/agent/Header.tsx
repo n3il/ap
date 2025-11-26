@@ -1,15 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { StyleSheet } from "react-native";
-import {
-  Animated,
-  Image,
-  ScrollView,
-  StatusBadge,
-  Text,
-  TouchableOpacity,
-  View,
-} from "@/components/ui";
+import { Animated, Text, TouchableOpacity, View } from "@/components/ui";
 import { supabase } from "@/config/supabase";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import HeaderChart from "./HeaderChart";

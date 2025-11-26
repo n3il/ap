@@ -226,7 +226,7 @@ export function usePlaceOrder() {
       if (error) throw error;
       return data;
     },
-    onSuccess: (data) => {
+    onSuccess: (_data) => {
       queryClient.invalidateQueries(["trades"]);
       queryClient.invalidateQueries(["positions"]);
       queryClient.invalidateQueries(["trade-stats"]);

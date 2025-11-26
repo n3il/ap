@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 
 import { useTheme } from "@/contexts/ThemeContext";

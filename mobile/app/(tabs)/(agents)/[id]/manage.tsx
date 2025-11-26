@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import ContainerView from "@/components/ContainerView";
 import {
   PromptAssignmentsCard,
@@ -83,7 +83,7 @@ const AgentManageScreen = () => {
       );
     },
     onError: (error) => {
-      Alert.alert("Error", "Failed to update prompt: " + error.message);
+      Alert.alert("Error", `Failed to update prompt: ${error.message}`);
     },
   });
 
@@ -94,7 +94,7 @@ const AgentManageScreen = () => {
       router.replace("/(tabs)/agents");
     },
     onError: (error) => {
-      Alert.alert("Error", "Failed to delete agent: " + error.message);
+      Alert.alert("Error", `Failed to delete agent: ${error.message}`);
     },
   });
 
@@ -106,7 +106,7 @@ const AgentManageScreen = () => {
       queryClient.invalidateQueries(["published-agents"]);
     },
     onError: (error) => {
-      Alert.alert("Error", "Failed to share agent: " + error.message);
+      Alert.alert("Error", `Failed to share agent: ${error.message}`);
     },
   });
 
@@ -118,7 +118,7 @@ const AgentManageScreen = () => {
       queryClient.invalidateQueries(["published-agents"]);
     },
     onError: (error) => {
-      Alert.alert("Error", "Failed to make agent private: " + error.message);
+      Alert.alert("Error", `Failed to make agent private: ${error.message}`);
     },
   });
 

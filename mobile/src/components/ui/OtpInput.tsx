@@ -4,11 +4,10 @@ Concept: https://dribbble.com/shots/5476562-Forgot-Password-Verification/attachm
 
 */
 
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Animated,
   Image,
-  Platform,
   SafeAreaView,
   StyleSheet,
   Text,

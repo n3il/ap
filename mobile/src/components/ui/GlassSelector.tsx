@@ -70,7 +70,7 @@ const AnimatedOption = ({
         }),
       ]).start();
     }
-  }, [isClosing]);
+  }, [isClosing, index, opacity, translateY]);
 
   return (
     <Animated.View

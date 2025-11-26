@@ -1,7 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { BlurView } from "expo-blur";
 import { useRouter } from "expo-router";
-import React from "react";
 import { Platform, StyleSheet } from "react-native";
 import { TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";

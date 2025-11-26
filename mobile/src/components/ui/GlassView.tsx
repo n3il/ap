@@ -1,6 +1,5 @@
 import { GlassView } from "expo-glass-effect";
 import { Pressable } from "react-native";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 
 export default function GlassButton({ style, children, onPress, ...props }) {

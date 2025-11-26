@@ -1,15 +1,14 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { StyleSheet } from "react-native";
 import { LinearGradient } from "react-native-svg";
 import AgentCard from "@/components/AgentCard";
 import HeaderChart from "@/components/agent/HeaderChart";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
 import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
-import { Animated, Avatar, Text, View } from "@/components/ui";
+import { Animated, View } from "@/components/ui";
 import GlassButton from "@/components/ui/GlassButton";
-import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 

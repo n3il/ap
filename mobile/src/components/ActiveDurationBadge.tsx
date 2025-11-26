@@ -1,8 +1,7 @@
-import React from "react";
 import { Text } from "@/components/ui";
 import { formatRelativeDate } from "@/utils/date";
 
-const getActiveDuration = (isActive) => {
+const _getActiveDuration = (isActive) => {
   if (!isActive) return null;
 
   const activeDate = new Date(isActive);

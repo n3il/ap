@@ -1,4 +1,3 @@
-import React from "react";
 import ContainerView from "@/components/ContainerView";
 import { TradingViewChart } from "@/components/trading";
 import { Dimensions } from "@/components/ui";

@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import StatCard from "@/components/StatCard";
 import TradeCard from "@/components/TradeCard";
 import {

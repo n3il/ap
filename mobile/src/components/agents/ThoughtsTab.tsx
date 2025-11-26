@@ -1,18 +1,9 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { GlassContainer, GlassView } from "expo-glass-effect";
 import React, { useCallback, useRef } from "react";
-import {
-  ActivityIndicator,
-  Animated,
-  FlatList,
-  Text,
-  View,
-} from "react-native";
+import { Animated, Text, View } from "react-native";
 import AssessmentCard from "@/components/AssessmentCard";
 import { assessmentService } from "@/services/assessmentService";
 import { useColors } from "@/theme";
-import SectionTitle from "../SectionTitle";
 
 export default function ThoughtsTab({
   agentId,
@@ -62,7 +53,7 @@ export default function ThoughtsTab({
     });
   }, [data]);
 
-  const totalCount = data?.pages?.[0]?.totalCount ?? 0;
+  const _totalCount = data?.pages?.[0]?.totalCount ?? 0;
 
   const handleLoadMore = () => {
     if (hasNextPage && !isFetchingNextPage) {

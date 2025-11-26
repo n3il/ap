@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { StatusBadge, Text, TouchableOpacity, View } from "@/components/ui";
+import { useState } from "react";
+import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatAmount, formatCompact, formatPercent } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";

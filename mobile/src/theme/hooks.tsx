@@ -52,7 +52,26 @@ export const useColors = () => {
         theme.colors?.textSecondary ?? fallbackColors.text.secondary,
       textTertiary: theme.colors?.textTertiary ?? fallbackColors.text.tertiary,
     }),
-    [theme.colors],
+    [
+      theme.colors,
+      fallbackColors.accent,
+      fallbackColors.accentPalette?.DEFAULT,
+      fallbackColors.background,
+      fallbackColors.border,
+      fallbackColors.brand?.DEFAULT,
+      fallbackColors.error?.DEFAULT,
+      fallbackColors.info?.DEFAULT,
+      fallbackColors.long?.DEFAULT,
+      fallbackColors.primary,
+      fallbackColors.secondary,
+      fallbackColors.short?.DEFAULT,
+      fallbackColors.success?.DEFAULT,
+      fallbackColors.surface,
+      fallbackColors.text.primary,
+      fallbackColors.text.secondary,
+      fallbackColors.text.tertiary,
+      fallbackColors.warning?.DEFAULT,
+    ],
   );
 };
 
@@ -109,7 +128,7 @@ export const useGlassEffect = () => {
       effectStyle: "clear" as const,
       borderRadius: theme.radii?.xl ?? 16,
     };
-  }, [theme.radii]);
+  }, [theme.radii, theme.glass?.tintColor]);
 
   return glassConfig;
 };

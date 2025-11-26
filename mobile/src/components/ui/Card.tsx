@@ -3,7 +3,7 @@ import { useDripsyTheme } from "dripsy";
 import { GlassView } from "expo-glass-effect";
 import type React from "react";
 import { withOpacity } from "@/theme/utils";
-import View, { type ViewProps } from "./View";
+import View from "./View";
 
 export interface CardProps {
   children: React.ReactNode;

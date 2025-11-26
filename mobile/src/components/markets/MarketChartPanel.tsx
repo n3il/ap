@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React from "react";
 import TradingViewChart from "@/components/trading/TradingViewChart";
 import { Text, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";

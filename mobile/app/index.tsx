@@ -2,23 +2,14 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import InfoSlides from "@/components/InfoSlides";
 import {
   Animated,
-  Button,
   Dimensions,
   GlassButton,
   SafeAreaView,
-  StatusBar,
   Text,
-  TouchableOpacity,
   View,
 } from "@/components/ui";
 import { getDefaultUnauthenticatedRoute, ROUTES } from "@/config/routes";
@@ -28,7 +19,7 @@ import { useColors } from "@/theme";
 const { width, height } = Dimensions.get("window");
 
 export default function GetStartedScreen() {
-  const [currentSlide, setCurrentSlide] = useState(null);
+  const [_currentSlide, setCurrentSlide] = useState(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
   const { requireAuth } = useRouteAuth();
@@ -56,7 +47,7 @@ export default function GetStartedScreen() {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, scaleAnim]);
 
   const handleAuth = (type) => {
     router.push({
@@ -198,7 +189,6 @@ export default function GetStartedScreen() {
                 style={{
                   alignItems: "center",
                   justifyContent: "center",
-                  marginTop: 3,
                   borderRadius: 36,
                   alignSelf: "center",
                   paddingHorizontal: 16,

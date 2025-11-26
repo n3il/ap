@@ -1,5 +1,4 @@
 import { LinearGradient } from "expo-linear-gradient";
-import React from "react";
 import { Image } from "@/components/ui";
 import theme from "@/theme/base";
 

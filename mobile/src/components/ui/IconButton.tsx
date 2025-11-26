@@ -2,7 +2,6 @@ import type { SxProp } from "dripsy";
 import { View } from "dripsy";
 import type React from "react";
 import { TouchableOpacity } from "react-native";
-import { SPACING } from "@/theme/constants";
 
 export interface IconButtonProps {
   children: React.ReactNode;

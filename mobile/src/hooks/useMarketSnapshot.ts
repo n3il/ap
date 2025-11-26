@@ -36,7 +36,7 @@ export const normalizeTickers = normalizeTickersInternal;
 export function useMarketSnapshot(tickers) {
   const normalizedTickers = useMemo(
     () => normalizeTickersInternal(tickers),
-    [Array.isArray(tickers) ? tickers.join(",") : tickers],
+    [tickers],
   );
 
   const [assets, setAssets] = useState([]);
@@ -79,7 +79,7 @@ export function useMarketSnapshot(tickers) {
       isMounted = false;
       unsubscribe?.();
     };
-  }, [normalizedTickers.join(",")]);
+  }, [normalizedTickers]);
 
   useEffect(() => {
     if (!rawSnapshot?.mids || typeof rawSnapshot.mids !== "object") {

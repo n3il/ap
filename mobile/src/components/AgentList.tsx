@@ -1,13 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
 import { ActivityIndicator } from "dripsy";
 import { useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { useAnimatedReaction } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { Text, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { agentService } from "@/services/agentService";
-import { assessmentService } from "@/services/assessmentService";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import AgentCard from "./AgentCard";
 
@@ -77,7 +76,7 @@ export default function AgentList({
     if (agents?.length) {
       setAgents(agents);
     }
-  }, [agents]);
+  }, [agents, setAgents]);
 
   const onAgentPress = useCallback(
     (agent) => {

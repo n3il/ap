@@ -1,9 +1,7 @@
-import React from "react";
 import { Text, View } from "@/components/ui";
-import LabelValue, { FormattedValueLabel } from "@/components/ui/LabelValue";
+import LabelValue from "@/components/ui/LabelValue";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { formatAmount, formatPercent } from "@/utils/currency";
-import { formatCurrency } from "@/utils/marketFormatting";
 
 export default function BalanceOverview({
   agentId,

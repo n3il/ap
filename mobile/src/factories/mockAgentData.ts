@@ -71,7 +71,7 @@ export const formatTimestamp = (timestamp, timeframe) => {
  * Generate mock PnL data points based on timeframe
  * Returns data with timestamp, value, and label
  */
-export const generateMockData = (timeframe, agentConfig) => {
+export const generateMockData = (timeframe, _agentConfig) => {
   const now = Date.now();
   let dataPoints = 20;
   let intervalMs = 3 * 60 * 1000; // 3 minutes default
@@ -130,7 +130,7 @@ export const generateNormalizedMockData = (agentConfig) => {
 
   // Create a seed based on agent ID for consistent but different patterns
   const seed = agentConfig?.id
-    ? parseInt(agentConfig.id.replace(/\D/g, "") || "1")
+    ? parseInt(agentConfig.id.replace(/\D/g, "") || "1", 10)
     : 1;
   const volatility = 0.6;
 

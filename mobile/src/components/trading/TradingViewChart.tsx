@@ -1,4 +1,4 @@
-import React, { useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import WebView from "react-native-webview";
 import { ActivityIndicator, Dimensions, View } from "@/components/ui";
 
@@ -106,7 +106,7 @@ export default function TradingViewChart({
         </body>
       </html>
     `;
-  }, [symbol, chartTheme, isDark, theme]);
+  }, [symbol, isDark, theme]);
 
   const styles = useMemo(() => createStyles(theme, isDark), [theme, isDark]);
 
@@ -130,8 +130,8 @@ export default function TradingViewChart({
         }}
         onMessage={(event) => {
           try {
-            const message = JSON.parse(event.nativeEvent.data);
-          } catch (e) {
+            const _message = JSON.parse(event.nativeEvent.data);
+          } catch (_e) {
             // Ignore
           }
         }}

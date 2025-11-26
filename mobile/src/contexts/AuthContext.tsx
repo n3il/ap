@@ -1,8 +1,6 @@
 import { makeRedirectUri } from "expo-auth-session";
-import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
-import React, { createContext, useContext, useEffect, useState } from "react";
-import { isRouteAccessible, ROUTES } from "@/config/routes";
+import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/config/supabase";
 
 // import useRouteAuth from '@/hooks/useRouteAuth';
@@ -83,30 +81,29 @@ export const AuthProvider = ({ children }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [
+    // Fallback: query profiles table
+    checkOnboardingStatus,
+  ]);
 
   const checkOnboardingStatus = async (userId) => {
-    try {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("onboarding_completed")
-        .eq("id", userId)
-        .single();
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", userId)
+      .single();
 
-      if (error && error.code !== "PGRST116") {
-        return;
-      }
-
-      const onboardingCompleted = data?.onboarding_completed || false;
-      setHasCompletedOnboarding(onboardingCompleted);
-
-      // Sync to user metadata for future sessions
-      await supabase.auth.updateUser({
-        data: { onboarding_completed: onboardingCompleted },
-      });
-    } catch (error) {
-      throw error;
+    if (error && error.code !== "PGRST116") {
+      return;
     }
+
+    const onboardingCompleted = data?.onboarding_completed || false;
+    setHasCompletedOnboarding(onboardingCompleted);
+
+    // Sync to user metadata for future sessions
+    await supabase.auth.updateUser({
+      data: { onboarding_completed: onboardingCompleted },
+    });
   };
 
   const signUp = async (email, password, metadata = {}) => {

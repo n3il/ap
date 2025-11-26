@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import SvgChart, { CHART_DATA_SOURCE } from "@/components/SvgChart";
+import SvgChart from "@/components/SvgChart";
 import { ScrollView, Text, TouchableOpacity, View } from "@/components/ui";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";

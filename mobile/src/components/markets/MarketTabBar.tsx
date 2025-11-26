@@ -1,4 +1,3 @@
-import React from "react";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";

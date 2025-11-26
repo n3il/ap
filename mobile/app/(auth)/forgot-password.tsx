@@ -1,6 +1,5 @@
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
-import ContainerView from "@/components/ContainerView";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,

@@ -1,10 +1,8 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useState } from "react";
 import { StatusBadge, Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatAmount } from "@/utils/currency";
 
-const asNumber = (value) => {
+const _asNumber = (value) => {
   const num = typeof value === "number" ? value : Number(value);
   return Number.isFinite(num) ? num : undefined;
 };

@@ -15,7 +15,7 @@ export function useLocalization() {
       i18n.locale = deviceLocale.languageCode;
       setLocale(deviceLocale.languageCode);
     }
-  }, []);
+  }, [locale]);
 
   /**
    * Translation function

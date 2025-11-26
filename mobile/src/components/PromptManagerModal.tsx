@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query";
 import { BlurView } from "expo-blur";
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   ActivityIndicator,
   Alert,

@@ -1,6 +1,5 @@
-import React from "react";
 import { GLOBAL_PADDING } from "@/components/ContainerView";
-import { SwipeableTabs, View } from "@/components/ui";
+import { SwipeableTabs } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import AgentList from "../AgentList";
 

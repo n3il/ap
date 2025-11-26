@@ -1,6 +1,6 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import PhoneInput from "react-native-phone-number-input";
 import { useColors } from "@/theme";
 
@@ -24,7 +24,7 @@ export default function PhoneInputAutoDetect({
 
     const parsed = safeParse(value, defaultCode);
     setInternal(parsed.national || value);
-  }, [value, defaultCode]);
+  }, [value, defaultCode, safeParse]);
 
   /**
    * Helper: safely parse a string into:
@@ -40,7 +40,7 @@ export default function PhoneInputAutoDetect({
     }
 
     // 1) Try interpreting as full international (+countrycode...)
-    let phone = parsePhoneNumberFromString("+" + digitsOnly);
+    let phone = parsePhoneNumberFromString(`+${digitsOnly}`);
 
     // 2) If that fails, try as national number for fallback country
     if (!phone) {
@@ -50,7 +50,7 @@ export default function PhoneInputAutoDetect({
     if (!phone) {
       // If still nothing, just return raw-ish
       return {
-        e164: "+" + digitsOnly,
+        e164: `+${digitsOnly}`,
         national: digitsOnly,
         country: fallbackCountry,
       };
@@ -73,7 +73,7 @@ export default function PhoneInputAutoDetect({
     setInternal(national);
 
     // parent gets proper E.164 value
-    onChange && onChange({ raw: digitsOnly, formatted: national, e164 });
+    onChange?.({ raw: digitsOnly, formatted: national, e164 });
   };
 
   return (

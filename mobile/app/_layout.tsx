@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import DebugOverlay from "@/components/DebugOverlay";
 import SplashScreen from "@/components/SplashScreen";
-import { getDefaultUnauthenticatedRoute, ROUTES } from "@/config/routes";
+import { ROUTES } from "@/config/routes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 
@@ -35,7 +35,7 @@ function AuthNavigator() {
       }
     }
     router.replace(ROUTES.TABS_INDEX.path);
-  }, [loading, appIsReady, user, hasCompletedOnboarding]);
+  }, [loading, appIsReady, user, hasCompletedOnboarding, router.replace]);
 
   useEffect(() => {
     async function prepare() {
@@ -51,7 +51,7 @@ function AuthNavigator() {
       try {
         // Keep splash visible for minimum duration for smooth UX
         await new Promise((resolve) => setTimeout(resolve, 300));
-      } catch (e) {
+      } catch (_e) {
         //
       } finally {
         setAppIsReady(true);

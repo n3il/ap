@@ -1,5 +1,4 @@
-import { BlurView } from "expo-blur";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Button,
@@ -14,7 +13,6 @@ import {
 } from "@/components/ui";
 import { useColors } from "@/theme";
 import { PaddedView } from "./ContainerView";
-import GlassCard from "./GlassCard";
 import PromptPickerModal from "./PromptPickerModal";
 import SectionTitle from "./SectionTitle";
 

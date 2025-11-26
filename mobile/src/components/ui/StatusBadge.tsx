@@ -1,6 +1,5 @@
 import type React from "react";
 import View, { type ViewProps } from "@/components/ui/View";
-import { withOpacity } from "@/theme";
 import type { AppTheme } from "@/theme/dripsy";
 import Text from "./Text";
 

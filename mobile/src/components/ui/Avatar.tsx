@@ -1,5 +1,3 @@
-import React from "react";
-import { useTheme } from "@/contexts/ThemeContext";
 import { useColors, withOpacity } from "@/theme";
 import Image from "./Image";
 import Text from "./Text";

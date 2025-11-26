@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 import StatCard from "@/components/StatCard";
 import { Text, View } from "@/components/ui";
 import { agentService } from "@/services/agentService";

@@ -1,4 +1,3 @@
-import React from "react";
 import { Stack, Text, TouchableOpacity, View } from "@/components/ui";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useColors } from "@/theme";

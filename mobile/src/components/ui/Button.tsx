@@ -1,7 +1,7 @@
 import type { SxProp } from "dripsy";
 import { useDripsyTheme, useSx } from "dripsy";
 import React from "react";
-import type { TouchableOpacityProps, ViewStyle } from "react-native";
+import type { TouchableOpacityProps } from "react-native";
 import { ActivityIndicator, Pressable } from "react-native";
 
 import type { AppTheme } from "@/theme/dripsy";

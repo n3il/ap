@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet } from "react-native";
-import { Stack, Text, View } from "@/components/ui";
+import { Text, View } from "@/components/ui";
 import { supabase } from "@/config/supabase";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -49,7 +49,7 @@ export default function TradeHistoryTable({ userId, agentId }) {
 
   useEffect(() => {
     fetchTrades();
-  }, [userId, agentId]);
+  }, [fetchTrades]);
 
   const fetchTrades = async () => {
     try {

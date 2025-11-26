@@ -5,7 +5,6 @@ import {
   MaterialIcons,
 } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import React, {} from "react";
 import { Pressable } from "react-native";
 import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";

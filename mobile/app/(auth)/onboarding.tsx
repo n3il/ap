@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import LottieView from "lottie-react-native";
-import React, { useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Dimensions } from "react-native";
 import { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
@@ -10,7 +10,6 @@ import {
   Button,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   ScrollView,
   Text,
   TextInput,
@@ -25,7 +24,7 @@ import { useColors } from "@/theme";
 const { width, height } = Dimensions.get("window");
 
 export default function OnboardingScreen() {
-  const animation = useRef<LottieView>(null);
+  const _animation = useRef<LottieView>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -80,7 +79,7 @@ export default function OnboardingScreen() {
   const [displayName, setDisplayName] = useState(
     user?.user_metadata?.full_name || "",
   );
-  const [bio, setBio] = useState("");
+  const [bio, _setBio] = useState("");
 
   // Preferences
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);

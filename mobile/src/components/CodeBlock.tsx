@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 import { Text, View } from "@/components/ui";
 import { useColors } from "@/theme";

@@ -1,4 +1,3 @@
-import React from "react";
 import GlassCard from "@/components/GlassCard";
 import { Text } from "@/components/ui";
 
