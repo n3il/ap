@@ -28,7 +28,14 @@ const { width } = Dimensions.get('window');
 const SPARKLINE_WIDTH = (width - GLOBAL_PADDING * 4) / 3;
 const SPARKLINE_HEIGHT = 32;
 
-const Sparkline = ({ data = [], positiveColor, negativeColor, neutralColor }) => {
+const Sparkline = ({
+  data = [],
+  positiveColor,
+  negativeColor,
+  neutralColor,
+  width = SPARKLINE_WIDTH,
+  height = SPARKLINE_HEIGHT
+}) => {
   const valid = data.filter((value) => Number.isFinite(value));
 
   if (valid.length < 2) {
@@ -38,13 +45,13 @@ const Sparkline = ({ data = [], positiveColor, negativeColor, neutralColor }) =>
   const min = Math.min(...valid);
   const max = Math.max(...valid);
   const range = max === min ? 1 : max - min;
-  const step = SPARKLINE_WIDTH / (valid.length - 1);
+  const step = width / (valid.length - 1);
 
   const points = valid
     .map((value, index) => {
       const x = index * step;
       const normalized = (value - min) / range;
-      const y = SPARKLINE_HEIGHT - normalized * SPARKLINE_HEIGHT;
+      const y = height - normalized * height;
       return `${x.toFixed(2)},${y.toFixed(2)}`;
     })
     .join(' ');
@@ -53,7 +60,7 @@ const Sparkline = ({ data = [], positiveColor, negativeColor, neutralColor }) =>
   const stroke = isUp ? positiveColor : negativeColor;
 
   return (
-    <Svg width={SPARKLINE_WIDTH} height={SPARKLINE_HEIGHT}>
+    <Svg width={width} height={height}>
       <Polyline
         points={points}
         fill="none"
@@ -176,6 +183,23 @@ const PriceColumn = ({
     };
   }, [scrollY]);
 
+  const MINI_SPARKLINE_HEIGHT = 100;
+  const expandedStyle = {
+    height: MINI_SPARKLINE_HEIGHT,
+  }
+  const collapsedStyle = {
+    height: 0,
+  }
+  const miniSparklineStyle = useAnimatedStyle(() => {
+    if (!scrollY) return collapsedStyle;
+
+    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    return {
+      // height: interpolate(progress, [0, 1], [0, 30], Extrapolation.CLAMP),
+      opacity: interpolate(progress, [0, 1], [0, .2], Extrapolation.CLAMP),
+    };
+  }, [scrollY]);
+
   return (
     <GlassButton
       style={{
@@ -192,32 +216,54 @@ const PriceColumn = ({
       isInteractive
       enabled={false}
     >
-      <View>
-        <Animated.Text
-          style={[
-            {
-              textTransform: 'uppercase',
-              letterSpacing: 1.2,
-              color: palette.mutedForeground,
-            },
-            symbolStyle,
-          ]}
-        >
-          {displayAsset?.symbol ?? '—'}
-        </Animated.Text>
+      <View style={{ flexDirection: 'row' }}>
+        <View>
+          <Animated.Text
+            style={[
+              {
+                textTransform: 'uppercase',
+                letterSpacing: 1.2,
+                color: palette.mutedForeground,
+              },
+              symbolStyle,
+            ]}
+          >
+            {displayAsset?.symbol ?? '—'}
+          </Animated.Text>
 
-        <Animated.Text
+          <Animated.Text
+            style={[
+              {
+                color: palette.textPrimary,
+                marginTop: 2,
+              },
+              priceStyle,
+            ]}
+            numberOfLines={1}
+          >
+            {formatCurrency(displayAsset?.price)}
+          </Animated.Text>
+        </View>
+
+        <Animated.View
           style={[
             {
-              color: palette.textPrimary,
-              marginTop: 2,
+              overflow: 'hidden',
+              position: 'absolute'
             },
-            priceStyle,
+            miniSparklineStyle,
           ]}
-          numberOfLines={1}
         >
-          {formatCurrency(displayAsset?.price)}
-        </Animated.Text>
+          {!isHistoryLoading && sparklineData.length > 0 && (
+            <Sparkline
+              data={sparklineData}
+              positiveColor={positiveColor}
+              negativeColor={negativeColor}
+              neutralColor={neutralColor}
+              height={MINI_SPARKLINE_HEIGHT}
+            />
+          )}
+        </Animated.View>
       </View>
 
       {displayAsset?.price && (
@@ -299,7 +345,7 @@ export default function MarketPricesWidget({
       <ScrollView
         horizontal
         scrollEventThrottle={16}
-        contentContainerStyle={[{ gap: 0, paddingRight: GLOBAL_PADDING, paddingVertical: 8 }]}
+        contentContainerStyle={[{ gap: 0, paddingRight: GLOBAL_PADDING }]}
         showsHorizontalScrollIndicator={false}
       >
         {displayAssets.length ? (

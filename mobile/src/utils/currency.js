@@ -3,6 +3,7 @@ const currencySymbol = "$";
 export function formatCompact(num, {
   locale = "en-US",
   precision = 2,
+  minDecimals = 2,
 } = {}) {
   const abs = Math.abs(num);
 
@@ -10,7 +11,7 @@ export function formatCompact(num, {
     { value: 1e12, symbol: "T" },
     { value: 1e9,  symbol: "B" },
     { value: 1e6,  symbol: "M" },
-    { value: 1e3,  symbol: "K" }
+    // { value: 1e3,  symbol: "K" }
   ];
 
   for (const u of units) {
@@ -25,7 +26,7 @@ export function formatCompact(num, {
   }
 
   return new Intl.NumberFormat(locale, {
-    minimumFractionDigits: 0,
+    minimumFractionDigits: minDecimals,
     maximumFractionDigits: precision
   }).format(num);
 }
@@ -51,4 +52,27 @@ export function formatPercent(num, {
     signSymbol = num > 0 ? "+" : num < 0 ? "-" : "";
   }
   return `${signSymbol}${formatCompact(num, { precision })}%`
+}
+
+export function numberToColor(num) {
+  if (num > 0) {
+    return 'long';
+  } else if (num < 0) {
+    return 'short';
+  } else {
+    return 'foreground';
+  }
+}
+
+export function sentimentToColor(sentimentScore) {
+  switch (true) {
+    case sentimentScore > 0.8:
+      return 'long';
+    case sentimentScore > 0.5:
+      return 'warning';
+    case sentimentScore > 0.2:
+      return 'errorLight';
+    default:
+      return 'error';
+  }
 }

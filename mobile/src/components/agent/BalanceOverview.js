@@ -24,14 +24,10 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
 
         <View sx={{ alignItems: 'flex-end' }}>
           <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-            <LabelValue
-              label="P&L"
+            {/* <LabelValue
+              label="All P&L"
               value={(accountData.realizedPnl || 0) + (accountData.unrealizedPnl || 0)}
-            />
-            <LabelValue
-              label="M/R"
-              value={(accountData.realizedPnl || 0) + (accountData.unrealizedPnl || 0)}
-            />
+            /> */}
             <LabelValue
               label="Open P&L"
               value={accountData.unrealizedPnl}
@@ -84,17 +80,11 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
       <View sx={{ flexDirection: 'row', justifyContent: 'space-between', gap: 4 }}>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Initial Capital"
+            label="Init. Capital"
             value={accountData.wallet || 0}
           />
         </View>
-        <View sx={{ flex: 1 }}>
-          <LabelValue
-            label="Realized P&L"
-            value={accountData.realizedPnl || 0}
-            alignRight
-          />
-        </View>
+
         <View sx={{ flex: 1,  }}>
 
           <LabelValue
@@ -115,13 +105,14 @@ export default function BalanceOverview({ agentId, hideOpenPositions = false, va
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Trades"
-            value={undefined}
+            value={null}
           />
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Free Capital"
             value={accountData.availableMargin || 0}
+            alignRight
           />
         </View>
         <View sx={{ flex: 1,  }}>

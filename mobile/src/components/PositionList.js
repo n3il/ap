@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StatusBadge, TouchableOpacity } from '@/components/ui';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useColors } from '@/theme';
-import { formatCompact } from '@/utils/currency';
+import { formatAmount, formatCompact, formatPercent } from '@/utils/currency';
 import { formatRelativeDate } from '@/utils/date';
 
 function PositionDetailRow({ label, value, valueStyle }) {
@@ -37,72 +37,65 @@ function PositionDetailRow({ label, value, valueStyle }) {
 // };
 
 export function PositionRow(position) {
-  const {
-    id = '',
-    asset = '',
-    symbol = '',
-    coin = '',
-    side = '',
-    size = '',
-    szi = '',
-    entry_price = '',
-    currentPrice = '',
-    unrealizedPnl = '',
-    pnlPercent = '',
-  } = position;
   const [expanded, setExpanded] = useState(false);
+  const { colors: palette } = useColors();
+
   const {
-    colors: palette,
-    success,
-    error,
-    withOpacity,
-  } = useColors();
+    asset = "",
+    symbol = "",
+    coin = "",
+    side = "",
+    size,
+    szi,
+    entry_price,
+    currentPrice,
+    unrealizedPnl,
+    pnlPercent,
+    leverage,
+    positionValue,
+    entry_timestamp,
+  } = position;
 
-  const assetLabel = asset || symbol || coin || '';
-  const sizeLabel = size || szi || 'N/A';
-  const sizeValue = parseFloat(size || szi || 0);
+  // ---- Labels ----
+  const assetLabel = (asset || symbol || coin || "").replace("-PERP", "/USDC");
+  const sizeLabel = size || szi || "N/A";
 
-  const entryPriceValue = entry_price ? parseFloat(entry_price) : null;
+  const entryPriceValue = entry_price ? Number(entry_price) : null;
   const currentPriceValue =
-    typeof currentPrice === 'number'
+    typeof currentPrice === "number"
       ? currentPrice
       : currentPrice
-      ? parseFloat(currentPrice)
+      ? Number(currentPrice)
       : null;
 
-  const hasEntryPrice = Number.isFinite(entryPriceValue);
-  const hasCurrentPrice = Number.isFinite(currentPriceValue);
+  const unrealizedPnlValue = Number(unrealizedPnl) || 0;
+  const pnlPercentValue = pnlPercent != null ? Number(pnlPercent) : null;
 
-  const positionValue = hasCurrentPrice && Number.isFinite(sizeValue)
-    ? Math.abs(sizeValue * currentPriceValue)
-    : null;
+  // ---- Labels formatted ----
+  const positionValueLabel =
+    positionValue != null ? `$${formatCompact(positionValue)}` : size + unrealizedPnlValue;
 
-  const positionValueLabel = positionValue !== null
-    ? `$${formatCompact(positionValue)}`
-    : '-';
-
-  const entryPriceLabel = hasEntryPrice
+  const entryPriceLabel = entryPriceValue
     ? `$${formatCompact(entryPriceValue)}`
-    : '-';
-  const currentPriceLabel = hasCurrentPrice
+    : "-";
+
+  const currentPriceLabel = currentPriceValue
     ? `$${formatCompact(currentPriceValue)}`
-    : '';
+    : "";
 
-  const unrealizedPnlValue =
-    typeof unrealizedPnl === 'number' ? unrealizedPnl : parseFloat(unrealizedPnl) || 0;
+  const unrealizedPnlLabel =
+    unrealizedPnlValue !== 0
+      ? `${formatCompact(unrealizedPnlValue)}`
+      : "$0.00";
 
-  const pnlPercentValue =
-    typeof pnlPercent === 'number'
-      ? pnlPercent
-      : pnlPercent
-      ? parseFloat(pnlPercent)
-      : null;
+  const pnlPercentLabel =
+    pnlPercentValue != null ? `${Math.abs(pnlPercentValue)}%` : "";
 
-  const longColor = palette.long ?? success;
-  const shortColor = palette.short ?? error;
-
-  const sideColor = side === 'LONG' ? longColor : shortColor;
-  const sideIcon = side === 'LONG' ? 'trending-up' : 'trending-down';
+  // ---- Colors ----
+  const longColor = palette.long;
+  const shortColor = palette.short;
+  const sideColor = side === "LONG" ? longColor : shortColor;
+  const sideIcon = side === "LONG" ? "trending-up" : "trending-down";
 
   const positionPnlColor =
     unrealizedPnlValue > 0
@@ -111,45 +104,38 @@ export function PositionRow(position) {
       ? shortColor
       : palette.secondary ?? palette.textTertiary;
 
-  const positionPnlSign = unrealizedPnlValue > 0 ? '+' : '';
-
-  const unrealizedPnlLabel =
-    unrealizedPnlValue !== 0
-      ? `${positionPnlSign}${formatCompact(unrealizedPnlValue)}`
-      : '$0.00';
-
-  const pnlPercentLabel =
-    typeof pnlPercentValue === 'number'
-      ? `${positionPnlSign}${Math.abs(formatCompact(pnlPercentValue))}%`
-      : '';
-
   return (
-    <View
-      sx={{
-        paddingBottom: 3
-      }}
-    >
-      <TouchableOpacity onPress={() => setExpanded(!expanded)} activeOpacity={0.7}>
-        <View sx={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        }}>
+    <View sx={{ paddingBottom: 3 }}>
+      <TouchableOpacity
+        onPress={() => setExpanded(!expanded)}
+        activeOpacity={0.7}
+      >
+        <View
+          sx={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          {/* ---- Left Column ---- */}
+          <View sx={{ flex: 1 }}>
+            <View
+              sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}
+            >
+              <Text variant="sm" sx={{ fontSize: 12 }}>
+                {assetLabel}
+              </Text>
+              <Text sx={{ fontSize: 9 }}>
+                {formatRelativeDate(entry_timestamp)}
+              </Text>
+            </View>
 
-          <View sx={{ flex: 1, justifyContent: 'between' }}>
-            <Text variant="sm" sx={{ fontSize: 12, fontWeight: '400' }}>
-              {assetLabel.replace('-PERP', '/USDC')}
-            </Text>
-            <Text>
-              {formatRelativeDate(position.entry_timestamp)}
-            </Text>
-
-            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <View sx={{ flexDirection: "row", alignItems: "center" }}>
               <Text
                 variant="xs"
-                sx={{ color: sideColor, fontWeight: '400' }}
+                sx={{ color: sideColor, marginRight: 2 }}
               >
-                {side}
+                {leverage}X {side}
               </Text>
               <MaterialCommunityIcons
                 name={sideIcon}
@@ -157,75 +143,58 @@ export function PositionRow(position) {
                 color={sideColor}
               />
             </View>
-
           </View>
 
-          <View sx={{ flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
-            <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-              <Text variant="sm" sx={{  }}>
-                {positionValueLabel}
+          {/* ---- Right Column ---- */}
+          <View sx={{ alignItems: "center" }}>
+            <View sx={{ flexDirection: "column", alignItems: "flex-end" }}>
+              <Text variant="xs">
+                {formatAmount(positionValueLabel, { minDecimals: 0 })}
               </Text>
-
-              <Text variant="sm" sx={{ fontWeight: '500', color: positionPnlColor }}>
-                {pnlPercentLabel}
-              </Text>
-            </View>
-            <View sx={{ flexDirection: 'row', alignItems: 'flex-end', gap: 2 }}>
-              <Text variant="xs" sx={{  }} tone="muted">
-                {formatCompact(entryPriceValue * sizeValue, 'en-US', 1)}
-              </Text>
-
-              <Text variant="xs" sx={{ }} tone="muted">
-                ({unrealizedPnlLabel})
+              <Text
+                variant="xs"
+                sx={{ fontWeight: "500", color: positionPnlColor }}
+              >
+                {formatAmount(unrealizedPnlLabel)} ({formatPercent(pnlPercentValue)})
               </Text>
             </View>
           </View>
         </View>
       </TouchableOpacity>
 
-        {expanded && (
-          <View sx={{
-            borderLeftWidth: 2,
-            borderLeftColor: 'border',
+      {/* ---- Expanded Details ---- */}
+      {expanded && (
+        <View
+          sx={{
+            borderLeftWidth: 0.5,
+            borderLeftColor: "border",
             paddingLeft: 4,
             marginLeft: 2,
-          }}>
+            marginTop: 2,
+          }}
+        >
+          <PositionDetailRow label="Size" value={sizeLabel} />
+
+          <PositionDetailRow label="Entry" value={entryPriceLabel} />
+          {currentPriceLabel && (
+            <PositionDetailRow label="Current" value={currentPriceLabel} />
+          )}
+
+          <PositionDetailRow
+            label="Unrealized PnL"
+            value={unrealizedPnlLabel}
+            valueStyle={{ color: positionPnlColor }}
+          />
+
+          {pnlPercentLabel && (
             <PositionDetailRow
-              label="Size"
-              value={sizeLabel}
+              label="PnL %"
+              value={formatPercent(pnlPercentValue)}
+              valueStyle={{ color: positionPnlColor }}
             />
-
-            {entryPriceLabel && (
-              <PositionDetailRow
-                label="Entry"
-                value={entryPriceLabel}
-              />
-            )}
-
-            {currentPriceLabel && (
-              <PositionDetailRow
-                label="Current"
-                value={currentPriceLabel}
-              />
-            )}
-
-            {unrealizedPnlLabel && (
-              <PositionDetailRow
-                label="Unrealized PnL"
-                value={unrealizedPnlLabel}
-                valueStyle={{ color: positionPnlColor }}
-              />
-            )}
-
-            {pnlPercentLabel && (
-              <PositionDetailRow
-                label="PnL %"
-                value={pnlPercentLabel}
-                valueStyle={{ color: positionPnlColor }}
-              />
-            )}
+          )}
         </View>
-        )}
+      )}
     </View>
   );
 }
@@ -244,6 +213,12 @@ export default function PositionList({ positions = [], top = 3 }) {
           no active positions
         </Text>
       )}
+
+      {positions.length > top ? (
+        <Text variant="xs" tone="muted" sx={{ textAlign: 'right', fontStyle: 'italic' }}>
+          + {positions.length - top} more positions
+        </Text>
+      ) : null}
     </View>
   );
 }

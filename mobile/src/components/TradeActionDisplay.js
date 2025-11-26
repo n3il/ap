@@ -27,6 +27,40 @@ function TradeActionRow({ label, value, valueStyle }) {
   );
 }
 
+function getActionMeta(actionType) {
+  switch (actionType) {
+    case "CLOSE_LONG":
+      return {
+        icon: "close-circle",
+        label: "Close Long",
+      };
+
+    case "CLOSE_SHORT":
+      return {
+        icon: "close-circle",
+        label: "Close Short",
+      };
+
+    case "OPEN_LONG":
+      return {
+        icon: "trending-up",
+        label: "Open Long",
+      };
+
+    case "OPEN_SHORT":
+      return {
+        icon: "trending-down",
+        label: "Open Short",
+      };
+
+    default:
+      return {
+        icon: "minus",
+        label: "No Action",
+      };
+  }
+}
+
 export default function TradeActionDisplay({ actionData, showReason = true, groupedByAction = true }) {
   if (!actionData) return null;
 
@@ -45,47 +79,9 @@ export default function TradeActionDisplay({ actionData, showReason = true, grou
   const closeColor = warning;
   const neutralColor = palette.secondary ?? palette.secondary500 ?? palette.textTertiary;
 
-  const getActionConfig = (action) => {
-    const actionType = (action || 'NO_ACTION').toUpperCase();
-
-    if (actionType.includes('CLOSE')) {
-      return {
-        icon: 'close-circle',
-        color: closeColor,
-        bgColor: withOpacity(closeColor, 0.1),
-        label: 'Close',
-      };
-    }
-
-    if (actionType.includes('LONG')) {
-      return {
-        icon: 'trending-up',
-        color: longColor,
-        bgColor: withOpacity(longColor, 0.1),
-        label: 'Long',
-      };
-    }
-
-    if (actionType.includes('SHORT')) {
-      return {
-        icon: 'trending-down',
-        color: shortColor,
-        bgColor: withOpacity(shortColor, 0.1),
-        label: 'Short',
-      };
-    }
-
-    return {
-      icon: 'minus-circle',
-      color: neutralColor,
-      bgColor: withOpacity(neutralColor, 0.1),
-      label: 'No Action',
-    };
-  };
-
   // Helper component to render a single action item
   const ActionItem = ({ action, showDetails = false }) => {
-    const config = getActionConfig(action.action);
+    const config = getActionMeta(action.action);
     const sizeValue = asNumber(action.size);
     const leverageValue = asNumber(action.leverage);
 

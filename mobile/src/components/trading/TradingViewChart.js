@@ -70,7 +70,7 @@ export default function TradingViewChart({
                 "height": "100%",
                 "symbol": "BINANCE:${tradingViewSymbol}",
                 "interval": "1",
-                "timezone": "Etc/UTC",
+                "timezone": "EST",
               "theme": "${isDark ? 'dark' : 'light'}",
               "style": "1",
               "locale": "en",
@@ -82,15 +82,11 @@ export default function TradingViewChart({
                 "container_id": "tradingview-widget",
                 "backgroundColor": "transparent",
                 "gridColor": "${gridColor}",
-                "allow_symbol_change": false,
+                "allow_symbol_change": true,
                 "disabled_features": [
                   "use_localstorage_for_settings",
-                  "header_symbol_search",
                   "symbol_search_hot_key"
                 ],
-                "enabled_features": [
-                  "hide_left_toolbar_by_default"
-                ]
               });
             } catch (error) {
               window.ReactNativeWebView?.postMessage(JSON.stringify({

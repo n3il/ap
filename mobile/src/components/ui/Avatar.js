@@ -3,17 +3,32 @@ import { withOpacity, useColors } from '@/theme';
 import Image from './Image';
 import View from './View';
 import Text from './Text';
+import { useTheme } from '@/contexts/ThemeContext';
 
 /**
  * Size variants for Avatar component
  */
 const AVATAR_SIZES = {
-  xs: { size: 8, fontSize: 12, lineHeight: 8, nameSize: 14, emailSize: 12 },
+  xs: { size: 20, fontSize: 12, lineHeight: 16, nameSize: 14, emailSize: 12 },
   sm: { size: 28, fontSize: 12, lineHeight: 12, nameSize: 16, emailSize: 13 },
   md: { size: 64, fontSize: 22, lineHeight: 26, nameSize: 18, emailSize: 14 },
   lg: { size: 96, fontSize: 30, lineHeight: 36, nameSize: 24, emailSize: 16 },
   xl: { size: 128, fontSize: 42, lineHeight: 50, nameSize: 28, emailSize: 18 },
 };
+
+const FONT_STYLES = {
+  default: {
+    fontWeight: '500',
+    textTransform: 'uppercase',
+    fontFamily: 'monospace'
+  }
+}
+
+const truncateText = (textStr, maxSize = 25) => {
+  return textStr.length > maxSize
+    ? `${textStr.slice(0, maxSize)}...`
+    : textStr;
+}
 
 /**
  * Avatar Component
@@ -82,23 +97,38 @@ export default function Avatar({
           />
         ) : (
           (name || email) ? (
-            <Text sx={{ fontSize, fontWeight: '700', color: 'foreground', lineHeight }}>
+            <Text style={{
+              fontSize,
+              color: 'foreground',
+              lineHeight,
+              ...FONT_STYLES.default
+            }}>
               {getInitials(name, email)}
             </Text>
           ) : null
         )}
       </View>
 
-
       {shouldShowDetails && (
         <View sx={{ marginLeft: size === 'xs' ? 2 : size === 'sm' ? 3 : 4, flex: 1, justifyContent: 'center' }}>
           {name && (
-            <Text sx={{ fontSize: nameSize, fontWeight: '700', color: 'textPrimary', marginBottom: 0.5 }}>
-              {name}
+            <Text sx={{
+              fontSize: nameSize,
+              fontWeight: '700',
+              color: 'textPrimary',
+              // truncate
+              ...FONT_STYLES.default
+            }}>
+              {truncateText(name)}
             </Text>
           )}
           {email && (
-            <Text sx={{ fontSize: emailSize, color: 'textSecondary' }}>
+            <Text sx={{
+              fontSize: emailSize,
+              color: 'textSecondary',
+              marginTop: 0.5,
+              ...FONT_STYLES.default
+            }}>
               {email}
             </Text>
           )}

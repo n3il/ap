@@ -6,18 +6,12 @@ import { useColors } from '@/theme';
 import Markdown from 'react-native-markdown-display';
 import { Pressable } from 'react-native';
 import { useRouter } from 'expo-router';
+import { AssessmentType } from '@/types/agent';
+import SectionTitle from '@/components/SectionTitle';
 
 const hasContent = (value) => typeof value === 'string' && value.trim().length > 0;
 
-const getFirstLine = (text) => {
-  if (!hasContent(text)) return '';
-  return text
-    .split('\n')
-    .map((line) => line.trim())
-    .find(Boolean) || '';
-};
-
-function AssessmentCard({ assessment }) {
+function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const { colors: palette, withOpacity } = useColors();
@@ -208,9 +202,8 @@ function AssessmentCard({ assessment }) {
         {tradeActions.length > 0 && (
           <View sx={{
             marginTop: 3,
-            borderColor: palette.border,
-            borderTopWidth: 1,
           }}>
+            <SectionTitle title="New trades" />
             {tradeActions.map((action, index) => (
               <TradeActionDisplay
                 key={`${action.asset ?? 'action'}-${index}`}
@@ -233,11 +226,9 @@ function AssessmentCard({ assessment }) {
           </StatusBadge>
         ) : null}
 
-        {shortSummary && (
-          <Text variant="md" sx={{ fontWeight: '500', lineHeight: 24, marginTop: 2 }}>
-            {shortSummary}
-          </Text>
-        )}
+        <Text variant="md" sx={{ fontWeight: '500', lineHeight: 24 }}>
+          {shortSummary || ''}
+        </Text>
 
         {expanded ? (
             <View

@@ -16,6 +16,17 @@ const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 7;
 const PADDING = { top: 15, right: 15, bottom: 15, left: 15 };
 
+const getXValue = (point) => {
+  if (!point) return null;
+  if (typeof point.time === 'number' && isFinite(point.time) && !isNaN(point.time)) {
+    return point.time;
+  }
+  if (typeof point.x === 'number' && isFinite(point.x) && !isNaN(point.x)) {
+    return point.x;
+  }
+  return null;
+};
+
 // Interpolate y value for a given x position in the data
 const interpolateValue = (data, targetX) => {
   if (!data || data.length === 0) return 0;
@@ -81,6 +92,7 @@ const interpolateValue = (data, targetX) => {
  * @param {string} props.lines[].axisGroup - Axis grouping: 'left' | 'right' (default: 'left')
  * @param {Function} props.lines[].formatValue - Custom value formatter for this line
  * @param {string} props.timeframe - Time range: '1h' | '24h' | '7d'
+ * @param {number} [props.xAxisPaddingPoints=0] - Number of additional data point intervals reserved to the right of the chart
  *
  * @example
  * <SvgChart
@@ -109,6 +121,7 @@ const SvgChart = ({
   lines = [],
   scrollY,
   style = {},
+  xAxisPaddingPoints = 1,
   isLoading = false,
 }) => {
   const { timeframe } = useTimeframeStore();
@@ -140,6 +153,25 @@ const SvgChart = ({
     () => Math.max(1, chartHeight - PADDING.top - PADDING.bottom),
     [chartHeight]
   );
+
+  const maxLinePoints = useMemo(() => {
+    return lines.reduce((max, line) => {
+      if (!line?.data || !Array.isArray(line.data)) return max;
+      const validCount = line.data.reduce((count, point) => {
+        return count + (getXValue(point) !== null ? 1 : 0);
+      }, 0);
+      return Math.max(max, validCount);
+    }, 0);
+  }, [lines]);
+
+  const xAxisPaddingRatio = useMemo(() => {
+    const safePadding = Math.max(0, xAxisPaddingPoints || 0);
+    if (safePadding === 0) return 0;
+    const segments = Math.max(maxLinePoints - 1, 1);
+    return safePadding / segments;
+  }, [xAxisPaddingPoints, maxLinePoints]);
+
+  const xAxisMaxTime = 1 + xAxisPaddingRatio;
 
   const handleLayout = useCallback((event) => {
     const { width } = event.nativeEvent.layout;
@@ -179,8 +211,10 @@ const SvgChart = ({
   // Pan responder for touch interaction
   const panResponder = useMemo(() => {
     const safeWidth = Math.max(plotWidth, 1);
-    const clampNormalizedX = (locationX) =>
-      Math.max(0, Math.min(1, (locationX - PADDING.left) / safeWidth));
+    const clampNormalizedX = (locationX) => {
+      const clampedRatio = Math.max(0, Math.min(1, (locationX - PADDING.left) / safeWidth));
+      return clampedRatio * xAxisMaxTime;
+    };
 
     return PanResponder.create({
       onStartShouldSetPanResponder: () => true,
@@ -199,7 +233,7 @@ const SvgChart = ({
         setTouchActive(false);
       },
     });
-  }, [plotWidth]);
+  }, [plotWidth, xAxisMaxTime]);
 
   // Group lines by axis
   const axisGroups = useMemo(() => {
@@ -224,21 +258,21 @@ const SvgChart = ({
       return touchX;
     }
 
-    const referenceData = lines[0].data.filter(d =>
-      d && typeof d.time === 'number' && isFinite(d.time)
-    );
+    const referenceData = lines[0].data
+      .map((point) => getXValue(point))
+      .filter((x) => x !== null);
 
     if (referenceData.length === 0) return touchX;
 
     // Find the closest time value
-    let closestTime = referenceData[0].time;
+    let closestTime = referenceData[0];
     let minDistance = Math.abs(touchX - closestTime);
 
     for (const point of referenceData) {
-      const distance = Math.abs(touchX - point.time);
+      const distance = Math.abs(touchX - point);
       if (distance < minDistance) {
         minDistance = distance;
-        closestTime = point.time;
+        closestTime = point;
       }
     }
 
@@ -353,9 +387,11 @@ const SvgChart = ({
 
   const scaleX = useCallback((time) => {
     if (!isFinite(time) || isNaN(time)) return PADDING.left;
-    const result = PADDING.left + time * plotWidth;
+    const clampedTime = Math.max(0, Math.min(time, xAxisMaxTime));
+    const normalized = clampedTime / xAxisMaxTime;
+    const result = PADDING.left + normalized * plotWidth;
     return isFinite(result) ? result : PADDING.left;
-  }, [plotWidth]);
+  }, [plotWidth, xAxisMaxTime]);
 
   // Memoize vertical grid line positions
   const verticalGridPositions = useMemo(() => {
@@ -402,7 +438,7 @@ const SvgChart = ({
 
     const progress = interpolate(scrollY.value, [100, 200], [0, 1], Extrapolation.CLAMP);
     return {
-      height: interpolate(progress, [0, 1], [chartHeight, 100]),
+      height: interpolate(progress, [0, 1], [chartHeight, 70]),
     };
   }, [scrollY]);
 
@@ -613,14 +649,15 @@ const SvgChart = ({
                   {(() => {
                     const now = new Date();
                     const date = new Date(now);
+                    const normalizedPosition = Math.max(0, Math.min(snappedTouchX, 1));
                     if (timeframe === '1h') {
-                      date.setMinutes(date.getMinutes() - 60 + (snappedTouchX * 60));
+                      date.setMinutes(date.getMinutes() - 60 + (normalizedPosition * 60));
                       return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                     } else if (timeframe === '24h') {
-                      date.setHours(date.getHours() - 24 + (snappedTouchX * 24));
+                      date.setHours(date.getHours() - 24 + (normalizedPosition * 24));
                       return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
                     } else if (timeframe === '7d') {
-                      date.setDate(date.getDate() - 7 + (snappedTouchX * 7));
+                      date.setDate(date.getDate() - 7 + (normalizedPosition * 7));
                       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric' });
                     }
                     return '';

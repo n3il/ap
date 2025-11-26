@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, SwipeableTabs, TouchableOpacity } from '@/components/ui';
+import { View, Text, SwipeableTabs, TouchableOpacity, ScrollView, GlassButton } from '@/components/ui';
 import { useAuth } from '@/contexts/AuthContext';
 import ContainerView from '@/components/ContainerView';
 import AgentList from '@/components/AgentList';
@@ -10,6 +10,7 @@ import CreateAgentModal from '@/components/CreateAgentModal';
 import { router } from 'expo-router';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useColors } from '@/theme';
+import SectionTitle from '@/components/SectionTitle';
 
 export default function AgentsScreen() {
   const { user } = useAuth();
@@ -56,38 +57,31 @@ export default function AgentsScreen() {
   // Define tabs with their content
   const tabs = [
     {
-      key: 'active',
+      key: 'Active',
       title: 'Active',
       content: (
-        <AgentList
-          queryKey="active-agents"
-          compactView
-          userId={user?.id}
-          published={false}
-        />
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: '70%' }}
+        >
+          <AgentList compactView active />
+        </ScrollView>
       ),
     },
     {
-      key: 'shared',
-      title: 'Shared',
-      content: (
-        <AgentList
-          queryKey="shared-agents"
-          compactView
-          published={true}
-        />
-      ),
+      key: 'overview',
+      title: 'Overview',
+      content: <Text>Overview</Text>,
+    },
+    {
+      key: 'bookmarked',
+      title: 'Bookmarked',
+      content: <Text>Bookmarked</Text>,
     },
     {
       key: 'all',
       title: 'All',
-      content: (
-        <AgentList
-          queryKey="all-agents"
-          compactView
-          userId={user?.id}
-        />
-      ),
+      content: <Text>All</Text>,
     },
   ];
 
@@ -98,34 +92,18 @@ export default function AgentsScreen() {
         alignItems: 'center',
         justifyContent: 'space-between',
         paddingHorizontal: 4,
-        paddingTop: 6,
-        marginBottom: 3
       }}>
-        <Text
-          variant="xs"
-          tone="muted"
-          sx={{
-            textTransform: 'uppercase',
-            fontWeight: '600',
-            letterSpacing: 2
-          }}
-        >
-          Agent Dashboard
-        </Text>
-        <TouchableOpacity
+        <SectionTitle title="Agent Dashboards" sx={{ fontSize: 16 }} />
+        <GlassButton
           onPress={handleCreateAgent}
-          sx={{
-            width: 32,
-            height: 32,
+          style={{
             alignItems: 'center',
             justifyContent: 'center',
-            borderRadius: 'lg',
-            backgroundColor: 'primary',
           }}
           activeOpacity={0.8}
         >
           <Ionicons name="add" size={20} color={palette.foreground} />
-        </TouchableOpacity>
+        </GlassButton>
       </View>
 
       <SwipeableTabs

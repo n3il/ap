@@ -67,10 +67,11 @@ export default function ExploreScreen() {
             flex: 1,
             backgroundColor: palette.backgroundSecondary,
             elevation: 10,
-            shadowColor: palette.background,
+            shadowColor: palette.shadow,
             shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.25,
+            shadowOpacity: 0.9,
             shadowRadius: 3.84,
+            paddingBottom: 4
           }}>
             <MarketPricesWidget
               tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
@@ -96,12 +97,8 @@ export default function ExploreScreen() {
               <TimeFrameSelector />
             </PaddedView>
           </View>
-
-
         </View>
-        <PaddedView style={{ zIndex: -1 }}>
-          <AgentList queryKey={['explore-agents']} compactView scrollY={scrollY} />
-        </PaddedView>
+        <AgentList queryKey={['explore-agents']} compactView scrollY={scrollY} />
       </AnimatedScrollView>
     </View>
   );

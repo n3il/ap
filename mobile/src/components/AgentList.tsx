@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { agentService } from '@/services/agentService';
 import { assessmentService } from '@/services/assessmentService';
 import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useEffect, useRef, useState } from 'react';
+import { useCallback, useMemo, useEffect, useRef } from 'react';
 import { ActivityIndicator } from 'dripsy';
 import { useExploreAgentsStore } from '@/stores/useExploreAgentsStore';
 import { useAnimatedReaction } from 'react-native-reanimated';
@@ -19,17 +19,38 @@ export default function AgentList({
   emptyState,
   userId = undefined,
   published = true,
+  includeLatestAssessment = true,
+  isActive = null,
   hideOpenPositions = false,
   compactView = false,
   scrollY = null, // Animated scroll position
 }) {
   const router = useRouter();
   const setAgents = useExploreAgentsStore((state) => state.setAgents);
-  const [activeAgentId, setActiveAgentId] = useState(null);
+  const setActiveAgentForQueryKey = useExploreAgentsStore((state) => state.setActiveAgentForQueryKey);
+  const clearActiveAgentForQueryKey = useExploreAgentsStore((state) => state.clearActiveAgentForQueryKey);
   const itemLayoutsRef = useRef({});
+  const queryKeyIdentifier = useMemo(() => {
+    return JSON.stringify(Array.isArray(queryKey) ? queryKey : [queryKey]);
+  }, [queryKey]);
+  const activeAgentId = useExploreAgentsStore(
+    useCallback(
+      (state) => state.activeAgentsByQueryKey[queryKeyIdentifier] ?? null,
+      [queryKeyIdentifier],
+    )
+  );
+  const setActiveAgentId = useCallback(
+    (agentId) => {
+      setActiveAgentForQueryKey(queryKeyIdentifier, agentId);
+    },
+    [queryKeyIdentifier, setActiveAgentForQueryKey],
+  );
 
-  // Extract category from queryKey if it exists (e.g., ['explore-agents', 'top'])
-  const category = Array.isArray(queryKey) ? queryKey[queryKey.length - 1] : null;
+  useEffect(() => {
+    return () => {
+      clearActiveAgentForQueryKey(queryKeyIdentifier);
+    };
+  }, [clearActiveAgentForQueryKey, queryKeyIdentifier]);
 
   const {
     data: agents = [],
@@ -38,14 +59,8 @@ export default function AgentList({
     error,
     refetch,
   } = useQuery({
-    queryKey: Array.isArray(queryKey) ? [...queryKey, 'agents', userId, published] : [queryKey, 'agents', userId, published],
-    queryFn: () => {
-      if (userId) {
-        return agentService.getAgents(userId);
-      } else {
-        return agentService.getPublishedAgents();
-      }
-    },
+    queryKey: ['agent-list', userId, published, includeLatestAssessment, isActive],
+    queryFn: () => agentService.getAgents({ published, includeLatestAssessment, isActive })
   });
 
   useEffect(() => {
@@ -53,79 +68,6 @@ export default function AgentList({
       setAgents(agents);
     }
   }, [agents]);
-
-  // Fetch latest assessments for each agent
-  const assessmentQueryKey = Array.isArray(queryKey)
-    ? [...queryKey, 'assessments', userId, published]
-    : [queryKey, 'assessments', userId, published];
-
-  const { data: latestAssessments = [], isFetching: assessmentsFetching } = useQuery({
-    queryKey: assessmentQueryKey,
-    queryFn: () => assessmentService.getAllAssessments(),
-  });
-
-  const latestAssessmentByAgent = useMemo(() => {
-    if (!latestAssessments?.length) {
-      return {};
-    }
-
-    return latestAssessments.reduce((acc, assessment) => {
-      if (!acc[assessment.agent_id]) {
-        acc[assessment.agent_id] = assessment;
-      }
-      return acc;
-    }, {});
-  }, [latestAssessments]);
-
-  // Sort agents based on category
-  const sortedAgents = useMemo(() => {
-    if (!agents?.length) return [];
-
-    let sorted = [...agents];
-
-    switch (category) {
-      case 'top':
-        // Sort by number of assessments (most active agents)
-        sorted.sort((a, b) => {
-          const aAssessmentCount = latestAssessments.filter(
-            (assessment) => assessment.agent_id === a.id
-          ).length;
-          const bAssessmentCount = latestAssessments.filter(
-            (assessment) => assessment.agent_id === b.id
-          ).length;
-          return bAssessmentCount - aAssessmentCount;
-        });
-        break;
-
-      case 'popular':
-        // Sort by published date (most recently published first)
-        sorted.sort((a, b) => {
-          const aDate = a.published_at ? new Date(a.published_at) : new Date(0);
-          const bDate = b.published_at ? new Date(b.published_at) : new Date(0);
-          return bDate - aDate;
-        });
-        break;
-
-      case 'new':
-        // Sort by creation date (newest first)
-        sorted.sort((a, b) => {
-          const aDate = new Date(a.created_at);
-          const bDate = new Date(b.created_at);
-          return bDate - aDate;
-        });
-        break;
-
-      default:
-        // Default sort by created_at descending
-        sorted.sort((a, b) => {
-          const aDate = new Date(a.created_at);
-          const bDate = new Date(b.created_at);
-          return bDate - aDate;
-        });
-    }
-
-    return sorted;
-  }, [agents, category, latestAssessments]);
 
   const onAgentPress = useCallback(
     (agent) => {
@@ -156,7 +98,7 @@ export default function AgentList({
     if (closestAgent !== activeAgentId) {
       setActiveAgentId(closestAgent);
     }
-  }, [activeAgentId]);
+  }, [activeAgentId, setActiveAgentId]);
 
   // Track scroll position changes with Reanimated
   useAnimatedReaction(
@@ -184,7 +126,7 @@ export default function AgentList({
     );
   }
 
-  if (!sortedAgents.length) {
+  if (!agents.length) {
     return (
       emptyState || (
         <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
@@ -203,7 +145,7 @@ export default function AgentList({
     <View
       style={{ flex: 1, gap: 8, marginTop: 8 }}
     >
-      {sortedAgents.map((agent) => (
+      {agents.map((agent) => (
         <View
           key={agent.id}
           onLayout={(event) => handleItemLayout(agent.id, event)}
@@ -211,10 +153,10 @@ export default function AgentList({
           <AgentCard
             agent={agent}
             hideOpenPositions={hideOpenPositions}
-            latestAssessment={latestAssessmentByAgent[agent.id]}
             onPress={() => onAgentPress?.(agent)}
             compactView={compactView}
             isActive={activeAgentId === agent.id}
+            asListItem
           />
         </View>
       ))}

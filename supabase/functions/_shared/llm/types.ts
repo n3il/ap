@@ -37,6 +37,7 @@ export interface LLMTradeAction {
   takeProfit?: number;
   confidenceScore?: number;
   reasoning?: string;
+  position_id?: string; // trade id
 }
 
 export interface ParsedLLMResponse {

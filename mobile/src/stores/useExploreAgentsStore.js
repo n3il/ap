@@ -5,7 +5,7 @@ import { create } from 'zustand';
  * This allows the SvgChart to access the agents based on which tab is selected
  * (Top, Popular, or New)
  */
-export const useExploreAgentsStore = create((set) => ({
+export const useExploreAgentsStore = create((set, get) => ({
   // The current list of agents based on selected tab
   agents: [],
 
@@ -14,4 +14,18 @@ export const useExploreAgentsStore = create((set) => ({
 
   // Clear the agents list
   clearAgents: () => set({ agents: [] }),
+
+  // Track which agent is active per query key for shared UI like charts
+  activeAgentsByQueryKey: {},
+  setActiveAgentForQueryKey: (queryKey, agentId) =>
+    set((state) => ({
+      activeAgentsByQueryKey: {
+        ...state.activeAgentsByQueryKey,
+        [queryKey]: agentId,
+      },
+    })),
+  clearActiveAgentForQueryKey: (queryKey) => {
+    const { [queryKey]: _removed, ...rest } = get().activeAgentsByQueryKey;
+    set({ activeAgentsByQueryKey: rest });
+  },
 }));

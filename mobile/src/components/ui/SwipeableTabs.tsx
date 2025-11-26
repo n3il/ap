@@ -17,6 +17,7 @@ import ScrollView from '@/components/ui/ScrollView';
 import { GlassContainer, GlassView } from 'expo-glass-effect';
 import { GLOBAL_PADDING } from '@/components/ContainerView';
 import { useTheme } from '@/contexts/ThemeContext';
+import GlassButton from '@/components/ui/GlassButton';
 
 const { width } = Dimensions.get('window');
 const SCREEN_WIDTH = width;
@@ -135,8 +136,11 @@ export default function SwipeableTabs({
             tabContainerStyle,
           ]}
         >
-          {tabs.map((tab, index) => (
-            <GlassView
+          {tabs.map((tab, index) => renderTab ? (
+            renderTab(tab, index, currentIndex === index)
+          )
+          : (
+            <GlassButton
               key={tab.key}
               glassEffectStyle="clear"
               style={[
@@ -145,37 +149,27 @@ export default function SwipeableTabs({
                   paddingHorizontal: 8,
                   paddingVertical: 4,
                   marginHorizontal: 4,
+                  ...(currentIndex === index && [styles.activeTab, activeTabStyle]),
+                  ...styles.tab,
+                  ...tabStyle
 
                 },
                 tabWrapperStyle,
               ]}
               tintColor={theme.colors.surface}
-            >
-              <TouchableOpacity
-                key={tab.key}
                 onPress={() => handleTabPress(index)}
+
+            >
+              <Text
                 style={[
-                  styles.tab,
-                  tabStyle,
-                  currentIndex === index && [styles.activeTab, activeTabStyle],
+                  styles.tabText,
+                  tabTextStyle,
+                  currentIndex === index && [styles.activeTabText, activeTabTextStyle],
                 ]}
-                activeOpacity={0.8}
               >
-                {renderTab ? (
-                  renderTab(tab, index, currentIndex === index)
-                ) : (
-                  <Text
-                    style={[
-                      styles.tabText,
-                      tabTextStyle,
-                      currentIndex === index && [styles.activeTabText, activeTabTextStyle],
-                    ]}
-                  >
-                    {tab.title}
-                  </Text>
-                )}
-              </TouchableOpacity>
-            </GlassView>
+                {tab.title}
+              </Text>
+            </GlassButton>
           ))}
         </GlassContainer>
       </ScrollView>

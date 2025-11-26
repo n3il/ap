@@ -1,6 +1,35 @@
 import { supabase } from '@/config/supabase';
 import * as Crypto from 'expo-crypto';
 
+const buildAgentSelectQuery = (includeLatestAssessment = false) => {
+  const baseColumns = includeLatestAssessment
+    ? '*, latest_assessment:assessments(*)'
+    : '*';
+
+  let query = supabase
+    .from('agents')
+    .select(baseColumns);
+
+  if (includeLatestAssessment) {
+    query = query
+      .order('timestamp', { ascending: false, referencedTable: 'assessments' })
+      .limit(1, { referencedTable: 'assessments' });
+  }
+
+  return query;
+};
+
+const normalizeAgent = (agent, includeLatestAssessment) => {
+  if (!includeLatestAssessment || !agent) {
+    return agent;
+  }
+
+  return {
+    ...agent,
+    latest_assessment: agent.latest_assessment?.[0] ?? null,
+  };
+};
+
 const generateHyperliquidAddress = async () => {
   const bytes = await Crypto.getRandomBytesAsync(20);
   const hex = Array.from(bytes)
@@ -10,52 +39,61 @@ const generateHyperliquidAddress = async () => {
 };
 
 export const agentService = {
-  // Fetch all agents for the current user
-  async getAgents() {
+  // Fetch agents with optional filters
+  async getAgents({
+    userId = null,
+    published = null,
+    isActive = null,
+    includeLatestAssessment = false,
+  } = {}) {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      let resolvedUserId = userId;
+      if (!resolvedUserId && !published) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('Not authenticated');
+        resolvedUserId = user.id;
+      }
 
-      const { data, error } = await supabase
-        .from('agents')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
+      let query = buildAgentSelectQuery(includeLatestAssessment);
+
+      if (resolvedUserId) {
+        query = query.eq('user_id', resolvedUserId);
+      }
+
+      if (isActive === true) {
+        query = query.not('is_active', 'is', null);
+      } else if (published === false) {
+        query = query.is('is_active', null);
+      }
+
+      if (published === true) {
+        query = query.not('published_at', 'is', null);
+      } else if (published === false) {
+        query = query.is('published_at', null);
+      }
+
+      const { data, error } = await query
+        .order(published ? 'published_at' : 'created_at', { ascending: false });
 
       if (error) throw error;
-      return data;
-    } catch (error) {
-      throw error;
-    }
-  },
 
-  // Fetch published agents across all users
-  async getPublishedAgents() {
-    try {
-      const { data, error } = await supabase
-        .from('agents')
-        .select('*')
-        .not('published_at', 'is', null)
-        .order('published_at', { ascending: false });
-
-      if (error) throw error;
-      return data;
+      return includeLatestAssessment
+        ? data.map(agent => normalizeAgent(agent, true))
+        : data;
     } catch (error) {
       throw error;
     }
   },
 
   // Get a single agent by ID
-  async getAgent(agentId) {
+  async getAgent(agentId, { includeLatestAssessment = false } = {}) {
     try {
-      const { data, error } = await supabase
-        .from('agents')
-        .select('*')
+      const { data, error } = await buildAgentSelectQuery(includeLatestAssessment)
         .eq('id', agentId)
         .single();
 
       if (error) throw error;
-      return data;
+      return normalizeAgent(data, includeLatestAssessment);
     } catch (error) {
       throw error;
     }

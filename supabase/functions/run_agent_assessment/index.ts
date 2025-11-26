@@ -17,18 +17,61 @@ import { executeOpenTrade, executeCloseTrade } from '../_shared/lib/trade.ts';
 import { createSupabaseServiceClient } from '../_shared/supabase.ts';
 
 console.log('Run Agent Assessment function started.');
+
+type RunAgentAssessmentDeps = {
+  authenticateRequest: typeof authenticateRequest;
+  fetchAndValidateAgent: typeof fetchAndValidateAgent;
+  isAgentActive: typeof isAgentActive;
+  fetchOpenPositions: typeof fetchOpenPositions;
+  fetchClosedTrades: typeof fetchClosedTrades;
+  fetchMarketData: typeof fetchMarketData;
+  calculatePnLMetrics: typeof calculatePnLMetrics;
+  fetchPrompt: typeof fetchPrompt;
+  buildPrompt: typeof buildPrompt;
+  callLLMProvider: typeof callLLMProvider;
+  createMarketSnapshot: typeof createMarketSnapshot;
+  saveAssessment: typeof saveAssessment;
+  savePnLSnapshot: typeof savePnLSnapshot;
+  executeOpenTrade: typeof executeOpenTrade;
+  executeCloseTrade: typeof executeCloseTrade;
+  createSupabaseServiceClient: typeof createSupabaseServiceClient;
+};
+
+const defaultDeps: RunAgentAssessmentDeps = {
+  authenticateRequest,
+  fetchAndValidateAgent,
+  isAgentActive,
+  fetchOpenPositions,
+  fetchClosedTrades,
+  fetchMarketData,
+  calculatePnLMetrics,
+  fetchPrompt,
+  buildPrompt,
+  callLLMProvider,
+  createMarketSnapshot,
+  saveAssessment,
+  savePnLSnapshot,
+  executeOpenTrade,
+  executeCloseTrade,
+  createSupabaseServiceClient,
+};
 /**
  * Main orchestration function for agent assessment workflow
  */
-async function runAgentAssessment(agentId: string, authHeader: string) {
+export async function runAgentAssessment(
+  agentId: string,
+  authHeader: string,
+  overrides: Partial<RunAgentAssessmentDeps> = {}
+) {
+  const deps = { ...defaultDeps, ...overrides };
   // 1. Authenticate the request
-  const authContext = await authenticateRequest(authHeader);
+  const authContext = await deps.authenticateRequest(authHeader);
 
   // 2. Fetch and validate agent
-  const agent = await fetchAndValidateAgent(agentId, authContext);
+  const agent = await deps.fetchAndValidateAgent(agentId, authContext);
 
   // 3. Check if agent is active
-  if (!isAgentActive(agent)) {
+  if (!deps.isAgentActive(agent)) {
     console.log('Agent inactive — skipping assessment');
     return {
       success: true,
@@ -38,32 +81,34 @@ async function runAgentAssessment(agentId: string, authHeader: string) {
   }
 
   // 4. Fetch all required data in parallel
-  const [openPositions, closedTrades, { marketData, candleData }] = await Promise.all([
-    fetchOpenPositions(agentId),
-    fetchClosedTrades(agentId),
-    fetchMarketData(),
+  const [openPositions, closedTrades, { candleData }] = await Promise.all([
+    deps.fetchOpenPositions(agentId),
+    deps.fetchClosedTrades(agentId),
+    deps.fetchMarketData(),
   ]);
 
   // 5. Calculate PnL metrics (pure function)
   const initialCapital = parseFloat(String(agent.initial_capital || 0));
-  const pnlMetrics = calculatePnLMetrics(initialCapital, closedTrades, openPositions, marketData);
+  const pnlMetrics = deps.calculatePnLMetrics(initialCapital, closedTrades, openPositions, marketData);
 
   // 6. Build prompt
-  const serviceClient = createSupabaseServiceClient();
-  const promptTemplate = await fetchPrompt(serviceClient, agent);
+  const serviceClient = deps.createSupabaseServiceClient();
+  const promptTemplate = await deps.fetchPrompt(serviceClient, agent);
 
-  const prompt = buildPrompt(promptTemplate, {
-    marketData,
-    openPositions,
-    accountValue: pnlMetrics.accountValue,
-    remainingCash: pnlMetrics.remainingCash,
+  const prompt = deps.buildPrompt(promptTemplate, {
     candleData,
+    accountValue: pnlMetrics.accountValue,
+    openPositions: openPositions.map(({ id, ...rest }) => ({
+      position_id: id,
+      ...rest
+    })),
+    remainingCash: pnlMetrics.remainingCash,
   });
 
   // 7. Generate LLM response
   const provider = agent.llm_provider;
   const modelName = typeof agent.model_name === 'string' ? agent.model_name : undefined;
-  const llmResponse = await callLLMProvider(provider, prompt, modelName);
+  const llmResponse = await deps.callLLMProvider(provider, prompt, modelName);
 
   // Extract trade actions from parsed response
   const tradeActions = llmResponse.parsed?.tradeActions || [];
@@ -71,10 +116,10 @@ async function runAgentAssessment(agentId: string, authHeader: string) {
   console.log('Trade actions summary:', tradeActions.map(ta => `${ta.asset}: ${ta.action}`).join(', '));
 
   // 8. Create market snapshot
-  const marketSnapshot = createMarketSnapshot(marketData, openPositions);
+  const marketSnapshot = deps.createMarketSnapshot(marketData, openPositions);
 
   // 9. Save assessment to database
-  const assessment = await saveAssessment(
+  const assessment = await deps.saveAssessment(
     agentId,
     marketSnapshot,
     prompt,
@@ -84,7 +129,7 @@ async function runAgentAssessment(agentId: string, authHeader: string) {
 
   // 10. Save PnL snapshot (non-blocking on error)
   try {
-    await savePnLSnapshot(agentId, pnlMetrics, openPositions.length, assessment.id);
+    await deps.savePnLSnapshot(agentId, pnlMetrics, openPositions.length, assessment.id);
   } catch (error) {
     console.error('PnL snapshot error (non-fatal):', error);
   }
@@ -97,9 +142,9 @@ async function runAgentAssessment(agentId: string, authHeader: string) {
 
       // Route to appropriate trade execution handler based on action type
       if (tradeAction.action === 'OPEN_LONG' || tradeAction.action === 'OPEN_SHORT') {
-        result = await executeOpenTrade(agent, tradeAction, agent.simulate);
+        result = await deps.executeOpenTrade(agent, tradeAction, agent.simulate);
       } else if (tradeAction.action === 'CLOSE_LONG' || tradeAction.action === 'CLOSE_SHORT') {
-        result = await executeCloseTrade(agent, tradeAction, agent.simulate);
+        result = await deps.executeCloseTrade(agent, tradeAction, agent.simulate);
       } else {
         console.warn(`Unknown action type: ${tradeAction.action}`);
         continue;
@@ -125,23 +170,25 @@ async function runAgentAssessment(agentId: string, authHeader: string) {
 /**
  * HTTP handler for the Deno edge function
  */
-Deno.serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return corsPreflightResponse();
-  }
+if (import.meta.main) {
+  Deno.serve(async (req) => {
+    if (req.method === 'OPTIONS') {
+      return corsPreflightResponse();
+    }
 
-  try {
-    const { agent_id } = await req.json();
-    const agentId = validateAgentId(agent_id);
+    try {
+      const { agent_id } = await req.json();
+      const agentId = validateAgentId(agent_id);
 
-    console.log('Running assessment for agent:', agentId);
+      console.log('Running assessment for agent:', agentId);
 
-    const authHeader = req.headers.get('Authorization') || '';
-    const result = await runAgentAssessment(agentId, authHeader);
+      const authHeader = req.headers.get('Authorization') || '';
+      const result = await runAgentAssessment(agentId, authHeader);
 
-    return successResponse(result);
-  } catch (error) {
-    console.error('Error in run_agent_assessment:', error);
-    return handleError(error);
-  }
-});
+      return successResponse(result);
+    } catch (error) {
+      console.error('Error in run_agent_assessment:', error);
+      return handleError(error);
+    }
+  });
+}

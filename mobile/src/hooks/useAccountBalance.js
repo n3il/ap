@@ -41,7 +41,8 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
         .from('trades')
         .select('*')
         .eq('agent_id', agentId)
-        .eq('status', 'OPEN');
+        .eq('status', 'OPEN')
+        .order('entry_timestamp', { ascending: true });
       if (error) throw error;
       return data || [];
     },
@@ -82,46 +83,33 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
     refetchInterval: 5000, // Refresh prices every 5 seconds
   });
 
-  // Calculate enriched positions with current prices and P&L
-  const enrichedPositions = useMemo(() => {
-    return openPositions.map(position => {
-      const symbol = position.asset.replace('-PERP', '');
-      const currentPrice = marketPrices[symbol];
-      const entryPrice = parseFloat(position.entry_price) || 0;
-      const size = parseFloat(position.size) || 0;
-      const side = position.side;
+const enrichedPositions = useMemo(() => {
+  return openPositions.map(position => {
+    const symbol = position.asset.replace('-PERP', '');
+    const currentPrice = marketPrices[symbol];
 
-      let unrealizedPnl = 0;
-      let pnlPercent = 0;
+    const entryPrice = Number(position.entry_price) || 0;
+    const entrySize = Number(position.size) || 0;
+    const leverage = Number(position.leverage) || 1;
 
-      if (currentPrice && entryPrice && size) {
-        const leverage = parseFloat(position.leverage) || 1;
-        const priceChange = currentPrice - entryPrice;
-        const priceChangePercent = priceChange / entryPrice;
-        const positionValue = size * entryPrice;
+    let unrealizedPnl = 0;
+    let pnlPercent = 0;
 
-        // Calculate P&L based on position side (matching backend logic)
-        if (side === 'LONG') {
-          unrealizedPnl = positionValue * priceChangePercent * leverage;
-        } else if (side === 'SHORT') {
-          unrealizedPnl = -positionValue * priceChangePercent * leverage;
-        }
+    if (currentPrice && entryPrice && entrySize) {
+      const priceChangePercent = (currentPrice - entryPrice) / entryPrice;
+      pnlPercent = priceChangePercent * leverage;
+      unrealizedPnl = entrySize * pnlPercent;
+    }
 
-        // Calculate percentage
-        pnlPercent = entryPrice !== 0 ? (unrealizedPnl / positionValue) * 100 : 0;
-      } else if (position.unrealized_pnl) {
-        // Fallback to stored unrealized_pnl if available
-        unrealizedPnl = parseFloat(position.unrealized_pnl) || 0;
-      }
+    return {
+      ...position,
+      currentPrice,
+      unrealizedPnl,
+      pnlPercent,
+    };
+  });
+}, [openPositions, marketPrices]);
 
-      return {
-        ...position,
-        currentPrice,
-        unrealizedPnl,
-        pnlPercent,
-      };
-    });
-  }, [openPositions, marketPrices]);
 
   // Calculate all balance metrics (matching run_agent_assessment logic)
   const balanceMetrics = useMemo(() => {
@@ -159,7 +147,15 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
     }, 0);
 
     // Calculate remaining cash
-    const remainingCash = accountValue - marginUsed;
+    const openTradesValue = enrichedPositions.map((p) => {
+      const size = parseFloat(p.size) || 0;
+      const currentPrice = p.currentPrice || parseFloat(p.entry_price) || 0;
+      const entryPrice = p.entry_price || parseFloat(p.entry_price) || 0;
+      const percentChange = (currentPrice - entryPrice) / entryPrice;
+      const positionValue = size * (1 + percentChange);
+      return positionValue;
+    })
+    const remainingCash = initialCapital - openTradesValue.reduce((sum, p) => sum + p, 0);
 
     return {
       initialCapital,

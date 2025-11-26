@@ -5,7 +5,7 @@ import Text from './Text';
 import type { AppTheme } from '@/theme/dripsy';
 import { withOpacity } from '@/theme';
 
-type BadgeVariant = 'success' | 'error' | 'warning' | 'info' | 'accent' | 'muted';
+type BadgeVariant = 'success' | 'error' | 'warning' | 'info' | 'accent' | 'muted' | 'long' | 'short' | 'foreground';
 type BadgeSize = 'small' | 'regular';
 
 export interface StatusBadgeProps {
@@ -19,10 +19,13 @@ export interface StatusBadgeProps {
 const badgeStyles: Record<BadgeVariant, { bg: keyof AppTheme['colors'] }> = {
   success: { bg: 'success' },
   error: { bg: 'error' },
+  long: { bg: 'long' },
+  short: { bg: 'short' },
   warning: { bg: 'warning' },
   info: { bg: 'info' },
   accent: { bg: 'accent' },
   muted: { bg: 'mutedForeground' },
+  foreground: { bg: 'foreground' },
 };
 
 const sizeStyles: Record<BadgeSize, { paddingHorizontal: number; paddingVertical: number; textVariant: 'xs' | 'caption' }> = {

@@ -78,7 +78,8 @@ export default function AgentReadScreen() {
         listProps={{
           contentContainerStyle: {
             paddingTop: HEADER_HEIGHT,
-            paddingHorizontal: GLOBAL_PADDING
+            paddingHorizontal: GLOBAL_PADDING,
+            gap: 12
           },
           scrollEventThrottle: 16,
           onScroll: Animated.event(

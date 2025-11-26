@@ -19,12 +19,16 @@ export const FormattedValueLabel = ({
   value,
   colorize,
   showSign,
+  alignRight,
   formatter = formatAmount
-}: { value: number; colorize?: boolean; showSign?: boolean; formatter?: (value: number, options?: { showSign?: boolean }) => string }) => {
-  const formattedValue = value === undefined ? '-' : formatter(value, {showSign});
+}: { value: number; colorize?: boolean; showSign?: boolean; alignRight?: boolean; formatter?: (value: number, options?: { showSign?: boolean }) => string }) => {
+  const formattedValue = !value ? '-' : formatter(value, {showSign});
   return (
     <Text variant="body" sx={{
       fontWeight: '300',
+      fontFamily: 'monospace',
+      textAlign: alignRight ? 'right' : 'left',
+      flexGrow: 1,
       ...(colorize ? {
         color: value > 0 ? 'success' : value < 0 ? 'error' : 'foreground',
       } : {}),
@@ -56,17 +60,26 @@ const LabelValue: React.FC<LabelValueProps> = ({
         ...sx,
       }}
     >
-      <Text variant="xs" tone="muted">
+      <Text variant="xs" tone="muted" sx={{
+        fontFamily: 'monospace',
+        alignSelf: alignRight ? 'flex-end' : 'flex-start'
+      }}>
         {label}
       </Text>
 
       {value !== undefined ? (
-        <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 1, justifyContent: alignRight ? 'flex-end' : 'flex-start' }}>
+        <View sx={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          gap: 1,
+          justifyContent: alignRight ? 'flex-end' : 'flex-start'
+        }}>
           <FormattedValueLabel
             value={value}
             colorize={colorize}
             formatter={formatter}
             showSign={showSign}
+            alignRight={alignRight}
           />
           {children}
         </View>

@@ -187,7 +187,7 @@ export async function executeCloseTrade(
     .from('trades')
     .select('*')
     .eq('agent_id', agent.id)
-    .eq('asset', action.asset)
+    .eq('id', action.position_id)
     .eq('status', 'OPEN');
 
   if (tradingMode === 'paper' && action.leverage) {
