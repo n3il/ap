@@ -1,16 +1,16 @@
-import React from 'react';
-import { TouchableOpacity, View, Text, ScrollView } from '@/components/ui';
-import { GlassContainer, GlassView } from 'expo-glass-effect';
-import { Pressable, StyleSheet } from 'react-native';
-import { useTheme } from '@/contexts/ThemeContext';
-import { useTimeframeStore } from '@/stores/useTimeframeStore';
+import { GlassContainer, GlassView } from "expo-glass-effect";
+import React from "react";
+import { Pressable, StyleSheet } from "react-native";
+import { ScrollView, Text, TouchableOpacity, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useTimeframeStore } from "@/stores/useTimeframeStore";
 
 const TIMEFRAME_OPTIONS = [
-  { id: '5m', label: '5m' },
-  { id: '15m', label: '15m' },
-  { id: '1h', label: '1H' },
-  { id: '4h', label: '4H' },
-  { id: '1d', label: '1D' },
+  { id: "5m", label: "5m" },
+  { id: "15m", label: "15m" },
+  { id: "1h", label: "1H" },
+  { id: "4h", label: "4H" },
+  { id: "1d", label: "1D" },
   // { id: '1M', label: '1M' },
   // { id: '1Y', label: '1Y' },
 ];
@@ -20,7 +20,11 @@ export default function TimeFrameSelector() {
   const { timeframe, setTimeframe } = useTimeframeStore();
   return (
     <ScrollView
-      contentContainerStyle={{ flexDirection: 'row', alignItems: 'center', marginBottom: 0 }}
+      contentContainerStyle={{
+        flexDirection: "row",
+        alignItems: "center",
+        marginBottom: 0,
+      }}
       horizontal
       showsHorizontalScrollIndicator={false}
     >
@@ -29,7 +33,7 @@ export default function TimeFrameSelector() {
         return (
           <GlassView
             key={option.id}
-            glassEffectStyle={isSelected ? 'clear' : 'regular'}
+            glassEffectStyle={isSelected ? "clear" : "regular"}
             style={[
               {
                 borderRadius: 32,
@@ -54,7 +58,9 @@ export default function TimeFrameSelector() {
                 style={[
                   styles.tabText,
                   {
-                    color: isSelected ? theme.colors.accent : theme.colors.foreground,
+                    color: isSelected
+                      ? theme.colors.accent
+                      : theme.colors.foreground,
                   },
                 ]}
               >
@@ -62,35 +68,33 @@ export default function TimeFrameSelector() {
               </Text>
             </TouchableOpacity>
           </GlassView>
-
         );
       })}
     </ScrollView>
   );
 }
 
-
 const styles = StyleSheet.create({
   tabBar: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    position: 'relative',
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+    position: "relative",
   },
   tabBarContent: {
     flex: 1,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     gap: 8,
   },
 
   tabText: {
     fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 1.1,
   },
   indicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     height: 2,
   },

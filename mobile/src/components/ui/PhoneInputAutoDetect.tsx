@@ -1,8 +1,8 @@
-import { useColors } from "@/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import React, { useRef, useState, useEffect } from "react";
-import PhoneInput from "react-native-phone-number-input";
 import { parsePhoneNumberFromString } from "libphonenumber-js";
+import React, { useEffect, useRef, useState } from "react";
+import PhoneInput from "react-native-phone-number-input";
+import { useColors } from "@/theme";
 
 export default function PhoneInputAutoDetect({
   value,
@@ -57,7 +57,7 @@ export default function PhoneInputAutoDetect({
     }
 
     return {
-      e164: phone.number,          // +19023391576
+      e164: phone.number, // +19023391576
       national: phone.formatNational(), // (902) 339-1576
       country: phone.country || fallbackCountry,
     };
@@ -85,14 +85,11 @@ export default function PhoneInputAutoDetect({
       withShadow={true}
       autoFocus
       placeholder="(000) 000-0000"
-
       // what user sees
       value={internal}
       onChangeText={handleChange}
-
       // we’re already computing E.164 ourselves, so this can be ignored
       onChangeFormattedText={() => {}}
-
       // ---- your styles preserved ----
       containerStyle={{
         backgroundColor: "transparent",

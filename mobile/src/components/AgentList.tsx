@@ -1,16 +1,15 @@
-import React from 'react';
-import { View, Text } from '@/components/ui';
-import AgentCard from './AgentCard';
-import { ROUTES } from '@/config/routes';
-import { useQuery } from '@tanstack/react-query';
-import { agentService } from '@/services/agentService';
-import { assessmentService } from '@/services/assessmentService';
-import { useRouter } from 'expo-router';
-import { useCallback, useMemo, useEffect, useRef } from 'react';
-import { ActivityIndicator } from 'dripsy';
-import { useExploreAgentsStore } from '@/stores/useExploreAgentsStore';
-import { useAnimatedReaction } from 'react-native-reanimated';
-import { scheduleOnRN } from 'react-native-worklets';
+import { useQuery } from "@tanstack/react-query";
+import { ActivityIndicator } from "dripsy";
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { useAnimatedReaction } from "react-native-reanimated";
+import { scheduleOnRN } from "react-native-worklets";
+import { Text, View } from "@/components/ui";
+import { ROUTES } from "@/config/routes";
+import { agentService } from "@/services/agentService";
+import { assessmentService } from "@/services/assessmentService";
+import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
+import AgentCard from "./AgentCard";
 
 const ANIM_COMPLETE_SCROLL_Y = 200;
 
@@ -27,8 +26,12 @@ export default function AgentList({
 }) {
   const router = useRouter();
   const setAgents = useExploreAgentsStore((state) => state.setAgents);
-  const setActiveAgentForQueryKey = useExploreAgentsStore((state) => state.setActiveAgentForQueryKey);
-  const clearActiveAgentForQueryKey = useExploreAgentsStore((state) => state.clearActiveAgentForQueryKey);
+  const setActiveAgentForQueryKey = useExploreAgentsStore(
+    (state) => state.setActiveAgentForQueryKey,
+  );
+  const clearActiveAgentForQueryKey = useExploreAgentsStore(
+    (state) => state.clearActiveAgentForQueryKey,
+  );
   const itemLayoutsRef = useRef({});
   const queryKeyIdentifier = useMemo(() => {
     return JSON.stringify(Array.isArray(queryKey) ? queryKey : [queryKey]);
@@ -37,7 +40,7 @@ export default function AgentList({
     useCallback(
       (state) => state.activeAgentsByQueryKey[queryKeyIdentifier] ?? null,
       [queryKeyIdentifier],
-    )
+    ),
   );
   const setActiveAgentId = useCallback(
     (agentId) => {
@@ -59,8 +62,15 @@ export default function AgentList({
     error,
     refetch,
   } = useQuery({
-    queryKey: ['agent-list', userId, published, includeLatestAssessment, isActive],
-    queryFn: () => agentService.getAgents({ published, includeLatestAssessment, isActive })
+    queryKey: [
+      "agent-list",
+      userId,
+      published,
+      includeLatestAssessment,
+      isActive,
+    ],
+    queryFn: () =>
+      agentService.getAgents({ published, includeLatestAssessment, isActive }),
   });
 
   useEffect(() => {
@@ -76,29 +86,34 @@ export default function AgentList({
         params: { id: agent.id, name: agent.name },
       });
     },
-    [router]
+    [router],
   );
 
   // Calculate which agent is active based on scroll position
-  const calculateActiveAgent = useCallback((scrollPosition) => {
-    let closestAgent = null;
-    let smallestDistance = Infinity;
+  const calculateActiveAgent = useCallback(
+    (scrollPosition) => {
+      let closestAgent = null;
+      let smallestDistance = Infinity;
 
-    Object.entries(itemLayoutsRef.current).forEach(([agentId, layout]) => {
-      // Calculate distance from active zone (top 30% of screen)
-      const itemMiddle = layout.y + layout.height / 2;
-      const distance = Math.abs(itemMiddle - scrollPosition - ANIM_COMPLETE_SCROLL_Y);
+      Object.entries(itemLayoutsRef.current).forEach(([agentId, layout]) => {
+        // Calculate distance from active zone (top 30% of screen)
+        const itemMiddle = layout.y + layout.height / 2;
+        const distance = Math.abs(
+          itemMiddle - scrollPosition - ANIM_COMPLETE_SCROLL_Y,
+        );
 
-      if (distance < smallestDistance) {
-        smallestDistance = distance;
-        closestAgent = agentId;
+        if (distance < smallestDistance) {
+          smallestDistance = distance;
+          closestAgent = agentId;
+        }
+      });
+
+      if (closestAgent !== activeAgentId) {
+        setActiveAgentId(closestAgent);
       }
-    });
-
-    if (closestAgent !== activeAgentId) {
-      setActiveAgentId(closestAgent);
-    }
-  }, [activeAgentId, setActiveAgentId]);
+    },
+    [activeAgentId, setActiveAgentId],
+  );
 
   // Track scroll position changes with Reanimated
   useAnimatedReaction(
@@ -109,7 +124,7 @@ export default function AgentList({
       if (scrollY && currentScroll !== previous) {
         scheduleOnRN(calculateActiveAgent, currentScroll);
       }
-    }
+    },
   );
 
   // Handle item layout
@@ -120,7 +135,13 @@ export default function AgentList({
 
   if (isLoading || isFetching) {
     return (
-      <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
+      <View
+        sx={{
+          alignItems: "center",
+          justifyContent: "center",
+          paddingVertical: 16,
+        }}
+      >
         <ActivityIndicator size="small" color="#fff" />
       </View>
     );
@@ -129,11 +150,21 @@ export default function AgentList({
   if (!agents.length) {
     return (
       emptyState || (
-        <View sx={{ alignItems: 'center', justifyContent: 'center', paddingVertical: 16 }}>
-          <Text variant="lg" tone="muted" sx={{ marginBottom: 2, fontWeight: '600' }}>
+        <View
+          sx={{
+            alignItems: "center",
+            justifyContent: "center",
+            paddingVertical: 16,
+          }}
+        >
+          <Text
+            variant="lg"
+            tone="muted"
+            sx={{ marginBottom: 2, fontWeight: "600" }}
+          >
             Umm,
           </Text>
-          <Text variant="sm" tone="muted" sx={{ textAlign: 'center' }}>
+          <Text variant="sm" tone="muted" sx={{ textAlign: "center" }}>
             the robots went missing.
           </Text>
         </View>
@@ -142,9 +173,7 @@ export default function AgentList({
   }
 
   return (
-    <View
-      style={{ flex: 1, gap: 8, marginTop: 8 }}
-    >
+    <View style={{ flex: 1, gap: 8, marginTop: 8 }}>
       {agents.map((agent) => (
         <View
           key={agent.id}

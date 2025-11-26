@@ -1,12 +1,16 @@
-import React from 'react';
-import type { TextInputProps as RNTextInputProps, TextStyle, ViewStyle } from 'react-native';
-import { TextInput as RNTextInput } from 'react-native';
-import { useDripsyTheme } from 'dripsy';
+import { useDripsyTheme } from "dripsy";
+import React from "react";
+import type {
+  TextInputProps as RNTextInputProps,
+  TextStyle,
+  ViewStyle,
+} from "react-native";
+import { TextInput as RNTextInput } from "react-native";
 
-import type { AppTheme } from '@/theme/dripsy';
+import type { AppTheme } from "@/theme/dripsy";
 
 export interface TextInputProps extends RNTextInputProps {
-  tone?: 'default' | 'muted';
+  tone?: "default" | "muted";
 }
 
 const getToneStyles = (theme: AppTheme) => ({
@@ -25,7 +29,7 @@ const getToneStyles = (theme: AppTheme) => ({
 });
 
 const TextInput = React.forwardRef<RNTextInput, TextInputProps>(
-  ({ tone = 'default', style, placeholderTextColor, ...props }, ref) => {
+  ({ tone = "default", style, placeholderTextColor, ...props }, ref) => {
     const { theme } = useDripsyTheme();
     const typedTheme = theme as AppTheme;
     const tones = getToneStyles(typedTheme);
@@ -37,8 +41,8 @@ const TextInput = React.forwardRef<RNTextInput, TextInputProps>(
       color: current.textColor,
       borderWidth: 1,
       borderRadius: typedTheme.radii?.xl ?? 16,
-      paddingHorizontal: typedTheme.space?.['4'] ?? 16,
-      paddingVertical: typedTheme.space?.['3'] ?? 12,
+      paddingHorizontal: typedTheme.space?.["4"] ?? 16,
+      paddingVertical: typedTheme.space?.["3"] ?? 12,
       fontSize: typedTheme.text?.body?.fontSize ?? 16,
     };
 
@@ -63,6 +67,6 @@ const TextInput = React.forwardRef<RNTextInput, TextInputProps>(
   },
 );
 
-TextInput.displayName = 'TextInput';
+TextInput.displayName = "TextInput";
 
 export default TextInput;

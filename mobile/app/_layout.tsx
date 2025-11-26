@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
-import { Stack, useRouter } from 'expo-router';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { AuthProvider, useAuth } from '@/contexts/AuthContext';
-import { ThemeProvider } from '@/contexts/ThemeContext';
-import DebugOverlay from '@/components/DebugOverlay';
-import SplashScreen from '@/components/SplashScreen';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import * as ExpoSplashScreen from 'expo-splash-screen';
-import { getDefaultUnauthenticatedRoute, ROUTES } from '@/config/routes';
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Stack, useRouter } from "expo-router";
+import * as ExpoSplashScreen from "expo-splash-screen";
+import { useEffect, useState } from "react";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import DebugOverlay from "@/components/DebugOverlay";
+import SplashScreen from "@/components/SplashScreen";
+import { getDefaultUnauthenticatedRoute, ROUTES } from "@/config/routes";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+import { ThemeProvider } from "@/contexts/ThemeContext";
 
 // Prevent native splash screen from auto-hiding
 ExpoSplashScreen.preventAutoHideAsync();
@@ -27,8 +27,9 @@ function AuthNavigator() {
     if (user && !hasCompletedOnboarding) {
       router.replace(ROUTES.AUTH_ONBOARDING.path);
     } else {
-      const requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === 'true'
-      const showGetStartedScreen = process.env.EXPO_PUBLIC_SHOW_GET_STARTED === 'true';
+      const requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === "true";
+      const showGetStartedScreen =
+        process.env.EXPO_PUBLIC_SHOW_GET_STARTED === "true";
       if (requireAuth || showGetStartedScreen) {
         router.replace(ROUTES.INDEX.path);
       }
@@ -49,7 +50,7 @@ function AuthNavigator() {
     async function prepare() {
       try {
         // Keep splash visible for minimum duration for smooth UX
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 300));
       } catch (e) {
         //
       } finally {
@@ -70,14 +71,15 @@ function AuthNavigator() {
       <Stack
         screenOptions={{
           headerShown: false,
-          presentation: 'card',
+          presentation: "card",
         }}
       >
         <Stack.Screen name="index" />
-        <Stack.Screen name="(auth)"
+        <Stack.Screen
+          name="(auth)"
           options={{
-            animation: 'slide_from_bottom',
-            presentation: 'modal',
+            animation: "slide_from_bottom",
+            presentation: "modal",
           }}
         />
         <Stack.Screen name="(tabs)" />

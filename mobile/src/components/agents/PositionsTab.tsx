@@ -1,9 +1,15 @@
-import React, { useRef } from 'react';
-import { View, Text, RefreshControl, Animated, ScrollView } from '@/components/ui';
-import TradeCard from '@/components/TradeCard';
-import StatCard from '@/components/StatCard';
-import SectionTitle from '../SectionTitle';
-import { useColors } from '@/theme';
+import React, { useRef } from "react";
+import StatCard from "@/components/StatCard";
+import TradeCard from "@/components/TradeCard";
+import {
+  Animated,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "@/components/ui";
+import { useColors } from "@/theme";
+import SectionTitle from "../SectionTitle";
 
 export default function PositionsTab({
   agent,
@@ -11,9 +17,9 @@ export default function PositionsTab({
   stats,
   isOwnAgent,
   onRefresh,
-  refreshing = false
+  refreshing = false,
 }) {
-  const openTrades = trades.filter((t) => t.status === 'OPEN');
+  const openTrades = trades.filter((t) => t.status === "OPEN");
   const colors = useColors();
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -22,7 +28,7 @@ export default function PositionsTab({
       <Animated.ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: '40%' }}
+        contentContainerStyle={{ paddingBottom: "40%" }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -32,17 +38,29 @@ export default function PositionsTab({
         }
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
+          { useNativeDriver: true },
         )}
         scrollEventThrottle={16}
       >
         {stats && isOwnAgent ? (
-          <View sx={{ flex: 1, paddingHorizontal: 4, marginBottom: 4, flexDirection: 'row', justifyContent: 'space-between' }}>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
+          <View
+            sx={{
+              flex: 1,
+              paddingHorizontal: 4,
+              marginBottom: 4,
+              flexDirection: "row",
+              justifyContent: "space-between",
+            }}
+          >
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ gap: 8 }}
+            >
               <StatCard
                 label="Total P&L"
                 value={`${
-                  stats.totalPnL >= 0 ? '+' : ''
+                  stats.totalPnL >= 0 ? "+" : ""
                 }$${Math.abs(stats.totalPnL).toLocaleString()}`}
                 trend={`${stats.totalTrades} trades`}
                 trendColor="successLight"
@@ -72,21 +90,32 @@ export default function PositionsTab({
         <View sx={{ paddingHorizontal: 4 }}>
           {isOwnAgent ? (
             <>
-              <SectionTitle>
-                Open Positions ({openTrades.length})
-              </SectionTitle>
+              <SectionTitle>Open Positions ({openTrades.length})</SectionTitle>
               {openTrades.length === 0 ? (
-                <Text sx={{ color: 'mutedForeground', textAlign: 'center', paddingVertical: 3, fontSize: 12 }}>
+                <Text
+                  sx={{
+                    color: "mutedForeground",
+                    textAlign: "center",
+                    paddingVertical: 3,
+                    fontSize: 12,
+                  }}
+                >
                   No open positions
                 </Text>
               ) : (
-                openTrades.map((trade) => <TradeCard key={trade.id} trade={trade} />)
+                openTrades.map((trade) => (
+                  <TradeCard key={trade.id} trade={trade} />
+                ))
               )}
             </>
           ) : (
-            <Text variant="sm" sx={{ color: 'secondary500', fontSize: 12, lineHeight: 18 }}>
-              The creator's trading telemetry stays private. Clone this agent to run MARKET_SCAN → POSITION_REVIEW
-              loops under your credentials and generate your own stats.
+            <Text
+              variant="sm"
+              sx={{ color: "secondary500", fontSize: 12, lineHeight: 18 }}
+            >
+              The creator's trading telemetry stays private. Clone this agent to
+              run MARKET_SCAN → POSITION_REVIEW loops under your credentials and
+              generate your own stats.
             </Text>
           )}
         </View>

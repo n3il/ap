@@ -1,51 +1,51 @@
-import React, { useMemo } from 'react';
+import React, { useMemo } from "react";
 
-import { View, Text } from '@/components/ui';
-import { useColors } from '@/theme';
+import { Text, View } from "@/components/ui";
+import { useColors } from "@/theme";
 
 type TokenType =
-  | 'comment'
-  | 'string'
-  | 'keyword'
-  | 'number'
-  | 'operator'
-  | 'punctuation'
-  | 'function'
-  | 'plain';
+  | "comment"
+  | "string"
+  | "keyword"
+  | "number"
+  | "operator"
+  | "punctuation"
+  | "function"
+  | "plain";
 
 interface Token {
   type: TokenType;
   value: string;
 }
 
-const patterns: Record<Exclude<TokenType, 'plain'>, RegExp> = {
+const patterns: Record<Exclude<TokenType, "plain">, RegExp> = {
   comment: /\/\/.*|\/\*[\s\S]*?\*\/|#.*/g,
   string: /"(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|`(?:\\.|[^`\\])*`/g,
   keyword:
     /\b(const|let|var|function|return|if|else|for|while|class|import|export|from|default|async|await|try|catch|throw|new|this|super|extends|static|public|private|protected|void|int|string|boolean|true|false|null|undefined|typeof|instanceof|in|of|break|continue|switch|case|def|lambda|yield|with|as|assert|pass|raise|finally|global|nonlocal|del|is|not|and|or|print|range|len|self|None|True|False|package|interface|implements|enum|type|struct|map|chan|go|defer|select|fallthrough|goto|func|make|append|copy|delete|panic|recover)\b/g,
   number: /\b\d+\.?\d*\b/g,
   operator: /[+\-*/%=<>!&|^~?:]+/g,
-  punctuation: /[{}\[\]();,.]/g,
+  punctuation: /[{}[\]();,.]/g,
   function: /\b([a-zA-Z_]\w*)\s*(?=\()/g,
 };
 
 const tokenize = (code: string): Token[] => {
   const matches: Array<Token & { start: number; end: number }> = [];
 
-  (Object.entries(patterns) as Array<[Exclude<TokenType, 'plain'>, RegExp]>).forEach(
-    ([type, pattern]) => {
-      const regex = new RegExp(pattern.source, pattern.flags);
-      let match: RegExpExecArray | null;
-      while ((match = regex.exec(code)) != null) {
-        matches.push({
-          type,
-          value: match[0],
-          start: match.index,
-          end: match.index + match[0].length,
-        });
-      }
-    },
-  );
+  (
+    Object.entries(patterns) as Array<[Exclude<TokenType, "plain">, RegExp]>
+  ).forEach(([type, pattern]) => {
+    const regex = new RegExp(pattern.source, pattern.flags);
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(code)) != null) {
+      matches.push({
+        type,
+        value: match[0],
+        start: match.index,
+        end: match.index + match[0].length,
+      });
+    }
+  });
 
   matches.sort((a, b) => a.start - b.start);
 
@@ -64,7 +64,7 @@ const tokenize = (code: string): Token[] => {
   filtered.forEach((match) => {
     if (match.start > cursor) {
       tokens.push({
-        type: 'plain',
+        type: "plain",
         value: code.slice(cursor, match.start),
       });
     }
@@ -77,7 +77,7 @@ const tokenize = (code: string): Token[] => {
 
   if (cursor < code.length) {
     tokens.push({
-      type: 'plain',
+      type: "plain",
       value: code.slice(cursor),
     });
   }
@@ -91,24 +91,30 @@ interface CodeBlockProps {
 }
 
 export default function CodeBlock({ code, language }: CodeBlockProps) {
-  const tokens = tokenize(code ?? '');
-  const {
-    colors: palette,
-    primary,
-    secondary,
-    error,
-    info,
-  } = useColors();
-  const tokenStyles = useMemo<Record<TokenType, { color?: string; fontWeight?: 'bold'; fontStyle?: 'italic' }>>(
+  const tokens = tokenize(code ?? "");
+  const { colors: palette, primary, secondary, error, info } = useColors();
+  const tokenStyles = useMemo<
+    Record<
+      TokenType,
+      { color?: string; fontWeight?: "bold"; fontStyle?: "italic" }
+    >
+  >(
     () => ({
-      comment: { color: palette.mutedForeground ?? secondary, fontStyle: 'italic' },
+      comment: {
+        color: palette.mutedForeground ?? secondary,
+        fontStyle: "italic",
+      },
       string: { color: palette.primary800 ?? primary },
-      keyword: { color: error, fontWeight: 'bold' },
+      keyword: { color: error, fontWeight: "bold" },
       number: { color: info },
       operator: { color: error },
       function: { color: palette.brand500 ?? primary },
-      punctuation: { color: palette.secondary800 ?? palette.textSecondary ?? secondary },
-      plain: { color: palette.secondary800 ?? palette.textSecondary ?? secondary },
+      punctuation: {
+        color: palette.secondary800 ?? palette.textSecondary ?? secondary,
+      },
+      plain: {
+        color: palette.secondary800 ?? palette.textSecondary ?? secondary,
+      },
     }),
     [error, info, palette, primary, secondary],
   );
@@ -116,10 +122,10 @@ export default function CodeBlock({ code, language }: CodeBlockProps) {
   return (
     <View
       sx={{
-        backgroundColor: 'surface',
+        backgroundColor: "surface",
         borderWidth: 1,
-        borderColor: 'border',
-        borderRadius: 'md',
+        borderColor: "border",
+        borderRadius: "md",
         padding: 4,
         marginVertical: 2.5,
       }}
@@ -127,7 +133,7 @@ export default function CodeBlock({ code, language }: CodeBlockProps) {
       <Text
         variant="sm"
         sx={{
-          fontFamily: 'monospace',
+          fontFamily: "monospace",
           lineHeight: 20,
         }}
       >

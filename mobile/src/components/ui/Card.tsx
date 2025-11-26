@@ -1,25 +1,25 @@
-import React from 'react';
-import View, { type ViewProps } from './View';
-import type { SxProp } from 'dripsy';
-import { GlassView } from 'expo-glass-effect';
-import { useDripsyTheme } from 'dripsy';
-import { withOpacity } from '@/theme/utils';
+import type { SxProp } from "dripsy";
+import { useDripsyTheme } from "dripsy";
+import { GlassView } from "expo-glass-effect";
+import type React from "react";
+import { withOpacity } from "@/theme/utils";
+import View, { type ViewProps } from "./View";
 
 export interface CardProps {
   children: React.ReactNode;
-  variant?: 'default' | 'elevated' | 'outlined' | 'glass';
+  variant?: "default" | "elevated" | "outlined" | "glass";
   sx?: SxProp;
   style?: any;
   glassIntensity?: number;
   glassTintColor?: string;
-  glassEffectStyle?: 'clear' | 'regular';
+  glassEffectStyle?: "clear" | "regular";
   isInteractive?: boolean;
 }
 
 const Card: React.FC<CardProps> = ({
   children,
-  variant = 'default',
-  glassEffectStyle = 'clear',
+  variant = "default",
+  glassEffectStyle = "clear",
   sx,
   style,
   glassIntensity = 20,
@@ -29,8 +29,8 @@ const Card: React.FC<CardProps> = ({
   const { theme } = useDripsyTheme();
 
   const baseStyles: SxProp = {
-    backgroundColor: 'surface',
-    borderRadius: 'xl',
+    backgroundColor: "surface",
+    borderRadius: "xl",
     padding: 4,
   };
 
@@ -45,15 +45,18 @@ const Card: React.FC<CardProps> = ({
     },
     outlined: {
       borderWidth: 1,
-      borderColor: 'border',
+      borderColor: "border",
     },
     glass: {},
   };
 
   // Glass variant uses expo-glass-effect
-  if (variant === 'glass') {
+  if (variant === "glass") {
     const borderRadius = theme.radii?.xl ?? 16;
-    const baseTint = theme.colors?.background ?? theme.colors?.surface ?? theme.colors?.backgroundSecondary;
+    const baseTint =
+      theme.colors?.background ??
+      theme.colors?.surface ??
+      theme.colors?.backgroundSecondary;
     const defaultTintColor = glassTintColor ?? withOpacity(baseTint, 0.9);
 
     return (
@@ -70,7 +73,7 @@ const Card: React.FC<CardProps> = ({
         <View
           sx={{
             padding: 4,
-            borderRadius: 'xl',
+            borderRadius: "xl",
             ...sx,
           }}
           style={[{ borderRadius }, style]}

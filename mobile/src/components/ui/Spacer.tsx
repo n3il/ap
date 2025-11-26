@@ -1,6 +1,6 @@
-import React from 'react';
-import { View } from 'dripsy';
-import type { SxProp } from 'dripsy';
+import type { SxProp } from "dripsy";
+import { View } from "dripsy";
+import type React from "react";
 
 export interface SpacerProps {
   size?: number | string;
@@ -18,11 +18,15 @@ export interface SpacerProps {
  * <Spacer size={4} horizontal /> // Horizontal space
  * ```
  */
-const Spacer: React.FC<SpacerProps> = ({ size = 4, horizontal = false, sx }) => {
+const Spacer: React.FC<SpacerProps> = ({
+  size = 4,
+  horizontal = false,
+  sx,
+}) => {
   return (
     <View
       sx={{
-        [horizontal ? 'width' : 'height']: size,
+        [horizontal ? "width" : "height"]: size,
         ...sx,
       }}
     />

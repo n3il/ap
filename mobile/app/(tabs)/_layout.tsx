@@ -1,7 +1,7 @@
-import { NativeTabs, Icon, Label } from 'expo-router/unstable-native-tabs';
-import { useTheme } from '@/contexts/ThemeContext';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { DynamicColorIOS } from 'react-native';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
+import { DynamicColorIOS } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export default function TabsLayout() {
   const { theme } = useTheme();
@@ -9,12 +9,12 @@ export default function TabsLayout() {
   return (
     <NativeTabs
       initialRouteName="(explore)"
-      minimizeBehavior='onScrollUp'
+      minimizeBehavior="onScrollUp"
       backgroundColor={theme.colors.tabBackground}
       badgeBackgroundColor={theme.colors.info.DEFAULT}
       labelStyle={{
-        default: {color: theme.colors.tabLabel},
-        selected: {color: theme.colors.tabLabelSelected},
+        default: { color: theme.colors.tabLabel },
+        selected: { color: theme.colors.tabLabelSelected },
       }}
       iconColor={{
         default: theme.colors.tabIcon,
@@ -22,8 +22,8 @@ export default function TabsLayout() {
       }}
       blurEffect="systemMaterialDark"
       tintColor={DynamicColorIOS({
-        dark: 'black',
-        light: 'black',
+        dark: "black",
+        light: "black",
       })}
     >
       <NativeTabs.Trigger name="(explore)">
@@ -36,7 +36,10 @@ export default function TabsLayout() {
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(markets)">
         <Label>Markets</Label>
-        <Icon sf="chart.line.uptrend.xyaxis" drawable="custom_android_drawable" />
+        <Icon
+          sf="chart.line.uptrend.xyaxis"
+          drawable="custom_android_drawable"
+        />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(profile)">
         <Label>Account</Label>

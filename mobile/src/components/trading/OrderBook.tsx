@@ -1,7 +1,7 @@
-import React, { useMemo } from 'react';
-import { View, Text, FlatList, ActivityIndicator } from '@/components/ui';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import React, { useMemo } from "react";
+import { ActivityIndicator, FlatList, Text, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
 // Mock order book data generator for demo
 const generateMockOrderBook = (currentPrice, depth = 15) => {
@@ -154,7 +154,7 @@ const createStyles = (theme) => {
       borderRadius: 20,
       borderWidth: 1,
       borderColor: withOpacity(colors.border, 0.2),
-      overflow: 'hidden',
+      overflow: "hidden",
     },
     header: {
       padding: 16,
@@ -163,7 +163,7 @@ const createStyles = (theme) => {
     },
     title: {
       fontSize: 16,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     subtitle: {
@@ -172,8 +172,8 @@ const createStyles = (theme) => {
       marginTop: 2,
     },
     columnHeaders: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
       paddingHorizontal: 16,
       paddingVertical: 8,
       backgroundColor: withOpacity(colors.backgroundSecondary, 0.6),
@@ -181,11 +181,11 @@ const createStyles = (theme) => {
     columnHeader: {
       flex: 1,
       fontSize: 10,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.secondary,
-      textTransform: 'uppercase',
+      textTransform: "uppercase",
       letterSpacing: 0.5,
-      textAlign: 'right',
+      textAlign: "right",
     },
     bookContent: {
       flex: 1,
@@ -197,14 +197,14 @@ const createStyles = (theme) => {
       maxHeight: 200,
     },
     orderRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
       paddingHorizontal: 16,
       paddingVertical: 4,
-      position: 'relative',
+      position: "relative",
     },
     backgroundBar: {
-      position: 'absolute',
+      position: "absolute",
       right: 0,
       top: 0,
       bottom: 0,
@@ -218,8 +218,8 @@ const createStyles = (theme) => {
     orderPrice: {
       flex: 1,
       fontSize: 12,
-      fontWeight: '600',
-      textAlign: 'right',
+      fontWeight: "600",
+      textAlign: "right",
       color: colors.text.primary,
     },
     bidPrice: {
@@ -232,13 +232,13 @@ const createStyles = (theme) => {
       flex: 1,
       fontSize: 12,
       color: colors.text.secondary,
-      textAlign: 'right',
+      textAlign: "right",
     },
     orderTotal: {
       flex: 1,
       fontSize: 12,
       color: colors.text.tertiary,
-      textAlign: 'right',
+      textAlign: "right",
     },
     spreadRow: {
       paddingVertical: 12,
@@ -249,12 +249,12 @@ const createStyles = (theme) => {
       borderColor: withOpacity(colors.border, 0.15),
     },
     spreadContainer: {
-      alignItems: 'center',
+      alignItems: "center",
       gap: 6,
     },
     currentPrice: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     spreadBadge: {
@@ -265,13 +265,13 @@ const createStyles = (theme) => {
     },
     spreadText: {
       fontSize: 11,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.primary.DEFAULT,
     },
     loadingContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       gap: 12,
       padding: 24,
     },

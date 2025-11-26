@@ -1,4 +1,4 @@
-import { supabase } from '@/config/supabase';
+import { supabase } from "@/config/supabase";
 
 export const agentSnapshotService = {
   /**
@@ -8,40 +8,43 @@ export const agentSnapshotService = {
    * @param {string} timeframe - '1h', '24h', '7d', '30d'
    * @returns {Promise<Array>} Array of 30 aggregated snapshots with bucket_timestamp, equity, realized_pnl, unrealized_pnl
    */
-  async getAgentSnapshots(agentId, timeframe = '24h') {
+  async getAgentSnapshots(agentId, timeframe = "24h") {
     try {
       const now = new Date();
-      let startTime = new Date(now);
+      const startTime = new Date(now);
 
       // Calculate start time based on timeframe
       switch (timeframe) {
-        case '1h':
+        case "1h":
           startTime.setHours(now.getHours() - 1);
           break;
-        case '24h':
+        case "24h":
           startTime.setHours(now.getHours() - 24);
           break;
-        case '7d':
+        case "7d":
           startTime.setDate(now.getDate() - 7);
           break;
-        case '30d':
+        case "30d":
           startTime.setDate(now.getDate() - 30);
           break;
         default:
           startTime.setHours(now.getHours() - 24);
       }
 
-      const { data, error } = await supabase.rpc('get_agent_snapshots_bucketed', {
-        p_agent_id: agentId,
-        p_start_time: startTime.toISOString(),
-        p_end_time: now.toISOString(),
-        p_num_buckets: 30,
-      });
+      const { data, error } = await supabase.rpc(
+        "get_agent_snapshots_bucketed",
+        {
+          p_agent_id: agentId,
+          p_start_time: startTime.toISOString(),
+          p_end_time: now.toISOString(),
+          p_num_buckets: 30,
+        },
+      );
 
       if (error) throw error;
 
       // Transform bucket_timestamp to timestamp for consistency with existing code
-      return (data || []).map(row => ({
+      return (data || []).map((row) => ({
         timestamp: row.bucket_timestamp,
         equity: parseFloat(row.equity),
         realized_pnl: parseFloat(row.realized_pnl),
@@ -61,34 +64,37 @@ export const agentSnapshotService = {
    * @param {string} timeframe - '1h', '24h', '7d', '30d'
    * @returns {Promise<Object>} Object with agentId as key, array of 30 snapshots as value
    */
-  async getMultiAgentSnapshots(agentIds, timeframe = '24h') {
+  async getMultiAgentSnapshots(agentIds, timeframe = "24h") {
     try {
       const now = new Date();
-      let startTime = new Date(now);
+      const startTime = new Date(now);
 
       switch (timeframe) {
-        case '1h':
+        case "1h":
           startTime.setHours(now.getHours() - 1);
           break;
-        case '24h':
+        case "24h":
           startTime.setHours(now.getHours() - 24);
           break;
-        case '7d':
+        case "7d":
           startTime.setDate(now.getDate() - 7);
           break;
-        case '30d':
+        case "30d":
           startTime.setDate(now.getDate() - 30);
           break;
         default:
           startTime.setHours(now.getHours() - 24);
       }
 
-      const { data, error } = await supabase.rpc('get_multi_agent_snapshots_bucketed', {
-        p_agent_ids: agentIds,
-        p_start_time: startTime.toISOString(),
-        p_end_time: now.toISOString(),
-        p_num_buckets: 30,
-      });
+      const { data, error } = await supabase.rpc(
+        "get_multi_agent_snapshots_bucketed",
+        {
+          p_agent_ids: agentIds,
+          p_start_time: startTime.toISOString(),
+          p_end_time: now.toISOString(),
+          p_num_buckets: 30,
+        },
+      );
 
       if (error) throw error;
 
@@ -108,7 +114,7 @@ export const agentSnapshotService = {
       });
 
       // Ensure all agents have entries (even if empty)
-      agentIds.forEach(agentId => {
+      agentIds.forEach((agentId) => {
         if (!grouped[agentId]) {
           grouped[agentId] = [];
         }
@@ -128,14 +134,14 @@ export const agentSnapshotService = {
   async getLatestSnapshot(agentId) {
     try {
       const { data, error } = await supabase
-        .from('agent_pnl_snapshots')
-        .select('*')
-        .eq('agent_id', agentId)
-        .order('timestamp', { ascending: false })
+        .from("agent_pnl_snapshots")
+        .select("*")
+        .eq("agent_id", agentId)
+        .order("timestamp", { ascending: false })
         .limit(1)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows
+      if (error && error.code !== "PGRST116") throw error; // PGRST116 = no rows
       return data || null;
     } catch (error) {
       throw error;
@@ -169,7 +175,8 @@ export const agentSnapshotService = {
    * @returns {Object} { marginUtilization, effectiveLeverage, availableMargin }
    */
   calculateLeverageMetrics(snapshot) {
-    if (!snapshot) return { marginUtilization: 0, effectiveLeverage: 1, availableMargin: 0 };
+    if (!snapshot)
+      return { marginUtilization: 0, effectiveLeverage: 1, availableMargin: 0 };
 
     const equity = parseFloat(snapshot.equity) || 0;
     const marginUsed = parseFloat(snapshot.margin_used) || 0;
@@ -182,11 +189,16 @@ export const agentSnapshotService = {
 
     // Effective leverage is calculated from unrealized PnL exposure
     // For now, we can approximate: if margin utilization is 50%, effective leverage is ~2x
-    const effectiveLeverage = equity > 0 && marginUsed > 0 ? equity / (equity - marginUsed) : 1;
+    const effectiveLeverage =
+      equity > 0 && marginUsed > 0 ? equity / (equity - marginUsed) : 1;
 
     return {
-      marginUtilization: Number.isFinite(marginUtilization) ? marginUtilization : 0,
-      effectiveLeverage: Number.isFinite(effectiveLeverage) ? effectiveLeverage : 1,
+      marginUtilization: Number.isFinite(marginUtilization)
+        ? marginUtilization
+        : 0,
+      effectiveLeverage: Number.isFinite(effectiveLeverage)
+        ? effectiveLeverage
+        : 1,
       availableMargin: Number.isFinite(availableMargin) ? availableMargin : 0,
       marginUsed,
     };

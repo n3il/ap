@@ -1,6 +1,6 @@
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { useMemo } from 'react';
-import { assessmentService } from '@/services/assessmentService';
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { assessmentService } from "@/services/assessmentService";
 
 /**
  * Hook to fetch and optionally poll for agent assessments with timeframe filtering
@@ -18,12 +18,12 @@ import { assessmentService } from '@/services/assessmentService';
 export function useAgentAssessments(
   agentId,
   {
-    timeframe = '24h',
+    timeframe = "24h",
     enabled = true,
     poll = false,
     pollInterval = 30000,
-    pageSize = 30
-  } = {}
+    pageSize = 30,
+  } = {},
 ) {
   const {
     data,
@@ -35,12 +35,12 @@ export function useAgentAssessments(
     refetch,
     isRefetching,
   } = useInfiniteQuery({
-    queryKey: ['agent-assessments', agentId, timeframe],
+    queryKey: ["agent-assessments", agentId, timeframe],
     queryFn: ({ pageParam = 0 }) =>
       assessmentService.getAssessmentsByAgent(agentId, {
         pageParam,
         pageSize,
-        timeframe
+        timeframe,
       }),
     getNextPageParam: (lastPage) => lastPage?.nextPage ?? undefined,
     initialPageParam: 0,
@@ -52,7 +52,7 @@ export function useAgentAssessments(
   // Flatten all pages into a single array of assessments
   const assessments = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap(page => page.data || []);
+    return data.pages.flatMap((page) => page.data || []);
   }, [data]);
 
   // Get the most recent assessment timestamp for polling
@@ -92,20 +92,15 @@ export function useAgentAssessments(
 export function useNewAssessments(
   agentId,
   after,
-  { enabled = true, pollInterval = 10000 } = {}
+  { enabled = true, pollInterval = 10000 } = {},
 ) {
-  const {
-    data,
-    isLoading,
-    error,
-    refetch,
-  } = useInfiniteQuery({
-    queryKey: ['new-assessments', agentId, after],
+  const { data, isLoading, error, refetch } = useInfiniteQuery({
+    queryKey: ["new-assessments", agentId, after],
     queryFn: () =>
       assessmentService.getAssessmentsByAgent(agentId, {
         pageParam: 0,
         pageSize: 50,
-        after
+        after,
       }),
     enabled: !!agentId && !!after && enabled,
     refetchInterval: pollInterval,
@@ -115,7 +110,7 @@ export function useNewAssessments(
   // Flatten new assessments
   const newAssessments = useMemo(() => {
     if (!data?.pages) return [];
-    return data.pages.flatMap(page => page.data || []);
+    return data.pages.flatMap((page) => page.data || []);
   }, [data]);
 
   return {

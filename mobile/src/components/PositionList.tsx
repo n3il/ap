@@ -1,17 +1,23 @@
-import React, { useState } from 'react';
-import { View, Text, StatusBadge, TouchableOpacity } from '@/components/ui';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useColors } from '@/theme';
-import { formatAmount, formatCompact, formatPercent } from '@/utils/currency';
-import { formatRelativeDate } from '@/utils/date';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useState } from "react";
+import { StatusBadge, Text, TouchableOpacity, View } from "@/components/ui";
+import { useColors } from "@/theme";
+import { formatAmount, formatCompact, formatPercent } from "@/utils/currency";
+import { formatRelativeDate } from "@/utils/date";
 
 function PositionDetailRow({ label, value, valueStyle }) {
   return (
-    <View sx={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 2 }}>
+    <View
+      sx={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        marginBottom: 2,
+      }}
+    >
       <Text variant="xs" tone="muted">
         {label}
       </Text>
-      <Text variant="xs" sx={{ fontWeight: '500', ...valueStyle }}>
+      <Text variant="xs" sx={{ fontWeight: "500", ...valueStyle }}>
         {value}
       </Text>
     </View>
@@ -65,15 +71,17 @@ export function PositionRow(position) {
     typeof currentPrice === "number"
       ? currentPrice
       : currentPrice
-      ? Number(currentPrice)
-      : null;
+        ? Number(currentPrice)
+        : null;
 
   const unrealizedPnlValue = Number(unrealizedPnl) || 0;
   const pnlPercentValue = pnlPercent != null ? Number(pnlPercent) : null;
 
   // ---- Labels formatted ----
   const positionValueLabel =
-    positionValue != null ? `$${formatCompact(positionValue)}` : size + unrealizedPnlValue;
+    positionValue != null
+      ? `$${formatCompact(positionValue)}`
+      : size + unrealizedPnlValue;
 
   const entryPriceLabel = entryPriceValue
     ? `$${formatCompact(entryPriceValue)}`
@@ -84,9 +92,7 @@ export function PositionRow(position) {
     : "";
 
   const unrealizedPnlLabel =
-    unrealizedPnlValue !== 0
-      ? `${formatCompact(unrealizedPnlValue)}`
-      : "$0.00";
+    unrealizedPnlValue !== 0 ? `${formatCompact(unrealizedPnlValue)}` : "$0.00";
 
   const pnlPercentLabel =
     pnlPercentValue != null ? `${Math.abs(pnlPercentValue)}%` : "";
@@ -101,8 +107,8 @@ export function PositionRow(position) {
     unrealizedPnlValue > 0
       ? longColor
       : unrealizedPnlValue < 0
-      ? shortColor
-      : palette.secondary ?? palette.textTertiary;
+        ? shortColor
+        : (palette.secondary ?? palette.textTertiary);
 
   return (
     <View sx={{ paddingBottom: 3 }}>
@@ -119,9 +125,7 @@ export function PositionRow(position) {
         >
           {/* ---- Left Column ---- */}
           <View sx={{ flex: 1 }}>
-            <View
-              sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}
-            >
+            <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
               <Text variant="sm" sx={{ fontSize: 12 }}>
                 {assetLabel}
               </Text>
@@ -131,10 +135,7 @@ export function PositionRow(position) {
             </View>
 
             <View sx={{ flexDirection: "row", alignItems: "center" }}>
-              <Text
-                variant="xs"
-                sx={{ color: sideColor, marginRight: 2 }}
-              >
+              <Text variant="xs" sx={{ color: sideColor, marginRight: 2 }}>
                 {leverage}X {side}
               </Text>
               <MaterialCommunityIcons
@@ -155,7 +156,8 @@ export function PositionRow(position) {
                 variant="xs"
                 sx={{ fontWeight: "500", color: positionPnlColor }}
               >
-                {formatAmount(unrealizedPnlLabel)} ({formatPercent(pnlPercentValue)})
+                {formatAmount(unrealizedPnlLabel)} (
+                {formatPercent(pnlPercentValue)})
               </Text>
             </View>
           </View>
@@ -201,21 +203,34 @@ export function PositionRow(position) {
 
 export default function PositionList({ positions = [], top = 3 }) {
   const safeEnrichedPositions = Array.isArray(positions) ? positions : [];
-  const topPositions = safeEnrichedPositions.sort((a, b) => b.size - a.size).slice(0, top);
+  const topPositions = safeEnrichedPositions
+    .sort((a, b) => b.size - a.size)
+    .slice(0, top);
   return (
     <View sx={{ marginTop: 3 }}>
       {topPositions.length > 0 ? (
         topPositions.map((position, i) => (
-          <PositionRow key={position?.id || position?.symbol || i} {...position} />
+          <PositionRow
+            key={position?.id || position?.symbol || i}
+            {...position}
+          />
         ))
       ) : (
-        <Text variant="xs" tone="muted" sx={{ textAlign: 'right', width: '100%', fontStyle: 'italic' }}>
+        <Text
+          variant="xs"
+          tone="muted"
+          sx={{ textAlign: "right", width: "100%", fontStyle: "italic" }}
+        >
           no active positions
         </Text>
       )}
 
       {positions.length > top ? (
-        <Text variant="xs" tone="muted" sx={{ textAlign: 'right', fontStyle: 'italic' }}>
+        <Text
+          variant="xs"
+          tone="muted"
+          sx={{ textAlign: "right", fontStyle: "italic" }}
+        >
           + {positions.length - top} more positions
         </Text>
       ) : null}

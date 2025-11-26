@@ -1,14 +1,15 @@
-import React, { useEffect } from 'react';
-import { View } from 'dripsy';
-import type { SxProp } from 'dripsy';
+import type { SxProp } from "dripsy";
+import { View } from "dripsy";
+import type React from "react";
+import { useEffect } from "react";
 import Animated, {
-  useSharedValue,
+  interpolate,
   useAnimatedStyle,
+  useSharedValue,
   withRepeat,
   withTiming,
-  interpolate,
-} from 'react-native-reanimated';
-import { useColors } from '@/theme';
+} from "react-native-reanimated";
+import { useColors } from "@/theme";
 
 export interface SkeletonProps {
   width?: number | string;
@@ -21,9 +22,9 @@ export interface SkeletonProps {
  * Skeleton loading component with shimmer animation
  */
 const Skeleton: React.FC<SkeletonProps> = ({
-  width = '100%',
+  width = "100%",
   height = 20,
-  borderRadius = 'md',
+  borderRadius = "md",
   sx,
 }) => {
   const { colors } = useColors();
@@ -44,15 +45,15 @@ const Skeleton: React.FC<SkeletonProps> = ({
         width,
         height,
         borderRadius,
-        overflow: 'hidden',
+        overflow: "hidden",
         ...sx,
       }}
     >
       <Animated.View
         style={[
           {
-            width: '100%',
-            height: '100%',
+            width: "100%",
+            height: "100%",
             backgroundColor: colors.border,
           },
           animatedStyle,

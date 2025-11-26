@@ -1,27 +1,30 @@
-import React from 'react';
-import { View } from 'dripsy';
-import type { SxProp } from 'dripsy';
+import type { SxProp } from "dripsy";
+import { View } from "dripsy";
+import type React from "react";
 
 export interface DividerProps {
-  orientation?: 'horizontal' | 'vertical';
+  orientation?: "horizontal" | "vertical";
   sx?: SxProp;
 }
 
-const Divider: React.FC<DividerProps> = ({ orientation = 'horizontal', sx }) => {
+const Divider: React.FC<DividerProps> = ({
+  orientation = "horizontal",
+  sx,
+}) => {
   return (
     <View
       sx={{
-        backgroundColor: 'border',
+        backgroundColor: "border",
         opacity: 0.3,
-        ...(orientation === 'horizontal'
+        ...(orientation === "horizontal"
           ? {
               height: 1,
-              width: '100%',
+              width: "100%",
               marginVertical: 3,
             }
           : {
               width: 1,
-              height: '100%',
+              height: "100%",
               marginHorizontal: 3,
             }),
         ...sx,

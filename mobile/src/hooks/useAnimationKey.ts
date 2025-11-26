@@ -1,6 +1,7 @@
 // useAnimationKey.ts
-import { useEffect, useState } from 'react';
-import { useIsFocused } from '@react-navigation/native';
+
+import { useIsFocused } from "@react-navigation/native";
+import { useEffect, useState } from "react";
 
 export function useAnimationKey() {
   const isFocused = useIsFocused();
@@ -8,7 +9,7 @@ export function useAnimationKey() {
 
   useEffect(() => {
     if (isFocused) {
-      setKey(k => k + 1);
+      setKey((k) => k + 1);
     }
   }, [isFocused]);
 

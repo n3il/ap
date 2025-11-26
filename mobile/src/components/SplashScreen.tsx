@@ -1,7 +1,7 @@
-import React from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
-import theme from '@/theme/base';
-import { Image } from '@/components/ui';
+import { LinearGradient } from "expo-linear-gradient";
+import React from "react";
+import { Image } from "@/components/ui";
+import theme from "@/theme/base";
 
 export default function SplashScreen() {
   return (
@@ -14,15 +14,15 @@ export default function SplashScreen() {
       locations={[0, 0.78, 1]}
       style={{
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        position: 'relative',
+        justifyContent: "center",
+        alignItems: "center",
+        position: "relative",
       }}
       start={{ x: 0, y: 0 }}
       end={{ x: 0, y: 1 }}
     >
       <Image
-        source={require('@assets/puppet-bare-icon-w-s.svg')}
+        source={require("@assets/puppet-bare-icon-w-s.svg")}
         style={{
           width: 300,
           height: 300,

@@ -1,13 +1,13 @@
-import { useMemo } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { tradeService } from '@/services/tradeService';
-import { supabase } from '@/config/supabase';
-import { Alert } from '@/components/ui';
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
+import { Alert } from "@/components/ui";
+import { supabase } from "@/config/supabase";
+import { tradeService } from "@/services/tradeService";
 
 // Hook for fetching trades
 export function useTrades(agentId = null) {
   return useQuery({
-    queryKey: agentId ? ['trades', agentId] : ['trades'],
+    queryKey: agentId ? ["trades", agentId] : ["trades"],
     queryFn: () =>
       agentId
         ? tradeService.getTradesByAgent(agentId)
@@ -18,14 +18,14 @@ export function useTrades(agentId = null) {
 // Hook for fetching open positions
 export function usePositions(agentId = null) {
   return useQuery({
-    queryKey: agentId ? ['positions', agentId] : ['positions'],
+    queryKey: agentId ? ["positions", agentId] : ["positions"],
     queryFn: async () => {
       if (agentId) {
         return tradeService.getOpenPositions(agentId);
       }
       // Get all open positions across all agents
       const allTrades = await tradeService.getAllTrades();
-      return allTrades.filter((t) => t.status === 'OPEN');
+      return allTrades.filter((t) => t.status === "OPEN");
     },
   });
 }
@@ -33,7 +33,7 @@ export function usePositions(agentId = null) {
 // Hook for fetching trade statistics
 export function useTradeStats(agentId = null) {
   return useQuery({
-    queryKey: agentId ? ['trade-stats', agentId] : ['trade-stats'],
+    queryKey: agentId ? ["trade-stats", agentId] : ["trade-stats"],
     queryFn: () => tradeService.getTradeStats(agentId),
   });
 }
@@ -41,15 +41,15 @@ export function useTradeStats(agentId = null) {
 // Hook for fetching trading ledger snapshot
 export function useTradingLedgerSnapshot({
   agentId = null,
-  ledgerType = 'paper',
+  ledgerType = "paper",
   ledgerAccountId = null,
 } = {}) {
   return useQuery({
     queryKey: [
-      'trading-ledger',
+      "trading-ledger",
       ledgerType,
-      agentId ?? 'all',
-      ledgerAccountId ?? 'all',
+      agentId ?? "all",
+      ledgerAccountId ?? "all",
     ],
     queryFn: () =>
       tradeService.getTradingLedger({
@@ -68,9 +68,9 @@ export function useFormattedLedgerData(ledgerSnapshot) {
     );
 
     const formatQuantity = (value, decimals = 4) => {
-      if (value === null || value === undefined) return '—';
+      if (value === null || value === undefined) return "—";
       const num = Number(value);
-      if (!Number.isFinite(num)) return '—';
+      if (!Number.isFinite(num)) return "—";
       if (Math.abs(num) >= 1000) {
         return num.toLocaleString(undefined, {
           maximumFractionDigits: 2,
@@ -80,9 +80,9 @@ export function useFormattedLedgerData(ledgerSnapshot) {
     };
 
     const formatPrice = (value) => {
-      if (value === null || value === undefined) return '—';
+      if (value === null || value === undefined) return "—";
       const num = Number(value);
-      if (!Number.isFinite(num)) return '—';
+      if (!Number.isFinite(num)) return "—";
       return `$${num.toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 4,
@@ -90,10 +90,10 @@ export function useFormattedLedgerData(ledgerSnapshot) {
     };
 
     const formatCurrency = (value) => {
-      if (value === null || value === undefined) return '—';
+      if (value === null || value === undefined) return "—";
       const num = Number(value);
-      if (!Number.isFinite(num)) return '—';
-      const sign = num >= 0 ? '' : '-';
+      if (!Number.isFinite(num)) return "—";
+      const sign = num >= 0 ? "" : "-";
       return `${sign}$${Math.abs(num).toLocaleString(undefined, {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
@@ -101,14 +101,14 @@ export function useFormattedLedgerData(ledgerSnapshot) {
     };
 
     const formatDateTime = (value) => {
-      if (!value) return '—';
+      if (!value) return "—";
       const date = new Date(value);
       if (Number.isNaN(date.getTime())) return value;
       return date.toLocaleString(undefined, {
-        month: 'short',
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit',
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
       });
     };
 
@@ -126,13 +126,13 @@ export function useFormattedLedgerData(ledgerSnapshot) {
       long: formatQuantity(position.long_quantity),
       short: formatQuantity(position.short_quantity),
       net: formatQuantity(position.net_quantity),
-      pnl: '—',
+      pnl: "—",
     }));
 
     const orders = ledgerSnapshot?.orders ?? [];
     const openOrders = orders
       .filter((order) =>
-        ['OPEN', 'PARTIALLY_FILLED'].includes(order.status ?? ''),
+        ["OPEN", "PARTIALLY_FILLED"].includes(order.status ?? ""),
       )
       .map((order) => ({
         id: order.id,
@@ -170,14 +170,14 @@ export function useFormattedLedgerData(ledgerSnapshot) {
         category: transaction.category,
         amount: formatCurrency(transaction.amount),
         balance: formatCurrency(transaction.balance_after),
-        description: transaction.description || '—',
+        description: transaction.description || "—",
         account_id: transaction.account_id,
-        status: 'Completed',
+        status: "Completed",
       }),
     );
 
     const depositsWithdrawals = transactions.filter((transaction) =>
-      ['DEPOSIT', 'WITHDRAWAL'].includes(transaction.category),
+      ["DEPOSIT", "WITHDRAWAL"].includes(transaction.category),
     );
 
     const assets = (ledgerSnapshot?.positions ?? []).map((position) => ({
@@ -185,7 +185,7 @@ export function useFormattedLedgerData(ledgerSnapshot) {
       symbol: withAccountLabel(position.symbol, position.account_id),
       quantity: formatQuantity(position.net_quantity),
       value: formatCurrency(position.net_notional),
-      allocation: '—',
+      allocation: "—",
     }));
 
     return {
@@ -209,7 +209,7 @@ export function usePlaceOrder() {
     mutationFn: async (order) => {
       // This would call your edge function to execute the trade
       const { data, error } = await supabase.functions.invoke(
-        'execute_hyperliquid_trade',
+        "execute_hyperliquid_trade",
         {
           body: {
             action: {
@@ -220,21 +220,21 @@ export function usePlaceOrder() {
               leverage: order.leverage,
             },
           },
-        }
+        },
       );
 
       if (error) throw error;
       return data;
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries(['trades']);
-      queryClient.invalidateQueries(['positions']);
-      queryClient.invalidateQueries(['trade-stats']);
-      queryClient.invalidateQueries({ queryKey: ['trading-ledger'] });
-      Alert.alert('Success', `Order placed successfully!`);
+      queryClient.invalidateQueries(["trades"]);
+      queryClient.invalidateQueries(["positions"]);
+      queryClient.invalidateQueries(["trade-stats"]);
+      queryClient.invalidateQueries({ queryKey: ["trading-ledger"] });
+      Alert.alert("Success", `Order placed successfully!`);
     },
     onError: (error) => {
-      Alert.alert('Error', `Failed to place order: ${error.message}`);
+      Alert.alert("Error", `Failed to place order: ${error.message}`);
     },
   });
 }
@@ -246,7 +246,7 @@ export function useClosePosition() {
   return useMutation({
     mutationFn: async (position) => {
       const { data, error } = await supabase.functions.invoke(
-        'execute_hyperliquid_trade',
+        "execute_hyperliquid_trade",
         {
           body: {
             action: {
@@ -254,21 +254,21 @@ export function useClosePosition() {
               asset: position.asset,
             },
           },
-        }
+        },
       );
 
       if (error) throw error;
       return data;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries(['trades']);
-      queryClient.invalidateQueries(['positions']);
-      queryClient.invalidateQueries(['trade-stats']);
-      queryClient.invalidateQueries({ queryKey: ['trading-ledger'] });
-      Alert.alert('Success', 'Position closed successfully!');
+      queryClient.invalidateQueries(["trades"]);
+      queryClient.invalidateQueries(["positions"]);
+      queryClient.invalidateQueries(["trade-stats"]);
+      queryClient.invalidateQueries({ queryKey: ["trading-ledger"] });
+      Alert.alert("Success", "Position closed successfully!");
     },
     onError: (error) => {
-      Alert.alert('Error', `Failed to close position: ${error.message}`);
+      Alert.alert("Error", `Failed to close position: ${error.message}`);
     },
   });
 }
@@ -277,7 +277,7 @@ export function useClosePosition() {
 // This is kept for backward compatibility
 export function useTradingData({
   agentId = null,
-  ledgerType = 'paper',
+  ledgerType = "paper",
   ledgerAccountId = null,
 } = {}) {
   const {

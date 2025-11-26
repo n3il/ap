@@ -1,5 +1,5 @@
-import { agentService } from '@/services';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery } from "@tanstack/react-query";
+import { agentService } from "@/services";
 
 /**
  * Hook to fetch performance snapshots for a single agent
@@ -8,7 +8,7 @@ import { useQuery } from '@tanstack/react-query';
  */
 export function useAgent(agentId) {
   return useQuery({
-    queryKey: ['agent', agentId],
+    queryKey: ["agent", agentId],
     queryFn: () => agentService.getAgent(agentId),
     enabled: !!agentId,
     // refetchInterval: 60000, // Refetch every minute

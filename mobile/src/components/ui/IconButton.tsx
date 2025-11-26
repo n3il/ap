@@ -1,15 +1,15 @@
-import React from 'react';
-import { TouchableOpacity } from 'react-native';
-import { View } from 'dripsy';
-import type { SxProp } from 'dripsy';
-import { SPACING } from '@/theme/constants';
+import type { SxProp } from "dripsy";
+import { View } from "dripsy";
+import type React from "react";
+import { TouchableOpacity } from "react-native";
+import { SPACING } from "@/theme/constants";
 
 export interface IconButtonProps {
   children: React.ReactNode;
   onPress?: () => void;
   disabled?: boolean;
-  variant?: 'default' | 'primary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "default" | "primary" | "ghost";
+  size?: "sm" | "md" | "lg";
   sx?: SxProp;
 }
 
@@ -20,8 +20,8 @@ const IconButton: React.FC<IconButtonProps> = ({
   children,
   onPress,
   disabled = false,
-  variant = 'default',
-  size = 'md',
+  variant = "default",
+  size = "md",
   sx,
 }) => {
   const sizeMap = {
@@ -32,15 +32,15 @@ const IconButton: React.FC<IconButtonProps> = ({
 
   const variantStyles: Record<string, SxProp> = {
     default: {
-      backgroundColor: 'surface',
+      backgroundColor: "surface",
       borderWidth: 1,
-      borderColor: 'border',
+      borderColor: "border",
     },
     primary: {
-      backgroundColor: 'primary',
+      backgroundColor: "primary",
     },
     ghost: {
-      backgroundColor: 'transparent',
+      backgroundColor: "transparent",
     },
   };
 
@@ -52,9 +52,9 @@ const IconButton: React.FC<IconButtonProps> = ({
         sx={{
           width: buttonSize,
           height: buttonSize,
-          borderRadius: 'lg',
-          alignItems: 'center',
-          justifyContent: 'center',
+          borderRadius: "lg",
+          alignItems: "center",
+          justifyContent: "center",
           opacity: disabled ? 0.5 : 1,
           ...variantStyles[variant],
           ...sx,

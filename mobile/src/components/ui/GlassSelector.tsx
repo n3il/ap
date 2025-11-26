@@ -1,36 +1,36 @@
-import { useState, useEffect, useRef } from "react";
+import { Ionicons } from "@expo/vector-icons";
 import { GlassContainer, GlassView } from "expo-glass-effect";
+import { useEffect, useRef, useState } from "react";
+import { Animated, Pressable, View } from "react-native";
 import GlassButton from "@/components/ui/GlassButton";
 import Text from "@/components/ui/Text";
 import { useColors } from "@/theme";
-import { Ionicons } from "@expo/vector-icons";
-import { Pressable, View, Animated } from "react-native";
 
 const options = [
   {
-    label: 'Top Performing',
-    value: 'top'
+    label: "Top Performing",
+    value: "top",
   },
   {
-    label: 'Top Popular',
-    value: 'popular'
+    label: "Top Popular",
+    value: "popular",
   },
   {
-    label: 'Top New',
-    value: 'new'
-  }
-]
+    label: "Top New",
+    value: "new",
+  },
+];
 
 const AnimatedOption = ({
   option,
   index,
   onPress,
-  isClosing
+  isClosing,
 }: {
-  option: typeof options[0],
-  index: number,
-  onPress: () => void,
-  isClosing: boolean
+  option: (typeof options)[0];
+  index: number;
+  onPress: () => void;
+  isClosing: boolean;
 }) => {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-10)).current;
@@ -86,11 +86,13 @@ const AnimatedOption = ({
           paddingHorizontal: 16,
         }}
       >
-        <Text sx={{
-          flex: 1,
-          whiteSpace: 'pre',
-          fontSize: 12
-        }}>
+        <Text
+          sx={{
+            flex: 1,
+            whiteSpace: "pre",
+            fontSize: 12,
+          }}
+        >
           {option.label}
         </Text>
       </Pressable>
@@ -98,9 +100,7 @@ const AnimatedOption = ({
   );
 };
 
-export default function GlassSelector ({
-  ...props
-}) {
+export default function GlassSelector({ ...props }) {
   const { colors } = useColors();
   const [activeSelection, setActiveSelection] = useState(options[0]);
   const [open, setOpen] = useState(false);
@@ -130,8 +130,8 @@ export default function GlassSelector ({
       <GlassButton
         onPress={handleToggle}
         style={{
-          flexDirection: 'row',
-          alignItems: 'center',
+          flexDirection: "row",
+          alignItems: "center",
           gap: 4,
           borderRadius: 100,
           paddingVertical: 3,
@@ -139,8 +139,8 @@ export default function GlassSelector ({
       >
         <View
           style={{
-            flexDirection: 'row',
-            alignItems: 'center',
+            flexDirection: "row",
+            alignItems: "center",
             gap: 4,
           }}
         >
@@ -151,7 +151,7 @@ export default function GlassSelector ({
           />
           <Text
             sx={{
-              fontFamily: 'monospace',
+              fontFamily: "monospace",
               fontSize: 12,
             }}
           >
@@ -159,12 +159,12 @@ export default function GlassSelector ({
           </Text>
         </View>
       </GlassButton>
-      {open &&
+      {open && (
         <GlassView
           style={[
             {
               borderRadius: 12,
-              position: 'absolute',
+              position: "absolute",
               top: 40,
               left: 0,
               right: 0,
@@ -188,7 +188,7 @@ export default function GlassSelector ({
             />
           ))}
         </GlassView>
-      }
+      )}
     </GlassContainer>
-  )
+  );
 }

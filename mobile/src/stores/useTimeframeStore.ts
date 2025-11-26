@@ -1,4 +1,4 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
 /**
  * Store for managing the selected timeframe across the app
@@ -6,7 +6,7 @@ import { create } from 'zustand';
  */
 export const useTimeframeStore = create((set) => ({
   // The currently selected timeframe (default: 1h)
-  timeframe: '1h',
+  timeframe: "1h",
 
   // Set the timeframe
   setTimeframe: (timeframe) => set({ timeframe }),

@@ -1,29 +1,32 @@
-import React, { useMemo, useEffect, useRef, useCallback } from 'react';
-import { View, Text, ActivityIndicator, ScrollView, GlassButton } from '@/components/ui';
-import Svg, { Polyline } from 'react-native-svg';
-import { useMarketPrices, useMarketPricesStore } from '@/hooks/useMarketPrices';
-import { useMarketHistory } from '@/hooks/useMarketHistory';
-import {
-  formatCurrency,
-  formatPercent,
-} from '@/utils/marketFormatting';
+import { GlassView } from "expo-glass-effect";
+import { useRouter } from "expo-router";
+import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import { Dimensions } from "react-native";
 import Animated, {
-  useSharedValue,
+  Extrapolation,
+  interpolate,
   useAnimatedStyle,
+  useSharedValue,
   withSequence,
   withTiming,
-  interpolate,
-  Extrapolation,
-} from 'react-native-reanimated';
-import { useColors } from '@/theme';
-import { Dimensions } from 'react-native';
-import { GLOBAL_PADDING } from './ContainerView';
-import { GlassView } from 'expo-glass-effect';
-import { ROUTES } from '@/config/routes';
-import { useTimeframeStore } from '@/stores/useTimeframeStore';
-import { useRouter } from 'expo-router';
+} from "react-native-reanimated";
+import Svg, { Polyline } from "react-native-svg";
+import {
+  ActivityIndicator,
+  GlassButton,
+  ScrollView,
+  Text,
+  View,
+} from "@/components/ui";
+import { ROUTES } from "@/config/routes";
+import { useMarketHistory } from "@/hooks/useMarketHistory";
+import { useMarketPrices, useMarketPricesStore } from "@/hooks/useMarketPrices";
+import { useTimeframeStore } from "@/stores/useTimeframeStore";
+import { useColors } from "@/theme";
+import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
+import { GLOBAL_PADDING } from "./ContainerView";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 const SPARKLINE_WIDTH = (width - GLOBAL_PADDING * 4) / 3;
 const SPARKLINE_HEIGHT = 32;
@@ -34,7 +37,7 @@ const Sparkline = ({
   negativeColor,
   neutralColor,
   width = SPARKLINE_WIDTH,
-  height = SPARKLINE_HEIGHT
+  height = SPARKLINE_HEIGHT,
 }) => {
   const valid = data.filter((value) => Number.isFinite(value));
 
@@ -54,7 +57,7 @@ const Sparkline = ({
       const y = height - normalized * height;
       return `${x.toFixed(2)},${y.toFixed(2)}`;
     })
-    .join(' ');
+    .join(" ");
 
   const isUp = valid[valid.length - 1] >= valid[0];
   const stroke = isUp ? positiveColor : negativeColor;
@@ -82,11 +85,7 @@ const PriceColumn = ({
   scrollY,
 }) => {
   const router = useRouter();
-  const {
-    colors: palette,
-    success,
-    error: errorColor,
-  } = useColors();
+  const { colors: palette, success, error: errorColor } = useColors();
 
   const positiveColor = success;
   const negativeColor = errorColor;
@@ -94,33 +93,44 @@ const PriceColumn = ({
 
   // Get asset data from Zustand store
   const asset = useMarketPricesStore(
-    useCallback((state) => state.tickers[symbol]?.asset, [symbol])
+    useCallback((state) => state.tickers[symbol]?.asset, [symbol]),
   );
 
   const onPress = () => {
     router.push(ROUTES.TABS_MARKETS_TRADE.path);
   };
 
-  const displayAsset = useMemo(() => asset ?? {
-    id: symbol,
-    symbol: symbol,
-    name: symbol,
-    price: null,
-  }, [asset, symbol]);
+  const displayAsset = useMemo(
+    () =>
+      asset ?? {
+        id: symbol,
+        symbol: symbol,
+        name: symbol,
+        price: null,
+      },
+    [asset, symbol],
+  );
 
   const hasChange = Number.isFinite(rangePercent);
   const changeIsPositive = hasChange && rangePercent > 0;
-  const changeColor = changeIsPositive ? positiveColor : (rangePercent < 0 ? negativeColor : neutralColor);
+  const changeColor = changeIsPositive
+    ? positiveColor
+    : rangePercent < 0
+      ? negativeColor
+      : neutralColor;
 
   // Price flash effect
   const priceOpacity = useSharedValue(1);
   const prevPrice = useRef(displayAsset?.price);
 
   useEffect(() => {
-    if (prevPrice.current !== displayAsset?.price && Number.isFinite(displayAsset?.price)) {
+    if (
+      prevPrice.current !== displayAsset?.price &&
+      Number.isFinite(displayAsset?.price)
+    ) {
       priceOpacity.value = withSequence(
         withTiming(1, { duration: 500 }),
-        withTiming(.7, { duration: 200 })
+        withTiming(0.7, { duration: 200 }),
       );
     }
     prevPrice.current = displayAsset?.price;
@@ -130,7 +140,12 @@ const PriceColumn = ({
   const symbolStyle = useAnimatedStyle(() => {
     if (!scrollY) return { fontSize: 11 };
 
-    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    const progress = interpolate(
+      scrollY.value,
+      [0, 100],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
     return {
       fontSize: interpolate(progress, [0, 1], [11, 10]),
     };
@@ -140,15 +155,20 @@ const PriceColumn = ({
     if (!scrollY) {
       return {
         fontSize: 16,
-        fontWeight: '400',
+        fontWeight: "400",
         opacity: priceOpacity.value,
       };
     }
 
-    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    const progress = interpolate(
+      scrollY.value,
+      [0, 100],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
     return {
       fontSize: interpolate(progress, [0, 1], [16, 12]),
-      fontWeight: progress > 0.5 ? '400' : '500',
+      fontWeight: progress > 0.5 ? "400" : "500",
       opacity: priceOpacity.value,
     };
   }, [scrollY]);
@@ -156,7 +176,12 @@ const PriceColumn = ({
   const changeContainerStyle = useAnimatedStyle(() => {
     if (!scrollY) return { marginTop: 2 };
 
-    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    const progress = interpolate(
+      scrollY.value,
+      [0, 100],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
     return {
       marginTop: interpolate(progress, [0, 1], [2, 1]),
     };
@@ -165,7 +190,12 @@ const PriceColumn = ({
   const changeTextStyle = useAnimatedStyle(() => {
     if (!scrollY) return { fontSize: 11 };
 
-    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    const progress = interpolate(
+      scrollY.value,
+      [0, 100],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
     return {
       fontSize: interpolate(progress, [0, 1], [11, 10]),
     };
@@ -174,29 +204,49 @@ const PriceColumn = ({
   const sparklineStyle = useAnimatedStyle(() => {
     if (!scrollY) return { marginTop: 8, height: SPARKLINE_HEIGHT };
 
-    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    const progress = interpolate(
+      scrollY.value,
+      [0, 100],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
     return {
       marginTop: interpolate(progress, [0, 1], [8, 0]),
       marginBottom: interpolate(progress, [0, 1], [8, 0]),
-      opacity: interpolate(progress, [0, 0.7, 1], [1, 0.3, 0], Extrapolation.CLAMP),
-      height: interpolate(progress, [0, 1], [SPARKLINE_HEIGHT, 0], Extrapolation.CLAMP),
+      opacity: interpolate(
+        progress,
+        [0, 0.7, 1],
+        [1, 0.3, 0],
+        Extrapolation.CLAMP,
+      ),
+      height: interpolate(
+        progress,
+        [0, 1],
+        [SPARKLINE_HEIGHT, 0],
+        Extrapolation.CLAMP,
+      ),
     };
   }, [scrollY]);
 
   const MINI_SPARKLINE_HEIGHT = 100;
   const expandedStyle = {
     height: MINI_SPARKLINE_HEIGHT,
-  }
+  };
   const collapsedStyle = {
     height: 0,
-  }
+  };
   const miniSparklineStyle = useAnimatedStyle(() => {
     if (!scrollY) return collapsedStyle;
 
-    const progress = interpolate(scrollY.value, [0, 100], [0, 1], Extrapolation.CLAMP);
+    const progress = interpolate(
+      scrollY.value,
+      [0, 100],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
     return {
       // height: interpolate(progress, [0, 1], [0, 30], Extrapolation.CLAMP),
-      opacity: interpolate(progress, [0, 1], [0, .2], Extrapolation.CLAMP),
+      opacity: interpolate(progress, [0, 1], [0, 0.2], Extrapolation.CLAMP),
     };
   }, [scrollY]);
 
@@ -209,26 +259,26 @@ const PriceColumn = ({
         borderRadius: 12,
         width: width / 3,
         marginLeft: GLOBAL_PADDING,
-        flexDirection: 'column'
+        flexDirection: "column",
       }}
-      glassEffectStyle='regular'
+      glassEffectStyle="regular"
       onPress={onPress}
       isInteractive
       enabled={false}
     >
-      <View style={{ flexDirection: 'row' }}>
+      <View style={{ flexDirection: "row" }}>
         <View>
           <Animated.Text
             style={[
               {
-                textTransform: 'uppercase',
+                textTransform: "uppercase",
                 letterSpacing: 1.2,
                 color: palette.mutedForeground,
               },
               symbolStyle,
             ]}
           >
-            {displayAsset?.symbol ?? '—'}
+            {displayAsset?.symbol ?? "—"}
           </Animated.Text>
 
           <Animated.Text
@@ -248,8 +298,8 @@ const PriceColumn = ({
         <Animated.View
           style={[
             {
-              overflow: 'hidden',
-              position: 'absolute'
+              overflow: "hidden",
+              position: "absolute",
             },
             miniSparklineStyle,
           ]}
@@ -270,8 +320,8 @@ const PriceColumn = ({
         <Animated.View
           style={[
             {
-              flexDirection: 'row',
-              alignItems: 'baseline',
+              flexDirection: "row",
+              alignItems: "baseline",
               gap: 4,
             },
             changeContainerStyle,
@@ -280,16 +330,16 @@ const PriceColumn = ({
           <Animated.Text
             style={[
               {
-                fontWeight: '600',
+                fontWeight: "600",
                 color: changeColor,
               },
               changeTextStyle,
             ]}
           >
-            {hasChange ? formatPercent(rangePercent) : '—'}
+            {hasChange ? formatPercent(rangePercent) : "—"}
           </Animated.Text>
           <Text style={{ fontSize: 10, color: palette.mutedForeground }}>
-            {Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta) : '—'}
+            {Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta) : "—"}
           </Text>
         </Animated.View>
       )}
@@ -297,7 +347,7 @@ const PriceColumn = ({
       <Animated.View
         style={[
           {
-            overflow: 'hidden',
+            overflow: "hidden",
           },
           sparklineStyle,
         ]}
@@ -315,22 +365,23 @@ const PriceColumn = ({
   );
 };
 
-export default function MarketPricesWidget({
-  tickers,
-  sx: customSx,
-  scrollY,
-}) {
+export default function MarketPricesWidget({ tickers, sx: customSx, scrollY }) {
   const { colors: palette } = useColors();
   const { timeframe } = useTimeframeStore();
   const { normalizedTickers, assets, isLoading } = useMarketPrices(tickers);
-  const { data: historyData, isFetching: historyFetching } = useMarketHistory(normalizedTickers, timeframe);
+  const { data: historyData, isFetching: historyFetching } = useMarketHistory(
+    normalizedTickers,
+    timeframe,
+  );
 
   const displayAssets = useMemo(() => {
     if (!normalizedTickers.length) return assets;
     return normalizedTickers.map((symbol) => {
       const uppercase = symbol.toUpperCase();
       return (
-        assets.find((asset) => asset?.id === uppercase || asset?.symbol === uppercase) ?? {
+        assets.find(
+          (asset) => asset?.id === uppercase || asset?.symbol === uppercase,
+        ) ?? {
           id: uppercase,
           symbol: uppercase,
           name: uppercase,
@@ -360,7 +411,9 @@ export default function MarketPricesWidget({
                 ? asset.price - baseline
                 : null;
             const rangePercent =
-              Number.isFinite(rangeDelta) && Number.isFinite(baseline) && baseline !== 0
+              Number.isFinite(rangeDelta) &&
+              Number.isFinite(baseline) &&
+              baseline !== 0
                 ? (rangeDelta / baseline) * 100
                 : null;
 
@@ -377,11 +430,13 @@ export default function MarketPricesWidget({
             );
           })
         ) : (
-          <View style={{ flex: 1, alignItems: 'center', paddingVertical: 16 }}>
+          <View style={{ flex: 1, alignItems: "center", paddingVertical: 16 }}>
             {isLoading ? (
               <ActivityIndicator size="small" color={palette.foreground} />
             ) : (
-              <Text sx={{ fontSize: 14, color: 'mutedForeground' }}>No market data</Text>
+              <Text sx={{ fontSize: 14, color: "mutedForeground" }}>
+                No market data
+              </Text>
             )}
           </View>
         )}

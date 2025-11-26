@@ -2,13 +2,13 @@ const CHART_POINTS = 32;
 const CHART_HEIGHT = 220;
 
 export const formatCurrency = (value) => {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return '—';
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return "—";
   }
 
-  const formatter = new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  const formatter = new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
     minimumFractionDigits: value >= 100 ? 2 : 2,
     maximumFractionDigits: value >= 1 ? 2 : 4,
   });
@@ -17,16 +17,20 @@ export const formatCurrency = (value) => {
 };
 
 export const formatPercent = (value) => {
-  if (typeof value !== 'number' || Number.isNaN(value)) {
-    return '—';
+  if (typeof value !== "number" || Number.isNaN(value)) {
+    return "—";
   }
   const fixed = value.toFixed(2);
-  const prefix = value > 0 ? '+' : '';
+  const prefix = value > 0 ? "+" : "";
   return `${prefix}${fixed}%`;
 };
 
 const resolveNumeric = (value, fallback = 0) => {
-  if (typeof value !== 'number' || Number.isNaN(value) || !Number.isFinite(value)) {
+  if (
+    typeof value !== "number" ||
+    Number.isNaN(value) ||
+    !Number.isFinite(value)
+  ) {
     return fallback;
   }
   return value;
@@ -36,7 +40,8 @@ export const buildChartSeries = (asset) => {
   const price = Math.max(resolveNumeric(asset?.price, 1), 1);
   const change = resolveNumeric(asset?.change24h, 0);
   const changeMultiplier = 1 + change / 100;
-  const safeMultiplier = Math.abs(changeMultiplier) <= 0.05 ? 1 : changeMultiplier;
+  const safeMultiplier =
+    Math.abs(changeMultiplier) <= 0.05 ? 1 : changeMultiplier;
   const startingPrice = price / safeMultiplier;
 
   if (!Number.isFinite(startingPrice) || startingPrice <= 0) {
@@ -70,28 +75,34 @@ export const normalizeSeriesToHeight = (series) => {
 };
 
 export const formatMidValue = (value) => {
-  if (!Number.isFinite(value)) return '—';
+  if (!Number.isFinite(value)) return "—";
   const abs = Math.abs(value);
   if (abs >= 10000) {
-    return value.toLocaleString('en-US', { maximumFractionDigits: 0 });
+    return value.toLocaleString("en-US", { maximumFractionDigits: 0 });
   }
   if (abs >= 1000) {
-    return value.toLocaleString('en-US', { maximumFractionDigits: 2 });
+    return value.toLocaleString("en-US", { maximumFractionDigits: 2 });
   }
   if (abs >= 1) {
-    return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 4 });
+    return value.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 4,
+    });
   }
-  return value.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 8 });
+  return value.toLocaleString("en-US", {
+    minimumFractionDigits: 4,
+    maximumFractionDigits: 8,
+  });
 };
 
 export const formatDiffValue = (value) => {
-  if (!Number.isFinite(value) || value === 0) return '0';
+  if (!Number.isFinite(value) || value === 0) return "0";
   const abs = Math.abs(value);
   const formatter =
     abs >= 1
       ? { minimumFractionDigits: 2, maximumFractionDigits: 4 }
       : { minimumFractionDigits: 4, maximumFractionDigits: 8 };
-  const formatted = abs.toLocaleString('en-US', formatter);
+  const formatted = abs.toLocaleString("en-US", formatter);
   return value > 0 ? `+${formatted}` : `-${formatted}`;
 };
 

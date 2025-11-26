@@ -1,25 +1,25 @@
-import React, { useState, useRef, ReactNode, useCallback } from 'react';
+import { GlassContainer, GlassView } from "expo-glass-effect";
+import React, { type ReactNode, useCallback, useRef, useState } from "react";
 import {
-  StyleSheet,
-  Dimensions,
   Animated,
-  ViewStyle,
-  TextStyle,
+  Dimensions,
   FlatList,
-  NativeSyntheticEvent,
-  NativeScrollEvent,
-  ListRenderItemInfo,
-} from 'react-native';
-import View from '@/components/ui/View';
-import Text from '@/components/ui/Text';
-import TouchableOpacity from '@/components/ui/TouchableOpacity';
-import ScrollView from '@/components/ui/ScrollView';
-import { GlassContainer, GlassView } from 'expo-glass-effect';
-import { GLOBAL_PADDING } from '@/components/ContainerView';
-import { useTheme } from '@/contexts/ThemeContext';
-import GlassButton from '@/components/ui/GlassButton';
+  type ListRenderItemInfo,
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  StyleSheet,
+  type TextStyle,
+  type ViewStyle,
+} from "react-native";
+import { GLOBAL_PADDING } from "@/components/ContainerView";
+import GlassButton from "@/components/ui/GlassButton";
+import ScrollView from "@/components/ui/ScrollView";
+import Text from "@/components/ui/Text";
+import TouchableOpacity from "@/components/ui/TouchableOpacity";
+import View from "@/components/ui/View";
+import { useTheme } from "@/contexts/ThemeContext";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 const SCREEN_WIDTH = width;
 
 export interface SwipeableTab {
@@ -38,7 +38,11 @@ interface SwipeableTabsProps {
   activeTabTextStyle?: TextStyle;
   indicatorColor?: string;
   contentStyle?: ViewStyle;
-  renderTab?: (tab: SwipeableTab, index: number, isActive: boolean) => ReactNode;
+  renderTab?: (
+    tab: SwipeableTab,
+    index: number,
+    isActive: boolean,
+  ) => ReactNode;
   tabWrapperStyle?: ViewStyle;
   tabContainerStyle?: ViewStyle;
   headerContent?: ReactNode;
@@ -57,7 +61,7 @@ export default function SwipeableTabs({
   activeTabStyle,
   tabTextStyle,
   activeTabTextStyle,
-  indicatorColor = '#007AFF',
+  indicatorColor = "#007AFF",
   contentStyle,
   renderTab,
   tabWrapperStyle,
@@ -72,7 +76,9 @@ export default function SwipeableTabs({
   const { theme } = useTheme();
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const flatListRef = useRef<FlatList>(null);
-  const scrollX = useRef(new Animated.Value(initialIndex * SCREEN_WIDTH)).current;
+  const scrollX = useRef(
+    new Animated.Value(initialIndex * SCREEN_WIDTH),
+  ).current;
 
   const handleTabPress = useCallback((index: number) => {
     flatListRef.current?.scrollToIndex({ index, animated: true });
@@ -80,20 +86,20 @@ export default function SwipeableTabs({
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-    { useNativeDriver: false }
+    { useNativeDriver: false },
   );
 
   const handleMomentumScrollEnd = useCallback(
     (event: NativeSyntheticEvent<NativeScrollEvent>) => {
       const newIndex = Math.round(
-        event.nativeEvent.contentOffset.x / SCREEN_WIDTH
+        event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
       );
       if (newIndex !== currentIndex) {
         setCurrentIndex(newIndex);
         onTabChange?.(newIndex);
       }
     },
-    [currentIndex, onTabChange]
+    [currentIndex, onTabChange],
   );
 
   const tabWidth = SCREEN_WIDTH / tabs.length;
@@ -101,16 +107,14 @@ export default function SwipeableTabs({
   const indicatorTranslateX = scrollX.interpolate({
     inputRange: tabs.map((_, i) => i * SCREEN_WIDTH),
     outputRange: tabs.map((_, i) => i * tabWidth),
-    extrapolate: 'clamp',
+    extrapolate: "clamp",
   });
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<SwipeableTab>) => (
-      <View style={[styles.pageContent, contentStyle]}>
-        {item.content}
-      </View>
+      <View style={[styles.pageContent, contentStyle]}>{item.content}</View>
     ),
-    [contentStyle]
+    [contentStyle],
   );
 
   const getItemLayout = useCallback(
@@ -119,11 +123,15 @@ export default function SwipeableTabs({
       offset: SCREEN_WIDTH * index,
       index,
     }),
-    []
+    [],
   );
 
   const tabBarContent = !hideTabBar && (
-    <View style={stickyTabBar ? { backgroundColor: theme.colors.background } : undefined}>
+    <View
+      style={
+        stickyTabBar ? { backgroundColor: theme.colors.background } : undefined
+      }
+    >
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -132,45 +140,55 @@ export default function SwipeableTabs({
         <GlassContainer
           spacing={10}
           style={[
-            { flexDirection: 'row', gap: 2, paddingVertical: 12, paddingHorizontal: GLOBAL_PADDING },
+            {
+              flexDirection: "row",
+              gap: 2,
+              paddingVertical: 12,
+              paddingHorizontal: GLOBAL_PADDING,
+            },
             tabContainerStyle,
           ]}
         >
-          {tabs.map((tab, index) => renderTab ? (
-            renderTab(tab, index, currentIndex === index)
-          )
-          : (
-            <GlassButton
-              key={tab.key}
-              glassEffectStyle="clear"
-              style={[
-                {
-                  borderRadius: 32,
-                  paddingHorizontal: 8,
-                  paddingVertical: 4,
-                  marginHorizontal: 4,
-                  ...(currentIndex === index && [styles.activeTab, activeTabStyle]),
-                  ...styles.tab,
-                  ...tabStyle
-
-                },
-                tabWrapperStyle,
-              ]}
-              tintColor={theme.colors.surface}
-                onPress={() => handleTabPress(index)}
-
-            >
-              <Text
+          {tabs.map((tab, index) =>
+            renderTab ? (
+              renderTab(tab, index, currentIndex === index)
+            ) : (
+              <GlassButton
+                key={tab.key}
+                glassEffectStyle="clear"
                 style={[
-                  styles.tabText,
-                  tabTextStyle,
-                  currentIndex === index && [styles.activeTabText, activeTabTextStyle],
+                  {
+                    borderRadius: 32,
+                    paddingHorizontal: 8,
+                    paddingVertical: 4,
+                    marginHorizontal: 4,
+                    ...(currentIndex === index && [
+                      styles.activeTab,
+                      activeTabStyle,
+                    ]),
+                    ...styles.tab,
+                    ...tabStyle,
+                  },
+                  tabWrapperStyle,
                 ]}
+                tintColor={theme.colors.surface}
+                onPress={() => handleTabPress(index)}
               >
-                {tab.title}
-              </Text>
-            </GlassButton>
-          ))}
+                <Text
+                  style={[
+                    styles.tabText,
+                    tabTextStyle,
+                    currentIndex === index && [
+                      styles.activeTabText,
+                      activeTabTextStyle,
+                    ],
+                  ]}
+                >
+                  {tab.title}
+                </Text>
+              </GlassButton>
+            ),
+          )}
         </GlassContainer>
       </ScrollView>
     </View>
@@ -204,34 +222,34 @@ export default function SwipeableTabs({
 
 const styles = StyleSheet.create({
   tabBar: {
-    flexDirection: 'row',
+    flexDirection: "row",
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
-    position: 'relative',
+    borderBottomColor: "rgba(255, 255, 255, 0.1)",
+    position: "relative",
   },
   tabBarContent: {
     flex: 1,
-    alignItems: 'flex-start',
+    alignItems: "flex-start",
     gap: 8,
   },
   tab: {
-    alignSelf: 'flex-start',
+    alignSelf: "flex-start",
     borderRadius: 16,
-    paddingHorizontal: 8
+    paddingHorizontal: 8,
   },
   activeTab: {},
   tabText: {
     fontSize: 10,
-    fontWeight: '600',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    textTransform: "uppercase",
     letterSpacing: 1.1,
   },
   activeTabText: {
-    color: 'rgba(255, 255, 255, 1)',
-    fontWeight: '600',
+    color: "rgba(255, 255, 255, 1)",
+    fontWeight: "600",
   },
   indicator: {
-    position: 'absolute',
+    position: "absolute",
     bottom: 0,
     height: 2,
   },

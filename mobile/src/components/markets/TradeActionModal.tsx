@@ -1,9 +1,9 @@
-import React from 'react';
-import { Modal, View, Text, TouchableOpacity } from '@/components/ui';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
-import MarketOrderTicket from './MarketOrderTicket';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React from "react";
+import { Modal, Text, TouchableOpacity, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
+import MarketOrderTicket from "./MarketOrderTicket";
 
 export default function TradeActionModal({
   visible,
@@ -11,7 +11,7 @@ export default function TradeActionModal({
   asset,
   price,
   availableBalance,
-  defaultSide = 'buy',
+  defaultSide = "buy",
   onSubmit,
   isSubmitting = false,
 }) {
@@ -19,11 +19,16 @@ export default function TradeActionModal({
   const { colors } = theme;
 
   return (
-    <Modal visible={visible} animationType="slide" transparent onRequestClose={onClose}>
+    <Modal
+      visible={visible}
+      animationType="slide"
+      transparent
+      onRequestClose={onClose}
+    >
       <View
         style={{
           flex: 1,
-          justifyContent: 'flex-end',
+          justifyContent: "flex-end",
           backgroundColor: withOpacity(colors.background, 0.75),
         }}
       >
@@ -38,19 +43,35 @@ export default function TradeActionModal({
         >
           <View
             style={{
-              alignSelf: 'center',
+              alignSelf: "center",
               width: 48,
               height: 4,
               borderRadius: 2,
               backgroundColor: withOpacity(colors.text.secondary, 0.4),
             }}
           />
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ color: colors.text.primary, fontWeight: '700', fontSize: 18 }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: colors.text.primary,
+                fontWeight: "700",
+                fontSize: 18,
+              }}
+            >
               {asset?.pair ?? asset?.symbol}
             </Text>
             <TouchableOpacity onPress={onClose}>
-              <MaterialCommunityIcons name="close" size={24} color={colors.text.secondary} />
+              <MaterialCommunityIcons
+                name="close"
+                size={24}
+                color={colors.text.secondary}
+              />
             </TouchableOpacity>
           </View>
 

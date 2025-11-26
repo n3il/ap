@@ -1,10 +1,10 @@
-import React from 'react';
-import { View } from 'dripsy';
-import type { SxProp } from 'dripsy';
-import Text from './Text';
-import TextInput from './TextInput';
-import type { TextInputProps } from './TextInput';
-import { SPACING } from '@/theme/constants';
+import type { SxProp } from "dripsy";
+import { View } from "dripsy";
+import React from "react";
+import { SPACING } from "@/theme/constants";
+import Text from "./Text";
+import type { TextInputProps } from "./TextInput";
+import TextInput from "./TextInput";
 
 export interface FormFieldProps extends TextInputProps {
   label?: string;
@@ -37,12 +37,18 @@ const FormField = React.forwardRef<any, FormFieldProps>(
     return (
       <View sx={{ ...containerSx }}>
         {label && (
-          <View sx={{ marginBottom: SPACING.XS, flexDirection: 'row', alignItems: 'center' }}>
+          <View
+            sx={{
+              marginBottom: SPACING.XS,
+              flexDirection: "row",
+              alignItems: "center",
+            }}
+          >
             <Text
               variant="sm"
               tone="secondary"
               sx={{
-                fontWeight: '600',
+                fontWeight: "600",
                 ...labelSx,
               }}
             >
@@ -52,7 +58,7 @@ const FormField = React.forwardRef<any, FormFieldProps>(
               <Text
                 variant="sm"
                 sx={{
-                  color: 'error',
+                  color: "error",
                   marginLeft: 1,
                 }}
               >
@@ -68,7 +74,7 @@ const FormField = React.forwardRef<any, FormFieldProps>(
           style={[
             inputProps.style,
             hasError && {
-              borderColor: 'error',
+              borderColor: "error",
             },
           ]}
         />
@@ -77,7 +83,7 @@ const FormField = React.forwardRef<any, FormFieldProps>(
           <Text
             variant="xs"
             sx={{
-              color: 'error',
+              color: "error",
               marginTop: SPACING.XS,
               ...errorSx,
             }}
@@ -103,6 +109,6 @@ const FormField = React.forwardRef<any, FormFieldProps>(
   },
 );
 
-FormField.displayName = 'FormField';
+FormField.displayName = "FormField";
 
 export default FormField;

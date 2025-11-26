@@ -1,4 +1,4 @@
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
 
 export default function AuthLayout() {
   return (
@@ -6,8 +6,8 @@ export default function AuthLayout() {
       screenOptions={{
         headerShown: false,
         gestureEnabled: true,
-        animation: 'slide_from_bottom',
-        presentation: 'transparentModal',
+        animation: "slide_from_bottom",
+        presentation: "transparentModal",
       }}
     >
       <Stack.Screen name="index" backdropColor="rgba(0,0,0,0)" />

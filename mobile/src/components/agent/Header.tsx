@@ -1,16 +1,22 @@
+import { useQuery } from "@tanstack/react-query";
 import React, { useRef } from "react";
-import { View, Text, Image, Animated, TouchableOpacity, ScrollView, StatusBadge } from "@/components/ui";
 import { StyleSheet } from "react-native";
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/config/supabase';
-import { useAccountBalance } from '@/hooks/useAccountBalance';
+import {
+  Animated,
+  Image,
+  ScrollView,
+  StatusBadge,
+  Text,
+  TouchableOpacity,
+  View,
+} from "@/components/ui";
+import { supabase } from "@/config/supabase";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 import HeaderChart from "./HeaderChart";
 
 const HEADER_HEIGHT = 300;
 
-export default function AgentHeader({
-  agent,
-}) {
+export default function AgentHeader({ agent }) {
   const {
     wallet,
     equity,
@@ -20,16 +26,16 @@ export default function AgentHeader({
     realizedPnl,
     enrichedPositions,
     isLoading,
-  } = useAccountBalance(agent.id)
+  } = useAccountBalance(agent.id);
 
   // Fetch total trades count
   const { data: tradesCount = 0 } = useQuery({
-    queryKey: ['agent-trades-count', agent.id],
+    queryKey: ["agent-trades-count", agent.id],
     queryFn: async () => {
       const { count, error } = await supabase
-        .from('trades')
-        .select('*', { count: 'exact', head: true })
-        .eq('agent_id', agent.id);
+        .from("trades")
+        .select("*", { count: "exact", head: true })
+        .eq("agent_id", agent.id);
 
       if (error) throw error;
       return count || 0;
@@ -56,8 +62,8 @@ export default function AgentHeader({
         style={[
           styles.headerImage,
           {
-            transform: [{ scale: imageScale }, { translateY: imageTranslateY }]
-          }
+            transform: [{ scale: imageScale }, { translateY: imageTranslateY }],
+          },
         ]}
       >
         <HeaderChart agentId={agent.id} />
@@ -78,7 +84,7 @@ export default function AgentHeader({
         scrollEventThrottle={16}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
+          { useNativeDriver: true },
         )}
       >
         <View style={styles.content}>

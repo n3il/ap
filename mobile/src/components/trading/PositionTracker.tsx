@@ -1,15 +1,15 @@
-import React, { useMemo } from 'react';
+import { MaterialIcons } from "@expo/vector-icons";
+import React, { useMemo } from "react";
 import {
-  View,
+  ActivityIndicator,
+  FlatList,
   Text,
   TouchableOpacity,
-  FlatList,
-  ActivityIndicator,
-} from '@/components/ui';
-import { MaterialIcons } from '@expo/vector-icons';
+  View,
+} from "@/components/ui";
 
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
 export default function PositionTracker({
   positions = [],
@@ -24,7 +24,7 @@ export default function PositionTracker({
   const shortTextColor = theme.colors.error.DEFAULT;
 
   const renderPosition = ({ item }) => {
-    const isLong = item.side === 'LONG';
+    const isLong = item.side === "LONG";
     const pnl = parseFloat(item.unrealized_pnl || 0);
     const pnlPercent = parseFloat(item.pnl_percentage || 0);
     const isProfitable = pnl >= 0;
@@ -72,7 +72,7 @@ export default function PositionTracker({
         <View style={styles.positionDetails}>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Size</Text>
-            <Text style={styles.detailValue}>{item.size || '0'}</Text>
+            <Text style={styles.detailValue}>{item.size || "0"}</Text>
           </View>
           <View style={styles.detailRow}>
             <Text style={styles.detailLabel}>Entry Price</Text>
@@ -92,10 +92,14 @@ export default function PositionTracker({
               style={[
                 styles.detailValue,
                 styles.pnlValue,
-                { color: isProfitable ? theme.colors.success.DEFAULT : theme.colors.error.DEFAULT },
+                {
+                  color: isProfitable
+                    ? theme.colors.success.DEFAULT
+                    : theme.colors.error.DEFAULT,
+                },
               ]}
             >
-              {isProfitable ? '+' : '-'}${Math.abs(pnl).toFixed(2)} (
+              {isProfitable ? "+" : "-"}${Math.abs(pnl).toFixed(2)} (
               {pnlPercent.toFixed(2)}%)
             </Text>
           </View>
@@ -168,10 +172,14 @@ export default function PositionTracker({
           <Text
             style={[
               styles.totalPnl,
-              { color: isProfitable ? theme.colors.success.DEFAULT : theme.colors.error.DEFAULT },
+              {
+                color: isProfitable
+                  ? theme.colors.success.DEFAULT
+                  : theme.colors.error.DEFAULT,
+              },
             ]}
           >
-            {isProfitable ? '+' : '-'}${Math.abs(totalPnl).toFixed(2)} Total P&L
+            {isProfitable ? "+" : "-"}${Math.abs(totalPnl).toFixed(2)} Total P&L
           </Text>
         </View>
         <Text style={styles.count}>{positions.length}</Text>
@@ -202,26 +210,26 @@ const createStyles = (theme) => {
       borderColor: withOpacity(colors.border, 0.2),
     },
     header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       padding: 16,
       borderBottomWidth: 1,
       borderBottomColor: withOpacity(colors.border, 0.2),
     },
     title: {
       fontSize: 16,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     totalPnl: {
       fontSize: 13,
-      fontWeight: '600',
+      fontWeight: "600",
       marginTop: 4,
     },
     count: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.primary.DEFAULT,
     },
     listContent: {
@@ -236,22 +244,22 @@ const createStyles = (theme) => {
       borderColor: withOpacity(colors.border, 0.18),
     },
     positionHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'flex-start',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "flex-start",
       marginBottom: 12,
     },
     positionLeft: {
       flex: 1,
     },
     symbolRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 8,
     },
     symbol: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     sideBadge: {
@@ -261,8 +269,8 @@ const createStyles = (theme) => {
     },
     sideText: {
       fontSize: 11,
-      fontWeight: '700',
-      textTransform: 'uppercase',
+      fontWeight: "700",
+      textTransform: "uppercase",
       letterSpacing: 0.5,
     },
     leverageBadge: {
@@ -273,7 +281,7 @@ const createStyles = (theme) => {
     },
     leverageText: {
       fontSize: 11,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.primary.DEFAULT,
     },
     closeButton: {
@@ -283,18 +291,18 @@ const createStyles = (theme) => {
       gap: 8,
     },
     detailRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
     },
     detailLabel: {
       fontSize: 12,
       color: colors.text.secondary,
-      textTransform: 'uppercase',
+      textTransform: "uppercase",
       letterSpacing: 0.6,
     },
     detailValue: {
       fontSize: 13,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
     },
     pnlValue: {
@@ -304,8 +312,8 @@ const createStyles = (theme) => {
       marginTop: 12,
       borderRadius: 8,
       padding: 10,
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 8,
       backgroundColor: withOpacity(colors.warning.DEFAULT, 0.12),
       borderWidth: 1,
@@ -314,12 +322,12 @@ const createStyles = (theme) => {
     warningText: {
       fontSize: 12,
       color: colors.warning.dark ?? colors.warning.DEFAULT,
-      fontWeight: '600',
+      fontWeight: "600",
     },
     loadingContainer: {
       flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
       gap: 12,
       padding: 24,
     },
@@ -328,20 +336,20 @@ const createStyles = (theme) => {
       color: colors.text.secondary,
     },
     emptyState: {
-      alignItems: 'center',
+      alignItems: "center",
       gap: 12,
       paddingVertical: 40,
       paddingHorizontal: 24,
     },
     emptyText: {
       fontSize: 16,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     emptySubtext: {
       fontSize: 13,
       color: colors.text.secondary,
-      textAlign: 'center',
+      textAlign: "center",
     },
   };
 };

@@ -1,19 +1,17 @@
-import { supabase } from '@/config/supabase';
-import * as Crypto from 'expo-crypto';
+import * as Crypto from "expo-crypto";
+import { supabase } from "@/config/supabase";
 
 const buildAgentSelectQuery = (includeLatestAssessment = false) => {
   const baseColumns = includeLatestAssessment
-    ? '*, latest_assessment:assessments(*)'
-    : '*';
+    ? "*, latest_assessment:assessments(*)"
+    : "*";
 
-  let query = supabase
-    .from('agents')
-    .select(baseColumns);
+  let query = supabase.from("agents").select(baseColumns);
 
   if (includeLatestAssessment) {
     query = query
-      .order('timestamp', { ascending: false, referencedTable: 'assessments' })
-      .limit(1, { referencedTable: 'assessments' });
+      .order("timestamp", { ascending: false, referencedTable: "assessments" })
+      .limit(1, { referencedTable: "assessments" });
   }
 
   return query;
@@ -33,8 +31,8 @@ const normalizeAgent = (agent, includeLatestAssessment) => {
 const generateHyperliquidAddress = async () => {
   const bytes = await Crypto.getRandomBytesAsync(20);
   const hex = Array.from(bytes)
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('');
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
   return `0x${hex}`;
 };
 
@@ -49,36 +47,40 @@ export const agentService = {
     try {
       let resolvedUserId = userId;
       if (!resolvedUserId && !published) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
         resolvedUserId = user.id;
       }
 
       let query = buildAgentSelectQuery(includeLatestAssessment);
 
       if (resolvedUserId) {
-        query = query.eq('user_id', resolvedUserId);
+        query = query.eq("user_id", resolvedUserId);
       }
 
       if (isActive === true) {
-        query = query.not('is_active', 'is', null);
+        query = query.not("is_active", "is", null);
       } else if (published === false) {
-        query = query.is('is_active', null);
+        query = query.is("is_active", null);
       }
 
       if (published === true) {
-        query = query.not('published_at', 'is', null);
+        query = query.not("published_at", "is", null);
       } else if (published === false) {
-        query = query.is('published_at', null);
+        query = query.is("published_at", null);
       }
 
-      const { data, error } = await query
-        .order(published ? 'published_at' : 'created_at', { ascending: false });
+      const { data, error } = await query.order(
+        published ? "published_at" : "created_at",
+        { ascending: false },
+      );
 
       if (error) throw error;
 
       return includeLatestAssessment
-        ? data.map(agent => normalizeAgent(agent, true))
+        ? data.map((agent) => normalizeAgent(agent, true))
         : data;
     } catch (error) {
       throw error;
@@ -88,8 +90,10 @@ export const agentService = {
   // Get a single agent by ID
   async getAgent(agentId, { includeLatestAssessment = false } = {}) {
     try {
-      const { data, error } = await buildAgentSelectQuery(includeLatestAssessment)
-        .eq('id', agentId)
+      const { data, error } = await buildAgentSelectQuery(
+        includeLatestAssessment,
+      )
+        .eq("id", agentId)
         .single();
 
       if (error) throw error;
@@ -102,13 +106,15 @@ export const agentService = {
   // Create a new agent
   async createAgent(agentData) {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
       const hyperliquidAddress = await generateHyperliquidAddress();
 
       const { data, error } = await supabase
-        .from('agents')
+        .from("agents")
         .insert([
           {
             ...agentData,
@@ -116,7 +122,7 @@ export const agentService = {
             is_active: new Date().toISOString(),
             published_at: null,
             hyperliquid_address: hyperliquidAddress,
-          }
+          },
         ])
         .select()
         .single();
@@ -133,9 +139,9 @@ export const agentService = {
   async updateAgentStatus(agentId, isActive) {
     try {
       const { data, error } = await supabase
-        .from('agents')
+        .from("agents")
         .update({ is_active: isActive ? new Date().toISOString() : null })
-        .eq('id', agentId)
+        .eq("id", agentId)
         .select()
         .single();
 
@@ -150,9 +156,9 @@ export const agentService = {
   async publishAgent(agentId) {
     try {
       const { data, error } = await supabase
-        .from('agents')
+        .from("agents")
         .update({ published_at: new Date().toISOString() })
-        .eq('id', agentId)
+        .eq("id", agentId)
         .select()
         .single();
 
@@ -167,9 +173,9 @@ export const agentService = {
   async unpublishAgent(agentId) {
     try {
       const { data, error } = await supabase
-        .from('agents')
+        .from("agents")
         .update({ published_at: null })
-        .eq('id', agentId)
+        .eq("id", agentId)
         .select()
         .single();
 
@@ -184,9 +190,9 @@ export const agentService = {
   async deleteAgent(agentId) {
     try {
       const { error } = await supabase
-        .from('agents')
+        .from("agents")
         .delete()
-        .eq('id', agentId);
+        .eq("id", agentId);
 
       if (error) throw error;
       return true;
@@ -200,26 +206,28 @@ export const agentService = {
     try {
       // Fetch all trades for the agent
       const { data: trades, error: tradesError } = await supabase
-        .from('trades')
-        .select('*')
-        .eq('agent_id', agentId);
+        .from("trades")
+        .select("*")
+        .eq("agent_id", agentId);
 
       if (tradesError) throw tradesError;
 
       // Calculate statistics
       const stats = {
         totalTrades: trades.length,
-        openPositions: trades.filter(t => t.status === 'OPEN').length,
-        closedTrades: trades.filter(t => t.status === 'CLOSED').length,
+        openPositions: trades.filter((t) => t.status === "OPEN").length,
+        closedTrades: trades.filter((t) => t.status === "CLOSED").length,
         totalPnL: trades
-          .filter(t => t.status === 'CLOSED')
+          .filter((t) => t.status === "CLOSED")
           .reduce((sum, t) => sum + (parseFloat(t.realized_pnl) || 0), 0),
         winRate: 0,
       };
 
-      const closedTrades = trades.filter(t => t.status === 'CLOSED');
+      const closedTrades = trades.filter((t) => t.status === "CLOSED");
       if (closedTrades.length > 0) {
-        const winningTrades = closedTrades.filter(t => parseFloat(t.realized_pnl) > 0);
+        const winningTrades = closedTrades.filter(
+          (t) => parseFloat(t.realized_pnl) > 0,
+        );
         stats.winRate = (winningTrades.length / closedTrades.length) * 100;
       }
 
@@ -232,13 +240,15 @@ export const agentService = {
   // Copy a published agent into the current user's account
   async copyAgent(agentId) {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
       const { data: sourceAgent, error: fetchError } = await supabase
-        .from('agents')
-        .select('*')
-        .eq('id', agentId)
+        .from("agents")
+        .select("*")
+        .eq("id", agentId)
         .single();
 
       if (fetchError) throw fetchError;
@@ -246,20 +256,20 @@ export const agentService = {
       const duplicatedName = `${sourceAgent.name} Copy`;
       const hyperliquidAddress = await generateHyperliquidAddress();
       const { data, error } = await supabase
-        .from('agents')
+        .from("agents")
         .insert([
           {
             name: duplicatedName,
             llm_provider: sourceAgent.llm_provider,
             model_name: sourceAgent.model_name,
-          hyperliquid_address: hyperliquidAddress,
-          initial_capital: sourceAgent.initial_capital,
-          user_id: user.id,
-          is_active: null,
-          published_at: null,
-          prompt_id: sourceAgent.prompt_id ?? null,
-        }
-      ])
+            hyperliquid_address: hyperliquidAddress,
+            initial_capital: sourceAgent.initial_capital,
+            user_id: user.id,
+            is_active: null,
+            published_at: null,
+            prompt_id: sourceAgent.prompt_id ?? null,
+          },
+        ])
         .select()
         .single();
 
@@ -274,16 +284,21 @@ export const agentService = {
   async triggerAssessment(agentId) {
     try {
       // Get the current session to include auth token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Not authenticated');
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error("Not authenticated");
 
       // Call run_agent_assessment directly for this specific agent
-      const { data, error } = await supabase.functions.invoke('run_agent_assessment', {
-        body: { agent_id: agentId },
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
+      const { data, error } = await supabase.functions.invoke(
+        "run_agent_assessment",
+        {
+          body: { agent_id: agentId },
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
         },
-      });
+      );
 
       if (error) {
         throw error;

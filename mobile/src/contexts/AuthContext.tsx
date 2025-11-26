@@ -1,9 +1,10 @@
-import React, { createContext, useState, useEffect, useContext } from 'react';
-import { supabase } from '@/config/supabase';
-import * as WebBrowser from 'expo-web-browser';
-import { makeRedirectUri } from 'expo-auth-session';
-import { isRouteAccessible, ROUTES } from '@/config/routes';
-import { useRouter } from 'expo-router';
+import { makeRedirectUri } from "expo-auth-session";
+import { useRouter } from "expo-router";
+import * as WebBrowser from "expo-web-browser";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { isRouteAccessible, ROUTES } from "@/config/routes";
+import { supabase } from "@/config/supabase";
+
 // import useRouteAuth from '@/hooks/useRouteAuth';
 // import { useRouter } from 'expo-router';
 
@@ -12,7 +13,7 @@ const AuthContext = createContext({});
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
@@ -40,13 +41,16 @@ export const AuthProvider = ({ children }) => {
 
       // Check onboarding status from user metadata or fallback to database query
       if (session?.user) {
-        const onboardingFromMetadata = session.user.user_metadata?.onboarding_completed;
+        const onboardingFromMetadata =
+          session.user.user_metadata?.onboarding_completed;
         if (onboardingFromMetadata !== undefined) {
           setHasCompletedOnboarding(onboardingFromMetadata);
           setLoading(false);
         } else {
           // Fallback: query profiles table and sync to metadata
-          checkOnboardingStatus(session.user.id).finally(() => setLoading(false));
+          checkOnboardingStatus(session.user.id).finally(() =>
+            setLoading(false),
+          );
         }
       } else {
         setLoading(false);
@@ -54,12 +58,15 @@ export const AuthProvider = ({ children }) => {
     });
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
 
       if (session?.user) {
-        const onboardingFromMetadata = session.user.user_metadata?.onboarding_completed;
+        const onboardingFromMetadata =
+          session.user.user_metadata?.onboarding_completed;
         if (onboardingFromMetadata !== undefined) {
           setHasCompletedOnboarding(onboardingFromMetadata);
         } else {
@@ -81,12 +88,12 @@ export const AuthProvider = ({ children }) => {
   const checkOnboardingStatus = async (userId) => {
     try {
       const { data, error } = await supabase
-        .from('profiles')
-        .select('onboarding_completed')
-        .eq('id', userId)
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
+      if (error && error.code !== "PGRST116") {
         return;
       }
 
@@ -95,10 +102,10 @@ export const AuthProvider = ({ children }) => {
 
       // Sync to user metadata for future sessions
       await supabase.auth.updateUser({
-        data: { onboarding_completed: onboardingCompleted }
+        data: { onboarding_completed: onboardingCompleted },
       });
     } catch (error) {
-      throw error
+      throw error;
     }
   };
 
@@ -159,11 +166,10 @@ export const AuthProvider = ({ children }) => {
 
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = makeRedirectUri({ scheme: 'ap' });
-
+      const redirectUrl = makeRedirectUri({ scheme: "ap" });
 
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
+        provider: "google",
         options: {
           redirectTo: redirectUrl,
           skipBrowserRedirect: true,
@@ -173,20 +179,22 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
 
       if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(data.url, redirectUrl);
+        const result = await WebBrowser.openAuthSessionAsync(
+          data.url,
+          redirectUrl,
+        );
 
         // Extract tokens from the result URL
-        if (result.type === 'success' && result.url) {
-
+        if (result.type === "success" && result.url) {
           // Parse tokens from URL hash
           const url = result.url;
           let access_token, refresh_token;
 
-          if (url.includes('#')) {
-            const hashPart = url.split('#')[1];
+          if (url.includes("#")) {
+            const hashPart = url.split("#")[1];
             const hashParams = new URLSearchParams(hashPart);
-            access_token = hashParams.get('access_token');
-            refresh_token = hashParams.get('refresh_token');
+            access_token = hashParams.get("access_token");
+            refresh_token = hashParams.get("refresh_token");
           }
 
           if (access_token && refresh_token) {
@@ -201,14 +209,14 @@ export const AuthProvider = ({ children }) => {
 
             return { data: { session: true }, error: null };
           } else {
-            return { data: null, error: new Error('No tokens received') };
+            return { data: null, error: new Error("No tokens received") };
           }
         }
 
-        return { data: null, error: new Error('Browser session cancelled') };
+        return { data: null, error: new Error("Browser session cancelled") };
       }
 
-      return { data: null, error: new Error('No OAuth URL generated') };
+      return { data: null, error: new Error("No OAuth URL generated") };
     } catch (error) {
       return { data: null, error };
     }
@@ -217,9 +225,9 @@ export const AuthProvider = ({ children }) => {
   const signInWithApple = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
+        provider: "apple",
         options: {
-          redirectTo: 'ap://',
+          redirectTo: "ap://",
         },
       });
       if (error) throw error;
@@ -246,7 +254,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.verifyOtp({
         phone: phoneNumber,
         token: token,
-        type: 'sms',
+        type: "sms",
       });
       if (error) throw error;
       return { data, error: null };
@@ -275,7 +283,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.verifyOtp({
         email: email,
         token: token,
-        type: 'email',
+        type: "email",
       });
       if (error) throw error;
       return { data, error: null };
@@ -286,23 +294,21 @@ export const AuthProvider = ({ children }) => {
 
   const completeOnboarding = async (profileData) => {
     try {
-      if (!user) throw new Error('No user logged in');
+      if (!user) throw new Error("No user logged in");
 
       // Update profiles table
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: user.id,
-          ...profileData,
-          onboarding_completed: true,
-          updated_at: new Date().toISOString(),
-        });
+      const { error: profileError } = await supabase.from("profiles").upsert({
+        id: user.id,
+        ...profileData,
+        onboarding_completed: true,
+        updated_at: new Date().toISOString(),
+      });
 
       if (profileError) throw profileError;
 
       // Update user metadata to sync with session
       const { error: metadataError } = await supabase.auth.updateUser({
-        data: { onboarding_completed: true }
+        data: { onboarding_completed: true },
       });
 
       if (metadataError) throw metadataError;

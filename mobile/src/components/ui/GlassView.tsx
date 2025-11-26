@@ -1,14 +1,9 @@
-import { useTheme } from "@/contexts/ThemeContext";
-import { useColors } from "@/theme";
 import { GlassView } from "expo-glass-effect";
 import { Pressable } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useColors } from "@/theme";
 
-export default function GlassButton ({
-  style,
-  children,
-  onPress,
-  ...props
-}) {
+export default function GlassButton({ style, children, onPress, ...props }) {
   const { colors, withOpacity } = useColors();
 
   return (
@@ -21,17 +16,13 @@ export default function GlassButton ({
           paddingVertical: 8,
           marginHorizontal: 4,
         },
-        style
+        style,
       ]}
       tintColor={withOpacity(colors.foreground, 0.1)}
       isInteractive
       {...props}
     >
-      <Pressable
-        onPress={onPress}
-      >
-        {children}
-      </Pressable>
+      <Pressable onPress={onPress}>{children}</Pressable>
     </GlassView>
-  )
+  );
 }

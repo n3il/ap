@@ -1,21 +1,26 @@
-import { supabase } from '@/config/supabase';
+import { supabase } from "@/config/supabase";
 
 export const PROMPT_PLACEHOLDERS = {
-  '{{MARKET_PRICES}}': 'Comma-separated list of tracked assets with price and 24h change',
-  '{{MARKET_DATA_JSON}}': 'Full market data payload as formatted JSON',
-  '{{OPEN_POSITIONS}}': 'Human-readable summary of open positions or "None"',
-  '{{OPEN_POSITIONS_JSON}}': 'Open positions array as formatted JSON',
-  '{{PROMPT_TYPE}}': 'Context string like MARKET_SCAN or POSITION_REVIEW based on open positions',
-  '{{TIMESTAMP}}': 'ISO timestamp when the prompt is rendered',
+  "{{MARKET_PRICES}}":
+    "Comma-separated list of tracked assets with price and 24h change",
+  "{{MARKET_DATA_JSON}}": "Full market data payload as formatted JSON",
+  "{{OPEN_POSITIONS}}": 'Human-readable summary of open positions or "None"',
+  "{{OPEN_POSITIONS_JSON}}": "Open positions array as formatted JSON",
+  "{{PROMPT_TYPE}}":
+    "Context string like MARKET_SCAN or POSITION_REVIEW based on open positions",
+  "{{TIMESTAMP}}": "ISO timestamp when the prompt is rendered",
 };
 
 const ensureAuthenticatedUser = async () => {
-  const { data: { user }, error } = await supabase.auth.getUser();
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
   if (error) {
     throw error;
   }
   if (!user) {
-    throw new Error('Not authenticated');
+    throw new Error("Not authenticated");
   }
   return user;
 };
@@ -28,13 +33,13 @@ export const promptService = {
     const user = await ensureAuthenticatedUser();
 
     const { data, error } = await supabase
-      .from('prompts')
-      .select('*')
-      .eq('is_active', true)
+      .from("prompts")
+      .select("*")
+      .eq("is_active", true)
       .or(`user_id.eq.${user.id},user_id.is.null`)
-      .order('user_id', { ascending: false })
-      .order('is_default', { ascending: false })
-      .order('updated_at', { ascending: false });
+      .order("user_id", { ascending: false })
+      .order("is_default", { ascending: false })
+      .order("updated_at", { ascending: false });
 
     if (error) throw error;
     return data ?? [];
@@ -53,7 +58,7 @@ export const promptService = {
     };
 
     const { data, error } = await supabase
-      .from('prompts')
+      .from("prompts")
       .insert([payload])
       .select()
       .single();
@@ -67,9 +72,9 @@ export const promptService = {
    */
   async updatePrompt(promptId, updates) {
     const { data, error } = await supabase
-      .from('prompts')
+      .from("prompts")
       .update({ ...updates, updated_at: new Date().toISOString() })
-      .eq('id', promptId)
+      .eq("id", promptId)
       .select()
       .single();
 
@@ -82,9 +87,9 @@ export const promptService = {
    */
   async disablePrompt(promptId) {
     const { data, error } = await supabase
-      .from('prompts')
+      .from("prompts")
       .update({ is_active: false })
-      .eq('id', promptId)
+      .eq("id", promptId)
       .select()
       .single();
 
@@ -97,9 +102,9 @@ export const promptService = {
    */
   async assignPromptToAgent(agentId, promptId) {
     const { data, error } = await supabase
-      .from('agents')
+      .from("agents")
       .update({ prompt_id: promptId ?? null })
-      .eq('id', agentId)
+      .eq("id", agentId)
       .select()
       .single();
 

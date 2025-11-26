@@ -1,33 +1,38 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { MaterialIcons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import { OtpInput } from "react-native-otp-entry";
+import { FadeIn, LinearTransition } from "react-native-reanimated";
+import ContainerView from "@/components/ContainerView";
 import {
-  View,
-  Text,
-  Button,
+  ActivityIndicator,
   Alert,
+  Button,
   KeyboardAvoidingView,
   Platform,
-  ActivityIndicator,
-} from '@/components/ui';
-import { useRouter, useLocalSearchParams } from 'expo-router';
-import { useAuth } from '@/contexts/AuthContext';
-import ContainerView from '@/components/ContainerView';
-import { MaterialIcons } from '@expo/vector-icons';
-import { useLocalization } from '@/hooks/useLocalization';
-import { OtpInput } from "react-native-otp-entry";
-import { FadeIn, LinearTransition } from 'react-native-reanimated';
-import { AnimatedBox } from '@/components/ui/animated';
-import { useColors } from '@/theme';
+  Text,
+  View,
+} from "@/components/ui";
+import { AnimatedBox } from "@/components/ui/animated";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLocalization } from "@/hooks/useLocalization";
+import { useColors } from "@/theme";
 
 const RESEND_COUNTDOWN = 60; // seconds
 
 export default function VerifyOTPScreen() {
-  const [verificationCode, setVerificationCode] = useState('');
+  const [verificationCode, setVerificationCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [countdown, setCountdown] = useState(RESEND_COUNTDOWN);
   const countdownInterval = useRef(null);
   const router = useRouter();
   const params = useLocalSearchParams();
-  const { verifyPhoneCode, signInWithPhone, verifyEmailOtp, signInWithEmailOtp } = useAuth();
+  const {
+    verifyPhoneCode,
+    signInWithPhone,
+    verifyEmailOtp,
+    signInWithEmailOtp,
+  } = useAuth();
   const { t } = useLocalization();
   const colors = useColors();
   const palette = colors.colors;
@@ -67,25 +72,25 @@ export default function VerifyOTPScreen() {
 
     setLoading(true);
 
-    if (type === 'phone') {
+    if (type === "phone") {
       const { error } = await verifyPhoneCode(phoneNumber, verificationCode);
       setLoading(false);
 
       if (error) {
-        Alert.alert(t('login.errors.verificationFailed'), error.message);
+        Alert.alert(t("login.errors.verificationFailed"), error.message);
       } else {
         // Success - Navigate to onboarding or tabs
-        router.replace('/(auth)/onboarding');
+        router.replace("/(auth)/onboarding");
       }
-    } else if (type === 'email') {
+    } else if (type === "email") {
       const { error } = await verifyEmailOtp(email, verificationCode);
       setLoading(false);
 
       if (error) {
-        Alert.alert(t('login.errors.verificationFailed'), error.message);
+        Alert.alert(t("login.errors.verificationFailed"), error.message);
       } else {
         // Success - Navigate to onboarding or tabs
-        router.replace('/(auth)/onboarding');
+        router.replace("/(auth)/onboarding");
       }
     }
   };
@@ -95,24 +100,24 @@ export default function VerifyOTPScreen() {
 
     setLoading(true);
 
-    if (type === 'phone') {
+    if (type === "phone") {
       const { error } = await signInWithPhone(phoneNumber);
       setLoading(false);
 
       if (error) {
-        Alert.alert(t('login.errors.codeSendFailed'), error.message);
+        Alert.alert(t("login.errors.codeSendFailed"), error.message);
       } else {
-        Alert.alert(t('login.success.codeSent.phone'));
+        Alert.alert(t("login.success.codeSent.phone"));
         startCountdown();
       }
-    } else if (type === 'email') {
+    } else if (type === "email") {
       const { error } = await signInWithEmailOtp(email);
       setLoading(false);
 
       if (error) {
-        Alert.alert(t('login.errors.codeSendFailed'), error.message);
+        Alert.alert(t("login.errors.codeSendFailed"), error.message);
       } else {
-        Alert.alert(t('login.success.codeSent.email'));
+        Alert.alert(t("login.success.codeSent.email"));
         startCountdown();
       }
     }
@@ -125,7 +130,7 @@ export default function VerifyOTPScreen() {
   return (
     <ContainerView>
       <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{
           flex: 1,
           paddingHorizontal: 16,
@@ -133,20 +138,18 @@ export default function VerifyOTPScreen() {
       >
         <AnimatedBox
           layout={LinearTransition.duration(300).springify()}
-          style={{ flex: 1, justifyContent: 'center', alignItems: 'stretch' }}
+          style={{ flex: 1, justifyContent: "center", alignItems: "stretch" }}
         >
-
           <View sx={{ marginBottom: 8 }}>
             <Text variant="h1" sx={{ fontWeight: 300, marginBottom: 2 }}>
               Verify Code
             </Text>
             <Text variant="body" tone="muted">
-              {type === 'phone'
+              {type === "phone"
                 ? `Enter the code sent to ${phoneNumber}`
                 : `Enter the code sent to ${email}`}
             </Text>
           </View>
-
 
           <View sx={{ marginBottom: 8 }}>
             <OtpInput
@@ -195,47 +198,56 @@ export default function VerifyOTPScreen() {
             />
           </View>
 
-
           <Button
             variant="surface"
-            sx={{ borderColor: 'primary', borderRadius: 'full', marginBottom: 4 }}
-            textProps={{ style: { fontWeight: '600' } }}
+            sx={{
+              borderColor: "primary",
+              borderRadius: "full",
+              marginBottom: 4,
+            }}
+            textProps={{ style: { fontWeight: "600" } }}
             onPress={handleVerifyCode}
             disabled={loading || verificationCode.length !== 6}
           >
             {loading ? (
               <ActivityIndicator color={palette.foreground} />
             ) : (
-              t('login.verify')
+              t("login.verify")
             )}
           </Button>
-
 
           <Button
             variant="ghost"
             onPress={handleResendCode}
             disabled={loading || countdown > 0}
-            sx={{ alignItems: 'center' }}
+            sx={{ alignItems: "center" }}
           >
-            <Text variant="sm" tone={countdown > 0 ? 'subtle' : 'muted'} sx={{ fontWeight: '500' }}>
+            <Text
+              variant="sm"
+              tone={countdown > 0 ? "subtle" : "muted"}
+              sx={{ fontWeight: "500" }}
+            >
               {countdown > 0
-                ? `${t('login.resendCode')} (${countdown}s)`
-                : t('login.resendCode')}
+                ? `${t("login.resendCode")} (${countdown}s)`
+                : t("login.resendCode")}
             </Text>
           </Button>
         </AnimatedBox>
 
-          <View sx={{marginBottom: 2 }}>
-            <Button
-              variant="outline"
-              onPress={handleGoBack}
-              disabled={loading}
-              sx={{ width: 60, height: 60, padding: 0, borderRadius: 'full' }}
-            >
-              <MaterialIcons name="arrow-back" size={20} color={palette.foreground} />
-            </Button>
-          </View>
-
+        <View sx={{ marginBottom: 2 }}>
+          <Button
+            variant="outline"
+            onPress={handleGoBack}
+            disabled={loading}
+            sx={{ width: 60, height: 60, padding: 0, borderRadius: "full" }}
+          >
+            <MaterialIcons
+              name="arrow-back"
+              size={20}
+              color={palette.foreground}
+            />
+          </Button>
+        </View>
       </KeyboardAvoidingView>
     </ContainerView>
   );

@@ -1,10 +1,10 @@
-import React from 'react';
-import { View, Text, ScrollView } from '@/components/ui';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
-import { formatPriceDisplay, formatTradeSize } from './utils';
+import React from "react";
+import { ScrollView, Text, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
+import { formatPriceDisplay, formatTradeSize } from "./utils";
 
-export default function MarketTradesTable({ trades = [], symbol = 'XPL' }) {
+export default function MarketTradesTable({ trades = [], symbol = "XPL" }) {
   const { theme } = useTheme();
   const { colors } = theme;
 
@@ -20,8 +20,8 @@ export default function MarketTradesTable({ trades = [], symbol = 'XPL' }) {
         flex: 1,
       }}
     >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-        <Text style={{ color: colors.text.primary, fontWeight: '700' }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
+        <Text style={{ color: colors.text.primary, fontWeight: "700" }}>
           Trades
         </Text>
         <Text style={{ color: colors.text.secondary, fontSize: 12 }}>
@@ -31,30 +31,44 @@ export default function MarketTradesTable({ trades = [], symbol = 'XPL' }) {
 
       <View
         style={{
-          flexDirection: 'row',
+          flexDirection: "row",
           paddingVertical: 8,
           paddingHorizontal: 12,
           borderRadius: 12,
           backgroundColor: withOpacity(colors.backgroundSecondary, 0.5),
         }}
       >
-        <Text style={{ flex: 1, color: colors.text.secondary, fontSize: 11 }}>Price</Text>
+        <Text style={{ flex: 1, color: colors.text.secondary, fontSize: 11 }}>
+          Price
+        </Text>
         <Text style={{ flex: 1, color: colors.text.secondary, fontSize: 11 }}>
           Size ({symbol})
         </Text>
-        <Text style={{ flex: 1, color: colors.text.secondary, fontSize: 11, textAlign: 'right' }}>
+        <Text
+          style={{
+            flex: 1,
+            color: colors.text.secondary,
+            fontSize: 11,
+            textAlign: "right",
+          }}
+        >
           Time
         </Text>
       </View>
 
-      <ScrollView style={{ maxHeight: 260 }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        style={{ maxHeight: 260 }}
+        showsVerticalScrollIndicator={false}
+      >
         {trades.map((trade) => {
-          const isBuy = (trade.direction || '').includes('BUY') || (trade.direction || '').includes('LONG');
+          const isBuy =
+            (trade.direction || "").includes("BUY") ||
+            (trade.direction || "").includes("LONG");
           return (
             <View
               key={trade.id}
               style={{
-                flexDirection: 'row',
+                flexDirection: "row",
                 paddingVertical: 10,
                 paddingHorizontal: 8,
                 borderBottomWidth: 1,
@@ -65,7 +79,7 @@ export default function MarketTradesTable({ trades = [], symbol = 'XPL' }) {
                 style={{
                   flex: 1,
                   color: isBuy ? colors.success.DEFAULT : colors.error.DEFAULT,
-                  fontWeight: '600',
+                  fontWeight: "600",
                 }}
               >
                 {formatPriceDisplay(trade.price)}
@@ -73,14 +87,20 @@ export default function MarketTradesTable({ trades = [], symbol = 'XPL' }) {
               <Text style={{ flex: 1, color: colors.text.primary }}>
                 {formatTradeSize(trade.size, trade.symbol ?? symbol)}
               </Text>
-              <Text style={{ flex: 1, color: colors.text.secondary, textAlign: 'right' }}>
+              <Text
+                style={{
+                  flex: 1,
+                  color: colors.text.secondary,
+                  textAlign: "right",
+                }}
+              >
                 {trade.time}
               </Text>
             </View>
           );
         })}
         {!trades.length && (
-          <View style={{ paddingVertical: 24, alignItems: 'center' }}>
+          <View style={{ paddingVertical: 24, alignItems: "center" }}>
             <Text style={{ color: colors.text.secondary }}>No trades yet.</Text>
           </View>
         )}

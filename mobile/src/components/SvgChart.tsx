@@ -1,14 +1,20 @@
-import React, { useMemo, useState, useEffect, useRef, useCallback } from 'react';
-import { View, Text, Button } from '@/components/ui';
-import { Animated as RNAnimated, PanResponder } from 'react-native';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import { PanResponder, Animated as RNAnimated } from "react-native";
 import Animated, {
-  useAnimatedStyle,
-  interpolate,
   Extrapolation,
-} from 'react-native-reanimated';
-import Svg, { Polyline, Line, Circle, Text as SvgText } from 'react-native-svg';
-import { useColors } from '@/theme';
-import { useTimeframeStore } from '@/stores/useTimeframeStore';
+  interpolate,
+  useAnimatedStyle,
+} from "react-native-reanimated";
+import Svg, { Circle, Line, Polyline, Text as SvgText } from "react-native-svg";
+import { Button, Text, View } from "@/components/ui";
+import { useTimeframeStore } from "@/stores/useTimeframeStore";
+import { useColors } from "@/theme";
 
 const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
 
@@ -18,10 +24,14 @@ const PADDING = { top: 15, right: 15, bottom: 15, left: 15 };
 
 const getXValue = (point) => {
   if (!point) return null;
-  if (typeof point.time === 'number' && isFinite(point.time) && !isNaN(point.time)) {
+  if (
+    typeof point.time === "number" &&
+    isFinite(point.time) &&
+    !isNaN(point.time)
+  ) {
     return point.time;
   }
-  if (typeof point.x === 'number' && isFinite(point.x) && !isNaN(point.x)) {
+  if (typeof point.x === "number" && isFinite(point.x) && !isNaN(point.x)) {
     return point.x;
   }
   return null;
@@ -32,10 +42,13 @@ const interpolateValue = (data, targetX) => {
   if (!data || data.length === 0) return 0;
 
   // Filter valid data points
-  const validData = data.filter(d =>
-    d &&
-    ((typeof d.time === 'number' && isFinite(d.time)) || (typeof d.x === 'number' && isFinite(d.x))) &&
-    ((typeof d.value === 'number' && isFinite(d.value)) || (typeof d.percent === 'number' && isFinite(d.percent)))
+  const validData = data.filter(
+    (d) =>
+      d &&
+      ((typeof d.time === "number" && isFinite(d.time)) ||
+        (typeof d.x === "number" && isFinite(d.x))) &&
+      ((typeof d.value === "number" && isFinite(d.value)) ||
+        (typeof d.percent === "number" && isFinite(d.percent))),
   );
 
   if (validData.length === 0) return 0;
@@ -49,7 +62,7 @@ const interpolateValue = (data, targetX) => {
   let rightPoint = validData[validData.length - 1];
 
   for (let i = 0; i < validData.length - 1; i++) {
-    const xKey = validData[i].time !== undefined ? 'time' : 'x';
+    const xKey = validData[i].time !== undefined ? "time" : "x";
     if (validData[i][xKey] <= targetX && validData[i + 1][xKey] >= targetX) {
       leftPoint = validData[i];
       rightPoint = validData[i + 1];
@@ -58,8 +71,8 @@ const interpolateValue = (data, targetX) => {
   }
 
   // Handle edge cases
-  const xKey = validData[0].time !== undefined ? 'time' : 'x';
-  const yKey = validData[0].percent !== undefined ? 'percent' : 'value';
+  const xKey = validData[0].time !== undefined ? "time" : "x";
+  const yKey = validData[0].percent !== undefined ? "percent" : "value";
 
   if (targetX <= validData[0][xKey]) {
     const val = validData[0][yKey];
@@ -146,12 +159,12 @@ const SvgChart = ({
 
   const plotWidth = useMemo(
     () => Math.max(1, chartWidth - PADDING.left - PADDING.right),
-    [chartWidth]
+    [chartWidth],
   );
 
   const plotHeight = useMemo(
     () => Math.max(1, chartHeight - PADDING.top - PADDING.bottom),
-    [chartHeight]
+    [chartHeight],
   );
 
   const maxLinePoints = useMemo(() => {
@@ -199,7 +212,7 @@ const SvgChart = ({
           duration: 418,
           useNativeDriver: false,
         }),
-      ])
+      ]),
     );
     pulse.start();
     return () => {
@@ -212,7 +225,10 @@ const SvgChart = ({
   const panResponder = useMemo(() => {
     const safeWidth = Math.max(plotWidth, 1);
     const clampNormalizedX = (locationX) => {
-      const clampedRatio = Math.max(0, Math.min(1, (locationX - PADDING.left) / safeWidth));
+      const clampedRatio = Math.max(
+        0,
+        Math.min(1, (locationX - PADDING.left) / safeWidth),
+      );
       return clampedRatio * xAxisMaxTime;
     };
 
@@ -239,11 +255,11 @@ const SvgChart = ({
   const axisGroups = useMemo(() => {
     const groups = {
       left: [],
-      right: []
+      right: [],
     };
 
-    lines.forEach(line => {
-      const group = line.axisGroup || 'left';
+    lines.forEach((line) => {
+      const group = line.axisGroup || "left";
       if (groups[group]) {
         groups[group].push(line);
       }
@@ -254,7 +270,12 @@ const SvgChart = ({
 
   // Find the closest data point time to the touch position
   const snappedTouchX = useMemo(() => {
-    if (!touchActive || lines.length === 0 || !lines[0].data || lines[0].data.length === 0) {
+    if (
+      !touchActive ||
+      lines.length === 0 ||
+      !lines[0].data ||
+      lines[0].data.length === 0
+    ) {
       return touchX;
     }
 
@@ -293,7 +314,7 @@ const SvgChart = ({
     const calculateAxisRange = (groupLines) => {
       const allValues = groupLines
         .flatMap((line) => line.data.map((d) => d.value ?? d.percent))
-        .filter(v => typeof v === 'number' && !isNaN(v) && isFinite(v));
+        .filter((v) => typeof v === "number" && !isNaN(v) && isFinite(v));
 
       if (allValues.length === 0) {
         return { yMin: -10, yMax: 10 };
@@ -330,7 +351,7 @@ const SvgChart = ({
         yMin,
         yMax,
         yTicks: generateTicks(yMin, yMax),
-        lines: axisGroups.left
+        lines: axisGroups.left,
       };
     }
 
@@ -341,7 +362,7 @@ const SvgChart = ({
         yMin,
         yMax,
         yTicks: generateTicks(yMin, yMax),
-        lines: axisGroups.right
+        lines: axisGroups.right,
       };
     }
 
@@ -354,57 +375,70 @@ const SvgChart = ({
     const getTimeLabel = (normalizedTime) => {
       const date = new Date(now);
 
-      if (timeframe === '1h') {
-        date.setMinutes(date.getMinutes() - 60 + (normalizedTime * 60));
-        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-      } else if (timeframe === '24h') {
-        date.setHours(date.getHours() - 24 + (normalizedTime * 24));
-        return date.toLocaleTimeString('en-US', { hour: 'numeric' });
-      } else if (timeframe === '7d') {
-        date.setDate(date.getDate() - 7 + (normalizedTime * 7));
-        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      if (timeframe === "1h") {
+        date.setMinutes(date.getMinutes() - 60 + normalizedTime * 60);
+        return date.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+        });
+      } else if (timeframe === "24h") {
+        date.setHours(date.getHours() - 24 + normalizedTime * 24);
+        return date.toLocaleTimeString("en-US", { hour: "numeric" });
+      } else if (timeframe === "7d") {
+        date.setDate(date.getDate() - 7 + normalizedTime * 7);
+        return date.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        });
       }
-      return '';
+      return "";
     };
 
     return [0, 0.5, 1].map(getTimeLabel);
   }, [timeframe]);
 
   // Create scale functions for each axis
-  const scaleY = useCallback((value, axisGroup = 'left') => {
-    const axis = axisConfig[axisGroup];
-    if (!axis) return PADDING.top + plotHeight / 2;
+  const scaleY = useCallback(
+    (value, axisGroup = "left") => {
+      const axis = axisConfig[axisGroup];
+      if (!axis) return PADDING.top + plotHeight / 2;
 
-    if (!isFinite(value) || isNaN(value)) return PADDING.top + plotHeight / 2;
+      if (!isFinite(value) || isNaN(value)) return PADDING.top + plotHeight / 2;
 
-    const normalized = (value - axis.yMin) / (axis.yMax - axis.yMin);
+      const normalized = (value - axis.yMin) / (axis.yMax - axis.yMin);
 
-    if (!isFinite(normalized) || isNaN(normalized)) return PADDING.top + plotHeight / 2;
+      if (!isFinite(normalized) || isNaN(normalized))
+        return PADDING.top + plotHeight / 2;
 
-    const result = PADDING.top + plotHeight - normalized * plotHeight;
-    return isFinite(result) ? result : PADDING.top + plotHeight / 2;
-  }, [axisConfig, plotHeight]);
+      const result = PADDING.top + plotHeight - normalized * plotHeight;
+      return isFinite(result) ? result : PADDING.top + plotHeight / 2;
+    },
+    [axisConfig, plotHeight],
+  );
 
-  const scaleX = useCallback((time) => {
-    if (!isFinite(time) || isNaN(time)) return PADDING.left;
-    const clampedTime = Math.max(0, Math.min(time, xAxisMaxTime));
-    const normalized = clampedTime / xAxisMaxTime;
-    const result = PADDING.left + normalized * plotWidth;
-    return isFinite(result) ? result : PADDING.left;
-  }, [plotWidth, xAxisMaxTime]);
+  const scaleX = useCallback(
+    (time) => {
+      if (!isFinite(time) || isNaN(time)) return PADDING.left;
+      const clampedTime = Math.max(0, Math.min(time, xAxisMaxTime));
+      const normalized = clampedTime / xAxisMaxTime;
+      const result = PADDING.left + normalized * plotWidth;
+      return isFinite(result) ? result : PADDING.left;
+    },
+    [plotWidth, xAxisMaxTime],
+  );
 
   // Memoize vertical grid line positions
   const verticalGridPositions = useMemo(() => {
-    return [0, 0.25, 0.5, 0.75, 1].map(pos => ({
+    return [0, 0.25, 0.5, 0.75, 1].map((pos) => ({
       position: pos,
-      x: scaleX(pos)
+      x: scaleX(pos),
     }));
   }, [scaleX]);
 
   // Default value formatter
   const defaultFormatter = (val) => {
-    if (typeof val !== 'number' || !isFinite(val) || isNaN(val)) {
-      return '0.0';
+    if (typeof val !== "number" || !isFinite(val) || isNaN(val)) {
+      return "0.0";
     }
     return `${val.toFixed(1)}`;
   };
@@ -412,31 +446,42 @@ const SvgChart = ({
   if (lines.length === 0) {
     lines = [
       {
-        id: 'agent-1',
-        name: 'Agent 1',
-        color: '#10b981',
-        data: [{ time: 0, value: 10 }, { time: 1, value: 10 }],
-        axisGroup: 'left',
-        formatValue: (val) => `${val.toFixed(1)}%`
+        id: "agent-1",
+        name: "Agent 1",
+        color: "#10b981",
+        data: [
+          { time: 0, value: 10 },
+          { time: 1, value: 10 },
+        ],
+        axisGroup: "left",
+        formatValue: (val) => `${val.toFixed(1)}%`,
       },
       {
-        id: 'balance',
-        name: 'Balance',
-        color: '#3b82f6',
-        data: [{ time: 0, value: 1000 }, { time: 1, value: 10 }],
-        axisGroup: 'right',
-        formatValue: (val) => `$${val.toFixed(0)}`
-      }
-    ]
+        id: "balance",
+        name: "Balance",
+        color: "#3b82f6",
+        data: [
+          { time: 0, value: 1000 },
+          { time: 1, value: 10 },
+        ],
+        axisGroup: "right",
+        formatValue: (val) => `$${val.toFixed(0)}`,
+      },
+    ];
   }
 
   const animatedStyle = useAnimatedStyle(() => {
-    'worklet';
+    "worklet";
     if (!scrollY) {
       return { paddingVertical: 16, height: chartHeight };
     }
 
-    const progress = interpolate(scrollY.value, [100, 200], [0, 1], Extrapolation.CLAMP);
+    const progress = interpolate(
+      scrollY.value,
+      [100, 200],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
     return {
       height: interpolate(progress, [0, 1], [chartHeight, 70]),
     };
@@ -449,22 +494,25 @@ const SvgChart = ({
           <View
             onLayout={handleLayout}
             sx={{
-              width: '100%',
+              width: "100%",
               height: chartHeight,
-              justifyContent: 'center',
-              alignItems: 'center'
+              justifyContent: "center",
+              alignItems: "center",
             }}
           >
-            <Text sx={{ color: 'mutedForeground' }}>Loading chart...</Text>
+            <Text sx={{ color: "mutedForeground" }}>Loading chart...</Text>
           </View>
         ) : (
           <View
             {...panResponder.panHandlers}
             onLayout={handleLayout}
-            style={[{
-              position: 'relative',
-              width: '100%',
-            }, style]}
+            style={[
+              {
+                position: "relative",
+                width: "100%",
+              },
+              style,
+            ]}
           >
             <Svg width={chartWidth} height="100%">
               {/* Vertical grid lines for time intervals */}
@@ -481,73 +529,88 @@ const SvgChart = ({
               ))}
 
               {/* Horizontal grid lines and Y-axis labels for left axis */}
-              {axisConfig.left && axisConfig.left.yTicks.map((tick, i) => {
-                const y = scaleY(tick, 'left');
-                return (
-                  <React.Fragment key={`left-${i}`}>
-                    <Line
-                      x1={PADDING.left}
-                      y1={y}
-                      x2={PADDING.left + plotWidth}
-                      y2={y}
-                      stroke={withOpacity(mutedColor, 0.3)}
-                      strokeWidth={1}
-                    />
-                    <SvgText
-                      x={PADDING.left + 6}
-                      y={y + 4}
-                      fontSize={10}
-                      fill={mutedColor}
-                      textAnchor="start"
-                    >
-                      {(axisConfig.left.lines[0]?.formatValue || defaultFormatter)(tick)}
-                    </SvgText>
-                  </React.Fragment>
-                );
-              })}
+              {axisConfig.left &&
+                axisConfig.left.yTicks.map((tick, i) => {
+                  const y = scaleY(tick, "left");
+                  return (
+                    <React.Fragment key={`left-${i}`}>
+                      <Line
+                        x1={PADDING.left}
+                        y1={y}
+                        x2={PADDING.left + plotWidth}
+                        y2={y}
+                        stroke={withOpacity(mutedColor, 0.3)}
+                        strokeWidth={1}
+                      />
+                      <SvgText
+                        x={PADDING.left + 6}
+                        y={y + 4}
+                        fontSize={10}
+                        fill={mutedColor}
+                        textAnchor="start"
+                      >
+                        {(
+                          axisConfig.left.lines[0]?.formatValue ||
+                          defaultFormatter
+                        )(tick)}
+                      </SvgText>
+                    </React.Fragment>
+                  );
+                })}
 
               {/* Grid lines and Y-axis labels for right axis */}
-              {axisConfig.right && axisConfig.right.yTicks.map((tick, i) => {
-                const y = scaleY(tick, 'right');
-                return (
-                  <React.Fragment key={`right-${i}`}>
-                    <SvgText
-                      x={PADDING.left + plotWidth - 6}
-                      y={y + 4}
-                      fontSize={10}
-                      fill={mutedColor}
-                      textAnchor="end"
-                    >
-                      {(axisConfig.right.lines[0]?.formatValue || defaultFormatter)(tick)}
-                    </SvgText>
-                  </React.Fragment>
-                );
-              })}
+              {axisConfig.right &&
+                axisConfig.right.yTicks.map((tick, i) => {
+                  const y = scaleY(tick, "right");
+                  return (
+                    <React.Fragment key={`right-${i}`}>
+                      <SvgText
+                        x={PADDING.left + plotWidth - 6}
+                        y={y + 4}
+                        fontSize={10}
+                        fill={mutedColor}
+                        textAnchor="end"
+                      >
+                        {(
+                          axisConfig.right.lines[0]?.formatValue ||
+                          defaultFormatter
+                        )(tick)}
+                      </SvgText>
+                    </React.Fragment>
+                  );
+                })}
 
               {/* Zero line for left axis */}
               {axisConfig.left && (
                 <Line
                   x1={PADDING.left}
-                  y1={scaleY(0, 'left')}
+                  y1={scaleY(0, "left")}
                   x2={PADDING.left + plotWidth}
-                  y2={scaleY(0, 'left')}
+                  y2={scaleY(0, "left")}
                   stroke={withOpacity(mutedColor, 0.8)}
                   strokeWidth={1.5}
                   strokeDasharray="3,3"
                 />
               )}
 
-
               {/* Render lines */}
               {lines.map((line) => {
-                const axisGroup = line.axisGroup || 'left';
+                const axisGroup = line.axisGroup || "left";
 
                 // Filter out invalid data points
-                const validData = (line.data || []).filter(d => {
+                const validData = (line.data || []).filter((d) => {
                   if (!d) return false;
-                  const hasValidTime = typeof d.time === 'number' && isFinite(d.time) && !isNaN(d.time);
-                  const hasValidValue = (typeof d.value === 'number' && isFinite(d.value) && !isNaN(d.value)) ||
-                                        (typeof d.percent === 'number' && isFinite(d.percent) && !isNaN(d.percent));
+                  const hasValidTime =
+                    typeof d.time === "number" &&
+                    isFinite(d.time) &&
+                    !isNaN(d.time);
+                  const hasValidValue =
+                    (typeof d.value === "number" &&
+                      isFinite(d.value) &&
+                      !isNaN(d.value)) ||
+                    (typeof d.percent === "number" &&
+                      isFinite(d.percent) &&
+                      !isNaN(d.percent));
                   return hasValidTime && hasValidValue;
                 });
 
@@ -561,7 +624,7 @@ const SvgChart = ({
                     const y = scaleY(yValue, axisGroup);
                     return `${x.toFixed(2)},${y.toFixed(2)}`;
                   })
-                  .join(' ');
+                  .join(" ");
 
                 const lastPoint = validData[validData.length - 1];
 
@@ -581,7 +644,10 @@ const SvgChart = ({
                     {!touchActive && lastPoint && (
                       <AnimatedCircle
                         cx={scaleX(lastPoint.time)}
-                        cy={scaleY(lastPoint.value ?? lastPoint.percent, axisGroup)}
+                        cy={scaleY(
+                          lastPoint.value ?? lastPoint.percent,
+                          axisGroup,
+                        )}
                         r={pulseAnim.interpolate({
                           inputRange: [1, 1.5],
                           outputRange: [4, 6],
@@ -611,7 +677,7 @@ const SvgChart = ({
                   />
 
                   {touchValues.map((line) => {
-                    const axisGroup = line.axisGroup || 'left';
+                    const axisGroup = line.axisGroup || "left";
                     return (
                       <Circle
                         key={line.id}
@@ -619,7 +685,10 @@ const SvgChart = ({
                         cy={scaleY(line.value, axisGroup)}
                         r={5}
                         fill={line.color}
-                        stroke={withOpacity(palette.surface ?? palette.background, 0.8)}
+                        stroke={withOpacity(
+                          palette.surface ?? palette.background,
+                          0.8,
+                        )}
                         strokeWidth={2}
                       />
                     );
@@ -628,39 +697,63 @@ const SvgChart = ({
               )}
             </Svg>
 
-
             {touchActive && (
               <View
                 pointerEvents="none"
                 sx={{
-                  position: 'absolute',
+                  position: "absolute",
                   top: 8,
                   left: 8,
-                  backgroundColor: withOpacity(palette.surface ?? palette.background, 0.95),
-                  borderRadius: 'lg',
+                  backgroundColor: withOpacity(
+                    palette.surface ?? palette.background,
+                    0.95,
+                  ),
+                  borderRadius: "lg",
                   padding: 3,
                   borderWidth: 1,
                   borderColor: withOpacity(mutedColor, 0.3),
                   minWidth: 160,
                 }}
               >
-
-                <Text sx={{ fontSize: 11, color: 'mutedForeground', marginBottom: 2 }}>
+                <Text
+                  sx={{
+                    fontSize: 11,
+                    color: "mutedForeground",
+                    marginBottom: 2,
+                  }}
+                >
                   {(() => {
                     const now = new Date();
                     const date = new Date(now);
-                    const normalizedPosition = Math.max(0, Math.min(snappedTouchX, 1));
-                    if (timeframe === '1h') {
-                      date.setMinutes(date.getMinutes() - 60 + (normalizedPosition * 60));
-                      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                    } else if (timeframe === '24h') {
-                      date.setHours(date.getHours() - 24 + (normalizedPosition * 24));
-                      return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-                    } else if (timeframe === '7d') {
-                      date.setDate(date.getDate() - 7 + (normalizedPosition * 7));
-                      return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric' });
+                    const normalizedPosition = Math.max(
+                      0,
+                      Math.min(snappedTouchX, 1),
+                    );
+                    if (timeframe === "1h") {
+                      date.setMinutes(
+                        date.getMinutes() - 60 + normalizedPosition * 60,
+                      );
+                      return date.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      });
+                    } else if (timeframe === "24h") {
+                      date.setHours(
+                        date.getHours() - 24 + normalizedPosition * 24,
+                      );
+                      return date.toLocaleTimeString("en-US", {
+                        hour: "numeric",
+                        minute: "2-digit",
+                      });
+                    } else if (timeframe === "7d") {
+                      date.setDate(date.getDate() - 7 + normalizedPosition * 7);
+                      return date.toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        hour: "numeric",
+                      });
                     }
-                    return '';
+                    return "";
                   })()}
                 </Text>
 
@@ -671,28 +764,36 @@ const SvgChart = ({
                     <View
                       key={line.id}
                       sx={{
-                        flexDirection: 'row',
-                        alignItems: 'center',
-                        justifyContent: 'space-between',
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
                         marginVertical: 1,
                       }}
                     >
-                      <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
+                      <View
+                        sx={{
+                          flexDirection: "row",
+                          alignItems: "center",
+                          gap: 2,
+                        }}
+                      >
                         <View
                           sx={{
                             width: 8,
                             height: 8,
-                            borderRadius: 'full',
+                            borderRadius: "full",
                             backgroundColor: line.color,
                           }}
                         />
-                        <Text sx={{ fontSize: 12, color: 'textSecondary' }}>{line.name}</Text>
+                        <Text sx={{ fontSize: 12, color: "textSecondary" }}>
+                          {line.name}
+                        </Text>
                       </View>
                       <Text
                         sx={{
                           fontSize: 13,
-                          fontWeight: '600',
-                          color: isPositive ? 'success' : 'errorLight',
+                          fontWeight: "600",
+                          color: isPositive ? "success" : "errorLight",
                           marginLeft: 3,
                         }}
                       >
@@ -708,17 +809,17 @@ const SvgChart = ({
 
         <View
           sx={{
-            width: '100%',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
+            width: "100%",
+            flexDirection: "row",
+            justifyContent: "space-between",
             paddingLeft: PADDING.left,
             paddingRight: PADDING.right,
-            position: 'absolute',
+            position: "absolute",
             bottom: 0,
           }}
         >
           {timeLabels.map((label, i) => (
-            <Text key={i} sx={{ fontSize: 10, color: 'secondary500' }}>
+            <Text key={i} sx={{ fontSize: 10, color: "secondary500" }}>
               {label}
             </Text>
           ))}

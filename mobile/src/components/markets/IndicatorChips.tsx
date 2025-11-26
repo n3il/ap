@@ -1,7 +1,7 @@
-import React from 'react';
-import { ScrollView, View, Text } from '@/components/ui';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import React from "react";
+import { ScrollView, Text, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
 export default function IndicatorChips({ indicators = [] }) {
   const { theme } = useTheme();
@@ -24,7 +24,13 @@ export default function IndicatorChips({ indicators = [] }) {
             backgroundColor: withOpacity(colors.backgroundSecondary, 0.55),
           }}
         >
-          <Text style={{ color: colors.text.secondary, fontSize: 12, fontWeight: '600' }}>
+          <Text
+            style={{
+              color: colors.text.secondary,
+              fontSize: 12,
+              fontWeight: "600",
+            }}
+          >
             {label}
           </Text>
         </View>

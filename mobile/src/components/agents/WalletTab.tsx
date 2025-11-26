@@ -1,7 +1,7 @@
-import React, { useRef } from 'react';
-import { View, RefreshControl, Animated } from '@/components/ui';
-import WalletAddressCard from '../WalletAddressCard';
-import { useColors } from '@/theme';
+import React, { useRef } from "react";
+import { Animated, RefreshControl, View } from "@/components/ui";
+import { useColors } from "@/theme";
+import WalletAddressCard from "../WalletAddressCard";
 
 export default function WalletTab({
   agent,
@@ -9,7 +9,7 @@ export default function WalletTab({
   headerContent,
   tabBar,
   onRefresh,
-  refreshing = false
+  refreshing = false,
 }) {
   const colors = useColors();
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -18,17 +18,19 @@ export default function WalletTab({
     <View style={{ flex: 1 }}>
       <Animated.View
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
           zIndex: 100,
-          transform: [{
-            translateY: scrollY.interpolate({
-              inputRange: [-100, 0, 100],
-              outputRange: [200, 100, 0],
-            })
-          }],
+          transform: [
+            {
+              translateY: scrollY.interpolate({
+                inputRange: [-100, 0, 100],
+                outputRange: [200, 100, 0],
+              }),
+            },
+          ],
         }}
       >
         {tabBar}
@@ -36,7 +38,7 @@ export default function WalletTab({
       <Animated.ScrollView
         style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingHorizontal: 4, paddingBottom: '40%' }}
+        contentContainerStyle={{ paddingHorizontal: 4, paddingBottom: "40%" }}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}
@@ -46,7 +48,7 @@ export default function WalletTab({
         }
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
+          { useNativeDriver: true },
         )}
         scrollEventThrottle={16}
       >

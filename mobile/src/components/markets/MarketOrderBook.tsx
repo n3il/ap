@@ -1,8 +1,8 @@
-import React, { useMemo } from 'react';
-import { View, Text } from '@/components/ui';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
-import { formatPriceDisplay } from './utils';
+import React, { useMemo } from "react";
+import { Text, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
+import { formatPriceDisplay } from "./utils";
 
 const generateDepth = (price, depth = 12) => {
   const safePrice = Number.isFinite(price) && price > 0 ? price : 1;
@@ -32,7 +32,7 @@ const generateDepth = (price, depth = 12) => {
   return levels;
 };
 
-export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
+export default function MarketOrderBook({ symbol = "XPL", price = 0 }) {
   const { theme } = useTheme();
   const { colors } = theme;
   const levels = useMemo(() => generateDepth(price), [price]);
@@ -48,18 +48,20 @@ export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
         gap: 12,
       }}
     >
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: "row", justifyContent: "space-between" }}>
         <View>
-          <Text style={{ color: colors.text.primary, fontWeight: '700' }}>
+          <Text style={{ color: colors.text.primary, fontWeight: "700" }}>
             Order Book
           </Text>
           <Text style={{ color: colors.text.tertiary, fontSize: 12 }}>
             Real-time depth overview
           </Text>
         </View>
-        <View style={{ alignItems: 'flex-end' }}>
-          <Text style={{ color: colors.text.secondary, fontSize: 12 }}>Last</Text>
-          <Text style={{ color: colors.text.primary, fontWeight: '700' }}>
+        <View style={{ alignItems: "flex-end" }}>
+          <Text style={{ color: colors.text.secondary, fontSize: 12 }}>
+            Last
+          </Text>
+          <Text style={{ color: colors.text.primary, fontWeight: "700" }}>
             {formatPriceDisplay(price)}
           </Text>
         </View>
@@ -67,8 +69,8 @@ export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
 
       <View
         style={{
-          flexDirection: 'row',
-          justifyContent: 'space-between',
+          flexDirection: "row",
+          justifyContent: "space-between",
           borderRadius: 12,
           paddingVertical: 8,
           paddingHorizontal: 12,
@@ -78,13 +80,34 @@ export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
         <Text style={{ color: colors.text.secondary, flex: 1, fontSize: 11 }}>
           Total ({symbol})
         </Text>
-        <Text style={{ color: colors.text.secondary, flex: 1, fontSize: 11, textAlign: 'right' }}>
+        <Text
+          style={{
+            color: colors.text.secondary,
+            flex: 1,
+            fontSize: 11,
+            textAlign: "right",
+          }}
+        >
           Price
         </Text>
-        <Text style={{ color: colors.text.secondary, flex: 1, fontSize: 11, textAlign: 'left' }}>
+        <Text
+          style={{
+            color: colors.text.secondary,
+            flex: 1,
+            fontSize: 11,
+            textAlign: "left",
+          }}
+        >
           Price
         </Text>
-        <Text style={{ color: colors.text.secondary, flex: 1, fontSize: 11, textAlign: 'right' }}>
+        <Text
+          style={{
+            color: colors.text.secondary,
+            flex: 1,
+            fontSize: 11,
+            textAlign: "right",
+          }}
+        >
           Total ({symbol})
         </Text>
       </View>
@@ -93,7 +116,7 @@ export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
         {levels.map((level, index) => (
           <View
             key={`depth-${index}`}
-            style={{ flexDirection: 'row', gap: 8, overflow: 'hidden' }}
+            style={{ flexDirection: "row", gap: 8, overflow: "hidden" }}
           >
             <View
               style={{
@@ -102,12 +125,12 @@ export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
                 paddingHorizontal: 10,
                 paddingVertical: 6,
                 backgroundColor: withOpacity(colors.success.DEFAULT, 0.08),
-                overflow: 'hidden',
+                overflow: "hidden",
               }}
             >
               <View
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   right: 0,
                   top: 0,
                   bottom: 0,
@@ -115,8 +138,13 @@ export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
                   backgroundColor: withOpacity(colors.success.DEFAULT, 0.15),
                 }}
               />
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                <Text style={{ color: colors.text.primary, fontWeight: '600' }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
+                <Text style={{ color: colors.text.primary, fontWeight: "600" }}>
                   {level.bid.total.toFixed(2)}
                 </Text>
                 <Text style={{ color: colors.success.DEFAULT }}>
@@ -132,12 +160,12 @@ export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
                 paddingHorizontal: 10,
                 paddingVertical: 6,
                 backgroundColor: withOpacity(colors.error.DEFAULT, 0.08),
-                overflow: 'hidden',
+                overflow: "hidden",
               }}
             >
               <View
                 style={{
-                  position: 'absolute',
+                  position: "absolute",
                   left: 0,
                   top: 0,
                   bottom: 0,
@@ -145,11 +173,16 @@ export default function MarketOrderBook({ symbol = 'XPL', price = 0 }) {
                   backgroundColor: withOpacity(colors.error.DEFAULT, 0.15),
                 }}
               />
-              <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                }}
+              >
                 <Text style={{ color: colors.error.DEFAULT }}>
                   {formatPriceDisplay(level.ask.price)}
                 </Text>
-                <Text style={{ color: colors.text.primary, fontWeight: '600' }}>
+                <Text style={{ color: colors.text.primary, fontWeight: "600" }}>
                   {level.ask.total.toFixed(2)}
                 </Text>
               </View>

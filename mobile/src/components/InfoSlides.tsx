@@ -1,24 +1,19 @@
-import { Animated, View, Text, Card} from '@/components/ui';
-import { useMemo, useRef, useState, useEffect } from 'react';
-import useInfoSlides from '@/hooks/useInfoSlides';
-import { Dimensions } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
-import Image from './ui/Image';
-import { useColors } from '@/theme';
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Dimensions } from "react-native";
+import { Animated, Card, Text, View } from "@/components/ui";
+import useInfoSlides from "@/hooks/useInfoSlides";
+import { useColors } from "@/theme";
+import Image from "./ui/Image";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 export default function InfoSlides({ onSlideChange }) {
   const slides = useInfoSlides();
   const scrollX = useRef(new Animated.Value(0)).current;
   const [activeSlide, setActiveSlide] = useState(0);
   const activeIndexRef = useRef(0);
-  const {
-    colors: palette,
-    accent,
-    primary,
-    withOpacity,
-  } = useColors();
+  const { colors: palette, accent, primary, withOpacity } = useColors();
   const brandColor = palette.brand500 ?? primary;
   const foreground = palette.foreground ?? palette.textPrimary;
   const background = palette.background ?? palette.surface ?? palette.input;
@@ -34,31 +29,19 @@ export default function InfoSlides({ onSlideChange }) {
     return slides.map((_, index) => {
       return {
         opacity: scrollX.interpolate({
-          inputRange: [
-            width * (index - 1),
-            width * index,
-            width * (index + 1),
-          ],
+          inputRange: [width * (index - 1), width * index, width * (index + 1)],
           outputRange: [0, 1, 0],
-          extrapolate: 'clamp',
+          extrapolate: "clamp",
         }),
         translateY: scrollX.interpolate({
-          inputRange: [
-            width * (index - 1),
-            width * index,
-            width * (index + 1),
-          ],
+          inputRange: [width * (index - 1), width * index, width * (index + 1)],
           outputRange: [-50, 0, -50],
-          extrapolate: 'clamp',
+          extrapolate: "clamp",
         }),
         scale: scrollX.interpolate({
-          inputRange: [
-            width * (index - 1),
-            width * index,
-            width * (index + 1),
-          ],
+          inputRange: [width * (index - 1), width * index, width * (index + 1)],
           outputRange: [0.9, 1, 0.9],
-          extrapolate: 'clamp',
+          extrapolate: "clamp",
         }),
       };
     });
@@ -66,14 +49,13 @@ export default function InfoSlides({ onSlideChange }) {
 
   const handleScroll = useMemo(
     () =>
-      Animated.event(
-        [{ nativeEvent: { contentOffset: { x: scrollX } } }],
-        { useNativeDriver: false },
-      ),
+      Animated.event([{ nativeEvent: { contentOffset: { x: scrollX } } }], {
+        useNativeDriver: false,
+      }),
     [scrollX],
   );
 
-  const handleMomentumEnd = event => {
+  const handleMomentumEnd = (event) => {
     const offsetX = event.nativeEvent.contentOffset.x;
     const settledIndex = Math.round(offsetX / width);
     if (settledIndex !== activeIndexRef.current) {
@@ -96,7 +78,10 @@ export default function InfoSlides({ onSlideChange }) {
         decelerationRate="fast"
       >
         {slides.map((slide, index) => (
-          <View key={slide.id} style={{ width, paddingHorizontal: 32, flex: 1 }}>
+          <View
+            key={slide.id}
+            style={{ width, paddingHorizontal: 32, flex: 1 }}
+          >
             <Animated.View
               style={{
                 opacity: slideAnimations[index]?.opacity,
@@ -105,60 +90,64 @@ export default function InfoSlides({ onSlideChange }) {
                   { scale: slideAnimations[index]?.scale },
                 ],
                 flex: 1,
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
               }}
             >
               {slide.titleSlide ? (
                 // Title Slide
-                <View sx={{ paddingVertical: 12, alignSelf: 'flex-start', marginBottom: 'auto' }}>
-
-
+                <View
+                  sx={{
+                    paddingVertical: 12,
+                    alignSelf: "flex-start",
+                    marginBottom: "auto",
+                  }}
+                >
                   <View
                     style={{
-                      display: 'none',
+                      display: "none",
                       flex: 1,
-                      justifyContent: 'flex-end',
-                      alignItems: 'flex-end',
+                      justifyContent: "flex-end",
+                      alignItems: "flex-end",
                       marginBottom: 0,
-                      width: '100%',
+                      width: "100%",
                       zIndex: -1,
-                      position: 'fixed',
+                      position: "fixed",
                       bottom: 30,
-                      height: '100%',
+                      height: "100%",
                     }}
                   >
-                   <Image
-                    source={require('@assets/puppet-bare-icon.png')}
-                    style={{
-                      width: 120,
-                      height: 120,
-                      opacity: .9,
-                      position: 'relative',
-                      transform: [{ translateX: -40 }, { scale: 4 }],
-                    }}
-                   />
-                   <Image
-                    source={require('@assets/puppet-bare-icon-w.png')}
-                    style={{
-                      width: 120,
-                      height: 120,
-                      opacity: .4,
-                      position: 'relative',
-                      transform: [{ translateX: 0 }, { scale: 4 }],
-                    }}
-                   />
-                   <Image
-                    source={require('@assets/puppet-bare-icon.png')}
-                    style={{
-                      width: 120,
-                      height: 120,
-                      opacity: .3,
-                      position: 'relative',
-                      transform: [{ translateX: 40 }, { scale: 4 }],
-                    }}
-                   />
+                    <Image
+                      source={require("@assets/puppet-bare-icon.png")}
+                      style={{
+                        width: 120,
+                        height: 120,
+                        opacity: 0.9,
+                        position: "relative",
+                        transform: [{ translateX: -40 }, { scale: 4 }],
+                      }}
+                    />
+                    <Image
+                      source={require("@assets/puppet-bare-icon-w.png")}
+                      style={{
+                        width: 120,
+                        height: 120,
+                        opacity: 0.4,
+                        position: "relative",
+                        transform: [{ translateX: 0 }, { scale: 4 }],
+                      }}
+                    />
+                    <Image
+                      source={require("@assets/puppet-bare-icon.png")}
+                      style={{
+                        width: 120,
+                        height: 120,
+                        opacity: 0.3,
+                        position: "relative",
+                        transform: [{ translateX: 40 }, { scale: 4 }],
+                      }}
+                    />
                   </View>
                 </View>
               ) : (
@@ -169,11 +158,10 @@ export default function InfoSlides({ onSlideChange }) {
                   style={{
                     borderRadius: 24,
                     padding: 32,
-                    margin: 'auto',
-                    alignItems: 'center',
+                    margin: "auto",
+                    alignItems: "center",
                   }}
                 >
-
                   {slide.icon && (
                     <View
                       style={{
@@ -181,12 +169,16 @@ export default function InfoSlides({ onSlideChange }) {
                         height: 64,
                         borderRadius: 20,
                         backgroundColor: withOpacity(brandColor, 0.2),
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        justifyContent: "center",
+                        alignItems: "center",
                         marginBottom: 24,
                       }}
                     >
-                      <Ionicons name={slide.icon} size={32} color={brandColor} />
+                      <Ionicons
+                        name={slide.icon}
+                        size={32}
+                        color={brandColor}
+                      />
                     </View>
                   )}
 
@@ -194,7 +186,7 @@ export default function InfoSlides({ onSlideChange }) {
                     variant="h2"
                     style={{
                       fontSize: 32,
-                      fontWeight: '700',
+                      fontWeight: "700",
                       color: foreground,
                       marginBottom: 16,
                       letterSpacing: -0.5,
@@ -207,7 +199,7 @@ export default function InfoSlides({ onSlideChange }) {
                     variant="lg"
                     style={{
                       fontSize: 17,
-                      fontWeight: '400',
+                      fontWeight: "400",
                       color: withOpacity(foreground, 0.8),
                       lineHeight: 26,
                       marginBottom: 24,
@@ -216,15 +208,14 @@ export default function InfoSlides({ onSlideChange }) {
                     {slide.description}
                   </Text>
 
-
                   {slide.features && (
                     <View sx={{ gap: 3 }}>
                       {slide.features.map((feature, idx) => (
                         <View
                           key={idx}
                           sx={{
-                            flexDirection: 'row',
-                            alignItems: 'center',
+                            flexDirection: "row",
+                            alignItems: "center",
                             gap: 3,
                           }}
                         >
@@ -240,7 +231,7 @@ export default function InfoSlides({ onSlideChange }) {
                             variant="body"
                             style={{
                               fontSize: 15,
-                              fontWeight: '500',
+                              fontWeight: "500",
                               color: withOpacity(foreground, 0.9),
                             }}
                           >
@@ -258,9 +249,9 @@ export default function InfoSlides({ onSlideChange }) {
       </Animated.ScrollView>
       <View
         sx={{
-          flexDirection: 'row',
-          justifyContent: 'center',
-          alignItems: 'center',
+          flexDirection: "row",
+          justifyContent: "center",
+          alignItems: "center",
           marginBottom: 6,
           gap: 2,
           opacity: activeSlide > 0 ? 1 : 0,
@@ -284,5 +275,5 @@ export default function InfoSlides({ onSlideChange }) {
         })}
       </View>
     </>
-  )
+  );
 }

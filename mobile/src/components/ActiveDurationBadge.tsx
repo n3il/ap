@@ -1,6 +1,6 @@
-import React from 'react';
-import { Text } from '@/components/ui';
-import { formatRelativeDate } from '@/utils/date';
+import React from "react";
+import { Text } from "@/components/ui";
+import { formatRelativeDate } from "@/utils/date";
 
 const getActiveDuration = (isActive) => {
   if (!isActive) return null;
@@ -27,28 +27,31 @@ const getActiveDuration = (isActive) => {
   return `${diffMonths}mo`;
 };
 
-export default function ActiveDurationBadge({ isActive, variant = 'small' }) {
+export default function ActiveDurationBadge({ isActive, variant = "small" }) {
   const duration = formatRelativeDate(isActive);
 
   if (!duration) return null;
 
   const styles = {
     small: {
-      fontSize: 'xs',
-      fontWeight: '300',
-      color: 'success',
+      fontSize: "xs",
+      fontWeight: "300",
+      color: "success",
     },
     large: {
-      fontSize: 'sm',
-      fontWeight: '600',
-      color: 'success',
+      fontSize: "sm",
+      fontWeight: "600",
+      color: "success",
     },
   };
 
   const variantStyle = styles[variant] || styles.small;
 
   return (
-    <Text variant={variantStyle.fontSize} sx={{ fontWeight: variantStyle.fontWeight, color: variantStyle.color }}>
+    <Text
+      variant={variantStyle.fontSize}
+      sx={{ fontWeight: variantStyle.fontWeight, color: variantStyle.color }}
+    >
       active {duration}
     </Text>
   );

@@ -1,23 +1,29 @@
-import React from 'react';
-import { View } from 'react-native';
-import { useDripsyTheme } from 'dripsy';
-import type { ViewStyle } from 'react-native';
+import { useDripsyTheme } from "dripsy";
+import type React from "react";
+import type { ViewStyle } from "react-native";
+import { View } from "react-native";
 
-import type { AppTheme } from '@/theme/dripsy';
+import type { AppTheme } from "@/theme/dripsy";
 
 export interface StackProps {
   children: React.ReactNode;
-  direction?: 'row' | 'column';
+  direction?: "row" | "column";
   spacing?: number;
-  align?: 'flex-start' | 'center' | 'flex-end' | 'stretch';
-  justify?: 'flex-start' | 'center' | 'flex-end' | 'space-between' | 'space-around' | 'space-evenly';
+  align?: "flex-start" | "center" | "flex-end" | "stretch";
+  justify?:
+    | "flex-start"
+    | "center"
+    | "flex-end"
+    | "space-between"
+    | "space-around"
+    | "space-evenly";
   sx?: Record<string, any>;
   style?: ViewStyle;
 }
 
 const Stack: React.FC<StackProps> = ({
   children,
-  direction = 'column',
+  direction = "column",
   spacing = 0,
   align,
   justify,
@@ -28,7 +34,10 @@ const Stack: React.FC<StackProps> = ({
   const typedTheme = theme as AppTheme;
 
   // Convert spacing number to actual pixel value using theme
-  const gapValue = typeof spacing === 'number' ? (typedTheme.space?.[spacing.toString()] ?? spacing * 4) : spacing;
+  const gapValue =
+    typeof spacing === "number"
+      ? (typedTheme.space?.[spacing.toString()] ?? spacing * 4)
+      : spacing;
 
   const computedStyle: ViewStyle = {
     flexDirection: direction,
@@ -40,9 +49,9 @@ const Stack: React.FC<StackProps> = ({
   // Merge sx prop if provided
   if (sx) {
     Object.entries(sx).forEach(([key, value]) => {
-      if (typeof value === 'string' && typedTheme.space?.[value]) {
+      if (typeof value === "string" && typedTheme.space?.[value]) {
         computedStyle[key] = typedTheme.space[value];
-      } else if (typeof value === 'string' && typedTheme.colors?.[value]) {
+      } else if (typeof value === "string" && typedTheme.colors?.[value]) {
         computedStyle[key] = typedTheme.colors[value];
       } else {
         computedStyle[key] = value;
@@ -50,11 +59,7 @@ const Stack: React.FC<StackProps> = ({
     });
   }
 
-  return (
-    <View style={[computedStyle, style]}>
-      {children}
-    </View>
-  );
+  return <View style={[computedStyle, style]}>{children}</View>;
 };
 
 export default Stack;

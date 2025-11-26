@@ -1,9 +1,9 @@
-import React from 'react';
-import { View, TouchableOpacity } from 'react-native';
-import Stack from '@/components/ui/Stack';
-import Text from '@/components/ui/Text';
-import type { SxProp } from 'dripsy';
-import { SPACING } from '@/theme/constants';
+import type { SxProp } from "dripsy";
+import type React from "react";
+import { TouchableOpacity, View } from "react-native";
+import Stack from "@/components/ui/Stack";
+import Text from "@/components/ui/Text";
+import { SPACING } from "@/theme/constants";
 
 export interface ListItemProps {
   children?: React.ReactNode;
@@ -67,7 +67,7 @@ const ListItem: React.FC<ListItemProps> = ({
         }}
       >
         {title && (
-          <Text variant="body" tone="default" sx={{ fontWeight: '600' }}>
+          <Text variant="body" tone="default" sx={{ fontWeight: "600" }}>
             {title}
           </Text>
         )}

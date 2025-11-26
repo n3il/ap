@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, TouchableOpacity, Text } from '@/components/ui';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import React from "react";
+import { Text, TouchableOpacity, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
 export default function MarketTabBar({ tabs = [], activeTab, onChange }) {
   const { theme } = useTheme();
@@ -10,8 +10,8 @@ export default function MarketTabBar({ tabs = [], activeTab, onChange }) {
   return (
     <View
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         borderRadius: 16,
         backgroundColor: withOpacity(colors.backgroundSecondary, 0.6),
         padding: 4,
@@ -26,10 +26,10 @@ export default function MarketTabBar({ tabs = [], activeTab, onChange }) {
               flex: 1,
               paddingVertical: 10,
               borderRadius: 12,
-              alignItems: 'center',
+              alignItems: "center",
               backgroundColor: isActive
                 ? withOpacity(colors.primary.DEFAULT, 0.18)
-                : 'transparent',
+                : "transparent",
             }}
             onPress={() => onChange?.(tab.key)}
             activeOpacity={0.85}
@@ -37,9 +37,11 @@ export default function MarketTabBar({ tabs = [], activeTab, onChange }) {
             <Text
               style={{
                 fontSize: 13,
-                fontWeight: '700',
+                fontWeight: "700",
                 letterSpacing: 0.4,
-                color: isActive ? colors.primary.DEFAULT : colors.text.secondary,
+                color: isActive
+                  ? colors.primary.DEFAULT
+                  : colors.text.secondary,
               }}
             >
               {tab.label}

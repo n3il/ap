@@ -1,18 +1,18 @@
-import { useState, useMemo } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/config/supabase';
+import { useQuery } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { supabase } from "@/config/supabase";
 
 // Mock balance for demo - used in Markets demo page
 export function useMockAccountBalance() {
   const [wallet, setWallet] = useState(10000);
 
   const { data: positions = [] } = useQuery({
-    queryKey: ['positions'],
+    queryKey: ["positions"],
     queryFn: async () => {
       const { data } = await supabase
-        .from('trades')
-        .select('*')
-        .eq('status', 'OPEN');
+        .from("trades")
+        .select("*")
+        .eq("status", "OPEN");
       return data || [];
     },
   });
@@ -41,7 +41,7 @@ export function useMockAccountBalance() {
 
   const withdraw = async (amount) => {
     if (amount > availableMargin) {
-      throw new Error('Insufficient available margin');
+      throw new Error("Insufficient available margin");
     }
     setWallet((prev) => prev - amount);
   };

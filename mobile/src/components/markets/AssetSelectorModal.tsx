@@ -1,25 +1,25 @@
-import React, { useMemo, useState } from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useMemo, useState } from "react";
 import {
   Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  TextInput,
   ScrollView,
-} from '@/components/ui';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
-import { ASSET_CATEGORIES } from './constants';
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
+import { ASSET_CATEGORIES } from "./constants";
 import {
   formatCompactNumber,
   formatPercentChange,
   formatPriceDisplay,
-} from './utils';
+} from "./utils";
 
 const FILTER_MODES = [
-  { key: 'strict', label: 'Strict' },
-  { key: 'all', label: 'All' },
+  { key: "strict", label: "Strict" },
+  { key: "all", label: "All" },
 ];
 
 export default function AssetSelectorModal({
@@ -33,9 +33,9 @@ export default function AssetSelectorModal({
 }) {
   const { theme } = useTheme();
   const { colors } = theme;
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [mode, setMode] = useState('strict');
-  const [query, setQuery] = useState('');
+  const [activeCategory, setActiveCategory] = useState("all");
+  const [mode, setMode] = useState("strict");
+  const [query, setQuery] = useState("");
 
   const favoriteSet = useMemo(() => new Set(favorites), [favorites]);
 
@@ -43,11 +43,12 @@ export default function AssetSelectorModal({
     const normalizedQuery = query.toLowerCase();
     return assets
       .filter((asset) => {
-        if (mode === 'strict' && !asset.strict) return false;
-        if (activeCategory === 'favorites' && !favoriteSet.has(asset.id)) return false;
+        if (mode === "strict" && !asset.strict) return false;
+        if (activeCategory === "favorites" && !favoriteSet.has(asset.id))
+          return false;
         if (
-          activeCategory !== 'all' &&
-          activeCategory !== 'favorites' &&
+          activeCategory !== "all" &&
+          activeCategory !== "favorites" &&
           !asset.categories?.includes(activeCategory)
         ) {
           return false;
@@ -74,7 +75,7 @@ export default function AssetSelectorModal({
           flex: 1,
           backgroundColor: withOpacity(colors.background, 0.75),
           padding: 20,
-          justifyContent: 'flex-end',
+          justifyContent: "flex-end",
         }}
       >
         <View
@@ -82,15 +83,31 @@ export default function AssetSelectorModal({
             backgroundColor: colors.surface,
             borderRadius: 28,
             padding: 20,
-            maxHeight: '85%',
+            maxHeight: "85%",
           }}
         >
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-            <Text style={{ color: colors.text.primary, fontSize: 20, fontWeight: '700' }}>
+          <View
+            style={{
+              flexDirection: "row",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: colors.text.primary,
+                fontSize: 20,
+                fontWeight: "700",
+              }}
+            >
               Select Asset
             </Text>
             <TouchableOpacity onPress={onClose}>
-              <MaterialCommunityIcons name="close" size={24} color={colors.text.secondary} />
+              <MaterialCommunityIcons
+                name="close"
+                size={24}
+                color={colors.text.secondary}
+              />
             </TouchableOpacity>
           </View>
 
@@ -101,8 +118,8 @@ export default function AssetSelectorModal({
               borderWidth: 1,
               borderColor: withOpacity(colors.border, 0.35),
               paddingHorizontal: 12,
-              flexDirection: 'row',
-              alignItems: 'center',
+              flexDirection: "row",
+              alignItems: "center",
               backgroundColor: withOpacity(colors.backgroundSecondary, 0.6),
             }}
           >
@@ -126,14 +143,14 @@ export default function AssetSelectorModal({
 
           <View
             style={{
-              flexDirection: 'row',
-              alignItems: 'center',
-              justifyContent: 'space-between',
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
               marginTop: 16,
             }}
           >
             <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-              <View style={{ flexDirection: 'row', gap: 8 }}>
+              <View style={{ flexDirection: "row", gap: 8 }}>
                 {ASSET_CATEGORIES.map((category) => {
                   const isActive = activeCategory === category.key;
                   return (
@@ -151,8 +168,10 @@ export default function AssetSelectorModal({
                     >
                       <Text
                         style={{
-                          color: isActive ? colors.primary.DEFAULT : colors.text.secondary,
-                          fontWeight: '600',
+                          color: isActive
+                            ? colors.primary.DEFAULT
+                            : colors.text.secondary,
+                          fontWeight: "600",
                         }}
                       >
                         {category.label}
@@ -165,11 +184,11 @@ export default function AssetSelectorModal({
 
             <View
               style={{
-                flexDirection: 'row',
+                flexDirection: "row",
                 borderRadius: 14,
                 borderWidth: 1,
                 borderColor: withOpacity(colors.border, 0.3),
-                overflow: 'hidden',
+                overflow: "hidden",
               }}
             >
               {FILTER_MODES.map((filter) => {
@@ -188,8 +207,10 @@ export default function AssetSelectorModal({
                   >
                     <Text
                       style={{
-                        color: isActive ? colors.primary.DEFAULT : colors.text.secondary,
-                        fontWeight: '600',
+                        color: isActive
+                          ? colors.primary.DEFAULT
+                          : colors.text.secondary,
+                        fontWeight: "600",
                       }}
                     >
                       {filter.label}
@@ -212,8 +233,8 @@ export default function AssetSelectorModal({
                   key={asset.id}
                   onPress={() => onSelect?.(asset)}
                   style={{
-                    flexDirection: 'row',
-                    alignItems: 'center',
+                    flexDirection: "row",
+                    alignItems: "center",
                     paddingVertical: 14,
                     borderBottomWidth: 1,
                     borderBottomColor: withOpacity(colors.border, 0.2),
@@ -226,31 +247,47 @@ export default function AssetSelectorModal({
                     style={{ marginRight: 12 }}
                   >
                     <MaterialCommunityIcons
-                      name={isFavorite ? 'star' : 'star-outline'}
+                      name={isFavorite ? "star" : "star-outline"}
                       size={18}
-                      color={isFavorite ? colors.primary.DEFAULT : colors.text.secondary}
+                      color={
+                        isFavorite
+                          ? colors.primary.DEFAULT
+                          : colors.text.secondary
+                      }
                     />
                   </TouchableOpacity>
 
                   <View style={{ flex: 2 }}>
-                    <Text style={{ color: colors.text.primary, fontWeight: '700' }}>
+                    <Text
+                      style={{ color: colors.text.primary, fontWeight: "700" }}
+                    >
                       {asset.pair}
                     </Text>
-                    <View style={{ flexDirection: 'row', gap: 6, marginTop: 4 }}>
+                    <View
+                      style={{ flexDirection: "row", gap: 6, marginTop: 4 }}
+                    >
                       <Badge text={asset.leverage} colors={colors} tinted />
                       <Badge text={asset.type.toUpperCase()} colors={colors} />
                     </View>
                   </View>
 
                   <View style={{ flex: 1 }}>
-                    <Text style={{ color: colors.text.secondary, fontSize: 11 }}>Volume</Text>
-                    <Text style={{ color: colors.text.primary, fontWeight: '600' }}>
+                    <Text
+                      style={{ color: colors.text.secondary, fontSize: 11 }}
+                    >
+                      Volume
+                    </Text>
+                    <Text
+                      style={{ color: colors.text.primary, fontWeight: "600" }}
+                    >
                       {formatCompactNumber(asset.volume24h)}
                     </Text>
                   </View>
 
-                  <View style={{ flex: 1, alignItems: 'flex-end' }}>
-                    <Text style={{ color: colors.text.primary, fontWeight: '700' }}>
+                  <View style={{ flex: 1, alignItems: "flex-end" }}>
+                    <Text
+                      style={{ color: colors.text.primary, fontWeight: "700" }}
+                    >
                       {formatPriceDisplay(price)}
                     </Text>
                     <Text
@@ -260,7 +297,7 @@ export default function AssetSelectorModal({
                             ? colors.success.DEFAULT
                             : colors.error.DEFAULT,
                         fontSize: 12,
-                        fontWeight: '600',
+                        fontWeight: "600",
                       }}
                     >
                       {formatPercentChange(asset.change24h)}
@@ -271,8 +308,10 @@ export default function AssetSelectorModal({
             })}
 
             {!filteredAssets.length && (
-              <View style={{ paddingVertical: 36, alignItems: 'center' }}>
-                <Text style={{ color: colors.text.secondary }}>No assets found.</Text>
+              <View style={{ paddingVertical: 36, alignItems: "center" }}>
+                <Text style={{ color: colors.text.secondary }}>
+                  No assets found.
+                </Text>
               </View>
             )}
           </ScrollView>
@@ -296,7 +335,7 @@ const Badge = ({ text, colors, tinted = false }) => (
     <Text
       style={{
         fontSize: 11,
-        fontWeight: '600',
+        fontWeight: "600",
         color: tinted ? colors.primary.DEFAULT : colors.text.secondary,
       }}
     >

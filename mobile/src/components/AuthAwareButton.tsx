@@ -1,9 +1,9 @@
-import React from 'react';
-import { TouchableOpacity, Text, View } from '@/components/ui';
-import { Ionicons } from '@expo/vector-icons';
-import { router } from 'expo-router';
-import useRouteAuth from '@/hooks/useRouteAuth';
-import { useColors } from '@/theme';
+import { Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
+import React from "react";
+import { Text, TouchableOpacity, View } from "@/components/ui";
+import useRouteAuth from "@/hooks/useRouteAuth";
+import { useColors } from "@/theme";
 
 /**
  * Button component that handles route authentication
@@ -64,9 +64,9 @@ export default function AuthAwareButton({
     >
       <View
         sx={{
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'center',
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "center",
           gap: 2,
         }}
       >

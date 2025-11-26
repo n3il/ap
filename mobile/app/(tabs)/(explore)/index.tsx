@@ -1,21 +1,21 @@
-import React, { useCallback, useState } from 'react';
-import { View, RefreshControl, GlassButton } from '@/components/ui';
-import { ScrollView } from 'react-native';
+import { useQueryClient } from "@tanstack/react-query";
+import React, { useCallback, useState } from "react";
+import { ScrollView } from "react-native";
 import Animated, {
-  useSharedValue,
   useAnimatedScrollHandler,
-} from 'react-native-reanimated';
-import { PaddedView } from '@/components/ContainerView';
-import MarketPricesWidget from '@/components/MarketPricesWidget';
-import { useQueryClient } from '@tanstack/react-query';
-import { useColors } from '@/theme';
-import ExploreHeader from '@/components/explore/Header';
-import MultiAgentChart from '@/components/agents/MultiAgentChart';
-import { useTimeframeStore } from '@/stores/useTimeframeStore';
-import AgentList from '@/components/AgentList';
-import TimeFrameSelector from '@/components/chart/TimeFrameSelector';
-import GlassSelector from '@/components/ui/GlassSelector';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+  useSharedValue,
+} from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AgentList from "@/components/AgentList";
+import MultiAgentChart from "@/components/agents/MultiAgentChart";
+import { PaddedView } from "@/components/ContainerView";
+import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
+import ExploreHeader from "@/components/explore/Header";
+import MarketPricesWidget from "@/components/MarketPricesWidget";
+import { GlassButton, RefreshControl, View } from "@/components/ui";
+import GlassSelector from "@/components/ui/GlassSelector";
+import { useTimeframeStore } from "@/stores/useTimeframeStore";
+import { useColors } from "@/theme";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -29,7 +29,7 @@ export default function ExploreScreen() {
 
   const handleRefresh = useCallback(async () => {
     setIsFetching(true);
-    await queryClient.invalidateQueries({ queryKey: ['explore-agents'] });
+    await queryClient.invalidateQueries({ queryKey: ["explore-agents"] });
     setIsFetching(false);
   }, []);
 
@@ -42,13 +42,19 @@ export default function ExploreScreen() {
   });
 
   return (
-    <View style={{ flex: 1, paddingTop: safeAreaInsets.top, backgroundColor: palette.backgroundSecondary }}>
+    <View
+      style={{
+        flex: 1,
+        paddingTop: safeAreaInsets.top,
+        backgroundColor: palette.backgroundSecondary,
+      }}
+    >
       <PaddedView>
         <ExploreHeader />
       </PaddedView>
       <AnimatedScrollView
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: '70%' }}
+        contentContainerStyle={{ paddingBottom: "70%" }}
         stickyHeaderIndices={[0]}
         refreshControl={
           <RefreshControl
@@ -63,13 +69,15 @@ export default function ExploreScreen() {
         snapToAlignment="center"
       >
         <View style={{ zIndex: 1000 }}>
-          <View style={{
-            flex: 1,
-            backgroundColor: palette.backgroundSecondary,
-            paddingBottom: 4
-          }}>
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: palette.backgroundSecondary,
+              paddingBottom: 4,
+            }}
+          >
             <MarketPricesWidget
-              tickers={['SUI', 'TON', 'ETH', 'SOL', 'DOGE']}
+              tickers={["SUI", "TON", "ETH", "SOL", "DOGE"]}
               timeframe={timeframe}
               scrollY={scrollY}
               sx={{
@@ -89,18 +97,24 @@ export default function ExploreScreen() {
               }}
             />
 
-            <PaddedView style={{
-              alignItems: 'center',
-              flexDirection: 'row',
-              gap: 4,
-              paddingTop: 8,
-            }}>
+            <PaddedView
+              style={{
+                alignItems: "center",
+                flexDirection: "row",
+                gap: 4,
+                paddingTop: 8,
+              }}
+            >
               <GlassSelector />
               <TimeFrameSelector />
             </PaddedView>
           </View>
         </View>
-        <AgentList queryKey={['explore-agents']} compactView scrollY={scrollY} />
+        <AgentList
+          queryKey={["explore-agents"]}
+          compactView
+          scrollY={scrollY}
+        />
       </AnimatedScrollView>
     </View>
   );

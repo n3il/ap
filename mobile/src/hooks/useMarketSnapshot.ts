@@ -1,16 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { priceService } from '@/services/priceService';
+import { useEffect, useMemo, useRef, useState } from "react";
+import { priceService } from "@/services/priceService";
 
-const DEFAULT_TICKERS = ['BTC', 'ETH', 'SOL'];
+const DEFAULT_TICKERS = ["BTC", "ETH", "SOL"];
 
 const normalizeTickersInternal = (tickers) => {
   if (!tickers) return DEFAULT_TICKERS;
   if (Array.isArray(tickers)) {
-    return tickers.length ? tickers.map((token) => token.toUpperCase()) : DEFAULT_TICKERS;
+    return tickers.length
+      ? tickers.map((token) => token.toUpperCase())
+      : DEFAULT_TICKERS;
   }
-  if (typeof tickers === 'string') {
+  if (typeof tickers === "string") {
     const parsed = tickers
-      .split(',')
+      .split(",")
       .map((token) => token.trim().toUpperCase())
       .filter(Boolean);
     return parsed.length ? parsed : DEFAULT_TICKERS;
@@ -19,10 +21,10 @@ const normalizeTickersInternal = (tickers) => {
 };
 
 const parseMidToNumber = (value) => {
-  if (typeof value === 'number') {
+  if (typeof value === "number") {
     return Number.isFinite(value) ? value : null;
   }
-  if (typeof value === 'string' && value.trim().length) {
+  if (typeof value === "string" && value.trim().length) {
     const parsed = parseFloat(value);
     return Number.isFinite(parsed) ? parsed : null;
   }
@@ -34,7 +36,7 @@ export const normalizeTickers = normalizeTickersInternal;
 export function useMarketSnapshot(tickers) {
   const normalizedTickers = useMemo(
     () => normalizeTickersInternal(tickers),
-    [Array.isArray(tickers) ? tickers.join(',') : tickers]
+    [Array.isArray(tickers) ? tickers.join(",") : tickers],
   );
 
   const [assets, setAssets] = useState([]);
@@ -52,32 +54,35 @@ export function useMarketSnapshot(tickers) {
     setIsUpdating(true);
     setError(null);
 
-    const unsubscribe = priceService.subscribeToMarketSnapshot(normalizedTickers, {
-      onUpdate: ({ assets: nextAssets, timestamp, raw }) => {
-        if (!isMounted) return;
-        setAssets(nextAssets);
-        setLastUpdated(timestamp);
-        setRawSnapshot(raw ?? null);
-        setIsLoading(false);
-        setIsUpdating(false);
-        setError(null);
+    const unsubscribe = priceService.subscribeToMarketSnapshot(
+      normalizedTickers,
+      {
+        onUpdate: ({ assets: nextAssets, timestamp, raw }) => {
+          if (!isMounted) return;
+          setAssets(nextAssets);
+          setLastUpdated(timestamp);
+          setRawSnapshot(raw ?? null);
+          setIsLoading(false);
+          setIsUpdating(false);
+          setError(null);
+        },
+        onError: (err) => {
+          if (!isMounted) return;
+          setError(err);
+          setIsLoading(false);
+          setIsUpdating(false);
+        },
       },
-      onError: (err) => {
-        if (!isMounted) return;
-        setError(err);
-        setIsLoading(false);
-        setIsUpdating(false);
-      },
-    });
+    );
 
     return () => {
       isMounted = false;
       unsubscribe?.();
     };
-  }, [normalizedTickers.join(',')]);
+  }, [normalizedTickers.join(",")]);
 
   useEffect(() => {
-    if (!rawSnapshot?.mids || typeof rawSnapshot.mids !== 'object') {
+    if (!rawSnapshot?.mids || typeof rawSnapshot.mids !== "object") {
       setTableRows([]);
       return;
     }
@@ -90,7 +95,9 @@ export function useMarketSnapshot(tickers) {
         const current = parseMidToNumber(value);
         const previous = parseMidToNumber(nextMap[symbol]);
         const diff =
-          Number.isFinite(current) && Number.isFinite(previous) ? current - previous : null;
+          Number.isFinite(current) && Number.isFinite(previous)
+            ? current - previous
+            : null;
 
         if (Number.isFinite(current)) {
           nextMap[symbol] = current;

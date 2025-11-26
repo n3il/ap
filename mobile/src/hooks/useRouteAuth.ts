@@ -1,8 +1,7 @@
-import { useMemo } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
-import { isRouteAccessible } from '@/config/routes';
-import { usePathname } from 'expo-router';
-import { ROUTES } from '@/config/routes';
+import { usePathname } from "expo-router";
+import { useMemo } from "react";
+import { isRouteAccessible, ROUTES } from "@/config/routes";
+import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Hook to check route accessibility based on authentication state
@@ -15,7 +14,7 @@ export default function useRouteAuth() {
   // Get REQUIRE_AUTH from environment variable
   const requireAuth =
     process.env.EXPO_PUBLIC_REQUIRE_AUTH === undefined ||
-    process.env.EXPO_PUBLIC_REQUIRE_AUTH === 'true';
+    process.env.EXPO_PUBLIC_REQUIRE_AUTH === "true";
 
   /**
    * Check if a specific route path is accessible

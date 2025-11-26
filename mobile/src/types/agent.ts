@@ -45,7 +45,7 @@ export interface AgentType {
   is_active: boolean | string; // adjust based on actual meaning
   latest_assessment: AssessmentRecordType;
   market_data_snapshot: any; // refine if known
-  parsed_llm_response: any;  // refine if known
+  parsed_llm_response: any; // refine if known
   prompt_id: string | null;
   timestamp: string;
   trade_action_taken: string;

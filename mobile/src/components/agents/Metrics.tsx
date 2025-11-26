@@ -1,35 +1,42 @@
-import React, { useMemo } from 'react';
-import { View, Text } from '@/components/ui';
-import { useQuery } from '@tanstack/react-query';
-import StatCard from '@/components/StatCard';
-import { agentService } from '@/services/agentService';
-import { tradeService } from '@/services/tradeService';
-import { assessmentService } from '@/services/assessmentService';
+import { useQuery } from "@tanstack/react-query";
+import React, { useMemo } from "react";
+import StatCard from "@/components/StatCard";
+import { Text, View } from "@/components/ui";
+import { agentService } from "@/services/agentService";
+import { assessmentService } from "@/services/assessmentService";
+import { tradeService } from "@/services/tradeService";
 
 export default function Metrics() {
   // Fetch agents
-  const { data: agents = [], isLoading, isFetching, error, refetch } = useQuery({
-    queryKey: ['agents'],
+  const {
+    data: agents = [],
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ["agents"],
     queryFn: agentService.getAgents,
   });
 
   // Fetch trade stats
   const { data: stats, isFetching: statsFetching } = useQuery({
-    queryKey: ['trade-stats'],
+    queryKey: ["trade-stats"],
     queryFn: () => tradeService.getTradeStats(),
   });
 
   // Fetch assessment stats
-  const { data: assessmentStats, isFetching: assessmentStatsFetching } = useQuery({
-    queryKey: ['assessment-stats'],
-    queryFn: () => assessmentService.getAssessmentStats(),
-  });
+  const { data: assessmentStats, isFetching: assessmentStatsFetching } =
+    useQuery({
+      queryKey: ["assessment-stats"],
+      queryFn: () => assessmentService.getAssessmentStats(),
+    });
 
   const overviewMetrics = useMemo(() => {
-    const activeAgents = agents.filter(agent => agent.is_active).length;
+    const activeAgents = agents.filter((agent) => agent.is_active).length;
     const totalCapital = agents.reduce(
       (sum, agent) => sum + (parseFloat(agent.initial_capital) || 0),
-      0
+      0,
     );
     const projectedDailyRuns = activeAgents * 96;
 
@@ -50,64 +57,85 @@ export default function Metrics() {
     const openPositions = stats?.openPositions ?? 0;
 
     const totalPnL = overviewMetrics.totalPnL;
-    const pnlTrendColor = totalPnL >= 0 ? 'successLight' : 'errorLight';
+    const pnlTrendColor = totalPnL >= 0 ? "successLight" : "errorLight";
 
     return [
       {
-        label: 'Total P&L',
-        value:
-          `${totalPnL > 0 ? '+' : totalPnL < 0 ? '-' : ''}$${Math.abs(totalPnL).toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+        label: "Total P&L",
+        value: `${totalPnL > 0 ? "+" : totalPnL < 0 ? "-" : ""}$${Math.abs(totalPnL).toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
         trend: `${totalTrades} trades`,
         trendColor: pnlTrendColor,
       },
       {
-        label: 'Win Rate',
+        label: "Win Rate",
         value: `${overviewMetrics.winRate.toFixed(1)}%`,
-        trend: `${totalTrades ? `${totalTrades} closed` : 'No closed trades yet'}`,
-        trendColor: 'brand300',
+        trend: `${totalTrades ? `${totalTrades} closed` : "No closed trades yet"}`,
+        trendColor: "brand300",
       },
       {
-        label: 'Open Positions',
+        label: "Open Positions",
         value: openPositions,
-        trend: 'Active trades',
-        trendColor: 'info',
+        trend: "Active trades",
+        trendColor: "info",
       },
       {
-        label: 'Assessments Logged',
+        label: "Assessments Logged",
         value: overviewMetrics.totalAssessments,
         trend: `${overviewMetrics.actionsTriggered} resulted in actions`,
-        trendColor: 'successLight',
+        trendColor: "successLight",
       },
       {
-        label: 'Capital Deployed',
-        value: `$${overviewMetrics.totalCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}`,
+        label: "Capital Deployed",
+        value: `$${overviewMetrics.totalCapital.toLocaleString("en-US", { maximumFractionDigits: 0 })}`,
         trend: `${overviewMetrics.totalAgents} agents`,
-        trendColor: 'mutedForeground',
+        trendColor: "mutedForeground",
       },
       {
-        label: 'Daily Agent Loops',
+        label: "Daily Agent Loops",
         value: overviewMetrics.projectedDailyRuns,
-        trend: '15 min cron cadence',
-        trendColor: 'warningLight',
+        trend: "15 min cron cadence",
+        trendColor: "warningLight",
       },
     ];
   }, [overviewMetrics, stats]);
 
-
   return (
     <>
       <View sx={{ paddingHorizontal: 4, marginBottom: 3 }}>
-        <View sx={{ flexDirection: 'row', marginBottom: 2 }}>
+        <View sx={{ flexDirection: "row", marginBottom: 2 }}>
           <View sx={{ flex: 1, paddingRight: 2 }}>
-            <Text sx={{ color: 'secondary500', fontSize: 11, textTransform: 'uppercase' }}>Active</Text>
-            <Text sx={{ color: 'textPrimary', fontSize: 20, fontWeight: '700' }}>
+            <Text
+              sx={{
+                color: "secondary500",
+                fontSize: 11,
+                textTransform: "uppercase",
+              }}
+            >
+              Active
+            </Text>
+            <Text
+              sx={{ color: "textPrimary", fontSize: 20, fontWeight: "700" }}
+            >
               {overviewMetrics.activeAgents}
             </Text>
           </View>
           <View sx={{ flex: 1, paddingHorizontal: 2 }}>
-            <Text sx={{ color: 'secondary500', fontSize: 11, textTransform: 'uppercase' }}>Capital</Text>
-            <Text sx={{ color: 'textPrimary', fontSize: 20, fontWeight: '700' }}>
-              ${overviewMetrics.totalCapital.toLocaleString('en-US', { maximumFractionDigits: 0 })}
+            <Text
+              sx={{
+                color: "secondary500",
+                fontSize: 11,
+                textTransform: "uppercase",
+              }}
+            >
+              Capital
+            </Text>
+            <Text
+              sx={{ color: "textPrimary", fontSize: 20, fontWeight: "700" }}
+            >
+              $
+              {overviewMetrics.totalCapital.toLocaleString("en-US", {
+                maximumFractionDigits: 0,
+              })}
             </Text>
           </View>
         </View>

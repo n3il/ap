@@ -1,14 +1,13 @@
-import React from 'react';
-import { useLocalSearchParams } from 'expo-router';
-import ReportDetail from '@/components/reports/Detail';
-import { assessmentService } from '@/services/assessmentService';
+import { useLocalSearchParams } from "expo-router";
+import React from "react";
+import ReportDetail from "@/components/reports/Detail";
+import { assessmentService } from "@/services/assessmentService";
 
 export default function AgentReportScreen() {
   const { id: _agentId, assessmentId } = useLocalSearchParams();
 
-  const { data: assessment } = assessmentService.getAssessmentById(assessmentId);
+  const { data: assessment } =
+    assessmentService.getAssessmentById(assessmentId);
 
-  return (
-    <ReportDetail assessment={assessment} />
-  );
+  return <ReportDetail assessment={assessment} />;
 }

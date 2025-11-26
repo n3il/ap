@@ -1,6 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
-import Constants from 'expo-constants';
-import { authStorage } from '@/utils/authStorage';
+import { createClient } from "@supabase/supabase-js";
+import Constants from "expo-constants";
+import { authStorage } from "@/utils/authStorage";
 
 const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl;
 const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey;

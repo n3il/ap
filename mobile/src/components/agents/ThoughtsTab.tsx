@@ -1,12 +1,18 @@
-import React, { useRef, useCallback } from 'react';
-import { View, Text, ActivityIndicator, FlatList, Animated } from 'react-native';
-import AssessmentCard from '@/components/AssessmentCard';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { GlassContainer, GlassView } from 'expo-glass-effect';
-import SectionTitle from '../SectionTitle';
-import { useColors } from '@/theme';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { assessmentService } from '@/services/assessmentService';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useInfiniteQuery } from "@tanstack/react-query";
+import { GlassContainer, GlassView } from "expo-glass-effect";
+import React, { useCallback, useRef } from "react";
+import {
+  ActivityIndicator,
+  Animated,
+  FlatList,
+  Text,
+  View,
+} from "react-native";
+import AssessmentCard from "@/components/AssessmentCard";
+import { assessmentService } from "@/services/assessmentService";
+import { useColors } from "@/theme";
+import SectionTitle from "../SectionTitle";
 
 export default function ThoughtsTab({
   agentId,
@@ -28,9 +34,12 @@ export default function ThoughtsTab({
     refetch,
     isRefetching,
   } = useInfiniteQuery({
-    queryKey: ['agent-assessments', agentId],
+    queryKey: ["agent-assessments", agentId],
     queryFn: ({ pageParam = 0 }) =>
-      assessmentService.getAssessmentsByAgent(agentId, { pageParam, pageSize: 4 }),
+      assessmentService.getAssessmentsByAgent(agentId, {
+        pageParam,
+        pageSize: 4,
+      }),
     getNextPageParam: (lastPage) => lastPage?.nextPage ?? undefined,
     initialPageParam: 0,
     enabled: !!agentId,
@@ -40,11 +49,11 @@ export default function ThoughtsTab({
   const assessments = React.useMemo(() => {
     if (!data?.pages) return [];
 
-    const allAssessments = data.pages.flatMap(page => page?.data ?? []);
+    const allAssessments = data.pages.flatMap((page) => page?.data ?? []);
 
     // Deduplicate by ID (in case of overlapping pages)
     const seen = new Set();
-    return allAssessments.filter(assessment => {
+    return allAssessments.filter((assessment) => {
       if (seen.has(assessment.id)) {
         return false;
       }
@@ -66,22 +75,25 @@ export default function ThoughtsTab({
     parentOnRefresh?.();
   };
 
-  const renderItem = useCallback(({ item }) => (
-    <AssessmentCard assessment={item} />
-  ), []);
+  const renderItem = useCallback(
+    ({ item }) => <AssessmentCard assessment={item} />,
+    [],
+  );
 
   const renderEmpty = useCallback(() => {
     if (isLoading) return null;
 
     return (
-      <Text style={{
-        color: '#999',
-        textAlign: 'center',
-        paddingVertical: 12,
-        fontSize: 12,
-        fontStyle: 'italic',
-        marginTop: 18
-      }}>
+      <Text
+        style={{
+          color: "#999",
+          textAlign: "center",
+          paddingVertical: 12,
+          fontSize: 12,
+          fontStyle: "italic",
+          marginTop: 18,
+        }}
+      >
         empty
       </Text>
     );
@@ -91,9 +103,9 @@ export default function ThoughtsTab({
 
   if (error && !data) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text style={{ color: '#999', fontSize: 12 }}>
-          {error.message || 'An error occurred while loading assessments'}
+      <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+        <Text style={{ color: "#999", fontSize: 12 }}>
+          {error.message || "An error occurred while loading assessments"}
         </Text>
       </View>
     );
@@ -110,11 +122,11 @@ export default function ThoughtsTab({
         onEndReachedThreshold={0.5}
         refreshing={isRefetching || parentRefreshing}
         onRefresh={handleRefresh}
-        contentContainerStyle={{ gap: 16, paddingBottom: '40%' }}
+        contentContainerStyle={{ gap: 16, paddingBottom: "40%" }}
         showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true }
+          { useNativeDriver: true },
         )}
         scrollEventThrottle={16}
         {...listProps}

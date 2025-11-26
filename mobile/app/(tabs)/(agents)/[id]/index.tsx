@@ -1,18 +1,17 @@
-
-import React, { useRef } from "react";
-import { View, Animated, Avatar, Text } from "@/components/ui";
-import { StyleSheet } from "react-native";
-import { useAccountBalance } from '@/hooks/useAccountBalance';
-import HeaderChart from "@/components/agent/HeaderChart";
-import { useLocalSearchParams } from 'expo-router';
-import { useAgent } from '@/hooks/useAgent';
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import GlassButton from "@/components/ui/GlassButton";
-import ThoughtsTab from "@/components/agents/ThoughtsTab";
-import { useColors } from "@/theme";
-import AgentCard from "@/components/AgentCard";
-import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
+import { useLocalSearchParams } from "expo-router";
+import React, { useRef } from "react";
+import { StyleSheet } from "react-native";
 import { LinearGradient } from "react-native-svg";
+import AgentCard from "@/components/AgentCard";
+import HeaderChart from "@/components/agent/HeaderChart";
+import ThoughtsTab from "@/components/agents/ThoughtsTab";
+import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
+import { Animated, Avatar, Text, View } from "@/components/ui";
+import GlassButton from "@/components/ui/GlassButton";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { useAgent } from "@/hooks/useAgent";
+import { useColors } from "@/theme";
 
 const HEADER_HEIGHT = 400 + 30;
 
@@ -46,14 +45,14 @@ export default function AgentReadScreen() {
         locations={[0, 0.78, 1]}
         start={{ x: 0, y: 0 }}
         end={{ x: 0, y: 1 }}
-        style={{ flex: 1, position: 'absolute', left: 0, right: 0, bottom: 0 }}
+        style={{ flex: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}
       />
       <Animated.View
         style={[
           styles.headerImage,
           {
-            transform: [{ scale: imageScale }, { translateY: imageTranslateY }]
-          }
+            transform: [{ scale: imageScale }, { translateY: imageTranslateY }],
+          },
         ]}
       >
         <AgentCard agent={agent} hideOpenPositions transparent />
@@ -69,7 +68,11 @@ export default function AgentReadScreen() {
         </GlassButton> */}
 
         <GlassButton onPress={() => {}}>
-          <MaterialCommunityIcons name="bookmark-check" size={24} color="white" />
+          <MaterialCommunityIcons
+            name="bookmark-check"
+            size={24}
+            color="white"
+          />
         </GlassButton>
       </View>
 
@@ -79,18 +82,18 @@ export default function AgentReadScreen() {
           contentContainerStyle: {
             paddingTop: HEADER_HEIGHT,
             paddingHorizontal: GLOBAL_PADDING,
-            gap: 12
+            gap: 12,
           },
           scrollEventThrottle: 16,
           onScroll: Animated.event(
             [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true }
-          )
+            { useNativeDriver: true },
+          ),
         }}
       />
     </ContainerView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   headerImage: {

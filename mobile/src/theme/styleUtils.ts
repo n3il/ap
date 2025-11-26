@@ -1,5 +1,5 @@
-import type { SxProp } from 'dripsy';
-import darkTheme from './base';
+import type { SxProp } from "dripsy";
+import darkTheme from "./base";
 
 /**
  * Common style patterns for reuse across components
@@ -40,45 +40,45 @@ export const shadows = {
 // Flex shortcuts
 export const flex = {
   center: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   } as SxProp,
   centerX: {
-    alignItems: 'center',
+    alignItems: "center",
   } as SxProp,
   centerY: {
-    justifyContent: 'center',
+    justifyContent: "center",
   } as SxProp,
   between: {
-    justifyContent: 'space-between',
+    justifyContent: "space-between",
   } as SxProp,
   around: {
-    justifyContent: 'space-around',
+    justifyContent: "space-around",
   } as SxProp,
   evenly: {
-    justifyContent: 'space-evenly',
+    justifyContent: "space-evenly",
   } as SxProp,
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
   } as SxProp,
   column: {
-    flexDirection: 'column',
+    flexDirection: "column",
   } as SxProp,
   wrap: {
-    flexWrap: 'wrap',
+    flexWrap: "wrap",
   } as SxProp,
 } as const;
 
 // Position shortcuts
 export const position = {
   absolute: {
-    position: 'absolute',
+    position: "absolute",
   } as SxProp,
   relative: {
-    position: 'relative',
+    position: "relative",
   } as SxProp,
   absoluteFill: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
@@ -89,14 +89,14 @@ export const position = {
 // Common layout patterns
 export const layout = {
   fullWidth: {
-    width: '100%',
+    width: "100%",
   } as SxProp,
   fullHeight: {
-    height: '100%',
+    height: "100%",
   } as SxProp,
   fullScreen: {
-    width: '100%',
-    height: '100%',
+    width: "100%",
+    height: "100%",
   } as SxProp,
   container: {
     paddingHorizontal: 4,
@@ -111,18 +111,18 @@ export const layout = {
 // Text utilities
 export const text = {
   truncate: {
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    whiteSpace: "nowrap",
   } as SxProp,
   center: {
-    textAlign: 'center',
+    textAlign: "center",
   } as SxProp,
   right: {
-    textAlign: 'right',
+    textAlign: "right",
   } as SxProp,
   left: {
-    textAlign: 'left',
+    textAlign: "left",
   } as SxProp,
 } as const;
 
@@ -130,23 +130,23 @@ export const text = {
 export const border = {
   all: {
     borderWidth: 1,
-    borderColor: 'border',
+    borderColor: "border",
   } as SxProp,
   top: {
     borderTopWidth: 1,
-    borderColor: 'border',
+    borderColor: "border",
   } as SxProp,
   bottom: {
     borderBottomWidth: 1,
-    borderColor: 'border',
+    borderColor: "border",
   } as SxProp,
   left: {
     borderLeftWidth: 1,
-    borderColor: 'border',
+    borderColor: "border",
   } as SxProp,
   right: {
     borderRightWidth: 1,
-    borderColor: 'border',
+    borderColor: "border",
   } as SxProp,
 } as const;
 
@@ -158,7 +158,15 @@ export const combine = (...styles: SxProp[]): SxProp => {
 /**
  * Helper to create responsive padding
  */
-export const createPadding = (all?: number, horizontal?: number, vertical?: number, top?: number, right?: number, bottom?: number, left?: number): SxProp => {
+export const createPadding = (
+  all?: number,
+  horizontal?: number,
+  vertical?: number,
+  top?: number,
+  right?: number,
+  bottom?: number,
+  left?: number,
+): SxProp => {
   return {
     ...(all !== undefined && { padding: all }),
     ...(horizontal !== undefined && { paddingHorizontal: horizontal }),
@@ -173,7 +181,15 @@ export const createPadding = (all?: number, horizontal?: number, vertical?: numb
 /**
  * Helper to create responsive margin
  */
-export const createMargin = (all?: number, horizontal?: number, vertical?: number, top?: number, right?: number, bottom?: number, left?: number): SxProp => {
+export const createMargin = (
+  all?: number,
+  horizontal?: number,
+  vertical?: number,
+  top?: number,
+  right?: number,
+  bottom?: number,
+  left?: number,
+): SxProp => {
   return {
     ...(all !== undefined && { margin: all }),
     ...(horizontal !== undefined && { marginHorizontal: horizontal }),

@@ -1,6 +1,6 @@
-import ContainerView from '@/components/ContainerView';
-import { Text } from '@/components/ui';
-import { ScrollView } from 'react-native';
+import { ScrollView } from "react-native";
+import ContainerView from "@/components/ContainerView";
+import { Text } from "@/components/ui";
 
 export default function SearchIndex() {
   return (
@@ -9,5 +9,5 @@ export default function SearchIndex() {
         <Text>result</Text>
       </ScrollView>
     </ContainerView>
-  )
+  );
 }

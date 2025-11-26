@@ -4,17 +4,17 @@
  * @returns {string} Formatted label
  */
 export function formatTradeActionLabel(action) {
-  if (!action) return 'No Action';
+  if (!action) return "No Action";
 
   const actionUpper = action.toUpperCase();
 
   // Handle NO_ACTION
-  if (actionUpper === 'NO_ACTION') {
-    return 'No Action';
+  if (actionUpper === "NO_ACTION") {
+    return "No Action";
   }
 
   // Parse action parts (e.g., OPEN_BTC_LONG -> OPEN, BTC, LONG)
-  const parts = actionUpper.split('_');
+  const parts = actionUpper.split("_");
 
   // Extract action type (OPEN, CLOSE)
   const actionType = parts[0];
@@ -23,15 +23,15 @@ export function formatTradeActionLabel(action) {
   const positionType = parts[parts.length - 1];
 
   // Extract asset (everything in between)
-  const asset = parts.slice(1, -1).join('-');
+  const asset = parts.slice(1, -1).join("-");
 
   // Build formatted string
-  let label = '';
+  let label = "";
 
-  if (actionType === 'OPEN') {
-    label = 'Open';
-  } else if (actionType === 'CLOSE') {
-    label = 'Close';
+  if (actionType === "OPEN") {
+    label = "Open";
+  } else if (actionType === "CLOSE") {
+    label = "Close";
   } else {
     label = actionType.charAt(0) + actionType.slice(1).toLowerCase();
   }
@@ -40,10 +40,10 @@ export function formatTradeActionLabel(action) {
     label += ` ${asset}`;
   }
 
-  if (positionType === 'LONG') {
-    label += ' Long';
-  } else if (positionType === 'SHORT') {
-    label += ' Short';
+  if (positionType === "LONG") {
+    label += " Long";
+  } else if (positionType === "SHORT") {
+    label += " Short";
   }
 
   return label;
@@ -55,25 +55,25 @@ export function formatTradeActionLabel(action) {
  * @returns {string} Badge variant ('success', 'error', 'warning', 'muted')
  */
 export function getTradeActionVariant(action) {
-  if (!action) return 'muted';
+  if (!action) return "muted";
 
   const actionUpper = action.toUpperCase();
 
-  if (actionUpper === 'NO_ACTION') {
-    return 'muted';
+  if (actionUpper === "NO_ACTION") {
+    return "muted";
   }
 
-  if (actionUpper.includes('LONG') || actionUpper.includes('OPEN')) {
-    return 'success';
+  if (actionUpper.includes("LONG") || actionUpper.includes("OPEN")) {
+    return "success";
   }
 
-  if (actionUpper.includes('SHORT')) {
-    return 'error';
+  if (actionUpper.includes("SHORT")) {
+    return "error";
   }
 
-  if (actionUpper.includes('CLOSE')) {
-    return 'warning';
+  if (actionUpper.includes("CLOSE")) {
+    return "warning";
   }
 
-  return 'muted';
+  return "muted";
 }

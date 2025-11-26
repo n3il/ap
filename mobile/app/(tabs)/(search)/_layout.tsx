@@ -1,24 +1,23 @@
-import { useColors } from '@/theme';
-import { Stack } from 'expo-router';
+import { Stack } from "expo-router";
+import { useColors } from "@/theme";
 
 export default function SearchLayout() {
-  const { colors: palette } = useColors()
+  const { colors: palette } = useColors();
   return (
     <Stack>
       <Stack.Screen
         name="index"
         options={{
-          title: 'Search',
+          title: "Search",
           headerStyle: {
             backgroundColor: palette.background,
-
           },
           headerTitleStyle: {
             color: palette.foreground,
           },
           headerSearchBarOptions: {
-            placement: 'automatic',
-            placeholder: 'Search',
+            placement: "automatic",
+            placeholder: "Search",
             onChangeText: () => {},
           },
         }}

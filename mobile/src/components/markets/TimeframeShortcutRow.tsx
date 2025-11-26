@@ -1,14 +1,18 @@
-import React from 'react';
-import { View, Text, TouchableOpacity } from '@/components/ui';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import React from "react";
+import { Text, TouchableOpacity, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
-export default function TimeframeShortcutRow({ options = [], active, onChange }) {
+export default function TimeframeShortcutRow({
+  options = [],
+  active,
+  onChange,
+}) {
   const { theme } = useTheme();
   const { colors } = theme;
 
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+    <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
       {options.map((option) => {
         const isActive = option.key === active;
         return (
@@ -27,8 +31,10 @@ export default function TimeframeShortcutRow({ options = [], active, onChange })
             <Text
               style={{
                 fontSize: 12,
-                color: isActive ? colors.primary.DEFAULT : colors.text.secondary,
-                fontWeight: '600',
+                color: isActive
+                  ? colors.primary.DEFAULT
+                  : colors.text.secondary,
+                fontWeight: "600",
               }}
             >
               {option.label}

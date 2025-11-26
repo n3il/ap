@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { DripsyProvider } from "dripsy";
 import React, {
   createContext,
   useCallback,
@@ -5,36 +7,35 @@ import React, {
   useEffect,
   useMemo,
   useState,
-} from 'react';
-import { Appearance } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { DripsyProvider } from 'dripsy';
+} from "react";
+import { Appearance } from "react-native";
 
-import darkTheme from '@/theme/base';
-import lightTheme from '@/theme/light';
-import { dripsyDarkTheme, dripsyLightTheme } from '@/theme/dripsy';
+import darkTheme from "@/theme/base";
+import { dripsyDarkTheme, dripsyLightTheme } from "@/theme/dripsy";
+import lightTheme from "@/theme/light";
 
-const STORAGE_KEY = '@themePreference';
-const getSystemScheme = () => Appearance.getColorScheme() ?? 'light';
-const normalizeScheme = (value) => (value === 'dark' ? 'dark' : 'light');
-const normalizePreference = (value) => (value === 'system' ? 'system' : normalizeScheme(value));
+const STORAGE_KEY = "@themePreference";
+const getSystemScheme = () => Appearance.getColorScheme() ?? "light";
+const normalizeScheme = (value) => (value === "dark" ? "dark" : "light");
+const normalizePreference = (value) =>
+  value === "system" ? "system" : normalizeScheme(value);
 
 const ThemeContext = createContext({
   theme: lightTheme,
   dripsyTheme: dripsyLightTheme,
-  colorScheme: 'light',
-  themePreference: 'system',
+  colorScheme: "light",
+  themePreference: "system",
   isDark: false,
   setTheme: () => {},
   setThemePreference: () => {},
   toggleTheme: () => {},
 });
 
-ThemeContext.displayName = 'ThemeContext';
+ThemeContext.displayName = "ThemeContext";
 
 export const ThemeProvider = ({ children }) => {
   const [systemScheme, setSystemScheme] = useState(getSystemScheme);
-  const [preference, setPreference] = useState('system');
+  const [preference, setPreference] = useState("system");
   const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
@@ -91,7 +92,9 @@ export const ThemeProvider = ({ children }) => {
   const setThemePreference = useCallback((nextPreference) => {
     setPreference((prev) => {
       const resolved =
-        typeof nextPreference === 'function' ? nextPreference(prev) : nextPreference;
+        typeof nextPreference === "function"
+          ? nextPreference(prev)
+          : nextPreference;
       const normalized = normalizePreference(resolved);
       return normalized === prev ? prev : normalized;
     });
@@ -99,16 +102,17 @@ export const ThemeProvider = ({ children }) => {
 
   const toggleTheme = useCallback(() => {
     setThemePreference((prev) => {
-      if (prev === 'system') {
-        return systemScheme === 'dark' ? 'light' : 'dark';
+      if (prev === "system") {
+        return systemScheme === "dark" ? "light" : "dark";
       }
-      return prev === 'dark' ? 'light' : 'dark';
+      return prev === "dark" ? "light" : "dark";
     });
   }, [setThemePreference, systemScheme]);
 
-  const appliedScheme = preference === 'system' ? systemScheme : preference;
-  const theme = appliedScheme === 'dark' ? darkTheme : lightTheme;
-  const dripsyTheme = appliedScheme === 'dark' ? dripsyDarkTheme : dripsyLightTheme;
+  const appliedScheme = preference === "system" ? systemScheme : preference;
+  const theme = appliedScheme === "dark" ? darkTheme : lightTheme;
+  const dripsyTheme =
+    appliedScheme === "dark" ? dripsyDarkTheme : dripsyLightTheme;
 
   const value = useMemo(
     () => ({
@@ -116,12 +120,19 @@ export const ThemeProvider = ({ children }) => {
       dripsyTheme,
       colorScheme: appliedScheme,
       themePreference: preference,
-      isDark: appliedScheme === 'dark',
+      isDark: appliedScheme === "dark",
       setTheme: setThemePreference,
       setThemePreference,
       toggleTheme,
     }),
-    [appliedScheme, dripsyTheme, preference, setThemePreference, theme, toggleTheme],
+    [
+      appliedScheme,
+      dripsyTheme,
+      preference,
+      setThemePreference,
+      theme,
+      toggleTheme,
+    ],
   );
 
   return (

@@ -1,7 +1,7 @@
-import React from 'react';
-import { Stack } from 'expo-router';
-import { useSx } from 'dripsy';
-import { useColors } from '@/theme';
+import { useSx } from "dripsy";
+import { Stack } from "expo-router";
+import React from "react";
+import { useColors } from "@/theme";
 
 export default function Layout() {
   const sx = useSx();

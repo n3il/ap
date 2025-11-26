@@ -1,11 +1,10 @@
-
 import {
   differenceInDays,
   differenceInHours,
   differenceInMinutes,
   differenceInWeeks,
-  isThisYear,
   format,
+  isThisYear,
 } from "date-fns";
 
 export function formatRelativeDate(date: Date | string): string {

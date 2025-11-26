@@ -1,43 +1,47 @@
-import React, { useMemo, useState } from 'react';
-import { ScrollView, View, TouchableOpacity } from '@/components/ui';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
-import ContainerView from '@/components/ContainerView';
-import { useMarketPrices } from '@/hooks/useMarketPrices';
-import { useTradingData } from '@/hooks/useTradingData';
-import { useMockAccountBalance } from '@/hooks/useMockAccountBalance';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import React, { useMemo, useState } from "react";
+import ContainerView from "@/components/ContainerView";
 import {
   AssetSelectorModal,
-  MarketAssetHeader,
-  MarketChartPanel,
-  MarketSectionTabs,
-  MarketStatsStrip,
-  MarketOrderTicket,
+  INDICATOR_CHIPS,
   IndicatorChips,
-  TradeActionModal,
   MARKET_ASSETS,
   MARKET_SECTION_TABS,
+  MarketAssetHeader,
+  MarketChartPanel,
+  MarketOrderTicket,
+  MarketSectionTabs,
+  MarketStatsStrip,
   QUICK_TIMEFRAMES,
-  INDICATOR_CHIPS,
-} from '@/components/markets';
-import TimeframeShortcutRow from '@/components/markets/TimeframeShortcutRow';
+  TradeActionModal,
+} from "@/components/markets";
+import TimeframeShortcutRow from "@/components/markets/TimeframeShortcutRow";
+import { ScrollView, TouchableOpacity, View } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useMarketPrices } from "@/hooks/useMarketPrices";
+import { useMockAccountBalance } from "@/hooks/useMockAccountBalance";
+import { useTradingData } from "@/hooks/useTradingData";
+import { withOpacity } from "@/theme/utils";
 
 export default function MarketsScreen() {
   const [selectedAssetId, setSelectedAssetId] = useState(MARKET_ASSETS[0].id);
-  const [activeSection, setActiveSection] = useState('markets');
-  const [timeframe, setTimeframe] = useState('1m');
+  const [activeSection, setActiveSection] = useState("markets");
+  const [timeframe, setTimeframe] = useState("1m");
   const [assetSelectorOpen, setAssetSelectorOpen] = useState(false);
   const [tradeModalOpen, setTradeModalOpen] = useState(false);
-  const [tradeSide, setTradeSide] = useState('buy');
+  const [tradeSide, setTradeSide] = useState("buy");
   const [favorites, setFavorites] = useState([]);
 
   const selectedAsset = useMemo(
-    () => MARKET_ASSETS.find((asset) => asset.id === selectedAssetId) ?? MARKET_ASSETS[0],
+    () =>
+      MARKET_ASSETS.find((asset) => asset.id === selectedAssetId) ??
+      MARKET_ASSETS[0],
     [selectedAssetId],
   );
 
-  const { assets: priceAssets } = useMarketPrices(MARKET_ASSETS.map((asset) => asset.symbol));
+  const { assets: priceAssets } = useMarketPrices(
+    MARKET_ASSETS.map((asset) => asset.symbol),
+  );
   const priceMap = useMemo(() => {
     const map = {};
     priceAssets.forEach((asset) => {
@@ -49,13 +53,16 @@ export default function MarketsScreen() {
   }, [priceAssets]);
 
   const currentPrice = priceMap[selectedAsset.symbol] ?? selectedAsset.price;
-  const { placeOrder, isPlacingOrder } = useTradingData({ ledgerType: 'paper' });
+  const { placeOrder, isPlacingOrder } = useTradingData({
+    ledgerType: "paper",
+  });
   const accountBalance = useMockAccountBalance();
 
-  const availableBalance = accountBalance?.availableMargin ?? accountBalance?.wallet ?? 0;
+  const availableBalance =
+    accountBalance?.availableMargin ?? accountBalance?.wallet ?? 0;
 
   const handleToggleFavorite = (assetOrId) => {
-    const id = typeof assetOrId === 'string' ? assetOrId : assetOrId?.id;
+    const id = typeof assetOrId === "string" ? assetOrId : assetOrId?.id;
     if (!id) return;
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((fav) => fav !== id) : [...prev, id],
@@ -102,13 +109,19 @@ export default function MarketsScreen() {
 
         <MarketStatsStrip asset={selectedAsset} />
 
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
           <TimeframeShortcutRow
             options={QUICK_TIMEFRAMES}
             active={timeframe}
             onChange={setTimeframe}
           />
-          <View style={{ flexDirection: 'row', gap: 12 }}>
+          <View style={{ flexDirection: "row", gap: 12 }}>
             <TouchableIcon name="swap-horizontal" />
             <TouchableIcon name="chart-line" />
             <TouchableIcon name="dots-horizontal" />
@@ -168,11 +181,15 @@ function TouchableIcon({ name }) {
         height: 36,
         borderRadius: 12,
         backgroundColor: withOpacity(colors.backgroundSecondary, 0.4),
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: "center",
+        justifyContent: "center",
       }}
     >
-      <MaterialCommunityIcons name={name} size={18} color={colors.text.secondary} />
+      <MaterialCommunityIcons
+        name={name}
+        size={18}
+        color={colors.text.secondary}
+      />
     </TouchableOpacity>
   );
 }

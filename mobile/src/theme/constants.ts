@@ -15,28 +15,28 @@ export const LAYOUT = {
  * Common spacing values (Dripsy tokens)
  */
 export const SPACING = {
-  XXS: 0.5,  // 2px
-  XS: 1,     // 4px
-  SM: 2,     // 8px
-  MD: 3,     // 12px
-  LG: 4,     // 16px
-  XL: 6,     // 24px
-  XXL: 8,    // 32px
+  XXS: 0.5, // 2px
+  XS: 1, // 4px
+  SM: 2, // 8px
+  MD: 3, // 12px
+  LG: 4, // 16px
+  XL: 6, // 24px
+  XXL: 8, // 32px
 } as const;
 
 /**
  * Border radius values (Dripsy tokens)
  */
 export const RADIUS = {
-  XS: 'xs',    // 4px
-  SM: 'sm',    // 6px
-  MD: 'md',    // 8px
-  LG: 'lg',    // 12px
-  XL: 'xl',    // 16px
-  XXL: '2xl',  // 20px
-  XXXL: '3xl', // 24px
-  FULL: 'full',
-  NONE: 'none',
+  XS: "xs", // 4px
+  SM: "sm", // 6px
+  MD: "md", // 8px
+  LG: "lg", // 12px
+  XL: "xl", // 16px
+  XXL: "2xl", // 20px
+  XXXL: "3xl", // 24px
+  FULL: "full",
+  NONE: "none",
 } as const;
 
 /**

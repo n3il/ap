@@ -1,9 +1,9 @@
-import React from 'react';
-import { withOpacity, useColors } from '@/theme';
-import Image from './Image';
-import View from './View';
-import Text from './Text';
-import { useTheme } from '@/contexts/ThemeContext';
+import React from "react";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useColors, withOpacity } from "@/theme";
+import Image from "./Image";
+import Text from "./Text";
+import View from "./View";
 
 /**
  * Size variants for Avatar component
@@ -18,17 +18,15 @@ const AVATAR_SIZES = {
 
 const FONT_STYLES = {
   default: {
-    fontWeight: '500',
-    textTransform: 'uppercase',
-    fontFamily: 'monospace'
-  }
-}
+    fontWeight: "500",
+    textTransform: "uppercase",
+    fontFamily: "monospace",
+  },
+};
 
 const truncateText = (textStr, maxSize = 25) => {
-  return textStr.length > maxSize
-    ? `${textStr.slice(0, maxSize)}...`
-    : textStr;
-}
+  return textStr.length > maxSize ? `${textStr.slice(0, maxSize)}...` : textStr;
+};
 
 /**
  * Avatar Component
@@ -51,84 +49,111 @@ export default function Avatar({
   backgroundColor,
   name,
   email,
-  size = 'lg',
+  size = "lg",
   showDetails = true,
 }) {
   // Get size configuration
   const sizeConfig = AVATAR_SIZES[size] || AVATAR_SIZES.lg;
-  const { size: avatarSize, fontSize, lineHeight, nameSize, emailSize } = sizeConfig;
+  const {
+    size: avatarSize,
+    fontSize,
+    lineHeight,
+    nameSize,
+    emailSize,
+  } = sizeConfig;
   const { colors: palette } = useColors();
-  const fallbackColor = palette.brand500 ?? palette.primary ?? palette.accent ?? palette.surfaceSecondary;
+  const fallbackColor =
+    palette.brand500 ??
+    palette.primary ??
+    palette.accent ??
+    palette.surfaceSecondary;
   const resolvedBackground = backgroundColor ?? fallbackColor;
 
   const getInitials = (name, email) => {
     if (name) {
-      const names = name.split(' ');
-      return names.map(n => n[0]).join('').toUpperCase().slice(0, 1);
+      const names = name.split(" ");
+      return names
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 1);
     }
     if (email) {
       return email.slice(0, 2).toUpperCase();
     }
-    return 'U';
+    return "U";
   };
 
   const shouldShowDetails = showDetails && (name || email);
 
   return (
-    <View sx={{ flexDirection: 'row', alignItems: 'center', flexShrink: 1 }}>
-
+    <View sx={{ flexDirection: "row", alignItems: "center", flexShrink: 1 }}>
       <View
         sx={{
           width: avatarSize,
           height: avatarSize,
-          borderRadius: 'full',
-          alignItems: 'center',
-          justifyContent: 'center',
+          borderRadius: "full",
+          alignItems: "center",
+          justifyContent: "center",
           backgroundColor: withOpacity(resolvedBackground, 0.7),
           borderWidth: 0,
           borderColor: resolvedBackground,
-          alignSelf: 'flex-start',
+          alignSelf: "flex-start",
         }}
       >
         {imgSrc ? (
           <Image
             source={{ uri: imgSrc }}
-            style={{ width: avatarSize, height: avatarSize, borderRadius: avatarSize / 2 }}
+            style={{
+              width: avatarSize,
+              height: avatarSize,
+              borderRadius: avatarSize / 2,
+            }}
           />
-        ) : (
-          (name || email) ? (
-            <Text style={{
+        ) : name || email ? (
+          <Text
+            style={{
               fontSize,
-              color: 'foreground',
+              color: "foreground",
               lineHeight,
-              ...FONT_STYLES.default
-            }}>
-              {getInitials(name, email)}
-            </Text>
-          ) : null
-        )}
+              ...FONT_STYLES.default,
+            }}
+          >
+            {getInitials(name, email)}
+          </Text>
+        ) : null}
       </View>
 
       {shouldShowDetails && (
-        <View sx={{ marginLeft: size === 'xs' ? 2 : size === 'sm' ? 3 : 4, flex: 1, justifyContent: 'center' }}>
+        <View
+          sx={{
+            marginLeft: size === "xs" ? 2 : size === "sm" ? 3 : 4,
+            flex: 1,
+            justifyContent: "center",
+          }}
+        >
           {name && (
-            <Text sx={{
-              fontSize: nameSize,
-              fontWeight: '700',
-              color: 'textPrimary',
-              // truncate
-              ...FONT_STYLES.default
-            }}>
+            <Text
+              sx={{
+                fontSize: nameSize,
+                fontWeight: "700",
+                color: "textPrimary",
+                // truncate
+                ...FONT_STYLES.default,
+              }}
+            >
               {truncateText(name)}
             </Text>
           )}
           {email && (
-            <Text sx={{
-              fontSize: emailSize,
-              color: 'textSecondary',
-              marginTop: 0.5,
-              ...FONT_STYLES.default
-            }}>
+            <Text
+              sx={{
+                fontSize: emailSize,
+                color: "textSecondary",
+                marginTop: 0.5,
+                ...FONT_STYLES.default,
+              }}
+            >
               {email}
             </Text>
           )}

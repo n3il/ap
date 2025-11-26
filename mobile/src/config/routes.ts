@@ -10,80 +10,80 @@
 export const ROUTES = {
   // Getting Started
   INDEX: {
-    path: '/index',
+    path: "/index",
     requiresAuthentication: false,
   },
 
   // Auth Routes - Always allow unauthenticated
   AUTH_ONBOARDING: {
-    path: '/(auth)/onboarding',
+    path: "/(auth)/onboarding",
     requiresAuthentication: false,
   },
   AUTH_VERIFY_OTP: {
-    path: '/(auth)/verify-otp',
+    path: "/(auth)/verify-otp",
     requiresAuthentication: false,
   },
   AUTH_FORGOT_PASSWORD: {
-    path: '/(auth)/forgot-password',
+    path: "/(auth)/forgot-password",
     requiresAuthentication: false,
   },
   AUTH_INDEX: {
-    path: '/(auth)',
+    path: "/(auth)",
     requiresAuthentication: false,
   },
 
   // Tabs Routes - Some optional, some always require auth
   TABS_INDEX: {
-    path: '/(tabs)',
-    requiresAuthentication: 'optional',
+    path: "/(tabs)",
+    requiresAuthentication: "optional",
   },
   // Explore Routes - Always require auth
   TABS_EXPLORE_INDEX: {
-    path: '/(tabs)/(explore)/index',
-    requiresAuthentication: 'optional',
+    path: "/(tabs)/(explore)/index",
+    requiresAuthentication: "optional",
   },
   TABS_MARKETS_TRADE: {
-    path: '/(tabs)/(markets)/index',
-    requiresAuthentication: 'optional',
+    path: "/(tabs)/(markets)/index",
+    requiresAuthentication: "optional",
   },
   TABS_EXPLORE_AGENT: {
-    path: '/(tabs)/(explore)/agent',
-    requiresAuthentication: 'optional',
+    path: "/(tabs)/(explore)/agent",
+    requiresAuthentication: "optional",
   },
   TABS_AGENTS: {
-    path: '/(tabs)/(agents)/index',
-    requiresAuthentication: 'optional',
+    path: "/(tabs)/(agents)/index",
+    requiresAuthentication: "optional",
   },
   TABS_EXPLORE_AGENT_ID: {
-    path: '/(tabs)/(agents)/[id]',
-    requiresAuthentication: 'optional',
+    path: "/(tabs)/(agents)/[id]",
+    requiresAuthentication: "optional",
   },
   TABS_EXPLORE_AGENT_ID_INDEX: {
-    path: '/(tabs)/(agents)/[id]/index',
-    requiresAuthentication: 'optional',
+    path: "/(tabs)/(agents)/[id]/index",
+    requiresAuthentication: "optional",
   },
   TABS_EXPLORE_AGENT_ID_MANAGE: {
-    path: '/(tabs)/(agents)/[id]/manage',
+    path: "/(tabs)/(agents)/[id]/manage",
     requiresAuthentication: true,
   },
 
   // Profile Routes - Always require auth
   TABS_PROFILE_INDEX: {
-    path: '/(tabs)/(profile)/index',
+    path: "/(tabs)/(profile)/index",
     requiresAuthentication: true,
   },
   TABS_PROFILE_ACCOUNT_SETTINGS: {
-    path: '/(tabs)/(profile)/account-settings',
+    path: "/(tabs)/(profile)/account-settings",
     requiresAuthentication: true,
   },
 
   // Performance & Trades - Always require auth
   TABS_PERFORMANCE: {
-    path: '/(tabs)/performance',
+    path: "/(tabs)/performance",
     requiresAuthentication: true,
   },
   TABS_TRADES: {
-    path: '/(tabs)/trades',
+    path: "/(tabs)/trades",
     requiresAuthentication: true,
   },
 };
@@ -97,7 +97,9 @@ export const ROUTES = {
  */
 export function isRouteAccessible(path, isAuthenticated, requireAuth = true) {
   // Find the route config
-  const routeConfig = Object.values(ROUTES).find(route => route.path === path);
+  const routeConfig = Object.values(ROUTES).find(
+    (route) => route.path === path,
+  );
 
   if (!routeConfig) {
     // Unknown route, default to requiring auth
@@ -117,7 +119,7 @@ export function isRouteAccessible(path, isAuthenticated, requireAuth = true) {
   }
 
   // Optional - depends on REQUIRE_AUTH setting
-  if (requiresAuthentication === 'optional') {
+  if (requiresAuthentication === "optional") {
     if (requireAuth) {
       // REQUIRE_AUTH=true, so this route requires auth
       return isAuthenticated;
@@ -136,8 +138,8 @@ export function isRouteAccessible(path, isAuthenticated, requireAuth = true) {
  * @returns {string} - The path to redirect to
  */
 export function getDefaultUnauthenticatedRoute(
-  requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === 'true',
-  showGetStartedScreen = process.env.EXPO_PUBLIC_SHOW_GET_STARTED === 'true',
+  requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === "true",
+  showGetStartedScreen = process.env.EXPO_PUBLIC_SHOW_GET_STARTED === "true",
 ) {
   if (requireAuth) {
     return ROUTES.INDEX.path;

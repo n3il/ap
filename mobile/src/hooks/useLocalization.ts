@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { i18n, getLocales } from '@/config/i18n';
+import { useEffect, useState } from "react";
+import { getLocales, i18n } from "@/config/i18n";
 
 /**
  * Hook to use localization in React components

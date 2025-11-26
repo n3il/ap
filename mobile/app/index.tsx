@@ -1,25 +1,31 @@
-import React, { useRef, useState, useEffect, useCallback, useMemo } from 'react';
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+import { useVideoPlayer, VideoView } from "expo-video";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
+import InfoSlides from "@/components/InfoSlides";
 import {
-  View,
+  Animated,
+  Button,
+  Dimensions,
+  GlassButton,
+  SafeAreaView,
+  StatusBar,
   Text,
   TouchableOpacity,
-  Dimensions,
-  StatusBar,
-  Animated,
-  SafeAreaView,
-  Button,
-  GlassButton,
-} from '@/components/ui';
-import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { VideoView, useVideoPlayer } from 'expo-video';
-import InfoSlides from '@/components/InfoSlides';
-import useRouteAuth from '@/hooks/useRouteAuth';
-import { getDefaultUnauthenticatedRoute, ROUTES } from '@/config/routes';
-import { useColors } from '@/theme';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
+  View,
+} from "@/components/ui";
+import { getDefaultUnauthenticatedRoute, ROUTES } from "@/config/routes";
+import useRouteAuth from "@/hooks/useRouteAuth";
+import { useColors } from "@/theme";
 
-const { width, height } = Dimensions.get('window');
+const { width, height } = Dimensions.get("window");
 
 export default function GetStartedScreen() {
   const [currentSlide, setCurrentSlide] = useState(null);
@@ -55,7 +61,7 @@ export default function GetStartedScreen() {
   const handleAuth = (type) => {
     router.push({
       pathname: ROUTES.AUTH_INDEX.path,
-      params: { type }
+      params: { type },
     });
   };
 
@@ -63,8 +69,8 @@ export default function GetStartedScreen() {
     router.push(getDefaultUnauthenticatedRoute());
   };
 
-  const videoSrc = require('@/../assets/3571264-hd_1920_1080_30fps.mp4');
-  const player = useVideoPlayer(videoSrc, player => {
+  const videoSrc = require("@/../assets/3571264-hd_1920_1080_30fps.mp4");
+  const player = useVideoPlayer(videoSrc, (player) => {
     player.loop = true;
     player.muted = true;
     player.play();
@@ -79,12 +85,12 @@ export default function GetStartedScreen() {
   }, []);
 
   return (
-    <View sx={{ flex: 1, backgroundColor: 'black', }}>
+    <View sx={{ flex: 1, backgroundColor: "black" }}>
       <VideoView
         style={{
           width,
           height,
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
@@ -97,9 +103,9 @@ export default function GetStartedScreen() {
       />
 
       <LinearGradient
-      colors={gradient}
+        colors={gradient}
         style={{
-          position: 'absolute',
+          position: "absolute",
           top: 0,
           left: 0,
           right: 0,
@@ -123,34 +129,66 @@ export default function GetStartedScreen() {
           <InfoSlides onSlideChange={handleSlideChange} />
 
           <View sx={{ paddingHorizontal: 8, paddingBottom: 4 }}>
-            <View sx={{ flexDirection: 'row', justifyContent: 'space-evenly', alignItems: 'center', gap: 3 }}>
+            <View
+              sx={{
+                flexDirection: "row",
+                justifyContent: "space-evenly",
+                alignItems: "center",
+                gap: 3,
+              }}
+            >
               <GlassButton
-                onPress={() => handleAuth('login')}
+                onPress={() => handleAuth("login")}
                 style={{
                   flex: 1,
-                  textAlign: 'center',
+                  textAlign: "center",
                 }}
                 tintColor={withOpacity(palette.surface, 0.9)}
                 glassEffectStyle="clear"
               >
-                <Text variant="lg" sx={{ fontWeight: 300, color: 'foreground', textAlign: 'center' }}>
+                <Text
+                  variant="lg"
+                  sx={{
+                    fontWeight: 300,
+                    color: "foreground",
+                    textAlign: "center",
+                  }}
+                >
                   Log in
                 </Text>
               </GlassButton>
 
               <GlassButton
-                onPress={() => handleAuth('signup')}
+                onPress={() => handleAuth("signup")}
                 style={{
                   flexGrow: 1,
                 }}
                 tintColor={palette.primary500}
                 glassEffectStyle="regular"
               >
-                <View sx={{ flexDirection: 'row', alignItems: 'center', gap: 2, justifyContent: 'center' }}>
-                  <Text variant="lg" sx={{ fontWeight: 500, color: 'foreground', textAlign: 'center' }}>
+                <View
+                  sx={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 2,
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    variant="lg"
+                    sx={{
+                      fontWeight: 500,
+                      color: "foreground",
+                      textAlign: "center",
+                    }}
+                  >
                     Get started
                   </Text>
-                  <MaterialCommunityIcons name="arrow-right" size={24} color={palette.foreground} />
+                  <MaterialCommunityIcons
+                    name="arrow-right"
+                    size={24}
+                    color={palette.foreground}
+                  />
                 </View>
               </GlassButton>
             </View>
@@ -158,21 +196,18 @@ export default function GetStartedScreen() {
             {true && (
               <GlassButton
                 style={{
-                  alignItems: 'center',
-                  justifyContent: 'center',
+                  alignItems: "center",
+                  justifyContent: "center",
                   marginTop: 3,
                   borderRadius: 36,
-                  alignSelf: 'center',
+                  alignSelf: "center",
                   paddingHorizontal: 16,
                   marginTop: 16,
                 }}
                 onPress={handleContinueWithoutAuth}
                 activeOpacity={0.8}
               >
-
-                <Text>
-                  Continue without an account
-                </Text>
+                <Text>Continue without an account</Text>
               </GlassButton>
             )}
           </View>

@@ -1,10 +1,10 @@
-import React, { useMemo } from 'react';
-import { View, Text, TouchableOpacity } from '@/components/ui';
-import { MaterialIcons } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+import { MaterialIcons } from "@expo/vector-icons";
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useMemo } from "react";
+import { Text, TouchableOpacity, View } from "@/components/ui";
 
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
 export default function AccountBalance({
   balance = 0,
@@ -51,7 +51,7 @@ export default function AccountBalance({
                 { color: unrealizedPnl >= 0 ? depositColor : withdrawColor },
               ]}
             >
-              {unrealizedPnl >= 0 ? '+' : '-'}$
+              {unrealizedPnl >= 0 ? "+" : "-"}$
               {Math.abs(unrealizedPnl).toFixed(2)} Unrealized
             </Text>
           )}
@@ -77,7 +77,11 @@ export default function AccountBalance({
             <Text
               style={[
                 styles.statValue,
-                { color: isHealthy ? depositColor : theme.colors.warning.DEFAULT },
+                {
+                  color: isHealthy
+                    ? depositColor
+                    : theme.colors.warning.DEFAULT,
+                },
               ]}
             >
               {marginUsagePercent.toFixed(1)}%
@@ -92,7 +96,9 @@ export default function AccountBalance({
                 styles.marginBarFill,
                 {
                   width: `${Math.min(marginUsagePercent, 100)}%`,
-                  backgroundColor: isHealthy ? depositColor : theme.colors.warning.DEFAULT,
+                  backgroundColor: isHealthy
+                    ? depositColor
+                    : theme.colors.warning.DEFAULT,
                 },
               ]}
             />
@@ -106,7 +112,11 @@ export default function AccountBalance({
           </TouchableOpacity>
           <View style={styles.actionDivider} />
           <TouchableOpacity style={styles.actionButton} onPress={onWithdraw}>
-            <MaterialIcons name="remove-circle" size={20} color={withdrawColor} />
+            <MaterialIcons
+              name="remove-circle"
+              size={20}
+              color={withdrawColor}
+            />
             <Text style={styles.actionText}>Withdraw</Text>
           </TouchableOpacity>
         </View>
@@ -120,7 +130,7 @@ const createStyles = (theme) => {
   return {
     container: {
       borderRadius: 20,
-      overflow: 'hidden',
+      overflow: "hidden",
       borderWidth: 1,
       borderColor: withOpacity(colors.border, 0.2),
       backgroundColor: withOpacity(colors.card.DEFAULT, 0.9),
@@ -129,7 +139,7 @@ const createStyles = (theme) => {
       padding: 20,
     },
     mainBalance: {
-      alignItems: 'center',
+      alignItems: "center",
       marginBottom: 20,
       paddingBottom: 20,
       borderBottomWidth: 1,
@@ -137,65 +147,65 @@ const createStyles = (theme) => {
     },
     balanceLabel: {
       fontSize: 12,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.secondary,
-      textTransform: 'uppercase',
+      textTransform: "uppercase",
       letterSpacing: 1,
       marginBottom: 8,
     },
     balanceValue: {
       fontSize: 36,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     pnlValue: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       marginTop: 6,
     },
     statsGrid: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexDirection: "row",
+      flexWrap: "wrap",
       marginBottom: 16,
     },
     statItem: {
-      width: '50%',
+      width: "50%",
       marginBottom: 16,
     },
     statLabel: {
       fontSize: 11,
       color: colors.text.secondary,
       marginBottom: 4,
-      textTransform: 'uppercase',
+      textTransform: "uppercase",
       letterSpacing: 0.5,
     },
     statValue: {
       fontSize: 16,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     marginBar: {
       height: 6,
       backgroundColor: withOpacity(colors.backgroundSecondary, 0.6),
       borderRadius: 3,
-      overflow: 'hidden',
+      overflow: "hidden",
       marginBottom: 16,
     },
     marginBarFill: {
-      height: '100%',
+      height: "100%",
       borderRadius: 3,
     },
     actions: {
-      flexDirection: 'row',
+      flexDirection: "row",
       backgroundColor: withOpacity(colors.backgroundSecondary, 0.5),
       borderRadius: 12,
       padding: 4,
     },
     actionButton: {
       flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
       paddingVertical: 12,
       gap: 6,
     },
@@ -205,7 +215,7 @@ const createStyles = (theme) => {
     },
     actionText: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
     },
   };

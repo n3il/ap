@@ -1,24 +1,26 @@
-import { useEffect, useMemo, useRef } from 'react';
-import { create } from 'zustand';
-import { priceService } from '@/services/priceService';
+import { useEffect, useMemo, useRef } from "react";
+import { create } from "zustand";
+import { priceService } from "@/services/priceService";
 
-const DEFAULT_TICKERS = ['BTC', 'ETH', 'SOL'];
+const DEFAULT_TICKERS = ["BTC", "ETH", "SOL"];
 
 const connectionStrengthThresholds = (diff) => {
-  if (diff < 2) return 'strong';
-  if (diff < 5) return 'moderate';
-  return 'weak';
-}
+  if (diff < 2) return "strong";
+  if (diff < 5) return "moderate";
+  return "weak";
+};
 
 // Normalize tickers input to array of uppercase strings
 const normalizeTickers = (tickers) => {
   if (!tickers) return DEFAULT_TICKERS;
   if (Array.isArray(tickers)) {
-    return tickers.length ? tickers.map((token) => token.toUpperCase()) : DEFAULT_TICKERS;
+    return tickers.length
+      ? tickers.map((token) => token.toUpperCase())
+      : DEFAULT_TICKERS;
   }
-  if (typeof tickers === 'string') {
+  if (typeof tickers === "string") {
     const parsed = tickers
-      .split(',')
+      .split(",")
       .map((token) => token.trim().toUpperCase())
       .filter(Boolean);
     return parsed.length ? parsed : DEFAULT_TICKERS;
@@ -33,7 +35,7 @@ const useMarketPricesStore = create((set, get) => ({
   tickers: {},
 
   // WebSocket connection state
-  connectionStatus: 'disconnected', // 'connected' | 'connecting' | 'disconnected' | 'error'
+  connectionStatus: "disconnected", // 'connected' | 'connecting' | 'disconnected' | 'error'
   connectionStrength: null, // null | 'weak' | 'moderate' | 'strong' or numeric value (0-100)
   lastConnectionChange: null,
   timeDiff: null,
@@ -42,7 +44,7 @@ const useMarketPricesStore = create((set, get) => ({
   // Update connection status
   setConnectionStatus: (status) => {
     const prevChange = get().lastConnectionChange;
-    const now = Date.now()
+    const now = Date.now();
     const updates = {
       connectionStatus: status,
       lastConnectionChange: now,
@@ -50,7 +52,7 @@ const useMarketPricesStore = create((set, get) => ({
     };
 
     // Reset reconnect attempts when connected
-    if (status === 'connected') {
+    if (status === "connected") {
       updates.reconnectAttempts = 0;
     }
 
@@ -68,7 +70,7 @@ const useMarketPricesStore = create((set, get) => ({
     };
 
     // Reset reconnect attempts when connected
-    if (status === 'connected') {
+    if (status === "connected") {
       updates.reconnectAttempts = 0;
     }
 
@@ -204,10 +206,10 @@ const useMarketPricesStore = create((set, get) => ({
 export function useMarketPrices(tickers) {
   const normalizedTickers = useMemo(
     () => normalizeTickers(tickers),
-    [Array.isArray(tickers) ? tickers.join(',') : tickers]
+    [Array.isArray(tickers) ? tickers.join(",") : tickers],
   );
 
-  const tickersKey = normalizedTickers.join(',');
+  const tickersKey = normalizedTickers.join(",");
 
   const {
     tickers: allTickers,
@@ -241,7 +243,7 @@ export function useMarketPrices(tickers) {
       if (!isActive) return;
 
       // Set connecting status
-      setConnectionStatus('connecting');
+      setConnectionStatus("connecting");
 
       // Clear existing subscription if any
       if (unsubscribeRef.current) {
@@ -249,32 +251,35 @@ export function useMarketPrices(tickers) {
         unsubscribeRef.current = null;
       }
 
-      unsubscribeRef.current = priceService.subscribeToMarketSnapshot(normalizedTickers, {
-        onUpdate: ({ assets, timestamp, raw }) => {
-          if (!isActive) return;
-          updateTickers(assets, timestamp, raw);
-          updateConnectionState('connected', null);
-        },
-        onError: (error) => {
-          if (!isActive) return;
-          setError(normalizedTickers, error);
-          setConnectionStatus('error');
-        },
-        onConnectionChange: (status, strength) => {
-          if (!isActive) return;
-          // Handle connection state updates from priceService
-          if (strength !== undefined) {
-            updateConnectionState(status, strength);
-          } else {
-            setConnectionStatus(status);
-          }
+      unsubscribeRef.current = priceService.subscribeToMarketSnapshot(
+        normalizedTickers,
+        {
+          onUpdate: ({ assets, timestamp, raw }) => {
+            if (!isActive) return;
+            updateTickers(assets, timestamp, raw);
+            updateConnectionState("connected", null);
+          },
+          onError: (error) => {
+            if (!isActive) return;
+            setError(normalizedTickers, error);
+            setConnectionStatus("error");
+          },
+          onConnectionChange: (status, strength) => {
+            if (!isActive) return;
+            // Handle connection state updates from priceService
+            if (strength !== undefined) {
+              updateConnectionState(status, strength);
+            } else {
+              setConnectionStatus(status);
+            }
 
-          // Trigger reconnection on disconnect
-          if (status === 'disconnected' || status === 'error') {
-            scheduleReconnect();
-          }
+            // Trigger reconnection on disconnect
+            if (status === "disconnected" || status === "error") {
+              scheduleReconnect();
+            }
+          },
         },
-      });
+      );
     };
 
     const scheduleReconnect = () => {
@@ -288,9 +293,11 @@ export function useMarketPrices(tickers) {
       const currentAttempts = useMarketPricesStore.getState().reconnectAttempts;
 
       // Exponential backoff: 1s, 2s, 4s, 8s, 16s, max 30s
-      const delay = Math.min(1000 * Math.pow(2, currentAttempts), 30000);
+      const delay = Math.min(1000 * 2 ** currentAttempts, 30000);
 
-      console.log(`Reconnecting in ${delay}ms (attempt ${currentAttempts + 1})`);
+      console.log(
+        `Reconnecting in ${delay}ms (attempt ${currentAttempts + 1})`,
+      );
 
       incrementReconnectAttempts();
 
@@ -327,23 +334,29 @@ export function useMarketPrices(tickers) {
   const assets = useMemo(() => {
     return normalizedTickers.map((symbol) => {
       const tickerData = allTickers[symbol];
-      return tickerData?.asset ?? {
-        id: symbol,
-        symbol: symbol,
-        name: symbol,
-        price: null,
-      };
+      return (
+        tickerData?.asset ?? {
+          id: symbol,
+          symbol: symbol,
+          name: symbol,
+          price: null,
+        }
+      );
     });
   }, [normalizedTickers, allTickers]);
 
   // Get loading state (true if any ticker is loading)
   const isLoading = useMemo(() => {
-    return normalizedTickers.some((symbol) => allTickers[symbol]?.isLoading ?? true);
+    return normalizedTickers.some(
+      (symbol) => allTickers[symbol]?.isLoading ?? true,
+    );
   }, [normalizedTickers, allTickers]);
 
   // Get updating state (true if any ticker is updating)
   const isUpdating = useMemo(() => {
-    return normalizedTickers.some((symbol) => allTickers[symbol]?.isUpdating ?? false);
+    return normalizedTickers.some(
+      (symbol) => allTickers[symbol]?.isUpdating ?? false,
+    );
   }, [normalizedTickers, allTickers]);
 
   // Get error state (first error found)

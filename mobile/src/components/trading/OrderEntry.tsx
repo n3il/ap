@@ -1,35 +1,35 @@
-import React, { useState, useMemo } from 'react';
+import { LinearGradient } from "expo-linear-gradient";
+import React, { useMemo, useState } from "react";
 import {
-  View,
+  ActivityIndicator,
+  Alert,
   Text,
   TextInput,
   TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-} from '@/components/ui';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+  View,
+} from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
 const LEVERAGE_OPTIONS = [1, 2, 5, 10, 20, 50];
 
 export default function OrderEntry({
-  symbol = 'BTC',
+  symbol = "BTC",
   currentPrice = 0,
   onPlaceOrder,
   isLoading = false,
 }) {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
-  const [orderType, setOrderType] = useState('LIMIT'); // LIMIT or MARKET
-  const [side, setSide] = useState('BUY'); // BUY or SELL
-  const [amount, setAmount] = useState('');
-  const [price, setPrice] = useState('');
+  const [orderType, setOrderType] = useState("LIMIT"); // LIMIT or MARKET
+  const [side, setSide] = useState("BUY"); // BUY or SELL
+  const [amount, setAmount] = useState("");
+  const [price, setPrice] = useState("");
   const [leverage, setLeverage] = useState(1);
   const [reduceOnly, setReduceOnly] = useState(false);
 
   const effectivePrice = useMemo(() => {
-    if (orderType === 'MARKET') return currentPrice;
+    if (orderType === "MARKET") return currentPrice;
     return price ? parseFloat(price) : currentPrice;
   }, [orderType, price, currentPrice]);
 
@@ -40,21 +40,21 @@ export default function OrderEntry({
 
   const handlePlaceOrder = () => {
     if (!amount || parseFloat(amount) <= 0) {
-      Alert.alert('Invalid Amount', 'Please enter a valid amount');
+      Alert.alert("Invalid Amount", "Please enter a valid amount");
       return;
     }
 
-    if (orderType === 'LIMIT' && (!price || parseFloat(price) <= 0)) {
-      Alert.alert('Invalid Price', 'Please enter a valid price');
+    if (orderType === "LIMIT" && (!price || parseFloat(price) <= 0)) {
+      Alert.alert("Invalid Price", "Please enter a valid price");
       return;
     }
 
     const order = {
       symbol,
-      side: side === 'BUY' ? 'LONG' : 'SHORT',
+      side: side === "BUY" ? "LONG" : "SHORT",
       type: orderType,
       amount: parseFloat(amount),
-      price: orderType === 'LIMIT' ? parseFloat(price) : currentPrice,
+      price: orderType === "LIMIT" ? parseFloat(price) : currentPrice,
       leverage,
       reduceOnly,
     };
@@ -62,24 +62,29 @@ export default function OrderEntry({
     onPlaceOrder?.(order);
   };
 
-  const isBuy = side === 'BUY';
+  const isBuy = side === "BUY";
   const gradientColors = isBuy
     ? [
-        withOpacity(theme.colors.success.light ?? theme.colors.success.DEFAULT, 0.85),
+        withOpacity(
+          theme.colors.success.light ?? theme.colors.success.DEFAULT,
+          0.85,
+        ),
         theme.colors.success.DEFAULT,
       ]
     : [
-        withOpacity(theme.colors.error.light ?? theme.colors.error.DEFAULT, 0.85),
+        withOpacity(
+          theme.colors.error.light ?? theme.colors.error.DEFAULT,
+          0.85,
+        ),
         theme.colors.error.DEFAULT,
       ];
 
   return (
     <View style={styles.container}>
-      
       <View style={styles.section}>
         <Text style={styles.label}>Order Type</Text>
         <View style={styles.buttonGroup}>
-          {['LIMIT', 'MARKET'].map((type) => (
+          {["LIMIT", "MARKET"].map((type) => (
             <TouchableOpacity
               key={type}
               onPress={() => setOrderType(type)}
@@ -101,10 +106,9 @@ export default function OrderEntry({
         </View>
       </View>
 
-      
       <View style={styles.sideSelector}>
         <TouchableOpacity
-          onPress={() => setSide('BUY')}
+          onPress={() => setSide("BUY")}
           style={[styles.sideButton, isBuy && styles.sideBuyActive]}
         >
           <Text style={[styles.sideText, isBuy && styles.sideTextActive]}>
@@ -112,7 +116,7 @@ export default function OrderEntry({
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setSide('SELL')}
+          onPress={() => setSide("SELL")}
           style={[styles.sideButton, !isBuy && styles.sideSellActive]}
         >
           <Text style={[styles.sideText, !isBuy && styles.sideTextActive]}>
@@ -121,8 +125,7 @@ export default function OrderEntry({
         </TouchableOpacity>
       </View>
 
-      
-      {orderType === 'LIMIT' && (
+      {orderType === "LIMIT" && (
         <View style={styles.section}>
           <Text style={styles.label}>Price (USD)</Text>
           <TextInput
@@ -136,7 +139,6 @@ export default function OrderEntry({
         </View>
       )}
 
-      
       <View style={styles.section}>
         <Text style={styles.label}>Amount ({symbol})</Text>
         <TextInput
@@ -164,7 +166,6 @@ export default function OrderEntry({
         </View>
       </View>
 
-      
       <View style={styles.section}>
         <Text style={styles.label}>Leverage: {leverage}x</Text>
         <View style={styles.leverageButtons}>
@@ -190,7 +191,6 @@ export default function OrderEntry({
         </View>
       </View>
 
-      
       <TouchableOpacity
         style={styles.checkboxRow}
         onPress={() => setReduceOnly(!reduceOnly)}
@@ -201,7 +201,6 @@ export default function OrderEntry({
         <Text style={styles.checkboxLabel}>Reduce Only</Text>
       </TouchableOpacity>
 
-      
       <View style={styles.summary}>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Total Value</Text>
@@ -209,11 +208,12 @@ export default function OrderEntry({
         </View>
         <View style={styles.summaryRow}>
           <Text style={styles.summaryLabel}>Estimated Fee</Text>
-          <Text style={styles.summaryValue}>~${(totalValue * 0.0005).toFixed(2)}</Text>
+          <Text style={styles.summaryValue}>
+            ~${(totalValue * 0.0005).toFixed(2)}
+          </Text>
         </View>
       </View>
 
-      
       <TouchableOpacity
         onPress={handlePlaceOrder}
         disabled={isLoading}
@@ -253,14 +253,14 @@ const createStyles = (theme) => {
     },
     label: {
       fontSize: 12,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.secondary,
       marginBottom: 8,
-      textTransform: 'uppercase',
+      textTransform: "uppercase",
       letterSpacing: 1,
     },
     buttonGroup: {
-      flexDirection: 'row',
+      flexDirection: "row",
       gap: 8,
     },
     typeButton: {
@@ -277,19 +277,19 @@ const createStyles = (theme) => {
       backgroundColor: withOpacity(colors.primary.DEFAULT, 0.15),
     },
     typeButtonText: {
-      textAlign: 'center',
+      textAlign: "center",
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.secondary,
     },
     typeButtonTextActive: {
       color: colors.primary.DEFAULT,
     },
     sideSelector: {
-      flexDirection: 'row',
+      flexDirection: "row",
       marginBottom: 16,
       borderRadius: 12,
-      overflow: 'hidden',
+      overflow: "hidden",
       borderWidth: 1,
       borderColor: withOpacity(colors.border, 0.2),
     },
@@ -305,9 +305,9 @@ const createStyles = (theme) => {
       backgroundColor: withOpacity(colors.error.DEFAULT, 0.2),
     },
     sideText: {
-      textAlign: 'center',
+      textAlign: "center",
       fontSize: 15,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.secondary,
     },
     sideTextActive: {
@@ -324,7 +324,7 @@ const createStyles = (theme) => {
       borderColor: withOpacity(colors.border, 0.25),
     },
     percentButtons: {
-      flexDirection: 'row',
+      flexDirection: "row",
       marginTop: 8,
       gap: 6,
     },
@@ -337,14 +337,14 @@ const createStyles = (theme) => {
       borderColor: withOpacity(colors.border, 0.2),
     },
     percentText: {
-      textAlign: 'center',
+      textAlign: "center",
       fontSize: 11,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.secondary,
     },
     leverageButtons: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
+      flexDirection: "row",
+      flexWrap: "wrap",
       gap: 8,
     },
     leverageButton: {
@@ -361,15 +361,15 @@ const createStyles = (theme) => {
     },
     leverageText: {
       fontSize: 13,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.secondary,
     },
     leverageTextActive: {
       color: colors.primary.DEFAULT,
     },
     checkboxRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       marginBottom: 16,
     },
     checkbox: {
@@ -379,8 +379,8 @@ const createStyles = (theme) => {
       borderWidth: 2,
       borderColor: withOpacity(colors.text.tertiary, 0.6),
       marginRight: 8,
-      justifyContent: 'center',
-      alignItems: 'center',
+      justifyContent: "center",
+      alignItems: "center",
     },
     checkboxActive: {
       backgroundColor: colors.primary.DEFAULT,
@@ -389,7 +389,7 @@ const createStyles = (theme) => {
     checkmark: {
       color: colors.foreground,
       fontSize: 12,
-      fontWeight: '700',
+      fontWeight: "700",
     },
     checkboxLabel: {
       fontSize: 14,
@@ -402,8 +402,8 @@ const createStyles = (theme) => {
       marginBottom: 16,
     },
     summaryRow: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
+      flexDirection: "row",
+      justifyContent: "space-between",
       marginBottom: 6,
     },
     summaryLabel: {
@@ -412,22 +412,22 @@ const createStyles = (theme) => {
     },
     summaryValue: {
       fontSize: 13,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
     },
     placeOrderButton: {
       borderRadius: 12,
-      overflow: 'hidden',
+      overflow: "hidden",
     },
     placeOrderGradient: {
       paddingVertical: 16,
-      alignItems: 'center',
+      alignItems: "center",
     },
     placeOrderText: {
       fontSize: 16,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.foreground,
-      textTransform: 'uppercase',
+      textTransform: "uppercase",
       letterSpacing: 1,
     },
   };

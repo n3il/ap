@@ -1,4 +1,4 @@
-import { supabase } from '@/config/supabase';
+import { supabase } from "@/config/supabase";
 
 /**
  * Parse timeframe string (e.g., '1d', '7d', '1h', '30m') to milliseconds
@@ -13,41 +13,48 @@ const parseTimeframe = (timeframe) => {
   const num = parseInt(value, 10);
 
   switch (unit) {
-    case 'm': return num * 60 * 1000; // minutes
-    case 'h': return num * 60 * 60 * 1000; // hours
-    case 'd': return num * 24 * 60 * 60 * 1000; // days
-    default: return null;
+    case "m":
+      return num * 60 * 1000; // minutes
+    case "h":
+      return num * 60 * 60 * 1000; // hours
+    case "d":
+      return num * 24 * 60 * 60 * 1000; // days
+    default:
+      return null;
   }
 };
 
 export const assessmentService = {
   // Fetch all assessments for a specific agent
-  async getAssessmentsByAgent(agentId, { pageParam = 0, pageSize = 10, timeframe = null, after = null } = {}) {
+  async getAssessmentsByAgent(
+    agentId,
+    { pageParam = 0, pageSize = 10, timeframe = null, after = null } = {},
+  ) {
     try {
       const from = pageParam * pageSize;
       const to = from + pageSize - 1;
 
       let query = supabase
-        .from('assessments')
-        .select('*, agent:agents(*)', { count: 'exact' })
-        .eq('agent_id', agentId);
+        .from("assessments")
+        .select("*, agent:agents(*)", { count: "exact" })
+        .eq("agent_id", agentId);
 
       // Filter by timeframe if provided
       if (timeframe) {
         const ms = parseTimeframe(timeframe);
         if (ms) {
           const cutoffDate = new Date(Date.now() - ms).toISOString();
-          query = query.gte('timestamp', cutoffDate);
+          query = query.gte("timestamp", cutoffDate);
         }
       }
 
       // Filter for assessments after a specific timestamp (for polling)
       if (after) {
-        query = query.gt('timestamp', after);
+        query = query.gt("timestamp", after);
       }
 
       const { data, error, count } = await query
-        .order('timestamp', { ascending: false })
+        .order("timestamp", { ascending: false })
         .range(from, to);
 
       if (error) throw error;
@@ -64,24 +71,26 @@ export const assessmentService = {
   // Fetch all assessments for the current user (across all agents)
   async getAllAssessments() {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Not authenticated');
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+      if (!user) throw new Error("Not authenticated");
 
       // First get all agent IDs for the user
       const { data: agents, error: agentsError } = await supabase
-        .from('agents')
-        .select('id')
-        .eq('user_id', user.id);
+        .from("agents")
+        .select("id")
+        .eq("user_id", user.id);
 
       if (agentsError) throw agentsError;
 
-      const agentIds = agents.map(a => a.id);
+      const agentIds = agents.map((a) => a.id);
 
       if (agentIds.length === 0) return [];
 
       // Then get all assessments for those agents
       const { data, error } = await supabase
-        .from('assessments')
+        .from("assessments")
         .select(`
           *,
           agents (
@@ -89,8 +98,8 @@ export const assessmentService = {
             model_name
           )
         `)
-        .in('agent_id', agentIds)
-        .order('timestamp', { ascending: false });
+        .in("agent_id", agentIds)
+        .order("timestamp", { ascending: false });
 
       if (error) throw error;
       return data;
@@ -103,14 +112,14 @@ export const assessmentService = {
   async getLatestAssessment(agentId) {
     try {
       const { data, error } = await supabase
-        .from('assessments')
-        .select('*')
-        .eq('agent_id', agentId)
-        .order('timestamp', { ascending: false })
+        .from("assessments")
+        .select("*")
+        .eq("agent_id", agentId)
+        .order("timestamp", { ascending: false })
         .limit(1)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
+      if (error && error.code !== "PGRST116") throw error; // PGRST116 is "no rows returned"
       return data;
     } catch (error) {
       throw error;
@@ -120,21 +129,23 @@ export const assessmentService = {
   // Get assessment statistics
   async getAssessmentStats(agentId = null) {
     try {
-      let query = supabase.from('assessments').select('*');
+      let query = supabase.from("assessments").select("*");
 
       if (agentId) {
-        query = query.eq('agent_id', agentId);
+        query = query.eq("agent_id", agentId);
       } else {
         // Get all assessments for user's agents
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) throw new Error('Not authenticated');
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+        if (!user) throw new Error("Not authenticated");
 
         const { data: agents } = await supabase
-          .from('agents')
-          .select('id')
-          .eq('user_id', user.id);
+          .from("agents")
+          .select("id")
+          .eq("user_id", user.id);
 
-        const agentIds = agents.map(a => a.id);
+        const agentIds = agents.map((a) => a.id);
         if (agentIds.length === 0) {
           return {
             totalAssessments: 0,
@@ -142,7 +153,7 @@ export const assessmentService = {
           };
         }
 
-        query = query.in('agent_id', agentIds);
+        query = query.in("agent_id", agentIds);
       }
 
       const { data: assessments, error } = await query;
@@ -150,7 +161,9 @@ export const assessmentService = {
 
       return {
         totalAssessments: assessments.length,
-        actionsTriggered: assessments.filter(a => a.trade_action_taken && a.trade_action_taken !== 'NO_ACTION').length,
+        actionsTriggered: assessments.filter(
+          (a) => a.trade_action_taken && a.trade_action_taken !== "NO_ACTION",
+        ).length,
       };
     } catch (error) {
       throw error;
@@ -161,7 +174,7 @@ export const assessmentService = {
   async getAssessmentById(id) {
     try {
       const { data, error } = await supabase
-        .from('assessments')
+        .from("assessments")
         .select(`
           *,
           agents (
@@ -169,10 +182,10 @@ export const assessmentService = {
             model_name
           )
         `)
-        .eq('id', id)
+        .eq("id", id)
         .single();
 
-      if (error && error.code !== 'PGRST116') throw error; // PGRST116 is "no rows returned"
+      if (error && error.code !== "PGRST116") throw error; // PGRST116 is "no rows returned"
       return data;
     } catch (error) {
       throw error;
@@ -188,29 +201,34 @@ export const assessmentService = {
       if (ids.length === 0) return [];
 
       let query = supabase
-        .from('assessments')
-        .select('id, created_at, agent_id, parsed_llm_response->headline->sentiment_score')
-        .in('agent_id', ids);
+        .from("assessments")
+        .select(
+          "id, created_at, agent_id, parsed_llm_response->headline->sentiment_score",
+        )
+        .in("agent_id", ids);
 
       // Filter by timeframe if provided
       if (timeframe) {
         const ms = parseTimeframe(timeframe);
         if (ms) {
           const cutoffDate = new Date(Date.now() - ms).toISOString();
-          query = query.gte('created_at', cutoffDate);
+          query = query.gte("created_at", cutoffDate);
         }
       }
 
       const { data, error } = await query
-        .order('created_at', { ascending: false })
+        .order("created_at", { ascending: false })
         .limit(limit);
 
       if (error) throw error;
 
       // Filter out null sentiment scores and format the response
       return data
-        .filter(item => item.sentiment_score !== null && item.sentiment_score !== undefined)
-        .map(item => ({
+        .filter(
+          (item) =>
+            item.sentiment_score !== null && item.sentiment_score !== undefined,
+        )
+        .map((item) => ({
           id: item.id,
           agent_id: item.agent_id,
           created_at: item.created_at,

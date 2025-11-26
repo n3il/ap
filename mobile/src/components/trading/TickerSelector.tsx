@@ -1,40 +1,44 @@
-import React, { useState, useMemo } from 'react';
+import { MaterialIcons } from "@expo/vector-icons";
+import React, { useMemo, useState } from "react";
 import {
-  View,
+  FlatList,
+  Modal,
   Text,
   TextInput,
   TouchableOpacity,
-  FlatList,
-  Modal,
-} from '@/components/ui';
-import { MaterialIcons } from '@expo/vector-icons';
+  View,
+} from "@/components/ui";
 
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
 const POPULAR_TICKERS = [
-  { symbol: 'BTC', name: 'Bitcoin', category: 'Layer 1' },
-  { symbol: 'ETH', name: 'Ethereum', category: 'Layer 1' },
-  { symbol: 'SOL', name: 'Solana', category: 'Layer 1' },
-  { symbol: 'AVAX', name: 'Avalanche', category: 'Layer 1' },
-  { symbol: 'ARB', name: 'Arbitrum', category: 'Layer 2' },
-  { symbol: 'OP', name: 'Optimism', category: 'Layer 2' },
-  { symbol: 'MATIC', name: 'Polygon', category: 'Layer 2' },
-  { symbol: 'DOGE', name: 'Dogecoin', category: 'Meme' },
-  { symbol: 'SUI', name: 'Sui', category: 'Layer 1' },
-  { symbol: 'LINK', name: 'Chainlink', category: 'Oracle' },
-  { symbol: 'UNI', name: 'Uniswap', category: 'DeFi' },
-  { symbol: 'AAVE', name: 'Aave', category: 'DeFi' },
-  { symbol: 'ADA', name: 'Cardano', category: 'Layer 1' },
-  { symbol: 'DOT', name: 'Polkadot', category: 'Layer 0' },
-  { symbol: 'ATOM', name: 'Cosmos', category: 'Layer 0' },
+  { symbol: "BTC", name: "Bitcoin", category: "Layer 1" },
+  { symbol: "ETH", name: "Ethereum", category: "Layer 1" },
+  { symbol: "SOL", name: "Solana", category: "Layer 1" },
+  { symbol: "AVAX", name: "Avalanche", category: "Layer 1" },
+  { symbol: "ARB", name: "Arbitrum", category: "Layer 2" },
+  { symbol: "OP", name: "Optimism", category: "Layer 2" },
+  { symbol: "MATIC", name: "Polygon", category: "Layer 2" },
+  { symbol: "DOGE", name: "Dogecoin", category: "Meme" },
+  { symbol: "SUI", name: "Sui", category: "Layer 1" },
+  { symbol: "LINK", name: "Chainlink", category: "Oracle" },
+  { symbol: "UNI", name: "Uniswap", category: "DeFi" },
+  { symbol: "AAVE", name: "Aave", category: "DeFi" },
+  { symbol: "ADA", name: "Cardano", category: "Layer 1" },
+  { symbol: "DOT", name: "Polkadot", category: "Layer 0" },
+  { symbol: "ATOM", name: "Cosmos", category: "Layer 0" },
 ];
 
-export default function TickerSelector({ selectedSymbol, onSelectSymbol, prices = {} }) {
+export default function TickerSelector({
+  selectedSymbol,
+  onSelectSymbol,
+  prices = {},
+}) {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [isOpen, setIsOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState("");
 
   const filteredTickers = useMemo(() => {
     if (!searchQuery.trim()) return POPULAR_TICKERS;
@@ -47,13 +51,15 @@ export default function TickerSelector({ selectedSymbol, onSelectSymbol, prices 
     );
   }, [searchQuery]);
 
-  const selectedTicker = POPULAR_TICKERS.find((t) => t.symbol === selectedSymbol);
+  const selectedTicker = POPULAR_TICKERS.find(
+    (t) => t.symbol === selectedSymbol,
+  );
   const currentPrice = prices[selectedSymbol];
 
   const handleSelect = (symbol) => {
     onSelectSymbol?.(symbol);
     setIsOpen(false);
-    setSearchQuery('');
+    setSearchQuery("");
   };
 
   return (
@@ -64,9 +70,9 @@ export default function TickerSelector({ selectedSymbol, onSelectSymbol, prices 
         activeOpacity={0.7}
       >
         <View style={styles.triggerLeft}>
-          <Text style={styles.symbol}>{selectedSymbol || 'BTC'}</Text>
+          <Text style={styles.symbol}>{selectedSymbol || "BTC"}</Text>
           <Text style={styles.name}>
-            {selectedTicker?.name || 'Bitcoin'} / PERP
+            {selectedTicker?.name || "Bitcoin"} / PERP
           </Text>
         </View>
         <View style={styles.triggerRight}>
@@ -168,9 +174,9 @@ const createStyles = (theme) => {
   const { colors } = theme;
   return {
     trigger: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       backgroundColor: withOpacity(colors.card.DEFAULT, 0.92),
       borderRadius: 16,
       padding: 16,
@@ -182,7 +188,7 @@ const createStyles = (theme) => {
     },
     symbol: {
       fontSize: 24,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     name: {
@@ -191,46 +197,46 @@ const createStyles = (theme) => {
       marginTop: 2,
     },
     triggerRight: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       gap: 8,
     },
     price: {
       fontSize: 16,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.success.DEFAULT,
     },
     modalOverlay: {
       flex: 1,
       backgroundColor: withOpacity(colors.background, 0.85),
-      justifyContent: 'flex-end',
+      justifyContent: "flex-end",
     },
     modalContent: {
       backgroundColor: colors.surface,
       borderTopLeftRadius: 24,
       borderTopRightRadius: 24,
-      maxHeight: '85%',
+      maxHeight: "85%",
       borderTopWidth: 1,
       borderLeftWidth: 1,
       borderRightWidth: 1,
       borderColor: withOpacity(colors.border, 0.2),
     },
     modalHeader: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       padding: 20,
       borderBottomWidth: 1,
       borderBottomColor: withOpacity(colors.border, 0.2),
     },
     modalTitle: {
       fontSize: 20,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     searchContainer: {
-      flexDirection: 'row',
-      alignItems: 'center',
+      flexDirection: "row",
+      alignItems: "center",
       backgroundColor: withOpacity(colors.backgroundSecondary, 0.7),
       borderRadius: 12,
       margin: 16,
@@ -250,15 +256,15 @@ const createStyles = (theme) => {
       paddingBottom: 40,
     },
     tickerItem: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
+      flexDirection: "row",
+      justifyContent: "space-between",
+      alignItems: "center",
       padding: 16,
       borderRadius: 12,
       backgroundColor: withOpacity(colors.backgroundSecondary, 0.45),
       marginBottom: 8,
       borderWidth: 1,
-      borderColor: 'transparent',
+      borderColor: "transparent",
     },
     tickerItemActive: {
       borderColor: colors.primary.DEFAULT,
@@ -269,7 +275,7 @@ const createStyles = (theme) => {
     },
     tickerSymbol: {
       fontSize: 18,
-      fontWeight: '700',
+      fontWeight: "700",
       color: colors.text.primary,
     },
     tickerName: {
@@ -277,7 +283,7 @@ const createStyles = (theme) => {
       color: colors.text.secondary,
     },
     categoryBadge: {
-      alignSelf: 'flex-start',
+      alignSelf: "flex-start",
       marginTop: 6,
       paddingHorizontal: 8,
       paddingVertical: 3,
@@ -286,17 +292,17 @@ const createStyles = (theme) => {
     },
     categoryText: {
       fontSize: 11,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.muted.foreground,
     },
     tickerRight: {
-      alignItems: 'flex-end',
+      alignItems: "flex-end",
       gap: 4,
       marginLeft: 12,
     },
     tickerPrice: {
       fontSize: 14,
-      fontWeight: '600',
+      fontWeight: "600",
       color: colors.text.primary,
     },
   };

@@ -1,11 +1,11 @@
-const API_URL = 'https://api.hyperliquid.xyz/info';
+const API_URL = "https://api.hyperliquid.xyz/info";
 
 const TIMEFRAME_CONFIG = {
-  '1h': { durationMs: 60 * 60 * 1000, interval: '1m' },
-  '24h': { durationMs: 24 * 60 * 60 * 1000, interval: '5m' },
-  '7d': { durationMs: 7 * 24 * 60 * 60 * 1000, interval: '1h' },
-  '1M': { durationMs: 30 * 24 * 60 * 60 * 1000, interval: '4h' },
-  '1Y': { durationMs: 365 * 24 * 60 * 60 * 1000, interval: '1d' },
+  "1h": { durationMs: 60 * 60 * 1000, interval: "1m" },
+  "24h": { durationMs: 24 * 60 * 60 * 1000, interval: "5m" },
+  "7d": { durationMs: 7 * 24 * 60 * 60 * 1000, interval: "1h" },
+  "1M": { durationMs: 30 * 24 * 60 * 60 * 1000, interval: "4h" },
+  "1Y": { durationMs: 365 * 24 * 60 * 60 * 1000, interval: "1d" },
 };
 
 const cache = new Map();
@@ -22,10 +22,10 @@ async function fetchCoinHistory(coin, timeframe) {
   const startTime = endTime - config.durationMs;
 
   const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      type: 'candleSnapshot',
+      type: "candleSnapshot",
       req: {
         coin,
         interval: config.interval,
@@ -37,12 +37,14 @@ async function fetchCoinHistory(coin, timeframe) {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Hyperliquid candleSnapshot failed: ${response.status} ${text}`);
+    throw new Error(
+      `Hyperliquid candleSnapshot failed: ${response.status} ${text}`,
+    );
   }
 
   const data = await response.json();
   if (!Array.isArray(data)) {
-    throw new Error('Unexpected candleSnapshot response');
+    throw new Error("Unexpected candleSnapshot response");
   }
 
   return data.map((point) => ({
@@ -71,7 +73,7 @@ export const marketHistoryService = {
         const history = await fetchCoinHistory(coin, timeframe);
         cache.set(key, { timestamp: Date.now(), data: history });
         results[coin] = history;
-      })
+      }),
     );
 
     return results;

@@ -1,13 +1,13 @@
-import darkTheme from './base';
+import darkTheme from "./base";
 
 const HEX_REGEX = /^#?([a-f\d]{6}|[a-f\d]{8}|[a-f\d]{3})$/i;
 
 const expandHex = (hex) => {
   if (hex.length === 3) {
     return hex
-      .split('')
+      .split("")
       .map((char) => char + char)
-      .join('');
+      .join("");
   }
   if (hex.length === 8) {
     return hex.slice(0, 6);
@@ -16,11 +16,11 @@ const expandHex = (hex) => {
 };
 
 export const hexToRgba = (hex, alpha = 1) => {
-  if (!hex || typeof hex !== 'string' || !HEX_REGEX.test(hex)) {
+  if (!hex || typeof hex !== "string" || !HEX_REGEX.test(hex)) {
     return hex;
   }
 
-  let normalized = hex.replace('#', '');
+  let normalized = hex.replace("#", "");
   normalized = expandHex(normalized);
 
   const bigint = parseInt(normalized, 16);
@@ -33,8 +33,8 @@ export const hexToRgba = (hex, alpha = 1) => {
 
 export const withOpacity = (color, alpha) => {
   if (!color) return hexToRgba(darkTheme.colors.background, alpha);
-  if (color.startsWith('rgba') || color.startsWith('rgb')) {
-    const parts = color.replace(/rgba?\(|\)/g, '').split(',');
+  if (color.startsWith("rgba") || color.startsWith("rgb")) {
+    const parts = color.replace(/rgba?\(|\)/g, "").split(",");
     if (parts.length >= 3) {
       const [r, g, b] = parts.map((part) => parseFloat(part));
       return `rgba(${r}, ${g}, ${b}, ${alpha})`;
@@ -51,9 +51,10 @@ export const blendColors = (base, overlay, alpha = 0.5) => {
   const blended = baseColor.slice(0, 3).map((baseComponent, index) => {
     const overComponent = overlayColor[index];
     return Math.round(
-      parseInt(baseComponent, 10) * (1 - alpha) + parseInt(overComponent, 10) * alpha,
+      parseInt(baseComponent, 10) * (1 - alpha) +
+        parseInt(overComponent, 10) * alpha,
     );
   });
 
-  return `rgba(${blended.join(', ')}, 1)`;
+  return `rgba(${blended.join(", ")}, 1)`;
 };

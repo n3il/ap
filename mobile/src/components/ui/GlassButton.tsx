@@ -1,9 +1,8 @@
-import { View } from "react-native";
+import { GlassView } from "expo-glass-effect";
+import { Pressable, View } from "react-native";
+import Text from "@/components/ui/Text";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
-import { GlassView } from "expo-glass-effect";
-import { Pressable } from "react-native";
-import Text from "@/components/ui/Text";
 
 const styleVariants = {
   default: {},
@@ -12,50 +11,51 @@ const styleVariants = {
     paddingVertical: 8,
     marginHorizontal: 0,
     flexGrow: 1,
-    justifyContent: 'center',
-    alignContent: 'center',
-    flexDirection: 'row'
+    justifyContent: "center",
+    alignContent: "center",
+    flexDirection: "row",
   },
-}
+};
 
-
-export default function GlassButton ({
+export default function GlassButton({
   children,
   disabled = false,
   enabled = true,
   onPress = () => {},
   style = {},
-  styleVariant = 'default',
+  styleVariant = "default",
   ...props // glassProps
 }) {
   const { colors } = useColors();
 
   const PressableComponent = (
-      <Pressable
-        onPress={onPress}
-        disabled={disabled}
-      >
-        {(typeof children === "string")
-        ? <Text style={{ fontWeight: '600', textAlign: 'center' }}>{children}</Text>
-        : children}
-      </Pressable>
-  )
+    <Pressable onPress={onPress} disabled={disabled}>
+      {typeof children === "string" ? (
+        <Text style={{ fontWeight: "600", textAlign: "center" }}>
+          {children}
+        </Text>
+      ) : (
+        children
+      )}
+    </Pressable>
+  );
 
-  if (!enabled) return (
-    <View
-      style={[
-        {
-          borderRadius: 32,
-          paddingHorizontal: 8,
-          paddingVertical: 8,
-          marginHorizontal: 4,
-        },
-        style,
-      ]}
-    >
-      {PressableComponent}
-    </View>
-  )
+  if (!enabled)
+    return (
+      <View
+        style={[
+          {
+            borderRadius: 32,
+            paddingHorizontal: 8,
+            paddingVertical: 8,
+            marginHorizontal: 4,
+          },
+          style,
+        ]}
+      >
+        {PressableComponent}
+      </View>
+    );
 
   return (
     <GlassView
@@ -66,7 +66,7 @@ export default function GlassButton ({
           paddingHorizontal: 8,
           paddingVertical: 8,
           marginHorizontal: 4,
-          ...styleVariants[styleVariant]
+          ...styleVariants[styleVariant],
         },
         style,
       ]}
@@ -76,5 +76,5 @@ export default function GlassButton ({
     >
       {PressableComponent}
     </GlassView>
-  )
+  );
 }

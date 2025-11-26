@@ -1,46 +1,54 @@
-import React, { useRef, useMemo } from 'react';
-import { View, Dimensions, ActivityIndicator } from '@/components/ui';
-import WebView from 'react-native-webview';
+import React, { useMemo, useRef } from "react";
+import WebView from "react-native-webview";
+import { ActivityIndicator, Dimensions, View } from "@/components/ui";
 
-import { useTheme } from '@/contexts/ThemeContext';
-import { withOpacity } from '@/theme/utils';
+import { useTheme } from "@/contexts/ThemeContext";
+import { withOpacity } from "@/theme/utils";
 
-const { width } = Dimensions.get('window');
+const { width } = Dimensions.get("window");
 
 export default function TradingViewChart({
-  symbol = 'BTCUSD',
+  symbol = "BTCUSD",
   theme: preferredTheme = null,
   height = 400,
 }) {
   const webViewRef = useRef(null);
   const { colorScheme, theme } = useTheme();
 
-  const chartTheme = (preferredTheme ?? colorScheme ?? 'dark').toLowerCase();
-  const isDark = chartTheme === 'dark';
+  const chartTheme = (preferredTheme ?? colorScheme ?? "dark").toLowerCase();
+  const isDark = chartTheme === "dark";
 
   const htmlContent = useMemo(() => {
     const symbolMap = {
-      BTC: 'BTCUSD',
-      ETH: 'ETHUSD',
-      SOL: 'SOLUSD',
-      AVAX: 'AVAXUSD',
-      ARB: 'ARBUSD',
-      OP: 'OPUSD',
-      MATIC: 'MATICUSD',
-      DOGE: 'DOGEUSD',
-      SUI: 'SUIUSD',
+      BTC: "BTCUSD",
+      ETH: "ETHUSD",
+      SOL: "SOLUSD",
+      AVAX: "AVAXUSD",
+      ARB: "ARBUSD",
+      OP: "OPUSD",
+      MATIC: "MATICUSD",
+      DOGE: "DOGEUSD",
+      SUI: "SUIUSD",
     };
 
     const tradingViewSymbol = symbolMap[symbol] || `${symbol}USD`;
 
     const themeColors = theme.colors;
-    const surfaceColor = themeColors.surface ?? themeColors.backgroundSecondary ?? themeColors.background;
-    const lightSurface = themeColors.background ?? themeColors.surface ?? themeColors.foreground ?? surfaceColor;
+    const surfaceColor =
+      themeColors.surface ??
+      themeColors.backgroundSecondary ??
+      themeColors.background;
+    const lightSurface =
+      themeColors.background ??
+      themeColors.surface ??
+      themeColors.foreground ??
+      surfaceColor;
     const background = isDark ? surfaceColor : lightSurface;
     const toolbarBackground = isDark
       ? surfaceColor
-      : themeColors.foreground ?? lightSurface;
-    const gridBase = themeColors.muted?.foreground ?? themeColors.border ?? surfaceColor;
+      : (themeColors.foreground ?? lightSurface);
+    const gridBase =
+      themeColors.muted?.foreground ?? themeColors.border ?? surfaceColor;
     const gridColor = withOpacity(gridBase, isDark ? 0.15 : 0.25);
 
     return `
@@ -71,7 +79,7 @@ export default function TradingViewChart({
                 "symbol": "BINANCE:${tradingViewSymbol}",
                 "interval": "1",
                 "timezone": "EST",
-              "theme": "${isDark ? 'dark' : 'light'}",
+              "theme": "${isDark ? "dark" : "light"}",
               "style": "1",
               "locale": "en",
               "toolbar_bg": "${toolbarBackground}",
@@ -108,7 +116,7 @@ export default function TradingViewChart({
         ref={webViewRef}
         source={{ html: htmlContent }}
         style={styles.webview}
-        originWhitelist={['*']}
+        originWhitelist={["*"]}
         javaScriptEnabled
         domStorageEnabled
         startInLoadingState
@@ -134,22 +142,22 @@ export default function TradingViewChart({
 
 const createStyles = (theme, isDark) => ({
   container: {
-    width: '100%',
+    width: "100%",
     borderRadius: 0,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   webview: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: "transparent",
   },
   loading: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
     backgroundColor: withOpacity(
       isDark ? theme.colors.background : theme.colors.surface,
       0.9,

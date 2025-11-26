@@ -1,4 +1,4 @@
-import * as SecureStore from 'expo-secure-store';
+import * as SecureStore from "expo-secure-store";
 
 /**
  * General-purpose secure storage utility using expo-secure-store
@@ -13,11 +13,11 @@ import * as SecureStore from 'expo-secure-store';
  */
 export async function setSecureItem(key, value) {
   try {
-    if (!key || typeof key !== 'string') {
-      throw new Error('Key must be a non-empty string');
+    if (!key || typeof key !== "string") {
+      throw new Error("Key must be a non-empty string");
     }
-    if (typeof value !== 'string') {
-      throw new Error('Value must be a string');
+    if (typeof value !== "string") {
+      throw new Error("Value must be a string");
     }
     await SecureStore.setItemAsync(key, value);
   } catch (error) {
@@ -32,8 +32,8 @@ export async function setSecureItem(key, value) {
  */
 export async function getSecureItem(key) {
   try {
-    if (!key || typeof key !== 'string') {
-      throw new Error('Key must be a non-empty string');
+    if (!key || typeof key !== "string") {
+      throw new Error("Key must be a non-empty string");
     }
     const value = await SecureStore.getItemAsync(key);
     return value;
@@ -49,8 +49,8 @@ export async function getSecureItem(key) {
  */
 export async function deleteSecureItem(key) {
   try {
-    if (!key || typeof key !== 'string') {
-      throw new Error('Key must be a non-empty string');
+    if (!key || typeof key !== "string") {
+      throw new Error("Key must be a non-empty string");
     }
     await SecureStore.deleteItemAsync(key);
   } catch (error) {
@@ -90,7 +90,7 @@ export async function getSecureObject(key) {
 
 // Common storage keys for the app
 export const STORAGE_KEYS = {
-  API_KEY: 'api_key',
-  USER_SETTINGS: 'user_settings',
-  AUTH_TOKEN: 'auth_token',
+  API_KEY: "api_key",
+  USER_SETTINGS: "user_settings",
+  AUTH_TOKEN: "auth_token",
 };
