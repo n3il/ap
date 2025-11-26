@@ -42,7 +42,8 @@ export async function fetchMarketData(): Promise<{
 }> {
   const [marketData, candleData] = await Promise.all([
     fetchHyperliquidMarketData(),
-    fetchAllCandleData(5, 3), // 5-minute candles for last 3 hours
+    fetchAllCandleData(5, 3),      // 5-minute candles for last 3 hours
+    // fetchAllCandleData(30, 72),    // 30-minute candles for last 72 hours
   ]);
 
   console.log(

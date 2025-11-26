@@ -81,7 +81,7 @@ export async function runAgentAssessment(
   }
 
   // 4. Fetch all required data in parallel
-  const [openPositions, closedTrades, { candleData }] = await Promise.all([
+  const [openPositions, closedTrades, { candleData, marketData }] = await Promise.all([
     deps.fetchOpenPositions(agentId),
     deps.fetchClosedTrades(agentId),
     deps.fetchMarketData(),

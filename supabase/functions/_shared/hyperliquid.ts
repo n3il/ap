@@ -182,14 +182,15 @@ export async function fetchCandleData(
  */
 export async function fetchAllCandleData(
   intervalMinutes = 5,
-  lookbackHours = 3
+  lookbackHours = 3,
+  tickers = TRACKED_ASSETS
 ): Promise<Record<string, CandleData[]>> {
   console.log(`Fetching ${intervalMinutes}m candles for all tracked assets`)
 
   const candleDataMap: Record<string, CandleData[]> = {}
 
   // Fetch candles for all tracked assets in parallel
-  const candlePromises = TRACKED_ASSETS.map(async (symbol) => {
+  const candlePromises = tickers.map(async (symbol) => {
     const asset = `${symbol}-PERP`
     const candles = await fetchCandleData(asset, intervalMinutes, lookbackHours)
     return { asset, candles }
@@ -201,8 +202,8 @@ export async function fetchAllCandleData(
     if (result.status === 'fulfilled') {
       candleDataMap[result.value.asset] = result.value.candles
     } else {
-      console.error(`Failed to fetch candles for ${TRACKED_ASSETS[idx]}:`, result.reason)
-      candleDataMap[`${TRACKED_ASSETS[idx]}-PERP`] = []
+      console.error(`Failed to fetch candles for ${tickers[idx]}:`, result.reason)
+      candleDataMap[`${tickers[idx]}-PERP`] = []
     }
   })
 
@@ -242,16 +243,10 @@ export async function fetchHyperliquidMarketData(): Promise<MarketData[]> {
       })
     }
 
-    console.log(`Fetched data for ${results.length} assets`)
     return results
   } catch (error) {
     console.error('Error fetching Hyperliquid market data:', error)
-    console.log('Using fallback mock data')
-    return [
-      { asset: 'BTC-PERP', price: 68500, change_24h: 2.5, funding_rate: 0.0001 },
-      { asset: 'ETH-PERP', price: 3450, change_24h: -1.2, funding_rate: 0.00008 },
-      { asset: 'SOL-PERP', price: 175, change_24h: 5.3, funding_rate: 0.00015 },
-    ]
+    return []
   }
 }
 
@@ -287,8 +282,10 @@ export async function executeHyperliquidTrade(
 
   const privateKey = Deno.env.get('HYPERLIQUID_PRIVATE_KEY')
   if (!privateKey) {
-    console.warn('HYPERLIQUID_PRIVATE_KEY not set - using simulation mode')
-    return simulateTrade(action)
+    return {
+      success: false,
+      error: "HYPERLIQUID_PRIVATE_KEY not set"
+    }
   }
 
   if (!action.asset || !action.side) {
@@ -322,6 +319,7 @@ export async function executeHyperliquidTrade(
 
     console.log(`Placing order: ${action.side} ${size} ${assetSymbol} @ ${limitPrice}`)
 
+    // https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint
     const orderResult = await exchangeClient.order({
       orders: [
         {
@@ -368,12 +366,12 @@ export async function closePosition(
   asset: string,
   hyperliquidAddress: string
 ): Promise<TradeResult> {
-  console.log('Closing position:', { asset, address: hyperliquidAddress })
-
   const privateKey = Deno.env.get('HYPERLIQUID_PRIVATE_KEY')
   if (!privateKey) {
-    console.warn('HYPERLIQUID_PRIVATE_KEY not set - using simulation mode')
-    return simulateTrade({ action: 'CLOSE', asset })
+    return {
+      success: false,
+      error: "HYPERLIQUID_PRIVATE_KEY not set"
+    }
   }
 
   try {
@@ -440,25 +438,9 @@ export async function closePosition(
       error: `Close order failed: ${JSON.stringify(orderResult)}`,
     }
   } catch (error) {
-    console.error('Error closing position:', error)
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),
     }
-  }
-}
-
-/**
- * Simulate a trade action (fallback when real trading isn't available)
- */
-export async function simulateTrade(action: TradeAction): Promise<TradeResult> {
-  console.log('Simulating trade action:', action)
-  await new Promise((resolve) => setTimeout(resolve, 300))
-
-  return {
-    success: true,
-    orderId: Date.now(),
-    price: 0,
-    message: `Simulated ${action.side || action.action} for ${action.asset || 'Unknown'}`,
   }
 }

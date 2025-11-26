@@ -151,26 +151,7 @@ export async function executeCloseTrade(
 ) {
   const supabase = createSupabaseServiceClient();
 
-  // Validate action - early return for NO_ACTION
-  if (!action || !action.action || action.action === 'NO_ACTION') {
-    return {
-      success: true,
-      message: 'No trade action to execute',
-      skipped: true,
-    };
-  }
-
-  if (action.action !== 'CLOSE_LONG' && action.action !== 'CLOSE_SHORT') {
-    throw new Error(`Invalid CLOSE action: ${action.action}`);
-  }
-
-  if (!action.asset) {
-    throw new Error('Asset is required for CLOSE action');
-  }
-
-  // Determine if this is a paper or real trade
   const tradingMode = simulate === false ? 'real' : 'paper';
-  console.log(`Closing ${tradingMode.toUpperCase()} trade: ${action.asset}`);
 
   // Ensure trading account exists
   const ledgerAccount = await ensureTradingAccount({
@@ -182,23 +163,11 @@ export async function executeCloseTrade(
   });
 
   // Find existing open trade
-  // For paper trades, also match on leverage to close the specific position
-  let query = supabase
-    .from('trades')
-    .select('*')
+  const { data: existingTrade } = await supabase.from('trades').select('*')
     .eq('agent_id', agent.id)
     .eq('id', action.position_id)
-    .eq('status', 'OPEN');
-
-  if (tradingMode === 'paper' && action.leverage) {
-    query = query.eq('leverage', action.leverage);
-  }
-
-  const { data: existingTrade, error: findError } = await query.single();
-
-  if (findError || !existingTrade) {
-    throw new Error(`No open position found for ${action.asset}`);
-  }
+    .eq('status', 'OPEN')
+    .single();
 
   // Close position on Hyperliquid (only for real trades)
   let closeResult;
