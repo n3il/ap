@@ -33,32 +33,17 @@ export async function callLLMProvider(
 }
 
 export function tryParseText(text: string): ParsedLLMResponse | null {
-  // First attempt: parse directly with JSON5
-  try {
-    return JSON5.parse(text);
-  } catch (e) {
-    // Ignore and try extraction
+  const trimmed = text.trim();
+  const codeBlockMatch = trimmed.match(/```(?:json5?|javascript)?\s*(\{[\s\S]*\})\s*```/);
+  const inlineJsonMatch = trimmed.match(/\{[\s\S]*\}/);
+
+  const candidate = codeBlockMatch?.[1]
+    ?? (trimmed.startsWith('{') && trimmed.endsWith('}') ? trimmed : null)
+    ?? inlineJsonMatch?.[0]
+
+  if (!candidate) {
+    return null;
   }
 
-  // Second attempt: extract from markdown code blocks
-  try {
-    const codeBlockMatch = text.match(/```(?:json5?|javascript)?\s*(\{[\s\S]*\})\s*```/);
-    if (codeBlockMatch) {
-      return JSON5.parse(codeBlockMatch[1]);
-    }
-  } catch (e) {
-    // Ignore
-  }
-
-  // Third attempt: find first JSON-like object
-  try {
-    const jsonMatch = text.match(/\{[\s\S]*\}/);
-    if (jsonMatch) {
-      return JSON5.parse(jsonMatch[0]);
-    }
-  } catch (e) {
-    console.error('All JSON5 parsing attempts failed:', e);
-  }
-
-  return null;
+  return JSON5.parse(candidate);
 }

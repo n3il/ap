@@ -63,10 +63,5 @@ export function sanitizeMetadata(
 ): Record<string, unknown> {
   if (!metadata) return {};
 
-  try {
-    return JSON.parse(JSON.stringify(metadata));
-  } catch (error) {
-    console.warn('Failed to sanitize metadata, falling back to empty object', error);
-    return {};
-  }
+  return JSON.parse(JSON.stringify(metadata));
 }

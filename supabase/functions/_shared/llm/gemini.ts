@@ -43,57 +43,52 @@ export async function callGeminiAPI(
   const model = modelOverride || 'gemini-2.0-flash-exp'
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: prompt.userQuery }],
-          },
-        ],
-        systemInstruction: {
-          parts: [{ text: prompt.systemInstruction }],
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: prompt.userQuery }],
         },
-        tools: [
-          {
-            googleSearch: {},
-          },
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 9000,
+      ],
+      systemInstruction: {
+        parts: [{ text: prompt.systemInstruction }],
+      },
+      tools: [
+        {
+          googleSearch: {},
         },
-      }),
-    })
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 9000,
+      },
+    }),
+  })
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Gemini API error response:', errorText)
-      throw new Error(`Gemini API error: ${response.statusText}`)
-    }
+  if (!response.ok) {
+    const errorText = await response.text()
+    console.error('Gemini API error response:', errorText)
+    throw new Error(`Gemini API error: ${response.statusText}`)
+  }
 
-    const data = await response.json()
+  const data = await response.json()
 
-    if (!data.candidates || data.candidates.length === 0) {
-      throw new Error('No response from Gemini API')
-    }
+  if (!data.candidates || data.candidates.length === 0) {
+    throw new Error('No response from Gemini API')
+  }
 
-    const text = data.candidates[0].content.parts[0].text;
-    const parsed = tryParseText(text);
+  const text = data.candidates[0].content.parts[0].text;
+  const parsed = tryParseText(text);
 
-    return {
-      text,
-      parsed: parsed,
-      rawResponse: data,
-    }
-  } catch (error) {
-    console.error('Error calling Gemini API:', error)
-    throw error
+  return {
+    text,
+    parsed: parsed,
+    rawResponse: data,
   }
 }
 

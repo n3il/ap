@@ -1,3 +1,4 @@
+import * as hl from "@nktkas/hyperliquid";
 import type { MarketAsset } from './lib/types.ts'
 
 type CandleInterval =
@@ -100,20 +101,9 @@ export interface TradeResult {
   fee?: number
 }
 
-async function loadHyperliquidModule(): Promise<HyperliquidModule> {
-  if (!hyperliquidModulePromise) {
-    hyperliquidModulePromise = (async () => {
-      const module = (await import(HYPERLIQUID_MODULE_SPECIFIER)) as unknown
-      return module as HyperliquidModule
-    })()
-  }
-  return hyperliquidModulePromise
-}
-
 async function getTransport() {
   if (!transportPromise) {
     transportPromise = (async () => {
-      const hl = await loadHyperliquidModule()
       const options: Record<string, unknown> = {}
 
       if (hyperliquidNetwork === 'testnet') {
@@ -140,7 +130,6 @@ async function getTransport() {
 async function getInfoClient() {
   if (!infoClientPromise) {
     infoClientPromise = (async () => {
-      const hl = await loadHyperliquidModule()
       const transport = await getTransport()
       return new hl.InfoClient({ transport })
     })()
@@ -206,49 +195,43 @@ export async function fetchCandleData(
   intervalMinutes = 5,
   lookbackHours = 3
 ): Promise<CandleData[]> {
-  try {
-    const infoClient = await getInfoClient()
-    const assetSymbol = asset.replace('-PERP', '')
-    const intervalString = INTERVAL_MINUTES_TO_STRING[intervalMinutes] ?? DEFAULT_CANDLE_INTERVAL
+  const infoClient = await getInfoClient()
+  const intervalString = INTERVAL_MINUTES_TO_STRING[intervalMinutes] ?? DEFAULT_CANDLE_INTERVAL
 
-    if (!INTERVAL_MINUTES_TO_STRING[intervalMinutes]) {
-      console.warn(
-        `Unsupported interval ${intervalMinutes}m requested. Falling back to ${intervalString}.`
-      )
-    }
+  if (!INTERVAL_MINUTES_TO_STRING[intervalMinutes]) {
+    console.warn(
+      `Unsupported interval ${intervalMinutes}m requested. Falling back to ${intervalString}.`
+    )
+  }
 
-    const endTime = Date.now()
-    const startTime = endTime - (lookbackHours * 60 * 60 * 1000)
+  const endTime = Date.now()
+  const startTime = endTime - (lookbackHours * 60 * 60 * 1000)
 
-    // Convert interval to seconds for API
-    const intervalSeconds = intervalMinutes * 60
+  // Convert interval to seconds for API
+  const intervalSeconds = intervalMinutes * 60
 
-    console.log(`Fetching ${intervalMinutes}m candles for ${assetSymbol} from last ${lookbackHours}h`)
+  console.log(`Fetching ${intervalMinutes}m candles for ${asset} from last ${lookbackHours}h`)
 
-    const candles = await infoClient.candleSnapshot({
-      coin: assetSymbol,
-      interval: intervalString,
-      startTime,
-      endTime,
-    })
+  const candles = await infoClient.candleSnapshot({
+    coin: asset,
+    interval: intervalString,
+    startTime,
+    endTime,
+  })
 
-    if (!candles || candles.length === 0) {
-      console.log(`No candle data returned for ${assetSymbol}`)
-      return []
-    }
-
-    return candles.map((c: any) => ({
-      time: c.t ?? c.T ?? 0,
-      open: parseFloat(c.o ?? 0),
-      high: parseFloat(c.h ?? 0),
-      low: parseFloat(c.l ?? 0),
-      close: parseFloat(c.c ?? 0),
-      volume: parseFloat(c.v ?? 0),
-    }))
-  } catch (error) {
-    console.error(`Error fetching candle data for ${asset}:`, error)
+  if (!candles || candles.length === 0) {
+    console.log(`No candle data returned for ${asset}`)
     return []
   }
+
+  return candles.map((c: any) => ({
+    time: c.t ?? c.T ?? 0,
+    open: parseFloat(c.o ?? 0),
+    high: parseFloat(c.h ?? 0),
+    low: parseFloat(c.l ?? 0),
+    close: parseFloat(c.c ?? 0),
+    volume: parseFloat(c.v ?? 0),
+  }))
 }
 
 /**
@@ -265,9 +248,8 @@ export async function fetchAllCandleData(
 
   // Fetch candles for all tracked assets in parallel
   const candlePromises = tickers.map(async (symbol) => {
-    const asset = `${symbol}-PERP`
-    const candles = await fetchCandleData(asset, intervalMinutes, lookbackHours)
-    return { asset, candles }
+    const candles = await fetchCandleData(symbol, intervalMinutes, lookbackHours)
+    return { asset: symbol, candles }
   })
 
   const results = await Promise.allSettled(candlePromises)
@@ -288,61 +270,50 @@ export async function fetchAllCandleData(
  * Fetch real-time market data from Hyperliquid using the official SDK
  */
 export async function fetchHyperliquidMarketData(): Promise<MarketData[]> {
-  try {
-    console.log('Fetching Hyperliquid market data...')
-    const infoClient = await getInfoClient()
+  console.log('Fetching Hyperliquid market data...')
+  const infoClient = await getInfoClient()
 
-    const allMids = await infoClient.allMids()
-    const [, assetContexts] = await infoClient.metaAndAssetCtxs()
+  const allMids = await infoClient.allMids()
+  const [, assetContexts] = await infoClient.metaAndAssetCtxs()
 
-    const results: MarketData[] = []
-
-    for (const symbol of TRACKED_ASSETS) {
-      const mid = allMids[symbol]
-      if (!mid) {
-        console.log(`No price data for ${symbol}`)
-        continue
-      }
-
-      const ctx = assetContexts?.find((entry: any) => entry.coin === symbol)
-      const fundingValue = parseNumericValue(ctx?.funding)
-      const volumeValue = parseNumericValue(ctx?.dayNtlVlm)
-      const openInterestValue = parseNumericValue(ctx?.openInterest)
-      const fundingChange = typeof fundingValue === 'number' ? fundingValue * 100 : 0
-
-      results.push({
-        symbol: `${symbol}-PERP`,
-        price: parseFloat(mid),
-        change_24h: fundingChange,
-        funding_rate: fundingValue,
-        volume_24h: volumeValue,
-        open_interest: openInterestValue,
-      })
+  const results: MarketData[] = []
+  for (const symbol of TRACKED_ASSETS) {
+    const mid = allMids[symbol]
+    if (!mid) {
+      console.log(`No price data for ${symbol}`)
+      continue
     }
 
-    return results
-  } catch (error) {
-    console.error('Error fetching Hyperliquid market data:', error)
-    return []
+    const ctx = assetContexts?.find((entry: any) => entry.coin === symbol)
+    const fundingValue = parseNumericValue(ctx?.funding)
+    const volumeValue = parseNumericValue(ctx?.dayNtlVlm)
+    const openInterestValue = parseNumericValue(ctx?.openInterest)
+    const fundingChange = typeof fundingValue === 'number' ? fundingValue * 100 : 0
+
+    results.push({
+      symbol: `${symbol}-PERP`,
+      price: parseFloat(mid),
+      change_24h: fundingChange,
+      funding_rate: fundingValue,
+      volume_24h: volumeValue,
+      open_interest: openInterestValue,
+    })
   }
+
+  return results
 }
 
 /**
  * Get current position for an asset
  */
 export async function getPosition(address: string, asset: string) {
-  try {
-    const infoClient = await getInfoClient()
-    const data = await infoClient.webData2({ user: address })
-    const baseAsset = asset.replace('-PERP', '')
-    const position = data.clearinghouseState.assetPositions?.find(
-      (entry: any) => entry.position.coin === baseAsset
-    )
-    return position ?? null
-  } catch (error) {
-    console.error('Error fetching position:', error)
-    return null
-  }
+  const infoClient = await getInfoClient()
+  const data = await infoClient.webData2({ user: address })
+  const baseAsset = asset.replace('-PERP', '')
+  const position = data.clearinghouseState.assetPositions?.find(
+    (entry: any) => entry.position.coin === baseAsset
+  )
+  return position ?? null
 }
 
 /**
@@ -372,67 +343,59 @@ export async function executeHyperliquidTrade(
     }
   }
 
-  try {
-    const [hl, infoClient] = await Promise.all([loadHyperliquidModule(), getInfoClient()])
-    const transport = await getTransport()
-    const wallet = normalizePrivateKey(privateKey)
-    const exchangeClient = new hl.ExchangeClient({ wallet, transport })
+  const infoClient = await getInfoClient()
+  const transport = await getTransport()
+  const wallet = normalizePrivateKey(privateKey)
+  const exchangeClient = new hl.ExchangeClient({ wallet, transport })
 
-    const assetSymbol = action.asset.replace('-PERP', '')
-    const assetInfo = await resolveAssetInfo(assetSymbol)
-    const size = action.size ?? 0.01
-    const isBuy = action.side === 'LONG'
+  const assetSymbol = action.asset.replace('-PERP', '')
+  const assetInfo = await resolveAssetInfo(assetSymbol)
+  const size = action.size ?? 0.01
+  const isBuy = action.side === 'LONG'
 
-    const allMids = await infoClient.allMids()
-    const currentPriceRaw = allMids[assetSymbol]
-    if (!currentPriceRaw) {
-      throw new Error(`No price available for ${assetSymbol}`)
-    }
-    const currentPrice = parseFloat(currentPriceRaw)
-    const slippage = 0.001
-    const limitPrice = isBuy
-      ? currentPrice * (1 + slippage)
-      : currentPrice * (1 - slippage)
+  const allMids = await infoClient.allMids()
+  const currentPriceRaw = allMids[assetSymbol]
+  if (!currentPriceRaw) {
+    throw new Error(`No price available for ${assetSymbol}`)
+  }
+  const currentPrice = parseFloat(currentPriceRaw)
+  const slippage = 0.001
+  const limitPrice = isBuy
+    ? currentPrice * (1 + slippage)
+    : currentPrice * (1 - slippage)
 
-    console.log(`Placing order: ${action.side} ${size} ${assetSymbol} @ ${limitPrice}`)
+  console.log(`Placing order: ${action.side} ${size} ${assetSymbol} @ ${limitPrice}`)
 
-    // https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint
-    const orderResult = await exchangeClient.order({
-      orders: [
-        {
-          a: assetInfo.index,
-          b: isBuy,
-          p: formatNumber(limitPrice, 6),
-          s: formatNumber(size, assetInfo.szDecimals ?? 4),
-          r: false,
-          t: { limit: { tif: 'Ioc' as const } },
-        },
-      ],
-      grouping: 'na',
-    })
+  // https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint
+  const orderResult = await exchangeClient.order({
+    orders: [
+      {
+        a: assetInfo.index,
+        b: isBuy,
+        p: formatNumber(limitPrice, 6),
+        s: formatNumber(size, assetInfo.szDecimals ?? 4),
+        r: false,
+        t: { limit: { tif: 'Ioc' as const } },
+      },
+    ],
+    grouping: 'na',
+  })
 
-    const status = orderResult.response?.data?.statuses?.[0]
-    if (orderResult.status === 'ok' && status) {
-      const resting = (status as any).resting
-      const oid = resting?.oid ?? null
-      return {
-        success: true,
-        orderId: oid ?? undefined,
-        price: limitPrice,
-        message: 'Trade executed successfully',
-      }
-    }
-
+  const status = orderResult.response?.data?.statuses?.[0]
+  if (orderResult.status === 'ok' && status) {
+    const resting = (status as any).resting
+    const oid = resting?.oid ?? null
     return {
-      success: false,
-      error: `Order failed: ${JSON.stringify(orderResult)}`,
+      success: true,
+      orderId: oid ?? undefined,
+      price: limitPrice,
+      message: 'Trade executed successfully',
     }
-  } catch (error) {
-    console.error('Error executing trade:', error)
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    }
+  }
+
+  return {
+    success: false,
+    error: `Order failed: ${JSON.stringify(orderResult)}`,
   }
 }
 
@@ -451,73 +414,66 @@ export async function closePosition(
     }
   }
 
-  try {
-    const position = await getPosition(hyperliquidAddress, asset)
-    if (!position) {
-      return {
-        success: false,
-        error: `No open position found for ${asset}`,
-      }
-    }
-
-    const [hl, infoClient] = await Promise.all([loadHyperliquidModule(), getInfoClient()])
-    const transport = await getTransport()
-    const wallet = normalizePrivateKey(privateKey)
-    const exchangeClient = new hl.ExchangeClient({ wallet, transport })
-
-    const assetSymbol = asset.replace('-PERP', '')
-    const assetInfo = await resolveAssetInfo(assetSymbol)
-
-    const currentSize = Math.abs(parseFloat(position.position.szi))
-    const isLong = parseFloat(position.position.szi) > 0
-
-    const allMids = await infoClient.allMids()
-    const currentPriceRaw = allMids[assetSymbol]
-    if (!currentPriceRaw) {
-      throw new Error(`No price available for ${assetSymbol}`)
-    }
-    const currentPrice = parseFloat(currentPriceRaw)
-    const slippage = 0.001
-    const limitPrice = isLong
-      ? currentPrice * (1 - slippage)
-      : currentPrice * (1 + slippage)
-
-    console.log(`Closing ${isLong ? 'LONG' : 'SHORT'} ${currentSize} ${assetSymbol} @ ${limitPrice}`)
-
-    const orderResult = await exchangeClient.order({
-      orders: [
-        {
-          a: assetInfo.index,
-          b: !isLong,
-          p: formatNumber(limitPrice, 6),
-          s: formatNumber(currentSize, assetInfo.szDecimals ?? 4),
-          r: true,
-          t: { limit: { tif: 'Ioc' as const } },
-        },
-      ],
-      grouping: 'na',
-    })
-
-    const status = orderResult.response?.data?.statuses?.[0]
-    if (orderResult.status === 'ok' && status) {
-      const resting = (status as any).resting
-      const oid = resting?.oid ?? null
-      return {
-        success: true,
-        orderId: oid ?? undefined,
-        price: limitPrice,
-        message: 'Position closed successfully',
-      }
-    }
-
+  const position = await getPosition(hyperliquidAddress, asset)
+  if (!position) {
     return {
       success: false,
-      error: `Close order failed: ${JSON.stringify(orderResult)}`,
+      error: `No open position found for ${asset}`,
     }
-  } catch (error) {
+  }
+
+  const infoClient = await getInfoClient()
+  const transport = await getTransport()
+  const wallet = normalizePrivateKey(privateKey)
+  const exchangeClient = new hl.ExchangeClient({ wallet, transport })
+
+  const assetSymbol = asset.replace('-PERP', '')
+  const assetInfo = await resolveAssetInfo(assetSymbol)
+
+  const currentSize = Math.abs(parseFloat(position.position.szi))
+  const isLong = parseFloat(position.position.szi) > 0
+
+  const allMids = await infoClient.allMids()
+  const currentPriceRaw = allMids[assetSymbol]
+  if (!currentPriceRaw) {
+    throw new Error(`No price available for ${assetSymbol}`)
+  }
+  const currentPrice = parseFloat(currentPriceRaw)
+  const slippage = 0.001
+  const limitPrice = isLong
+    ? currentPrice * (1 - slippage)
+    : currentPrice * (1 + slippage)
+
+  console.log(`Closing ${isLong ? 'LONG' : 'SHORT'} ${currentSize} ${assetSymbol} @ ${limitPrice}`)
+
+  const orderResult = await exchangeClient.order({
+    orders: [
+      {
+        a: assetInfo.index,
+        b: !isLong,
+        p: formatNumber(limitPrice, 6),
+        s: formatNumber(currentSize, assetInfo.szDecimals ?? 4),
+        r: true,
+        t: { limit: { tif: 'Ioc' as const } },
+      },
+    ],
+    grouping: 'na',
+  })
+
+  const status = orderResult.response?.data?.statuses?.[0]
+  if (orderResult.status === 'ok' && status) {
+    const resting = (status as any).resting
+    const oid = resting?.oid ?? null
     return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
+      success: true,
+      orderId: oid ?? undefined,
+      price: limitPrice,
+      message: 'Position closed successfully',
     }
+  }
+
+  return {
+    success: false,
+    error: `Close order failed: ${JSON.stringify(orderResult)}`,
   }
 }

@@ -76,7 +76,6 @@ export async function runAgentAssessment(
   // Extract trade actions from parsed response
   const tradeActions = llmResponse.parsed?.tradeActions || [];
   console.log('LLM response received, trade actions:', tradeActions.length);
-  console.log('Trade actions summary:', tradeActions.map(ta => `${ta.asset}: ${ta.action}`).join(', '));
 
   // 8. Create market snapshot
   const marketSnapshot = createMarketSnapshot(marketData, openPositions);
