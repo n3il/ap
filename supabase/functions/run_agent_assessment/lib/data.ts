@@ -62,13 +62,19 @@ function deriveTrades(rows: LedgerTradeRow[]): Trade[] {
       (String(open.parsedMeta.action ?? '').includes('SHORT') ? 'SHORT' : 'LONG');
     const leverage = parseFloat(String(open.parsedMeta.leverage ?? 1)) || 1;
     const collateral = parseFloat(String(open.parsedMeta.collateral ?? open.parsedMeta.size ?? 0)) || 0;
+    const entryPrice = parseFloat(String(open.parsedMeta.entry_price ?? open.price ?? 0)) || 0;
+    const quantity =
+      parseFloat(String(open.parsedMeta.position_quantity ?? open.quantity ?? 0)) ||
+      (collateral && leverage && entryPrice ? (collateral * leverage) / entryPrice : 0);
     const trade: Trade = {
       id: positionId,
       agent_id: open.agent_id,
       asset: open.symbol,
       side,
       size: collateral,
-      entry_price: parseFloat(String(open.parsedMeta.entry_price ?? open.price ?? 0)) || 0,
+      collateral,
+      quantity,
+      entry_price: entryPrice,
       entry_timestamp: String(open.parsedMeta.entry_timestamp ?? open.executed_at),
       leverage,
       status: close ? 'CLOSED' : 'OPEN',

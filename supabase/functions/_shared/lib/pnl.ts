@@ -2,7 +2,10 @@ import { OpenPosition, Trade } from "./types.ts";
 
 /**
  * Calculates the underlying asset quantity for a position.
- * `size` reflects collateral in USD, not the raw position size.
+ * `collateral` reflects USD committed to the trade (LLM `size` semantics),
+ * so we convert it into contract quantity using leverage and entry price.
+ * If the calling code already knows the executed quantity, prefer passing that along
+ * so downstream calculations don't rely on reconstructed values.
  */
 export function calculatePositionQuantity(
   collateral: string | number,
@@ -27,13 +30,18 @@ export function calculatePositionQuantity(
 export function calculateTradePnL(
   entryPrice: number,
   exitPrice: number,
-  size: number,
+  collateral: number,
   side: 'LONG' | 'SHORT',
-  leverage: number = 1
+  leverage: number = 1,
+  quantityOverride: number = 0
 ): number {
-  if (!entryPrice || !exitPrice || !size) return 0;
+  if (!entryPrice || !exitPrice || !collateral) return 0;
 
-  const quantity = calculatePositionQuantity(size, leverage, entryPrice);
+  const providedQuantity = parseFloat(String(quantityOverride || 0));
+  const quantity =
+    providedQuantity && Number.isFinite(providedQuantity) && providedQuantity > 0
+      ? providedQuantity
+      : calculatePositionQuantity(collateral, leverage, entryPrice);
   if (!quantity) return 0;
 
   const priceChange = exitPrice - entryPrice;
@@ -76,14 +84,22 @@ export function calculateUnrealizedPnL(
     if (!currentPrice) return sum;
 
     const leverage = parseFloat(String(position.leverage || 1));
-    const size = parseFloat(String(position.size || 0));
+    const collateral = parseFloat(
+      String((position as any).collateral ?? position.size ?? 0)
+    );
     const entryPrice = parseFloat(String(position.entry_price || 0));
+    const quantityOverride = parseFloat(
+      String((position as any).quantity ?? (position as any).position_quantity ?? 0)
+    );
 
-    if (!currentPrice || !entryPrice || !size) {
+    if (!currentPrice || !entryPrice || !collateral) {
       return sum;
     }
 
-    const quantity = calculatePositionQuantity(size, leverage, entryPrice);
+    const quantity =
+      quantityOverride && Number.isFinite(quantityOverride) && quantityOverride > 0
+        ? quantityOverride
+        : calculatePositionQuantity(collateral, leverage, entryPrice);
     if (!quantity) {
       return sum;
     }
@@ -114,9 +130,11 @@ export function calculateTotalMarginUsed(
   openPositions: OpenPosition[]
 ): number {
   return openPositions.reduce((sum, position) => {
-    const size = parseFloat(String(position.size || 0));
-    if (!size) return sum;
-    return sum + size;
+    const collateral = parseFloat(
+      String((position as any).collateral ?? position.size ?? 0)
+    );
+    if (!collateral) return sum;
+    return sum + collateral;
   }, 0);
 }
 

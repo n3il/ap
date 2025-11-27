@@ -270,11 +270,11 @@ export async function executeCloseTrade(
   const tradeLeverage = parseFloat(String(openMeta.leverage ?? 1)) || 1;
   const entryPrice = parseFloat(String(openMeta.entry_price ?? openTrade.price ?? 0)) || 0;
   const positionCollateral = parseFloat(String(openMeta.collateral ?? openMeta.size ?? 0)) || 0;
-  const positionQuantity = calculatePositionQuantity(
-    positionCollateral,
-    tradeLeverage,
-    entryPrice
-  );
+  const recordedQuantity =
+    parseFloat(String(openMeta.position_quantity ?? openTrade.quantity ?? 0)) || 0;
+  const positionQuantity =
+    recordedQuantity ||
+    calculatePositionQuantity(positionCollateral, tradeLeverage, entryPrice);
   const positionSide =
     (openMeta.position_side as 'LONG' | 'SHORT') ??
     (closeAction === 'OPEN_LONG' ? 'LONG' : 'SHORT');
@@ -287,7 +287,8 @@ export async function executeCloseTrade(
     closeResult.price || 0,
     positionCollateral,
     positionSide,
-    tradeLeverage
+    tradeLeverage,
+    positionQuantity
   );
 
   // Record in ledger

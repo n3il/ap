@@ -32,6 +32,8 @@ export interface Trade {
   type?: 'paper' | 'real';
   account_id?: string;
   user_id?: string;
+  quantity?: string | number;
+  collateral?: string | number;
 }
 
 export interface OpenPosition {
@@ -40,6 +42,8 @@ export interface OpenPosition {
     size: string | number;
     entry_price: string | number;
     leverage: string | number;
+    quantity?: string | number;
+    collateral?: string | number;
 }
 
 export interface MarketAsset {

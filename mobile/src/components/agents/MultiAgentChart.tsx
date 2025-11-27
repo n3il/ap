@@ -46,10 +46,8 @@ export default function MultiAgentChart({ scrollY, style }) {
             const equity = parseFloat(snapshot.equity);
             if (time === null || !Number.isFinite(equity)) return null;
 
-            console.log({ equity, initialCapital, })
             const percentChange =
-              ((equity - initialCapital) / Math.abs(initialCapital || 1)) * 100;
-
+              ((equity - initialCapital) / initialCapital) * 100;
             return {
               time,
               value: percentChange,
@@ -75,7 +73,7 @@ export default function MultiAgentChart({ scrollY, style }) {
       lines={lines}
       timeframe={timeframe}
       scrollY={scrollY}
-      isLoading={agentIds.length === 0 || isLoading}
+      isLoading={isLoading}
       style={style}
     />
   );

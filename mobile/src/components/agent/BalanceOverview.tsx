@@ -111,7 +111,20 @@ export default function BalanceOverview({
         <View sx={{ flex: 1 }}>
           <LabelValue label="Init. Capital" value={accountData.wallet || 0} />
         </View>
-
+        <View sx={{ flex: 1 }}>
+          <LabelValue
+            label="# Trades"
+            value={accountData.enrichedPositions.length}
+            alignRight
+          />
+        </View>
+        {/* <View sx={{ flex: 1 }}>
+          <LabelValue
+            label="Win Trades"
+            value={null}
+            alignRight
+          />
+        </View> */}
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Open P&L"
@@ -141,18 +154,14 @@ export default function BalanceOverview({
         sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}
       >
         <View sx={{ flex: 1 }}>
-          <LabelValue label="Trades" value={null} />
-        </View>
-        <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Free Capital"
+            label="Res. Capital"
             value={accountData.availableMargin || 0}
-            alignRight
           />
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Margin Ratio"
+            label="Lev."
             value={leverageRatio?.toFixed(2) || "-"}
             alignRight
             formatter={(l) => l}

@@ -22,7 +22,9 @@ export function useMockAccountBalance() {
     }, 0);
 
     const margin = positions.reduce((sum, pos) => {
-      const collateral = parseFloat(pos.size || 0);
+      const collateral = parseFloat(
+        (pos.collateral != null ? pos.collateral : pos.size) || 0,
+      );
       return sum + (Number.isFinite(collateral) ? collateral : 0);
     }, 0);
 

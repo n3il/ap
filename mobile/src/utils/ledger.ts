@@ -19,6 +19,7 @@ export type LedgerPosition = {
   side: 'LONG' | 'SHORT';
   status: 'OPEN' | 'CLOSED';
   size: number;
+  collateral: number;
   quantity: number;
   entry_price: number;
   exit_price?: number;
@@ -107,6 +108,7 @@ export function buildPositionsFromLedger(
       side,
       status: close ? "CLOSED" : "OPEN",
       size: collateral,
+      collateral,
       quantity,
       entry_price: entryPrice,
       entry_timestamp: String(openMeta.entry_timestamp ?? open.executed_at ?? ""),

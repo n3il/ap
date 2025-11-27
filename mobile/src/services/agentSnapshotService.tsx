@@ -142,14 +142,23 @@ export const agentSnapshotService = {
   calculatePercentChange(snapshots, initialCapital) {
     if (!snapshots || snapshots.length === 0) return [];
 
+    const baseCapital = parseFloat(initialCapital);
+    if (!Number.isFinite(baseCapital) || baseCapital === 0) {
+      return snapshots.map((snapshot) => ({
+        timestamp: snapshot.timestamp,
+        percent: 0,
+        equity: parseFloat(snapshot.equity) || 0,
+      }));
+    }
+
     return snapshots.map((snapshot) => {
-      const equity = parseFloat(snapshot.equity) || initialCapital;
-      const percentChange = ((equity - initialCapital) / initialCapital) * 100;
+      const equity = parseFloat(snapshot.equity) || baseCapital;
+      const percentChange = ((equity - baseCapital) / baseCapital) * 100;
 
       return {
         timestamp: snapshot.timestamp,
         percent: percentChange,
-        equity: equity,
+        equity,
       };
     });
   },

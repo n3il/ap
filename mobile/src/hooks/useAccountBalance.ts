@@ -76,19 +76,31 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
       const currentPrice = marketPrices[symbol];
 
       const entryPrice = Number(position.entry_price) || 0;
-      const collateral = Number(position.size) || 0;
+      const collateral =
+        Number(
+          position.collateral != null ? position.collateral : position.size,
+        ) || 0;
       const leverage = Number(position.leverage) || 1;
+      const recordedQuantity = Number(position.quantity) || 0;
       const positionQuantity =
-        entryPrice && collateral ? (collateral * leverage) / entryPrice : 0;
+        recordedQuantity ||
+        (entryPrice && collateral ? (collateral * leverage) / entryPrice : 0);
 
       let unrealizedPnl = 0;
       let pnlPercent = 0;
       const referencePrice = currentPrice || entryPrice;
+      const direction = position.side === "LONG" ? 1 : -1;
 
-      if (referencePrice && entryPrice && collateral) {
-        const priceChangePercent = (referencePrice - entryPrice) / entryPrice;
-        pnlPercent = priceChangePercent * leverage;
-        unrealizedPnl = collateral * leverage * priceChangePercent;
+      if (referencePrice && entryPrice && positionQuantity) {
+        const priceChange = referencePrice - entryPrice;
+        unrealizedPnl = direction * priceChange * positionQuantity;
+        const collateralBase =
+          collateral || (positionQuantity && leverage
+            ? (positionQuantity * entryPrice) / leverage
+            : 0);
+        pnlPercent = collateralBase
+          ? (unrealizedPnl / collateralBase) * 100
+          : 0;
       }
 
       return {
@@ -134,7 +146,10 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
 
     // Calculate margin used (position value / leverage)
     const marginUsed = enrichedPositions.reduce((sum, p) => {
-      const collateral = parseFloat(p.size) || 0;
+      const collateral =
+        parseFloat(
+          p.collateral != null ? p.collateral : (p.size as any),
+        ) || 0;
       return sum + collateral;
     }, 0);
 
