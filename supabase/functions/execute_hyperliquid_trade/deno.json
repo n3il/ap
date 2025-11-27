@@ -1,0 +1,11 @@
+{
+  "imports": {
+    "@nktkas/hyperliquid": "npm:@nktkas/hyperliquid@^0.27.1",
+    "@sentry/deno": "npm:@sentry/deno@^10.27.0",
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@^2.86.0"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window"]
+  }
+}
+
