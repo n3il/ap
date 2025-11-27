@@ -66,21 +66,6 @@ CREATE POLICY "Users can delete their own agents"
   FOR DELETE
   USING (((SELECT auth.uid()) = user_id));
 
--- === Trades RLS optimization ===
-DROP POLICY IF EXISTS "Users can view trades for their agents" ON public.trades;
-
-CREATE POLICY "Users can view trades for their agents"
-  ON public.trades
-  FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1
-      FROM public.agents
-      WHERE agents.id = trades.agent_id
-        AND agents.user_id = (SELECT auth.uid())
-    )
-  );
-
 -- === Assessments RLS optimization ===
 DROP POLICY IF EXISTS "Users can view assessments for their agents" ON public.assessments;
 
@@ -97,4 +82,3 @@ CREATE POLICY "Users can view assessments for their agents"
   );
 
 COMMIT;
-

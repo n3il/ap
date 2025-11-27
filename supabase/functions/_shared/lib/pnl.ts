@@ -1,6 +1,26 @@
 import { OpenPosition, Trade } from "./types.ts";
 
 /**
+ * Calculates the underlying asset quantity for a position.
+ * `size` reflects collateral in USD, not the raw position size.
+ */
+export function calculatePositionQuantity(
+  collateral: string | number,
+  leverage: string | number,
+  entryPrice: string | number
+): number {
+  const collateralValue = parseFloat(String(collateral || 0));
+  const leverageValue = parseFloat(String(leverage || 1));
+  const entry = parseFloat(String(entryPrice || 0));
+
+  if (!collateralValue || !leverageValue || !entry) {
+    return 0;
+  }
+
+  return (collateralValue * leverageValue) / entry;
+}
+
+/**
  * Pure function to calculate PnL for a single trade
  * Works for both open and closed positions
  */
@@ -13,14 +33,12 @@ export function calculateTradePnL(
 ): number {
   if (!entryPrice || !exitPrice || !size) return 0;
 
-  const priceChange = exitPrice - entryPrice;
-  const priceChangePercent = priceChange / entryPrice;
-  const positionValue = size * entryPrice;
+  const quantity = calculatePositionQuantity(size, leverage, entryPrice);
+  if (!quantity) return 0;
 
-  // LONG: profit when price increases, SHORT: profit when price decreases
-  const pnl = side === 'LONG'
-    ? positionValue * priceChangePercent * leverage
-    : -positionValue * priceChangePercent * leverage;
+  const priceChange = exitPrice - entryPrice;
+  const direction = side === 'LONG' ? 1 : -1;
+  const pnl = direction * quantity * priceChange;
 
   return pnl;
 }
@@ -58,10 +76,21 @@ export function calculateUnrealizedPnL(
     if (!currentPrice) return sum;
 
     const leverage = parseFloat(String(position.leverage || 1));
-    const size = parseFloat(String(position.size));
-    const entryPrice = parseFloat(String(position.entry_price));
+    const size = parseFloat(String(position.size || 0));
+    const entryPrice = parseFloat(String(position.entry_price || 0));
 
-    return sum + calculateTradePnL(entryPrice, currentPrice, size, position.side, leverage);
+    if (!currentPrice || !entryPrice || !size) {
+      return sum;
+    }
+
+    const quantity = calculatePositionQuantity(size, leverage, entryPrice);
+    if (!quantity) {
+      return sum;
+    }
+
+    const priceChange = currentPrice - entryPrice;
+    const contribution = (position.side === 'LONG' ? 1 : -1) * quantity * priceChange;
+    return sum + contribution;
   }, 0);
 }
 
@@ -71,30 +100,23 @@ export function calculateUnrealizedPnL(
  */
 export function calculatePositionMargin(
   size: number,
-  price: number,
-  leverage: number
+  _price: number,
+  _leverage: number
 ): number {
-  if (!size || !price || !leverage) return 0;
-
-  const positionValue = size * price;
-  return positionValue / leverage;
+  if (!size) return 0;
+  return Math.max(parseFloat(String(size)) || 0, 0);
 }
 
 /**
  * Calculate total margin used across all open positions
  */
 export function calculateTotalMarginUsed(
-  openPositions: OpenPosition[],
-  priceMap: Map<string, number>
+  openPositions: OpenPosition[]
 ): number {
   return openPositions.reduce((sum, position) => {
-    const currentPrice = priceMap.get(position.asset);
-    if (!currentPrice) return sum;
-
-    const leverage = parseFloat(String(position.leverage || 1));
-    const size = parseFloat(String(position.size));
-
-    return sum + calculatePositionMargin(size, currentPrice, leverage);
+    const size = parseFloat(String(position.size || 0));
+    if (!size) return sum;
+    return sum + size;
   }, 0);
 }
 
@@ -119,7 +141,7 @@ export function calculatePnLMetrics(
   const realizedPnl = calculateRealizedPnL(closedTrades);
   const priceMap = createPriceMap(marketData);
   const unrealizedPnl = calculateUnrealizedPnL(openPositions, priceMap);
-  const marginUsed = calculateTotalMarginUsed(openPositions, priceMap);
+  const marginUsed = calculateTotalMarginUsed(openPositions);
   const accountValue = initialCapital + realizedPnl + unrealizedPnl;
   const remainingCash = accountValue - marginUsed;
 

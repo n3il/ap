@@ -20,6 +20,8 @@ export default function HeaderChart({ agentId, ...props }) {
     enabled: !!agentId,
   });
 
+  console.log({ sentimentScores })
+
   const { data: snapshots, isLoading } = useAgentSnapshots(agentId, timeframe);
 
   // Prepare raw data sources

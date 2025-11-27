@@ -96,6 +96,7 @@ export interface TradeResult {
   success: boolean
   orderId?: string | number
   price?: number
+  quantity?: number
   message?: string
   error?: string
   fee?: number
@@ -164,6 +165,14 @@ function parseNumericValue(value: unknown): number | undefined {
   if (typeof value === 'string') {
     const parsed = parseFloat(value)
     return Number.isNaN(parsed) ? undefined : parsed
+  }
+  return undefined
+}
+
+function parsePositiveNumber(value: unknown): number | undefined {
+  const parsed = parseNumericValue(value)
+  if (typeof parsed === 'number' && parsed > 0) {
+    return parsed
   }
   return undefined
 }
@@ -350,7 +359,8 @@ export async function executeHyperliquidTrade(
 
   const assetSymbol = action.asset.replace('-PERP', '')
   const assetInfo = await resolveAssetInfo(assetSymbol)
-  const size = action.size ?? 0.01
+  const collateral = parsePositiveNumber(action.size) ?? 0.01
+  const leverage = parsePositiveNumber(action.leverage) ?? 1
   const isBuy = action.side === 'LONG'
 
   const allMids = await infoClient.allMids()
@@ -364,7 +374,16 @@ export async function executeHyperliquidTrade(
     ? currentPrice * (1 + slippage)
     : currentPrice * (1 - slippage)
 
-  console.log(`Placing order: ${action.side} ${size} ${assetSymbol} @ ${limitPrice}`)
+  const notional = collateral * leverage
+  const quantity = limitPrice ? notional / limitPrice : 0
+
+  if (!quantity) {
+    throw new Error('Unable to determine position size for Hyperliquid order')
+  }
+
+  console.log(
+    `Placing order: ${action.side} collateral=${collateral} leverage=${leverage} qty=${quantity} ${assetSymbol} @ ${limitPrice}`
+  )
 
   // https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint
   const orderResult = await exchangeClient.order({
@@ -373,7 +392,7 @@ export async function executeHyperliquidTrade(
         a: assetInfo.index,
         b: isBuy,
         p: formatNumber(limitPrice, 6),
-        s: formatNumber(size, assetInfo.szDecimals ?? 4),
+        s: formatNumber(quantity, assetInfo.szDecimals ?? 4),
         r: false,
         t: { limit: { tif: 'Ioc' as const } },
       },
@@ -389,6 +408,7 @@ export async function executeHyperliquidTrade(
       success: true,
       orderId: oid ?? undefined,
       price: limitPrice,
+      quantity,
       message: 'Trade executed successfully',
     }
   }

@@ -10,12 +10,6 @@ drop policy "Backend can insert assessments" on "public"."assessments";
 
 drop policy "Users can view assessments for their agents" on "public"."assessments";
 
-drop policy "Backend can insert trades" on "public"."trades";
-
-drop policy "Backend can update trades" on "public"."trades";
-
-drop policy "Users can view trades for their agents" on "public"."trades";
-
 revoke delete on table "public"."agents" from "anon";
 
 revoke insert on table "public"."agents" from "anon";
@@ -100,67 +94,17 @@ revoke truncate on table "public"."assessments" from "service_role";
 
 revoke update on table "public"."assessments" from "service_role";
 
-revoke delete on table "public"."trades" from "anon";
-
-revoke insert on table "public"."trades" from "anon";
-
-revoke references on table "public"."trades" from "anon";
-
-revoke select on table "public"."trades" from "anon";
-
-revoke trigger on table "public"."trades" from "anon";
-
-revoke truncate on table "public"."trades" from "anon";
-
-revoke update on table "public"."trades" from "anon";
-
-revoke delete on table "public"."trades" from "authenticated";
-
-revoke insert on table "public"."trades" from "authenticated";
-
-revoke references on table "public"."trades" from "authenticated";
-
-revoke select on table "public"."trades" from "authenticated";
-
-revoke trigger on table "public"."trades" from "authenticated";
-
-revoke truncate on table "public"."trades" from "authenticated";
-
-revoke update on table "public"."trades" from "authenticated";
-
-revoke delete on table "public"."trades" from "service_role";
-
-revoke insert on table "public"."trades" from "service_role";
-
-revoke references on table "public"."trades" from "service_role";
-
-revoke select on table "public"."trades" from "service_role";
-
-revoke trigger on table "public"."trades" from "service_role";
-
-revoke truncate on table "public"."trades" from "service_role";
-
-revoke update on table "public"."trades" from "service_role";
-
 alter table "public"."agents" drop constraint "agents_user_id_fkey";
 
 alter table "public"."assessments" drop constraint "assessments_agent_id_fkey";
 
 alter table "public"."assessments" drop constraint "assessments_type_check";
 
-alter table "public"."trades" drop constraint "trades_agent_id_fkey";
-
-alter table "public"."trades" drop constraint "trades_side_check";
-
-alter table "public"."trades" drop constraint "trades_status_check";
-
 drop function if exists "public"."trigger_agent_scheduler"();
 
 alter table "public"."agents" drop constraint "agents_pkey";
 
 alter table "public"."assessments" drop constraint "assessments_pkey";
-
-alter table "public"."trades" drop constraint "trades_pkey";
 
 drop index if exists "public"."agents_pkey";
 
@@ -176,19 +120,9 @@ drop index if exists "public"."idx_assessments_timestamp";
 
 drop index if exists "public"."idx_assessments_type";
 
-drop index if exists "public"."idx_trades_agent_id";
-
-drop index if exists "public"."idx_trades_entry_timestamp";
-
-drop index if exists "public"."idx_trades_status";
-
-drop index if exists "public"."trades_pkey";
-
 drop table "public"."agents";
 
 drop table "public"."assessments";
-
-drop table "public"."trades";
 
 create table "public"."profiles" (
     "id" uuid not null,
@@ -322,6 +256,3 @@ with check ((bucket_id = 'avatars'::text));
   for select
   to public
 using ((bucket_id = 'avatars'::text));
-
-
-

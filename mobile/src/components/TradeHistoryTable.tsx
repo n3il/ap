@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet } from "react-native";
 import { Text, View } from "@/components/ui";
-import { supabase } from "@/config/supabase";
+import { tradeService } from "@/services/tradeService";
 import { useTheme } from "@/contexts/ThemeContext";
 
 const COLUMN_WIDTHS = {
@@ -47,32 +47,26 @@ export default function TradeHistoryTable({ userId, agentId }) {
     [theme.colors],
   );
 
-  useEffect(() => {
-    fetchTrades();
-  }, [fetchTrades]);
-
-  const fetchTrades = async () => {
+  const fetchTrades = useCallback(async () => {
     try {
       setLoading(true);
-      let query = supabase
-        .from("trades")
-        .select("*")
-        .order("entry_timestamp", { ascending: false });
-
-      if (userId) {
-        query = query.eq("user_id", userId);
-      }
-      if (agentId) {
-        query = query.eq("agent_id", agentId);
-      }
-
-      const { data, error } = await query;
-      if (error) throw error;
-      setTrades(data || []);
+      const data = agentId
+        ? await tradeService.getTradesByAgent(agentId)
+        : await tradeService.getAllTrades();
+      const normalized = data.map((trade) => ({
+        ...trade,
+        filled: trade.quantity ?? trade.size ?? 0,
+        avg_price: trade.exit_price ?? trade.entry_price,
+      }));
+      setTrades(normalized);
     } finally {
       setLoading(false);
     }
-  };
+  }, [agentId]);
+
+  useEffect(() => {
+    fetchTrades();
+  }, [fetchTrades]);
 
   const formatDate = (timestamp) => {
     if (!timestamp) return "--";

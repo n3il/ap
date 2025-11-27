@@ -55,7 +55,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
   textSx = {},
   fontWeight = "300",
 }) => {
-  const styles = badgeStyles[variant];
+  const styles = badgeStyles[variant] || badgeStyles.foreground;
   const sizeStyle = sizeStyles[size];
 
   if (!children) return null;

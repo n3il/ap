@@ -1,4 +1,5 @@
 import { sanitizeMetadata } from './validation.ts';
+import { sanitizeNumericValue } from './numeric.ts';
 
 export type TradingRecordType = 'paper' | 'real';
 export type ExecutionSide = 'BUY' | 'SELL';
@@ -106,13 +107,50 @@ export async function recordLedgerExecution({
     executionSide,
   });
 
-  const safeQuantity = Number(quantity) || 0;
-  const safePrice = Number(price) || 0;
-  const safeFee = Number(fee) || 0;
+  const safeQuantity = sanitizeNumericValue(quantity, {
+    precision: 18,
+    scale: 8,
+    allowNegative: false,
+    defaultValue: 0,
+    label: 'ledger_quantity',
+  });
+  const safePrice = sanitizeNumericValue(price, {
+    precision: 18,
+    scale: 8,
+    allowNegative: false,
+    defaultValue: 0,
+    label: 'ledger_price',
+  });
+  const safeFee = sanitizeNumericValue(fee, {
+    precision: 18,
+    scale: 8,
+    allowNegative: false,
+    defaultValue: 0,
+    label: 'ledger_fee',
+  });
   const rawNotional = safePrice * safeQuantity;
-  const safeNotional = Number.isFinite(rawNotional) ? rawNotional : 0;
+  const safeNotional = sanitizeNumericValue(rawNotional, {
+    precision: 18,
+    scale: 8,
+    allowNegative: false,
+    defaultValue: 0,
+    label: 'ledger_notional',
+  });
   const signedAmount = safeNotional * (executionSide === 'BUY' ? -1 : 1);
-  const netAmount = signedAmount - safeFee;
+  const netAmount = sanitizeNumericValue(signedAmount - safeFee, {
+    precision: 18,
+    scale: 8,
+    allowNegative: true,
+    defaultValue: 0,
+    label: 'ledger_net_amount',
+  });
+  const safeRealizedPnL = sanitizeNumericValue(realizedPnL ?? 0, {
+    precision: 18,
+    scale: 8,
+    allowNegative: true,
+    defaultValue: 0,
+    label: 'ledger_realized_pnl',
+  });
 
   // Insert order record
   const { data: order, error: orderError } = await supabase
@@ -154,7 +192,7 @@ export async function recordLedgerExecution({
       quantity: safeQuantity,
       price: safePrice || 0,
       fee: safeFee,
-      realized_pnl: realizedPnL ?? 0,
+      realized_pnl: safeRealizedPnL,
       meta: sanitized,
     })
     .select()
@@ -174,7 +212,7 @@ export async function recordLedgerExecution({
       agent_id: agentId,
       type,
       category: 'TRADE',
-      amount: Number(netAmount.toFixed(8)),
+      amount: netAmount,
       reference_order_id: order?.id ?? null,
       reference_trade_id: trade?.id ?? null,
       description:
@@ -183,7 +221,7 @@ export async function recordLedgerExecution({
       metadata: {
         ...sanitized,
         fee: safeFee,
-        notional: Number(safeNotional.toFixed(8)),
+        notional: safeNotional,
       },
     })
     .select()

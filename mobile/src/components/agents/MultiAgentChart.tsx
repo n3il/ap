@@ -4,7 +4,7 @@ import { useMultiAgentSnapshots } from "@/hooks/useAgentSnapshots";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
-import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
+import { createTimeNormalizer } from "@/utils/chartUtils";
 
 export default function MultiAgentChart({ scrollY, style }) {
   const { colors } = useColors();
@@ -30,13 +30,32 @@ export default function MultiAgentChart({ scrollY, style }) {
     // Create lines with globally normalized time
     return agents
       .map((agent) => {
-        const snapshots = data[agent.id] || [];
-        const chartData = normalizeDataSeries(
-          snapshots,
-          normalizeTimestamp,
-          "timestamp",
-          "equity",
-        );
+        const initialCapital = parseFloat(agent.initial_capital);
+        if (!Number.isFinite(initialCapital) || initialCapital === 0) return null;
+
+        const snapshots = (data[agent.id] || [])
+          .slice()
+          .sort(
+            (a, b) =>
+              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+          );
+
+        const chartData = snapshots
+          .map((snapshot) => {
+            const time = normalizeTimestamp(snapshot.timestamp);
+            const equity = parseFloat(snapshot.equity);
+            if (time === null || !Number.isFinite(equity)) return null;
+
+            console.log({ equity, initialCapital, })
+            const percentChange =
+              ((equity - initialCapital) / Math.abs(initialCapital || 1)) * 100;
+
+            return {
+              time,
+              value: percentChange,
+            };
+          })
+          .filter((point) => point !== null);
 
         if (chartData.length === 0) return null;
 
@@ -56,7 +75,7 @@ export default function MultiAgentChart({ scrollY, style }) {
       lines={lines}
       timeframe={timeframe}
       scrollY={scrollY}
-      isLoading={isLoading}
+      isLoading={agentIds.length === 0 || isLoading}
       style={style}
     />
   );

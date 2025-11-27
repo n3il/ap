@@ -1,21 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { supabase } from "@/config/supabase";
+import { tradeService } from "@/services/tradeService";
 
 // Mock balance for demo - used in Markets demo page
 export function useMockAccountBalance() {
   const [wallet, setWallet] = useState(10000);
 
-  const { data: positions = [] } = useQuery({
-    queryKey: ["positions"],
-    queryFn: async () => {
-      const { data } = await supabase
-        .from("trades")
-        .select("*")
-        .eq("status", "OPEN");
-      return data || [];
-    },
+  const { data: trades = [] } = useQuery({
+    queryKey: ["mock-ledger-trades"],
+    queryFn: () => tradeService.getAllTrades(),
   });
+
+  const positions = useMemo(
+    () => trades.filter((trade) => trade.status === "OPEN"),
+    [trades],
+  );
 
   const { unrealizedPnl, usedMargin } = useMemo(() => {
     const unrealized = positions.reduce((sum, pos) => {
@@ -23,10 +22,8 @@ export function useMockAccountBalance() {
     }, 0);
 
     const margin = positions.reduce((sum, pos) => {
-      const size = parseFloat(pos.size || 0);
-      const entryPrice = parseFloat(pos.entry_price || 0);
-      const leverage = parseFloat(pos.leverage || 1);
-      return sum + (size * entryPrice) / leverage;
+      const collateral = parseFloat(pos.size || 0);
+      return sum + (Number.isFinite(collateral) ? collateral : 0);
     }, 0);
 
     return { unrealizedPnl: unrealized, usedMargin: margin };

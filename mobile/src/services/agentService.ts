@@ -1,5 +1,6 @@
 import * as Crypto from "expo-crypto";
 import { supabase } from "@/config/supabase";
+import { tradeService } from "@/services/tradeService";
 
 const buildAgentSelectQuery = (includeLatestAssessment = false) => {
   const baseColumns = includeLatestAssessment
@@ -170,13 +171,7 @@ export const agentService = {
 
   // Get agent statistics
   async getAgentStats(agentId) {
-    // Fetch all trades for the agent
-    const { data: trades, error: tradesError } = await supabase
-      .from("trades")
-      .select("*")
-      .eq("agent_id", agentId);
-
-    if (tradesError) throw tradesError;
+    const trades = await tradeService.getTradesByAgent(agentId);
 
     // Calculate statistics
     const stats = {

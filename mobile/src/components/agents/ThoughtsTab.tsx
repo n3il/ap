@@ -29,7 +29,7 @@ export default function ThoughtsTab({
     queryFn: ({ pageParam = 0 }) =>
       assessmentService.getAssessmentsByAgent(agentId, {
         pageParam,
-        pageSize: 4,
+        pageSize: 2,
       }),
     getNextPageParam: (lastPage) => lastPage?.nextPage ?? undefined,
     initialPageParam: 0,
@@ -114,7 +114,7 @@ export default function ThoughtsTab({
         refreshing={isRefetching || parentRefreshing}
         onRefresh={handleRefresh}
         contentContainerStyle={{ gap: 16, paddingBottom: "40%" }}
-        showsVerticalScrollIndicator={false}
+        // showsVerticalScrollIndicator={false}
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: true },

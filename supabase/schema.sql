@@ -235,6 +235,7 @@ DROP VIEW IF EXISTS paper_account_position_totals;
 DROP VIEW IF EXISTS paper_position_aggregates;
 DROP TABLE IF EXISTS paper_transactions;
 DROP TABLE IF EXISTS paper_trades;
+DROP TABLE IF EXISTS trades;
 DROP TABLE IF EXISTS paper_orders;
 DROP TABLE IF EXISTS paper_trading_accounts;
 

@@ -29,6 +29,9 @@ export interface Trade {
   entry_timestamp: string;
   exit_timestamp?: string;
   realized_pnl?: string | number;
+  type?: 'paper' | 'real';
+  account_id?: string;
+  user_id?: string;
 }
 
 export interface OpenPosition {

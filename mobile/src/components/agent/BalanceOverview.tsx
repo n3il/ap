@@ -59,10 +59,10 @@ export default function BalanceOverview({
   // Calculate position value (total notional value of all positions)
   const positionValue =
     accountData.enrichedPositions?.reduce((sum, position) => {
-      const size = parseFloat(position.size) || 0;
+      const quantity = position.positionQuantity || 0;
       const currentPrice =
         position.currentPrice || parseFloat(position.entry_price) || 0;
-      return sum + size * currentPrice;
+      return sum + quantity * currentPrice;
     }, 0) || 0;
 
   // Calculate leverage ratio

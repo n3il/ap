@@ -182,8 +182,9 @@ export const assessmentService = {
     let query = supabase
       .from("assessments")
       .select(
-        "id, created_at, agent_id, parsed_llm_response->headline->sentiment_score",
+        "id, timestamp, agent_id, parsed_llm_response->headline->sentiment_score",
       )
+      .order("timestamp", { ascending: false })
       .in("agent_id", ids);
 
     // Filter by timeframe if provided

@@ -1,16 +1,36 @@
 import { supabase } from "@/config/supabase";
+import { buildPositionsFromLedger } from "@/utils/ledger";
+
+async function fetchLedgerTrades({
+  agentId,
+  userId,
+}: {
+  agentId?: string | null;
+  userId?: string | null;
+}) {
+  let query = supabase
+    .from("trading_trades")
+    .select("*")
+    .not("meta->>position_id", "is", null)
+    .order("executed_at", { ascending: true });
+
+  if (agentId) {
+    query = query.eq("agent_id", agentId);
+  }
+  if (userId) {
+    query = query.eq("user_id", userId);
+  }
+
+  const { data, error } = await query;
+  if (error) throw error;
+  return data ?? [];
+}
 
 export const tradeService = {
   // Fetch all trades for a specific agent
   async getTradesByAgent(agentId) {
-    const { data, error } = await supabase
-      .from("trades")
-      .select("*")
-      .eq("agent_id", agentId)
-      .order("entry_timestamp", { ascending: false });
-
-    if (error) throw error;
-    return data;
+    const rows = await fetchLedgerTrades({ agentId, userId: null });
+    return buildPositionsFromLedger(rows);
   },
 
   // Fetch all trades for the current user (across all agents)
@@ -20,85 +40,33 @@ export const tradeService = {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
-    // First get all agent IDs for the user
-    const { data: agents, error: agentsError } = await supabase
-      .from("agents")
-      .select("id")
-      .eq("user_id", user.id);
-
-    if (agentsError) throw agentsError;
-
-    const agentIds = agents.map((a) => a.id);
-
-    if (agentIds.length === 0) return [];
-
-    // Then get all trades for those agents
-    const { data, error } = await supabase
-      .from("trades")
-      .select(`
-          *,
-          agents (
-            name,
-            model_name
-          )
-        `)
-      .in("agent_id", agentIds)
-      .order("entry_timestamp", { ascending: false });
-
-    if (error) throw error;
-    return data;
+    const rows = await fetchLedgerTrades({ agentId: null, userId: user.id });
+    return buildPositionsFromLedger(rows);
   },
 
   // Get open positions for a specific agent
   async getOpenPositions(agentId) {
-    const { data, error } = await supabase
-      .from("trades")
-      .select("*")
-      .eq("agent_id", agentId)
-      .eq("status", "OPEN")
-      .order("entry_timestamp", { ascending: false });
-
-    if (error) throw error;
-    return data;
+    const trades = await this.getTradesByAgent(agentId);
+    return trades.filter((trade) => trade.status === "OPEN");
   },
 
   // Get trade statistics
   async getTradeStats(agentId = null) {
-    let query = supabase.from("trades").select("*");
-
-    if (agentId) {
-      query = query.eq("agent_id", agentId);
-    } else {
-      // Get all trades for user's agents
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-
-      const { data: agents } = await supabase
-        .from("agents")
-        .select("id")
-        .eq("user_id", user.id);
-
-      const agentIds = agents.map((a) => a.id);
-      if (agentIds.length === 0) {
-        return {
-          totalTrades: 0,
-          openPositions: 0,
-          totalPnL: 0,
-          winRate: 0,
-        };
-      }
-
-      query = query.in("agent_id", agentIds);
+    const trades = agentId
+      ? await this.getTradesByAgent(agentId)
+      : await this.getAllTrades();
+    if (!trades.length) {
+      return {
+        totalTrades: 0,
+        openPositions: 0,
+        totalPnL: 0,
+        winRate: 0,
+      };
     }
-
-    const { data: trades, error } = await query;
-    if (error) throw error;
 
     const closedTrades = trades.filter((t) => t.status === "CLOSED");
     const winningTrades = closedTrades.filter(
-      (t) => parseFloat(t.realized_pnl) > 0,
+      (t) => parseFloat(String(t.realized_pnl ?? 0)) > 0,
     );
 
     return {

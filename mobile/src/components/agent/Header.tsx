@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native";
 import { Animated, Text, TouchableOpacity, View } from "@/components/ui";
 import { supabase } from "@/config/supabase";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { tradeService } from "@/services/tradeService";
 import HeaderChart from "./HeaderChart";
 
 const HEADER_HEIGHT = 300;
@@ -24,13 +25,8 @@ export default function AgentHeader({ agent }) {
   const { data: tradesCount = 0 } = useQuery({
     queryKey: ["agent-trades-count", agent.id],
     queryFn: async () => {
-      const { count, error } = await supabase
-        .from("trades")
-        .select("*", { count: "exact", head: true })
-        .eq("agent_id", agent.id);
-
-      if (error) throw error;
-      return count || 0;
+      const trades = await tradeService.getTradesByAgent(agent.id);
+      return trades.length;
     },
   });
 
