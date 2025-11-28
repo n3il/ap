@@ -104,7 +104,6 @@ export default function BalanceOverview({
         </View>
       </View>
 
-      {/* Row 1: Unrealized P&L and Realized P&L */}
       <View
         sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}
       >
@@ -129,7 +128,6 @@ export default function BalanceOverview({
           <LabelValue
             label="Open P&L"
             value={accountData.unrealizedPnl || 0}
-            alignRight
             colorize
           >
             <Text
@@ -143,13 +141,12 @@ export default function BalanceOverview({
                       : "foreground",
               }}
             >
-              {`(${formatPercent(unrealizedPnlPercent)})`}
+              {`(${unrealizedPnlPercent ? formatPercent(unrealizedPnlPercent) : '-'})`}
             </Text>
           </LabelValue>
         </View>
       </View>
 
-      {/* Row 2: Initial Capital, Margin Used, Free Collateral */}
       <View
         sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}
       >

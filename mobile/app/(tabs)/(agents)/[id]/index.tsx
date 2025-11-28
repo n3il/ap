@@ -73,6 +73,13 @@ export default function AgentReadScreen() {
             color="white"
           />
         </GlassButton>
+        <GlassButton onPress={() => {}}>
+          <MaterialCommunityIcons
+            name="one-up"
+            size={24}
+            color="white"
+          />
+        </GlassButton>
       </View>
 
       <ThoughtsTab
