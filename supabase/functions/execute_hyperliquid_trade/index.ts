@@ -26,13 +26,13 @@ async function handleTrade(payload: TradePayload) {
 
   // Route to appropriate trade execution handler based on action type
   // Validation is handled in the shared trade functions
-  if (action.action === 'OPEN_LONG' || action.action === 'OPEN_SHORT') {
+  if (action.type === 'OPEN') {
     const result = await executeOpenTrade(agent, action, payload.simulate);
     return {
       success: true,
       ...result,
     };
-  } else if (action.action === 'CLOSE_LONG' || action.action === 'CLOSE_SHORT') {
+  } else if (action.type === 'CLOSE') {
     const result = await executeCloseTrade(agent, action, payload.simulate);
     return {
       success: true,
@@ -40,7 +40,7 @@ async function handleTrade(payload: TradePayload) {
     };
   }
 
-  throw new Error(`Unknown action type: ${action.action}`);
+  throw new Error(`Unknown action type: ${(action as any).type}`);
 }
 
 /**

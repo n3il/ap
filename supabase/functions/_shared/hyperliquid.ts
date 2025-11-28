@@ -85,11 +85,11 @@ export interface CandleData {
 }
 
 export interface TradeAction {
-  action: string
   asset?: string
   side?: 'LONG' | 'SHORT'
   size?: number
   leverage?: number
+  limit_price?: number
 }
 
 export interface TradeResult {
@@ -374,15 +374,19 @@ export async function executeHyperliquidTrade(
     ? currentPrice * (1 + slippage)
     : currentPrice * (1 - slippage)
 
+  const userLimit = parsePositiveNumber(action.limit_price);
   const notional = collateral * leverage
-  const quantity = limitPrice ? notional / limitPrice : 0
+  const quantityPrice = userLimit ?? (limitPrice ?? 0)
+  const quantity = quantityPrice ? notional / quantityPrice : 0
 
   if (!quantity) {
     throw new Error('Unable to determine position size for Hyperliquid order')
   }
 
+  const finalLimitPrice = userLimit ?? limitPrice
+
   console.log(
-    `Placing order: ${action.side} collateral=${collateral} leverage=${leverage} qty=${quantity} ${assetSymbol} @ ${limitPrice}`
+    `Placing order: ${action.side} collateral=${collateral} leverage=${leverage} qty=${quantity} ${assetSymbol} @ ${finalLimitPrice}`
   )
 
   // https://hyperliquid.gitbook.io/hyperliquid-docs/for-developers/api/exchange-endpoint
@@ -391,7 +395,7 @@ export async function executeHyperliquidTrade(
       {
         a: assetInfo.index,
         b: isBuy,
-        p: formatNumber(limitPrice, 6),
+        p: formatNumber(finalLimitPrice, 6),
         s: formatNumber(quantity, assetInfo.szDecimals ?? 4),
         r: false,
         t: { limit: { tif: 'Ioc' as const } },
@@ -407,7 +411,7 @@ export async function executeHyperliquidTrade(
     return {
       success: true,
       orderId: oid ?? undefined,
-      price: limitPrice,
+      price: finalLimitPrice,
       quantity,
       message: 'Trade executed successfully',
     }

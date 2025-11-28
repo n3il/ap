@@ -6,13 +6,6 @@ export type PromptType = 'POSITION_REVIEW' | 'MARKET_SCAN';
 
 export type LLMProvider = 'google' | 'openai' | 'anthropic' | 'deepseek';
 
-export type TradeActionType =
-  | 'OPEN_LONG'
-  | 'OPEN_SHORT'
-  | 'CLOSE_LONG'
-  | 'CLOSE_SHORT'
-  | 'NO_ACTION';
-
 export interface LLMHeadlineBlock {
   short_summary?: string;
   extended_summary?: string;
@@ -27,18 +20,27 @@ export interface LLMOverviewBlock {
   technical_analysis?: string;
 }
 
-export interface LLMTradeAction {
-  asset?: string;
-  action?: TradeActionType;
-  leverage?: number;
-  size?: number;
-  entry?: number;
-  stopLoss?: number;
-  takeProfit?: number;
-  confidenceScore?: number;
-  reasoning?: string;
-  position_id?: string; // trade id
-}
+export type LLMTradeAction =
+  | {
+      type: 'OPEN';
+      asset: string;
+      direction: 'LONG' | 'SHORT';
+      leverage: number;
+      trade_amount: number;
+      limit_price?: number;
+      target_price?: number;
+      stop_loss?: number;
+      reason: string;
+      confidenceScore: number;
+    }
+  | {
+      type: 'CLOSE';
+      position_id: string;
+      asset: string;
+      exit_limit_price?: number;
+      reason: string;
+      confidenceScore: number;
+    };
 
 export interface ParsedLLMResponse {
   headline?: LLMHeadlineBlock | null;

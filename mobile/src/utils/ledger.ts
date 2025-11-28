@@ -32,8 +32,8 @@ export type LedgerPosition = {
   type?: 'paper' | 'real';
 };
 
-const OPEN_ACTIONS = new Set(['OPEN_LONG', 'OPEN_SHORT']);
-const CLOSE_ACTIONS = new Set(['CLOSE_LONG', 'CLOSE_SHORT']);
+const OPEN_ACTIONS = new Set(['OPEN']);
+const CLOSE_ACTIONS = new Set(['CLOSE']);
 
 const toNumber = (value: unknown, fallback = 0) => {
   if (typeof value === "number") return value;

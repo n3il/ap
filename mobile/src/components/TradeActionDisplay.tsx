@@ -7,83 +7,64 @@ const _asNumber = (value) => {
   return Number.isFinite(num) ? num : undefined;
 };
 
-type TradeActionType = {
-  action: string;
-  asset: string;
-  confidenceScore: number;
-  entry: number;
-  leverage: number;
-  reasoning: string;
-  size: number;
-  stopLoss: number;
-  takeProfit: number;
-  tradeId: string;
-};
+type TradeActionType =
+  | {
+      type: "OPEN";
+      asset: string;
+      direction: "LONG" | "SHORT";
+      trade_amount: number;
+      leverage: number;
+      limit_price?: number;
+      target_price?: number;
+      stop_loss?: number;
+      reason: string;
+      confidenceScore?: number;
+    }
+  | {
+      type: "CLOSE";
+      asset: string;
+      position_id: string;
+      exit_limit_price?: number;
+      reason: string;
+      confidenceScore?: number;
+    };
 
-function getActionMeta(actionType, palette) {
-  switch (actionType) {
-    case "CLOSE_LONG":
-      return {
-        icon: "close-circle",
-        label: "Close Long",
-        color: palette.long,
-        variant: "long",
-      };
-
-    case "CLOSE_SHORT":
-      return {
-        icon: "close-circle",
-        label: "Close Short",
-        color: palette.short,
-        variant: "short",
-      };
-
-    case "OPEN_LONG":
-      return {
-        icon: "trending-up",
-        label: "Open Long",
-        color: palette.long,
-        variant: "long",
-      };
-
-    case "OPEN_SHORT":
-      return {
-        icon: "trending-down",
-        label: "Open Short",
-        color: palette.short,
-        variant: "short",
-      };
-
-    default:
-      return {
-        icon: "minus",
-        label: "No Action",
-        color: palette.long,
-        variant: "neutral",
-      };
+function getActionMeta(action: TradeActionType, palette) {
+  if (action.type === "OPEN") {
+    return action.direction === "LONG"
+      ? {
+          icon: "trending-up",
+          label: "Open Long",
+          color: palette.long,
+          variant: "long",
+        }
+      : {
+          icon: "trending-down",
+          label: "Open Short",
+          color: palette.short,
+          variant: "short",
+        };
   }
+
+  return {
+    icon: "close-circle",
+    label: "Close Position",
+    color: palette.long,
+    variant: "neutral",
+  };
 }
 
 export default function TradeActionDisplay({
-  actionData: {
-    action,
-    asset,
-    confidenceScore,
-    entry,
-    leverage,
-    reasoning,
-    size,
-    stopLoss,
-    takeProfit,
-    tradeId,
-  },
+  actionData,
   showReason = true,
 }: {
   actionData: TradeActionType;
   showReason?: boolean;
 }) {
   const { colors: palette } = useColors();
-  const config = getActionMeta(action, palette);
+  const config = getActionMeta(actionData, palette);
+  const { type, asset, confidenceScore, leverage, reason, trade_amount } =
+    actionData as any;
 
   return (
     <View
@@ -113,11 +94,11 @@ export default function TradeActionDisplay({
               gap: 2,
             }}
           >
-            {(size !== undefined || leverage !== undefined) && (
+            {(trade_amount !== undefined || leverage !== undefined) && (
               <View sx={{ flexDirection: "row", gap: 2 }}>
-                {size !== undefined && (
+                {trade_amount !== undefined && (
                   <Text variant="xs" tone="muted">
-                    {formatAmount(size)}
+                    {formatAmount(trade_amount)}
                   </Text>
                 )}
                 {leverage !== undefined && (
@@ -138,7 +119,7 @@ export default function TradeActionDisplay({
           variant="sm"
           sx={{ lineHeight: 14, fontSize: 10, fontWeight: 300 }}
         >
-          {reasoning || "-"}
+          {reason || "-"}
         </Text>
       </View>
     </View>

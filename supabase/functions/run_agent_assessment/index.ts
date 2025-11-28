@@ -99,24 +99,26 @@ export async function runAgentAssessment(
   // 11. Execute trades directly (no HTTP hop)
   const tradeResults = [];
   for (const tradeAction of tradeActions) {
-    if (tradeAction.action && tradeAction.action !== 'NO_ACTION') {
-      let result;
-
-      // Route to appropriate trade execution handler based on action type
-      if (tradeAction.action === 'OPEN_LONG' || tradeAction.action === 'OPEN_SHORT') {
-        result = await executeOpenTrade(agent, tradeAction, agent.simulate);
-      } else if (tradeAction.action === 'CLOSE_LONG' || tradeAction.action === 'CLOSE_SHORT') {
-        result = await executeCloseTrade(agent, tradeAction, agent.simulate);
-      } else {
-        console.warn(`Unknown action type: ${tradeAction.action}`);
-        continue;
-      }
-
-      tradeResults.push({
-        action: tradeAction,
-        result,
-      });
+    if (!tradeAction || !tradeAction.type) {
+      console.warn('Skipping trade action with missing type', tradeAction);
+      continue;
     }
+
+    let result;
+
+    if (tradeAction.type === 'OPEN') {
+      result = await executeOpenTrade(agent, tradeAction, agent.simulate);
+    } else if (tradeAction.type === 'CLOSE') {
+      result = await executeCloseTrade(agent, tradeAction, agent.simulate);
+    } else {
+      console.warn(`Unknown trade action type: ${(tradeAction as any).type}`);
+      continue;
+    }
+
+    tradeResults.push({
+      action: tradeAction,
+      result,
+    });
   }
 
   return {

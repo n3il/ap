@@ -27,8 +27,7 @@ export async function executeOpenTrade(
   const positionId = crypto.randomUUID();
   const openedAt = new Date().toISOString();
 
-  // Validate action - early return for NO_ACTION
-  if (!action || !action.action || action.action === 'NO_ACTION') {
+  if (!action || action.type !== 'OPEN') {
     return {
       success: true,
       message: 'No trade action to execute',
@@ -36,18 +35,17 @@ export async function executeOpenTrade(
     };
   }
 
-  if (action.action !== 'OPEN_LONG' && action.action !== 'OPEN_SHORT') {
-    throw new Error(`Invalid OPEN action: ${action.action}`);
-  }
-
   if (!action.asset) {
     throw new Error('Asset is required for OPEN action');
   }
 
-  // Determine side from action
-  const side = action.action === 'OPEN_LONG' ? 'LONG' : 'SHORT';
+  if (!action.direction) {
+    throw new Error('Direction is required for OPEN action');
+  }
+
+  const side = action.direction;
   const leverage = asPositiveNumber(action.leverage, 1);
-  const collateral = asPositiveNumber(action.size, 0.01);
+  const collateral = asPositiveNumber(action.trade_amount, 0.01);
 
   // Determine if this is a paper or real trade
   const tradingMode = simulate === false ? 'real' : 'paper';
@@ -67,11 +65,11 @@ export async function executeOpenTrade(
   if (tradingMode === 'real') {
     tradeResult = await executeHyperliquidTrade(
       {
-        action: `OPEN_${side}_${action.asset}${leverage > 1 ? `_${Math.round(leverage)}X` : ''}`,
         asset: action.asset,
-        side: side,
+        side,
         size: collateral,
         leverage,
+        limit_price: action.limit_price,
       },
       agent.hyperliquid_address
     );
@@ -80,10 +78,9 @@ export async function executeOpenTrade(
       throw new Error(tradeResult.error || 'Trade execution failed');
     }
   } else {
-    // Paper trade - use entry price from action or 0
-    const entryPrice = asPositiveNumber(action.entry, 0);
+    const entryPrice = asPositiveNumber(action.limit_price, 0);
     if (!entryPrice) {
-      throw new Error('Entry price is required for paper trades');
+      throw new Error('limit_price is required for paper trades');
     }
 
     const simulatedQuantity = calculatePositionQuantity(collateral, leverage, entryPrice);
@@ -125,22 +122,22 @@ export async function executeOpenTrade(
     realizedPnL: 0,
     metadata: {
       source: 'execute_hyperliquid_trade',
-      action: action.action,
+      action: action.type,
       asset: action.asset,
       hyperliquidOrderId: normalizedOrderId,
       message: tradeResult.message,
       mode: tradingMode,
       leverage,
-       collateral,
-       position_id: positionId,
-       position_side: side,
-       entry_price: entryPrice,
-       entry_timestamp: openedAt,
-       position_quantity: positionQuantity,
-      stopLoss: action.stopLoss,
-      takeProfit: action.takeProfit,
+      collateral,
+      position_id: positionId,
+      position_side: side,
+      entry_price: entryPrice,
+      entry_timestamp: openedAt,
+      position_quantity: positionQuantity,
+      stopLoss: action.stop_loss,
+      targetPrice: action.target_price,
       confidenceScore: action.confidenceScore,
-      reasoning: action.reasoning,
+      reasoning: action.reason,
     },
     description: `Opened ${side} ${action.asset}`,
     type: tradingMode,
@@ -148,21 +145,21 @@ export async function executeOpenTrade(
 
   console.log('Trade opened:', positionId, 'Order ID:', tradeResult.orderId);
 
-  const trade: Trade = {
-    id: positionId,
-    agent_id: agent.id,
-    asset: action.asset,
-    side,
-    size: collateral,
-    entry_price: entryPrice,
-    entry_timestamp: openedAt,
-    leverage,
-    status: 'OPEN',
-    type: tradingMode,
-  };
-
   return {
-    trade,
+    trade: {
+      id: positionId,
+      agent_id: agent.id,
+      asset: action.asset,
+      side,
+      size: collateral,
+      entry_price: entryPrice,
+      entry_timestamp: openedAt,
+      leverage,
+      status: 'OPEN',
+      type: tradingMode,
+      quantity: positionQuantity,
+      collateral,
+    } as Trade,
     execution_data: {
       orderId: tradeResult.orderId,
       price: tradeResult.price,
@@ -185,8 +182,16 @@ export async function executeCloseTrade(
 
   const tradingMode = simulate === false ? 'real' : 'paper';
 
+  if (!action || action.type !== 'CLOSE') {
+    throw new Error('Invalid CLOSE action payload');
+  }
+
   if (!action.asset) {
     throw new Error('Asset is required for CLOSE action');
+  }
+
+  if (!action.position_id) {
+    throw new Error('position_id is required for CLOSE action');
   }
 
   const asset = action.asset;
@@ -200,47 +205,31 @@ export async function executeCloseTrade(
     type: tradingMode,
   });
 
-  if (!action.position_id) {
-    throw new Error('position_id is required for CLOSE action');
-  }
-
-  const closeAction =
-    action.action === 'CLOSE_SHORT'
-      ? 'OPEN_SHORT'
-      : action.action === 'CLOSE_LONG'
-        ? 'OPEN_LONG'
-        : null;
-
-  if (!closeAction) {
-    throw new Error(`Invalid CLOSE action: ${action.action}`);
-  }
-
-  const { data: openTrade, error: openTradeError } = await supabase
+  // Load latest open trade info from trading_trades metadata
+  const { data: openTrade, error: openError } = await supabase
     .from('trading_trades')
     .select('*')
     .eq('agent_id', agent.id)
     .eq('meta->>position_id', action.position_id)
-    .eq('meta->>action', closeAction)
+    .eq('meta->>action', 'OPEN')
     .order('executed_at', { ascending: false })
     .limit(1)
     .maybeSingle();
 
-  if (openTradeError) {
-    throw openTradeError;
-  }
-
+  if (openError) throw openError;
   if (!openTrade) {
     throw new Error('Open position not found or already closed');
   }
 
-  const { data: existingClose } = await supabase
+  const { data: existingClose, error: closeCheckError } = await supabase
     .from('trading_trades')
     .select('id')
     .eq('meta->>position_id', action.position_id)
-    .eq('meta->>action', action.action)
+    .eq('meta->>action', 'CLOSE')
     .limit(1)
     .maybeSingle();
 
+  if (closeCheckError) throw closeCheckError;
   if (existingClose) {
     throw new Error('Position already closed');
   }
@@ -254,30 +243,29 @@ export async function executeCloseTrade(
       throw new Error(closeResult.error || 'Position close failed');
     }
   } else {
-    // Paper trade - use entry price from action or 0
+    // Paper trade - use provided exit price or fall back to entry
     closeResult = {
       success: true,
-      price: action.entry || 0,
-      size: action.size,
-      fee: (action.size || 0) * 0.045,
+      price: action.exit_limit_price || parseFloat(String((openTrade as any).price || 0)) || 0,
+      fee: 0,
       orderId: `PAPER_CLOSE_${Date.now()}`,
       message: 'Paper position closed',
     };
   }
 
   // Calculate P&L
-  const openMeta = (openTrade.meta ?? {}) as Record<string, unknown>;
+  const openMeta = ((openTrade as any).meta ?? {}) as Record<string, unknown>;
   const tradeLeverage = parseFloat(String(openMeta.leverage ?? 1)) || 1;
-  const entryPrice = parseFloat(String(openMeta.entry_price ?? openTrade.price ?? 0)) || 0;
+  const entryPrice = parseFloat(String(openMeta.entry_price ?? (openTrade as any).price ?? 0)) || 0;
   const positionCollateral = parseFloat(String(openMeta.collateral ?? openMeta.size ?? 0)) || 0;
-  const recordedQuantity =
-    parseFloat(String(openMeta.position_quantity ?? openTrade.quantity ?? 0)) || 0;
-  const positionQuantity =
-    recordedQuantity ||
-    calculatePositionQuantity(positionCollateral, tradeLeverage, entryPrice);
+  const positionQuantity = calculatePositionQuantity(
+    positionCollateral,
+    tradeLeverage,
+    entryPrice
+  );
   const positionSide =
-    (openMeta.position_side as 'LONG' | 'SHORT') ??
-    (closeAction === 'OPEN_LONG' ? 'LONG' : 'SHORT');
+    (openMeta.position_side as 'LONG' | 'SHORT') ||
+    (String(openMeta.action ?? '').includes('SHORT') ? 'SHORT' : 'LONG');
 
   if (!positionQuantity) {
     throw new Error('Unable to determine position quantity for close action');
@@ -287,14 +275,15 @@ export async function executeCloseTrade(
     closeResult.price || 0,
     positionCollateral,
     positionSide,
-    tradeLeverage,
-    positionQuantity
+    tradeLeverage
   );
+
+  // Update trade in database
+  const closedAt = new Date().toISOString();
 
   // Record in ledger
   const closeSide = positionSide === 'LONG' ? 'SELL' : 'BUY';
   const normalizedCloseOrderId = normalizeOrderId(closeResult.orderId);
-  const closedAt = new Date().toISOString();
 
   const ledgerRecords = await recordLedgerExecution({
     supabase,
@@ -310,7 +299,7 @@ export async function executeCloseTrade(
     realizedPnL: pnl,
     metadata: {
       source: 'execute_hyperliquid_trade',
-      action: action.action,
+      action: action.type,
       asset,
       hyperliquidOrderId: normalizedCloseOrderId,
       message: closeResult.message,
@@ -321,10 +310,11 @@ export async function executeCloseTrade(
       leverage: tradeLeverage,
       position_id: action.position_id,
       position_side: positionSide,
-      entry_timestamp: openMeta.entry_timestamp ?? openTrade.executed_at,
+      entry_timestamp: existingTrade.entry_timestamp,
       exit_timestamp: closedAt,
       position_quantity: positionQuantity,
-      reasoning: action.reasoning,
+      reasoning: action.reason,
+      confidenceScore: action.confidenceScore,
     },
     description: `Closed ${positionSide} ${asset}`,
     type: tradingMode,
@@ -332,26 +322,24 @@ export async function executeCloseTrade(
 
   console.log('Trade closed:', action.position_id, 'P&L:', pnl, 'Order ID:', closeResult.orderId);
 
-  const trade: Trade = {
-    id: action.position_id,
-    agent_id: agent.id,
-    asset,
-    side: positionSide,
-    size: positionCollateral,
-    entry_price: entryPrice,
-    entry_timestamp: openMeta.entry_timestamp
-      ? String(openMeta.entry_timestamp)
-      : openTrade.executed_at,
-    leverage: tradeLeverage,
-    exit_price: closeResult.price,
-    exit_timestamp: closedAt,
-    realized_pnl: pnl,
-    status: 'CLOSED',
-    type: tradingMode,
-  };
-
   return {
-    trade,
+    trade: {
+      id: action.position_id,
+      agent_id: agent.id,
+      asset,
+      side: positionSide,
+      size: positionCollateral,
+      entry_price: entryPrice,
+      entry_timestamp: String(openMeta.entry_timestamp ?? (openTrade as any).executed_at ?? ''),
+      exit_price: closeResult.price,
+      exit_timestamp: closedAt,
+      leverage: tradeLeverage,
+      realized_pnl: pnl,
+      status: 'CLOSED',
+      type: tradingMode,
+      quantity: positionQuantity,
+      collateral: positionCollateral,
+    } as Trade,
     execution_data: {
       orderId: closeResult.orderId,
       price: closeResult.price,

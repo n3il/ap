@@ -30,10 +30,13 @@ export async function saveAssessment(
   // Create a summary string of all trade actions for the trade_action_taken field
   const actionsSummary = tradeActions.length > 0
     ? tradeActions.map(ta => {
-        if (ta.action === 'NO_ACTION') {
-          return `NO_ACTION (${ta.asset})`;
+        if (ta.type === 'OPEN') {
+          return `OPEN ${ta.direction} ${ta.asset} $${ta.trade_amount}${ta.leverage ? ` ${ta.leverage}x` : ''}`;
         }
-        return `${ta.action} ${ta.asset}${ta.leverage ? ` ${ta.leverage}X` : ''}`;
+        if (ta.type === 'CLOSE') {
+          return `CLOSE ${ta.asset} (${ta.position_id})`;
+        }
+        return 'UNKNOWN_ACTION';
       }).join(', ')
     : 'NO_ACTION';
 

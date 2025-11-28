@@ -207,20 +207,19 @@ export function usePlaceOrder() {
 
   return useMutation({
     mutationFn: async (order) => {
-      const actionType =
-        order.side === "LONG" ? "OPEN_LONG" : "OPEN_SHORT";
-      // This would call your edge function to execute the trade
       const { data, error } = await supabase.functions.invoke(
         "execute_hyperliquid_trade",
         {
           body: {
             action: {
-              action: actionType,
+              type: "OPEN",
               asset: `${order.symbol}-PERP`,
-              side: order.side,
-              size: order.amount,
+              direction: order.side,
+              trade_amount: order.amount,
               leverage: order.leverage,
-              entry: order.price,
+              limit_price: order.price,
+              reason: order.reason || "Manual order",
+              confidenceScore: 1,
             },
           },
         },
@@ -248,17 +247,17 @@ export function useClosePosition() {
 
   return useMutation({
     mutationFn: async (position) => {
-      const actionType =
-        position.side === "LONG" ? "CLOSE_LONG" : "CLOSE_SHORT";
       const { data, error } = await supabase.functions.invoke(
         "execute_hyperliquid_trade",
         {
           body: {
             action: {
-              action: actionType,
+              type: "CLOSE",
               asset: position.asset,
               position_id: position.id,
-              size: position.size,
+              exit_limit_price: position.exit_price,
+              reason: "Manual close",
+              confidenceScore: 1,
             },
           },
         },

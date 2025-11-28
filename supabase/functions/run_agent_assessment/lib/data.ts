@@ -16,8 +16,8 @@ type LedgerTradeRow = {
   meta?: Record<string, unknown> | string | null;
 };
 
-const OPEN_ACTIONS = new Set(['OPEN_LONG', 'OPEN_SHORT']);
-const CLOSE_ACTIONS = new Set(['CLOSE_LONG', 'CLOSE_SHORT']);
+const OPEN_ACTIONS = new Set(['OPEN']);
+const CLOSE_ACTIONS = new Set(['CLOSE']);
 
 function parseMeta(meta: LedgerTradeRow['meta']): Record<string, unknown> {
   if (!meta) return {};

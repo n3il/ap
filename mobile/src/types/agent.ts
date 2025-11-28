@@ -1,14 +1,24 @@
-export interface AssessmentTradeAction {
-  asset: string;
-  action: "CLOSE_SHORT" | "CLOSE_LONG" | "OPEN_SHORT" | "OPEN_LONG" | string;
-  leverage: number;
-  size: number;
-  entry: number;
-  stopLoss: number;
-  takeProfit: number;
-  confidenceScore: number;
-  reasoning: string;
-}
+export type AssessmentTradeAction =
+  | {
+      type: "OPEN";
+      asset: string;
+      direction: "LONG" | "SHORT";
+      leverage: number;
+      trade_amount: number;
+      limit_price?: number;
+      target_price?: number;
+      stop_loss?: number;
+      reason: string;
+      confidenceScore: number;
+    }
+  | {
+      type: "CLOSE";
+      position_id: string;
+      asset: string;
+      exit_limit_price?: number;
+      reason: string;
+      confidenceScore: number;
+    };
 
 export interface AssessmentHeadline {
   short_summary: string;
