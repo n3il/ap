@@ -24,6 +24,7 @@ import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
 import { GLOBAL_PADDING } from "./ContainerView";
+import { numberToColor } from "@/utils/currency";
 
 const { width } = Dimensions.get("window");
 
@@ -32,9 +33,7 @@ const SPARKLINE_HEIGHT = 32;
 
 const Sparkline = ({
   data = [],
-  positiveColor,
-  negativeColor,
-  neutralColor,
+  color= "#ddd",
   width = SPARKLINE_WIDTH,
   height = SPARKLINE_HEIGHT,
 }) => {
@@ -58,15 +57,12 @@ const Sparkline = ({
     })
     .join(" ");
 
-  const isUp = valid[valid.length - 1] >= valid[0];
-  const stroke = isUp ? positiveColor : negativeColor;
-
   return (
     <Svg width={width} height={height}>
       <Polyline
         points={points}
         fill="none"
-        stroke={stroke ?? neutralColor}
+        stroke={color}
         strokeWidth={2}
         strokeLinejoin="round"
         strokeLinecap="round"
@@ -82,13 +78,16 @@ const PriceColumn = ({
   rangePercent,
   isHistoryLoading,
   scrollY,
+}: {
+  symbol: string;
+  sparklineData: number[];
+  rangeDelta: number;
+  rangePercent: number;
+  isHistoryLoading: boolean;
+  scrollY: number;
 }) => {
   const router = useRouter();
-  const { colors: palette, success, error: errorColor } = useColors();
-
-  const positiveColor = success;
-  const negativeColor = errorColor;
-  const neutralColor = palette.mutedForeground;
+  const { colors: palette } = useColors();
 
   // Get asset data from Zustand store
   const asset = useMarketPricesStore(
@@ -111,12 +110,6 @@ const PriceColumn = ({
   );
 
   const hasChange = Number.isFinite(rangePercent);
-  const changeIsPositive = hasChange && rangePercent > 0;
-  const changeColor = changeIsPositive
-    ? positiveColor
-    : rangePercent < 0
-      ? negativeColor
-      : neutralColor;
 
   // Price flash effect
   const priceOpacity = useSharedValue(1);
@@ -249,6 +242,8 @@ const PriceColumn = ({
     };
   }, [scrollY]);
 
+  const color = palette?.[numberToColor(rangePercent)] | '#fff';
+
   return (
     <GlassButton
       style={{
@@ -306,9 +301,7 @@ const PriceColumn = ({
           {!isHistoryLoading && sparklineData.length > 0 && (
             <Sparkline
               data={sparklineData}
-              positiveColor={positiveColor}
-              negativeColor={negativeColor}
-              neutralColor={neutralColor}
+              color={color}
               height={MINI_SPARKLINE_HEIGHT}
             />
           )}
@@ -330,14 +323,14 @@ const PriceColumn = ({
             style={[
               {
                 fontWeight: "600",
-                color: changeColor,
+                color: palette?.[numberToColor(rangePercent)],
               },
               changeTextStyle,
             ]}
           >
-            {hasChange ? formatPercent(rangePercent) : "—"}
+            {formatPercent(rangePercent)}
           </Animated.Text>
-          <Text style={{ fontSize: 10, color: palette.mutedForeground }}>
+          <Text style={{ fontSize: 10, color: palette?.mutedForeground }}>
             {Number.isFinite(rangeDelta) ? formatCurrency(rangeDelta) : "—"}
           </Text>
         </Animated.View>
@@ -354,9 +347,7 @@ const PriceColumn = ({
         {!isHistoryLoading && sparklineData.length > 0 && (
           <Sparkline
             data={sparklineData}
-            positiveColor={positiveColor}
-            negativeColor={negativeColor}
-            neutralColor={neutralColor}
+            color={color}
           />
         )}
       </Animated.View>

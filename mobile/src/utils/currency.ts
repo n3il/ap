@@ -47,6 +47,7 @@ export function formatPercent(num, { showSign = false, precision = 2 } = {}) {
 }
 
 export function numberToColor(num) {
+  num = parseFloat(num);
   if (num > 0) {
     return "long";
   } else if (num < 0) {
