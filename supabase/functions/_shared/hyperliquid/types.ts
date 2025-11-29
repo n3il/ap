@@ -104,3 +104,28 @@ export interface MarginSummary {
   totalNtlPos: string;
   totalRawUsd: string;
 }
+
+
+export interface HyperliquidOrder {
+  a: number | string;                    // asset
+  b: boolean;                            // isBuy
+  p: string;                             // price
+  s: string;                             // size
+  r: boolean;                             // reduceOnly
+  t: any;                                 // order type object
+  c?: string;                             // optional client order id
+}
+
+export interface HyperliquidOrderBody {
+  action: {
+    type: "order";
+    orders: HyperliquidOrder[];
+    grouping: "na" | "normalTpsl" | "positionTpsl";
+    builder?: { b: string; f: number };
+  };
+  nonce: number;
+  signature: {
+    vaultAddress: string;
+    expiresAfter: number;
+  };
+}

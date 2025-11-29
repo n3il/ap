@@ -14,13 +14,6 @@ export interface PromptTemplateInput {
   user_template: string
 }
 
-interface BuildPromptContext {
-  openPositions: any[]
-  accountValue?: number
-  remainingCash?: number
-  candleData?: Record<string, any[]>
-}
-
 export interface GeminiResponse {
   text: string
   parsed: ParsedLLMResponse | null
@@ -94,21 +87,12 @@ export async function callGeminiAPI(
 
 export function buildPrompt(
   template: PromptTemplateInput,
-  context: BuildPromptContext
+  context: Record<string, any>
 ): GeminiPrompt {
-  const { openPositions } = context
-
-  const openPositionsJson = JSON.stringify(openPositions || [], null, 2)
-
   const replacements: Record<string, string> = {
-    OPEN_POSITIONS_JSON: openPositionsJson,
-    ACCOUNT_VALUE: context.accountValue?.toString() || '0',
-    CANDLE_DATA: context.candleData
-      ? JSON.stringify(context.candleData, null, 2)
-      : 'N/A',
-    TRADEABLE_USD: context.remainingCash !== undefined
-      ? `$${context.remainingCash.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-      : 'N/A',
+    ACCOUNT_SUMMARY: JSON.stringify(context.accountSummary),
+    TRADEABLE_ASSETS: JSON.stringify(context.tradeableAssets),
+    CANDLE_DATA: JSON.stringify(context.candleData),
     TIMESTAMP: new Date().toISOString(),
   }
 
@@ -120,3 +104,4 @@ export function buildPrompt(
 
   return { systemInstruction, userQuery }
 }
+
