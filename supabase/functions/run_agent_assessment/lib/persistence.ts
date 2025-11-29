@@ -20,45 +20,24 @@ export interface Assessment {
  */
 export async function saveAssessment(
   agentId: string,
-  marketSnapshot: MarketDataSnapshot,
   prompt: { systemInstruction: string; userQuery: string },
   llmResponse: LLMResponse,
-  tradeActions: LLMTradeAction[]
 ): Promise<Assessment> {
   const serviceClient = createSupabaseServiceClient();
-
-  // Create a summary string of all trade actions for the trade_action_taken field
-  const actionsSummary = tradeActions.length > 0
-    ? tradeActions.map(ta => {
-        if (ta.type === 'OPEN') {
-          return `OPEN ${ta.direction} ${ta.asset} $${ta.trade_amount}${ta.leverage ? ` ${ta.leverage}x` : ''}`;
-        }
-        if (ta.type === 'CLOSE') {
-          return `CLOSE ${ta.asset} (${ta.position_id})`;
-        }
-        return 'UNKNOWN_ACTION';
-      }).join(', ')
-    : 'NO_ACTION';
-
   const { data: assessment, error } = await serviceClient
     .from('assessments')
     .insert([{
       agent_id: agentId,
       timestamp: new Date().toISOString(),
-      market_data_snapshot: marketSnapshot,
       llm_prompt_used: `${prompt.systemInstruction}\n\n${prompt.userQuery}`,
       llm_response_text: llmResponse.text,
       parsed_llm_response: llmResponse.parsed ?? null,
-      trade_action_taken: actionsSummary,
     }])
     .select()
     .single();
 
   if (error) throw error;
-
-  console.log('Assessment saved:', assessment.id);
-  console.log('Trade actions summary:', actionsSummary);
-  return assessment as Assessment;
+  return assessment;
 }
 
 /**

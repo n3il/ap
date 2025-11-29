@@ -5,13 +5,8 @@ import { calculatePnLMetrics } from '../_shared/lib/pnl.ts';
 import { callLLMProvider } from '../_shared/llm/providers.ts';
 import { buildPrompt } from '../_shared/llm/gemini.ts';
 import { fetchPrompt } from '../_shared/lib/prompts.ts';
-import { fetchAndValidateAgent, isAgentActive } from '../_shared/lib/agent.ts';
-import {
-  fetchOpenPositions,
-  fetchClosedTrades,
-  fetchMarketData,
-  createMarketSnapshot,
-} from './lib/data.ts';
+import { fetchAndValidateAgent } from '../_shared/lib/agent.ts';
+import { fetchOpenPositions, fetchClosedTrades } from './lib/data.ts';
 import { saveAssessment, savePnLSnapshot } from './lib/persistence.ts';
 import { executeOpenTrade, executeCloseTrade } from '../_shared/lib/trade.ts';
 import { createSupabaseServiceClient } from '../_shared/supabase.ts';
@@ -33,21 +28,19 @@ export async function runAgentAssessment(
   // 2. Fetch and validate agent
   const agent = await fetchAndValidateAgent(agentId, authContext);
 
-  // 3. Check if agent is active
-  if (!isAgentActive(agent)) {
-    console.log('Agent inactive — skipping assessment');
-    return {
-      success: true,
-      message: 'Agent inactive',
-      skipped: true,
-    };
-  }
-
   // 4. Fetch all required data in parallel
-  const [openPositions, closedTrades, { candleData, marketData }] = await Promise.all([
+  const [
+    openPositions,
+    closedTrades,
+    tradeableAssets,
+    marketData,
+    candleData,
+  ] = await Promise.all([
     fetchOpenPositions(agentId),
     fetchClosedTrades(agentId),
-    fetchMarketData(),
+    fetchTradeableAssets(),
+    fetchHyperliquidMarketData(),
+    fetchAllCandleData(5, 3),
   ]);
 
   // 5. Calculate PnL metrics (pure function)
@@ -83,6 +76,7 @@ export async function runAgentAssessment(
   // 9. Save assessment to database
   const assessment = await saveAssessment(
     agentId,
+    llmResponse,
     marketSnapshot,
     prompt,
     llmResponse,
