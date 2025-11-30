@@ -49,7 +49,6 @@ export default function CreateAgentModal({
     llm_provider: "google",
     model_name: "gemini-2.5-flash-preview-09-2025",
     initial_capital: "",
-    prompt_id: null,
   });
   const [promptPickerVisible, setPromptPickerVisible] = useState(false);
 
@@ -112,7 +111,12 @@ export default function CreateAgentModal({
         sx={{ flex: 1 }}
       >
         <PaddedView
-          sx={{ backgroundColor: "card", flex: 1, paddingTop: insets.top }}
+          sx={{
+            backgroundColor: "card",
+            flex: 1,
+            paddingTop: insets.top,
+            justifyContent: "center",
+          }}
         >
           <View
             sx={{
@@ -162,78 +166,6 @@ export default function CreateAgentModal({
                 }
               />
             </View>
-
-            <View sx={{ marginBottom: 4 }}>
-              <View
-                sx={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: 2,
-                }}
-              >
-                <Text variant="sm" tone="muted">
-                  Prompt Template
-                </Text>
-                <TouchableOpacity onPress={() => setPromptPickerVisible(true)}>
-                  <Text
-                    variant="xs"
-                    sx={{
-                      color: "accent",
-                      fontWeight: "600",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    Select
-                  </Text>
-                </TouchableOpacity>
-              </View>
-              <View
-                sx={{
-                  padding: 3,
-                  borderWidth: 1,
-                  borderColor: withOpacity(palette.foreground, 0.08),
-                  backgroundColor: withOpacity(palette.foreground, 0.04),
-                  borderRadius: "xl",
-                }}
-              >
-                <Text variant="sm" sx={{ fontWeight: "600" }}>
-                  {selectedPrompt?.name || "Default Prompt"}
-                </Text>
-                <Text variant="xs" tone="muted" sx={{ marginTop: 1 }}>
-                  {selectedPrompt?.description ||
-                    "Uses the default AlphaQuant instruction set."}
-                </Text>
-              </View>
-            </View>
-
-            {onManagePrompts ? (
-              <TouchableOpacity
-                onPress={onManagePrompts}
-                sx={{
-                  marginBottom: 6,
-                  paddingHorizontal: 4,
-                  paddingVertical: 3,
-                  borderRadius: "xl",
-                  borderWidth: 1,
-                  borderColor: withOpacity(palette.foreground, 0.08),
-                  backgroundColor: withOpacity(palette.foreground, 0.04),
-                }}
-              >
-                <Text
-                  variant="sm"
-                  sx={{
-                    color: "accent",
-                    textAlign: "center",
-                    fontWeight: "600",
-                    textTransform: "uppercase",
-                  }}
-                >
-                  Manage Prompt Library
-                </Text>
-              </TouchableOpacity>
-            ) : null}
-
             <View sx={{ marginBottom: 4 }}>
               <SectionTitle title="Model Provider" />
               <View sx={{ flexDirection: "row", flexWrap: "wrap", gap: 2 }}>

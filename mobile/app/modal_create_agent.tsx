@@ -1,0 +1,224 @@
+import { useState } from "react";
+import { LLM_PROVIDERS } from "@/components/CreateAgentModal";
+import ContainerView, { PaddedView } from "@/components/ContainerView";
+import SectionTitle from "@/components/SectionTitle";
+import { useColors, withOpacity } from "@/theme";
+import { useQueryClient } from "@tanstack/react-query";
+import { agentService } from "@/services";
+import { useMutation } from "@tanstack/react-query";
+import { router, Link } from "expo-router";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import {
+  KeyboardAvoidingView,
+  ScrollView,
+  TextInput,
+  TouchableOpacity,
+  View,
+  GlassButton,
+  Platform,
+  Text,
+} from "@/components/ui";
+import { GlassView } from "expo-glass-effect";
+
+export default function ModalCreateAgent() {
+  const insets = useSafeAreaInsets();
+  const { colors: palette } = useColors();
+   const isPresented = router.canGoBack();
+  const [formData, setFormData] = useState({
+    name: "",
+    llm_provider: "google",
+    model_name: "gemini-2.5-flash-preview-09-2025",
+    initial_capital: "",
+  });
+
+  const createAgentMutation = useMutation({
+    mutationFn: (agentData) => agentService.createAgent(agentData),
+    onSuccess: (newAgent) => {
+      router.push(`/(tabs)/(agents)/${newAgent.id}`);
+    },
+    onError: (_error) => {
+      alert(`Failed to create agent. ${_error.message}`);
+    },
+  });
+
+  const selectedProvider = LLM_PROVIDERS.find(
+    (p) => p.id === formData.llm_provider,
+  );
+
+  return (
+    <ContainerView>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={{ flex: 1 }}
+      >
+        <PaddedView
+          style={{
+            backgroundColor: "card",
+            flexGrow: 1,
+          }}
+        >
+          <View
+            style={{
+              paddingVertical: 6,
+              marginBottom: 4,
+              borderBottomWidth: 1,
+              borderBottomColor: withOpacity(palette.foreground, 0.1),
+            }}
+          >
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <SectionTitle title="Create" sx={{ padding: 6, fontSize: 16 }} />
+              {isPresented && (
+                <GlassButton
+                  onPress={() => router.push('../')}
+                  tintColor={palette.glassTint}
+                >
+                  <MaterialCommunityIcons name="close" size={14} color={palette.foreground} />
+                </GlassButton>
+              )}
+            </View>
+          </View>
+
+          <ScrollView
+            style={{ padding: 6 }}
+            contentContainerStyle={{
+              gap: 14,
+            }}
+          >
+            <View style={{ marginBottom: 4, gap: 12 }}>
+              <SectionTitle title="Name" />
+              <TextInput
+                style={{
+                  marginTop: 0,
+                  paddingVertical: 22,
+                  fontSize: 14,
+                  fontWeight: 300,
+                  backgroundColor: palette.surface,
+                  borderWidth: 0,
+                  borderRadius: 18,
+                  elevation: 10,
+                  shadowColor: palette.shadow,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 1,
+                  shadowRadius: 1,
+                  letterSpacing: 3,
+                  fontFamily: 'monospace',
+                  fontWeight: '700',
+                }}
+                placeholder="(╯° _ °）╯  ノ( º _ ºノ) "
+                placeholderTextColor={
+                  palette.secondary500 ?? palette.textSecondary
+                }
+                value={formData.name}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, name: text })
+                }
+              />
+            </View>
+            <View style={{ marginBottom: 4, gap: 12 }}>
+              <SectionTitle title="Model Provider" />
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 2 }}>
+                {LLM_PROVIDERS.map((provider) => (
+                  <GlassButton
+                    key={provider.id}
+                    onPress={() =>
+                      setFormData({
+                        ...formData,
+                        llm_provider: provider.id,
+                        model_name: provider.models[0],
+                      })
+                    }
+                    // tintColor={selectedProvider?.id === provider.id
+                    //   ? withOpacity(palette.providers[provider.id], .4)
+                    //   : withOpacity(palette.providers[provider.id], .1)}
+                  >
+                    <Text
+                      style={{
+                        color:
+                          formData.llm_provider === provider.id
+                            ? palette.foreground
+                            : palette.mutedForeground,
+                      }}
+                    >
+                      {provider.name}
+                    </Text>
+                  </GlassButton>
+                ))}
+              </View>
+            </View>
+
+            <View style={{ marginBottom: 4, gap: 12 }}>
+              <SectionTitle title="Model" />
+              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 2 }}>
+                {selectedProvider?.models.map((model) => (
+                  <GlassButton
+                    key={model}
+                    onPress={() =>
+                      setFormData({ ...formData, model_name: model })
+                    }
+                    // tintColor={formData.model_name === model
+                    //   ? withOpacity(palette.providers[selectedProvider.id], .9)
+                    //   : withOpacity(palette.providers[selectedProvider.id], .1)}
+                  >
+                    <Text
+                      variant="xs"
+                      style={{
+                        color:
+                          formData.model_name === model
+                            ? palette.foreground
+                            : palette.mutedForeground,
+                      }}
+                    >
+                      {model}
+                    </Text>
+                  </GlassButton>
+                ))}
+              </View>
+            </View>
+
+            {/* <View style={{ marginBottom: 6 }}>
+              <Text variant="sm" tone="muted" style={{ marginBottom: 2 }}>
+                Initial Capital (USD) *
+              </Text>
+              <TextInput
+                style={{
+                  backgroundColor: withOpacity(palette.foreground, 0.05),
+                  color: "textPrimary",
+                  paddingHorizontal: 4,
+                  paddingVertical: 3,
+                  borderRadius: "xl",
+                  borderWidth: 1,
+                  borderColor: withOpacity(palette.foreground, 0.1),
+                }}
+                placeholder="10000"
+                placeholderTextColor={
+                  palette.secondary500 ?? palette.textSecondary
+                }
+                keyboardType="numeric"
+                value={formData.initial_capital}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, initial_capital: text })
+                }
+              />
+            </View> */}
+          </ScrollView>
+
+          <GlassButton
+            variant="primary"
+            onPress={() => createAgentMutation.mutate(formData)}
+            activeOpacity={0.8}
+          >
+
+            Continue
+          </GlassButton>
+        </PaddedView>
+      </KeyboardAvoidingView>
+    </ContainerView>
+  )
+}

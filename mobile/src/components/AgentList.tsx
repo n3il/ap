@@ -157,13 +157,13 @@ export default function AgentList({
           }}
         >
           <Text
-            variant="lg"
+            variant="sm"
             tone="muted"
             sx={{ marginBottom: 2, fontWeight: "600" }}
           >
-            Umm,
+            uhh,
           </Text>
-          <Text variant="sm" tone="muted" sx={{ textAlign: "center" }}>
+          <Text variant="md" tone="muted" sx={{ textAlign: "center" }}>
             the robots went missing.
           </Text>
         </View>

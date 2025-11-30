@@ -1,27 +1,22 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useState } from "react";
 import AgentList from "@/components/AgentList";
 import ContainerView from "@/components/ContainerView";
-import CreateAgentModal from "@/components/CreateAgentModal";
 import SectionTitle from "@/components/SectionTitle";
 import {
+  Button,
   GlassButton,
   ScrollView,
   SwipeableTabs,
   Text,
   View,
 } from "@/components/ui";
-import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
-import { agentService, promptService } from "@/services";
+import { promptService } from "@/services";
 import { useColors } from "@/theme";
 
 export default function AgentsScreen() {
-  const { user } = useAuth();
-  const queryClient = useQueryClient();
-  const [modalVisible, setModalVisible] = useState(false);
   const { theme } = useTheme();
   const colorUtils = useColors();
   const palette = colorUtils.colors;
@@ -32,32 +27,8 @@ export default function AgentsScreen() {
     queryFn: () => promptService.listPrompts(),
   });
 
-  // Create agent mutation
-  const createAgentMutation = useMutation({
-    mutationFn: (agentData) => agentService.createAgent(agentData),
-    onSuccess: (newAgent) => {
-      // Invalidate and refetch agent lists
-      queryClient.invalidateQueries(["active-agents"]);
-      queryClient.invalidateQueries(["all-agents"]);
-      queryClient.invalidateQueries(["agents"]);
-
-      // Close modal
-      setModalVisible(false);
-
-      // Navigate to the new agent's detail page
-      router.push(`/(tabs)/(agents)/${newAgent.id}`);
-    },
-    onError: (_error) => {
-      alert("Failed to create agent. Please try again.");
-    },
-  });
-
   const handleCreateAgent = () => {
-    setModalVisible(true);
-  };
-
-  const handleSubmitAgent = (agentData) => {
-    createAgentMutation.mutate(agentData);
+    router.push("/modal_create_agent");
   };
 
   // Define tabs with their content
@@ -70,7 +41,13 @@ export default function AgentsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: "70%" }}
         >
-          <AgentList compactView active />
+          <AgentList
+            compactView
+            isActive={true}
+            emptyState={(
+              <View />
+            )}
+          />
         </ScrollView>
       ),
     },
@@ -120,18 +97,6 @@ export default function AgentsScreen() {
         tabTextStyle={{ color: theme.colors.text.secondary }}
         activeTabTextStyle={{ color: theme.colors.accent }}
         indicatorColor={theme.colors.accent}
-      />
-
-      <CreateAgentModal
-        visible={modalVisible}
-        onClose={() => setModalVisible(false)}
-        onSubmit={handleSubmitAgent}
-        promptOptions={prompts}
-        onManagePrompts={() => {
-          setModalVisible(false);
-          // TODO: Implement prompt manager navigation
-          router.push("/(tabs)/(profile)/prompts");
-        }}
       />
     </ContainerView>
   );

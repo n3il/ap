@@ -1,8 +1,19 @@
+import { StyleProp, ViewStyle } from "react-native";
 import { GlassView } from "expo-glass-effect";
 import { Pressable } from "react-native";
 import { useColors } from "@/theme";
 
-export default function GlassButton({ style, children, onPress, ...props }) {
+export default function GlassButton({
+  style,
+  children,
+  onPress,
+  ...props
+}: {
+  style?: StyleProp<ViewStyle>;
+  children: React.ReactNode;
+  onPress: () => void;
+  [key: string]: any;
+}) {
   const { colors, withOpacity } = useColors();
 
   return (

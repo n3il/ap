@@ -1,11 +1,18 @@
 import { Text, View } from "@/components/ui";
+import { SxProp } from "dripsy";
 
 export default function SectionTitle({
   title,
-  error,
-  successIcon,
-  errorIcon,
+  error = false,
+  successIcon = null,
+  errorIcon = null,
   sx = {},
+}: {
+  title: string;
+  error?: boolean;
+  successIcon?: React.ReactNode;
+  errorIcon?: React.ReactNode;
+  sx?: SxProp;
 }) {
   return (
     <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>

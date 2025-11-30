@@ -83,6 +83,14 @@ function AuthNavigator() {
           }}
         />
         <Stack.Screen name="(tabs)" />
+
+        <Stack.Screen
+          name="modal_create_agent"
+          options={{
+            animation: "slide_from_bottom",
+            presentation: "modal",
+          }}
+        />
       </Stack>
       {false && <DebugOverlay />}
     </>

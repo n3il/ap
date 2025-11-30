@@ -67,12 +67,12 @@ export default function PhoneInputAutoDetect({
     // strip everything but digits for parsing
     const digitsOnly = rawText.replace(/[^\d]/g, "");
 
-    const { e164, national } = safeParse(digitsOnly, defaultCode);
+    const { e164, national, country } = safeParse(digitsOnly, defaultCode);
 
     // show nicely formatted national string in the input
     setInternal(national);
 
-    // parent gets proper E.164 value
+    console.log({ raw: digitsOnly, formatted: national, e164, country })
     onChange?.({ raw: digitsOnly, formatted: national, e164 });
   };
 
