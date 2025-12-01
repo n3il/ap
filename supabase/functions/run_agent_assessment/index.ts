@@ -56,11 +56,11 @@ export async function runAgentAssessment(
     const tradeActions = llmResponse.parsed?.tradeActions || [];
     console.log('LLM response received, trade actions:', tradeActions.length);
 
-    const tradeResults = await Promise.all(tradeActions.map(async (tradeAction) => {
-      const assetId = tradeableAssets.find((a) => a.Ticker === tradeAction.asset)?.AssetId;
-      const tradeResult = await executeTrade(assetId, tradeAction, agent);
-      return tradeResult;
-    }));
+    // const tradeResults = await Promise.all(tradeActions.map(async (tradeAction) => {
+    //   const assetId = tradeableAssets.find((a) => a.Ticker === tradeAction.asset)?.AssetId;
+    //   const tradeResult = await executeTrade(assetId, tradeAction, agent);
+    //   return tradeResult;
+    // }));
 
     await updateAssessmentStatus(assessment.id, 'completed');
 
@@ -68,7 +68,7 @@ export async function runAgentAssessment(
       success: true,
       assessment_id: assessment.id,
       trade_actions: tradeActions,
-      trade_results: tradeResults,
+      // trade_results: tradeResults,
       agent_name: agent.name,
       simulate: agent.simulate,
     };

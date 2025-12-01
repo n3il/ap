@@ -56,6 +56,15 @@ export default {
       "expo-apple-authentication",
       "expo-notifications"
     ],
+    updates: {
+      enabled: true,
+      checkAutomatically: "ON_LOAD",
+      fallbackToCacheTimeout: 0,
+      url: "https://u.expo.dev/5f885227-49e3-4a41-be3b-9571706c061e"
+    },
+    runtimeVersion: {
+      policy: "appVersion"
+    },
     extra: {
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,

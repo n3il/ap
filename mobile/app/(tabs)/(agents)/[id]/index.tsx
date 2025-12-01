@@ -1,8 +1,6 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useRef } from "react";
 import { StyleSheet } from "react-native";
-import { LinearGradient } from "react-native-svg";
-import AgentCard from "@/components/AgentCard";
 import AgentHeader from "@/components/agent/Header";
 import HeaderChart from "@/components/agent/HeaderChart";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
@@ -53,9 +51,6 @@ export default function AgentReadScreen() {
               name={agent.name.slice(0, 70)}
               backgroundColor={palette.providers[agent.llm_provider]}
             />
-            <Text>
-              {JSON.stringify(agent)}
-            </Text>
           </View>
           <BalanceOverview agentId={agent?.id} />
         </PaddedView>

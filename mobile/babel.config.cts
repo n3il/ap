@@ -16,6 +16,8 @@ module.exports = function (api) {
           extensions: [".ts", ".tsx", ".js", ".jsx", ".json"],
         },
       ],
+      // react-native-reanimated requires its Babel plugin to be the last entry
+      "react-native-reanimated/plugin",
     ],
   };
 };
