@@ -32,7 +32,7 @@ export default function ContainerView({
     <View
       sx={{
         flex: 1,
-        backgroundColor: transparent ? "transparent" : background,
+        backgroundColor: transparent ? "transparent" : colors.backgroundSecondary,
       }}
       {...props}
       style={style}
@@ -47,14 +47,18 @@ export default function ContainerView({
 }
 
 export function PaddedView({
+  as: ViewComponent = View,
   children,
   sx,
   style = {},
   both = false,
   ...props
-}: ViewProps) {
+}: ViewProps & {
+  as?: React.ComponentType<ViewProps>;
+  both?: boolean;
+}) {
   return (
-    <View
+    <ViewComponent
       {...props}
       sx={sx}
       style={[
@@ -66,6 +70,6 @@ export function PaddedView({
       ]}
     >
       {children}
-    </View>
+    </ViewComponent>
   );
 }

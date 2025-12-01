@@ -21,7 +21,7 @@ import { ROUTES } from "@/config/routes";
 import { useMarketHistory } from "@/hooks/useMarketHistory";
 import { useMarketPrices, useMarketPricesStore } from "@/hooks/useMarketPrices";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
-import { useColors } from "@/theme";
+import { useColors, withOpacity } from "@/theme";
 import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
 import { GLOBAL_PADDING } from "./ContainerView";
 import { numberToColor } from "@/utils/currency";
@@ -33,7 +33,7 @@ const SPARKLINE_HEIGHT = 32;
 
 const Sparkline = ({
   data = [],
-  color= "#ddd",
+  color = "#ddd",
   width = SPARKLINE_WIDTH,
   height = SPARKLINE_HEIGHT,
 }) => {
@@ -57,11 +57,12 @@ const Sparkline = ({
     })
     .join(" ");
 
+  console.log({ color })
   return (
     <Svg width={width} height={height}>
       <Polyline
         points={points}
-        fill="none"
+        fill={withOpacity(color, .5)}
         stroke={color}
         strokeWidth={2}
         strokeLinejoin="round"
@@ -220,7 +221,7 @@ const PriceColumn = ({
     };
   }, [scrollY]);
 
-  const MINI_SPARKLINE_HEIGHT = 100;
+  const MINI_SPARKLINE_HEIGHT = 34;
   const _expandedStyle = {
     height: MINI_SPARKLINE_HEIGHT,
   };
@@ -242,9 +243,8 @@ const PriceColumn = ({
     };
   }, [scrollY]);
 
-  const color = palette?.[numberToColor(rangePercent)] | '#fff';
+  const color = palette?.[numberToColor(rangePercent)] || palette.mutedForeground;
 
-  console.log(isHistoryLoading, sparklineData.length)
   return (
     <GlassButton
       style={{
@@ -293,7 +293,6 @@ const PriceColumn = ({
         <Animated.View
           style={[
             {
-              overflow: "hidden",
               position: "absolute",
             },
             miniSparklineStyle,

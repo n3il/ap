@@ -2,7 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { ScrollView } from "react-native";
 import Animated, {
+  Extrapolation,
+  interpolate,
   useAnimatedScrollHandler,
+  useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -40,6 +43,28 @@ export default function ExploreScreen() {
       scrollY.value = event.contentOffset.y;
     },
   });
+
+  const borderStyle = useAnimatedStyle(() => {
+    if (!scrollY) return { borderBottomColor: '#fff', borderBottomWidth: 1 };
+
+    const progress = interpolate(
+      scrollY.value,
+      [0, 50],
+      [0, 1],
+      Extrapolation.CLAMP,
+    );
+    return {
+      borderBottomColor: interpolate(
+        progress,
+        [0, 1],
+        ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)'],
+        Extrapolation.CLAMP,
+      ),
+      borderBottomWidth: 10,
+    };
+  }, [scrollY]);
+
+  console.log({b: borderStyle})
 
   return (
     <View
@@ -98,11 +123,14 @@ export default function ExploreScreen() {
             />
 
             <PaddedView
-              style={{
+              sx={{
                 alignItems: "center",
                 flexDirection: "row",
                 gap: 4,
-                paddingTop: 8,
+                paddingTop: 2,
+                paddingBottom: 1,
+                borderBottomWidth: .5,
+                borderBottomColor: palette.border
               }}
             >
               <GlassSelector />

@@ -20,6 +20,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useColors } from "@/theme";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Auth() {
   const [authMode, setAuthMode] = useState("phone"); // 'phone' or 'email'
@@ -37,6 +38,7 @@ export default function Auth() {
   const { t } = useLocalization();
   const colors = useColors();
   const palette = colors.colors;
+  const insets = useSafeAreaInsets();
 
   const validateEmail = (email) => {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -122,6 +124,7 @@ export default function Auth() {
   return (
     <ContainerView>
       <KeyboardAvoidingView
+        keyboardVerticalOffset={insets.top}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{
           flex: 1,
@@ -309,7 +312,7 @@ export default function Auth() {
 
         <View
           style={{
-            flexShrink: 0,
+            marginBottom: 10,
           }}
         >
           {authMode === "phone" && (
@@ -357,24 +360,23 @@ export default function Auth() {
               exiting={FadeOut.duration(200)}
               style={{ gap: 8 }}
             >
-              <Button
-                variant="surface"
-                sx={{
-                  borderColor: "primary",
-                  borderRadius: "full",
-                  borderWidth: 2,
-                  marginBottom: 4,
-                }}
-                textProps={{ style: { fontWeight: "600" } }}
+
+              <GlassButton
                 onPress={handleEmailSubmit}
                 disabled={loading}
+                styleVariant="paddedFull"
+                tintColor={palette.surface}
+                glassEffectStyle="regular"
+                style={{
+                  paddingVertical: 14,
+                }}
               >
                 {loading ? (
                   <ActivityIndicator color="white" />
                 ) : (
                   t("login.sendCode")
                 )}
-              </Button>
+              </GlassButton>
             </AnimatedBox>
           )}
         </View>

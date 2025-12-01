@@ -6,69 +6,8 @@ import { formatAmount, formatPercent } from "@/utils/currency";
 export default function BalanceOverview({
   agentId,
   hideOpenPositions = false,
-  variant = "compact",
 }) {
   const accountData = useAccountBalance(agentId, hideOpenPositions);
-
-  if (variant === "compact") {
-    return (
-      <View
-        sx={{ flexDirection: "row", justifyContent: "space-between", gap: 2 }}
-      >
-        <View sx={{ gap: 2 }}>
-          <View sx={{ flexDirection: "row", alignItems: "center", gap: 0 }}>
-            <Text variant="xs" tone="muted">
-              AUM
-            </Text>
-          </View>
-          <Text
-            variant="md"
-            sx={{ fontWeight: "600", fontFamily: "monospace" }}
-          >
-            {formatAmount(accountData.equity)}
-          </Text>
-        </View>
-
-        <View sx={{ alignItems: "flex-end" }}>
-          <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-            {/* <LabelValue
-              label="All P&L"
-              value={(accountData.realizedPnl || 0) + (accountData.unrealizedPnl || 0)}
-            /> */}
-            <LabelValue
-              label="Open P&L"
-              value={accountData.unrealizedPnl}
-              colorize
-            />
-          </View>
-        </View>
-      </View>
-    );
-  }
-
-  // Full detailed view for crypto perpetual futures trading
-  const totalPnl =
-    (accountData.realizedPnl || 0) + (accountData.unrealizedPnl || 0);
-  const totalPnlPercent = accountData.wallet
-    ? (totalPnl / accountData.wallet) * 100
-    : 0;
-  const unrealizedPnlPercent = accountData.equity
-    ? ((accountData.unrealizedPnl || 0) / accountData.equity) * 100
-    : 0;
-
-  // Calculate position value (total notional value of all positions)
-  const positionValue =
-    accountData.enrichedPositions?.reduce((sum, position) => {
-      const quantity = position.positionQuantity || 0;
-      const currentPrice =
-        position.currentPrice || parseFloat(position.entry_price) || 0;
-      return sum + quantity * currentPrice;
-    }, 0) || 0;
-
-  // Calculate leverage ratio
-  const leverageRatio = accountData.equity
-    ? positionValue / accountData.equity
-    : 0;
 
   return (
     <View sx={{ gap: 4 }}>
@@ -92,14 +31,14 @@ export default function BalanceOverview({
             variant="sm"
             sx={{
               color:
-                totalPnl > 0
+                accountData.totalPnl > 0
                   ? "success"
-                  : totalPnl < 0
+                  : accountData.totalPnl < 0
                     ? "error"
                     : "foreground",
             }}
           >
-            {`${formatAmount(totalPnl)} (${formatAmount(totalPnlPercent, { showSign: true })}%)`}
+            {`${formatAmount(accountData.totalPnl)} (${formatAmount(accountData.totalPnlPercent, { showSign: true })}%)`}
           </Text>
         </View>
       </View>
@@ -141,7 +80,7 @@ export default function BalanceOverview({
                       : "foreground",
               }}
             >
-              {`(${unrealizedPnlPercent ? formatPercent(unrealizedPnlPercent) : '-'})`}
+              {`(${accountData.unrealizedPnlPercent ? formatPercent(accountData.unrealizedPnlPercent) : '-'})`}
             </Text>
           </LabelValue>
         </View>
@@ -159,7 +98,7 @@ export default function BalanceOverview({
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Lev."
-            value={leverageRatio?.toFixed(2) || "-"}
+            value={accountData.leverageRatio?.toFixed(2) || "-"}
             alignRight
             formatter={(l) => l}
           />

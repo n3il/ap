@@ -1,14 +1,13 @@
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams } from "expo-router";
 import { useRef } from "react";
 import { StyleSheet } from "react-native";
 import { LinearGradient } from "react-native-svg";
 import AgentCard from "@/components/AgentCard";
+import AgentHeader from "@/components/agent/Header";
 import HeaderChart from "@/components/agent/HeaderChart";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
 import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
 import { Animated, View } from "@/components/ui";
-import GlassButton from "@/components/ui/GlassButton";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 
@@ -33,22 +32,8 @@ export default function AgentReadScreen() {
     extrapolate: "clamp",
   });
 
-  // initiate assessment mutation
-  // assessmentService.initiateAssessment(agent?.id);
-
   return (
     <ContainerView style={{ flex: 1 }}>
-      <LinearGradient
-        colors={[
-          palette.backgroundSecondary,
-          palette.background,
-          palette.backgroundSecondary ?? palette.surface,
-        ]}
-        locations={[0, 0.78, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 0, y: 1 }}
-        style={{ flex: 1, position: "absolute", left: 0, right: 0, bottom: 0 }}
-      />
       <Animated.View
         style={[
           styles.headerImage,
@@ -61,29 +46,7 @@ export default function AgentReadScreen() {
         <HeaderChart agentId={agent?.id} />
       </Animated.View>
 
-      <View style={styles.topButtonsContainer}>
-        {/* <GlassButton onPress={() => {}}>
-          <MaterialCommunityIcons name="content-duplicate" size={24} color="white" />
-        </GlassButton>
-        <GlassButton onPress={() => {}}>
-          <MaterialCommunityIcons name="book-edit-outline" size={24} color="white" />
-        </GlassButton> */}
-
-        <GlassButton onPress={() => {}}>
-          <MaterialCommunityIcons
-            name="bookmark-outline"
-            size={24}
-            color="white"
-          />
-        </GlassButton>
-        <GlassButton onPress={initiateAssessment}>
-          <MaterialCommunityIcons
-            name="lightning-bolt"
-            size={24}
-            color="white"
-          />
-        </GlassButton>
-      </View>
+      <AgentHeader agentId={agent?.id} style={styles.topButtonsContainer} />
 
       <ThoughtsTab
         agentId={agent?.id}

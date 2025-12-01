@@ -4,14 +4,15 @@ import Animated, {
   useSharedValue,
   withSpring,
 } from "react-native-reanimated";
-import { Avatar, Text, TouchableOpacity, View } from "@/components/ui";
+import { Avatar, LabelValue, Text, TouchableOpacity, View } from "@/components/ui";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useColors } from "@/theme";
 import type { AgentType } from "@/types/agent";
-import { sentimentToColor } from "@/utils/currency";
+import { formatPercent, sentimentToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import BalanceOverview from "./agent/BalanceOverview";
 import PositionList from "./PositionList";
+import { StatsAbbreviated } from "@/components/agent/AccountStats";
 
 export default function AgentCard({
   agent,
@@ -71,42 +72,23 @@ export default function AgentCard({
             flexDirection: "row",
             alignItems: "center",
             gap: 2,
+            justifyContent: "space-between",
           }}
         >
-          <View sx={{ flex: 1 }}>
-            <View
-              sx={{
-                justifyContent: "space-between",
-                flexDirection: "row",
-                alignItems: "center",
-              }}
-            >
-              <Avatar
-                size="xs"
-                src={agent.avatar_url}
-                name={agent.name.slice(0, 70)}
-                backgroundColor={palette.providers[agent.llm_provider]}
-              />
-              <View>
-                {/* <StatusBadge variant={numberToColor(accountData.unrealizedPnl)}>
-                {formatAmount(accountData.unrealizedPnl)}
-              </StatusBadge> */}
-              </View>
-            </View>
-          </View>
+          <Avatar
+            size="xs"
+            src={agent.avatar_url}
+            name={agent.name.slice(0, 70)}
+            backgroundColor={palette.providers[agent.llm_provider]}
+          />
+          <StatsAbbreviated agentId={agent.id} />
         </View>
-
-        <BalanceOverview
-          agentId={agent.id}
-          hideOpenPositions={hideOpenPositions}
-          variant={compactView ? "compact" : "full"}
-        />
       </TouchableOpacity>
 
       {parsedAssessment ? (
         <View
           sx={{
-            marginTop: 6,
+            marginTop: 2,
             borderTopColor: "muted",
             borderTopWidth: 1,
             paddingTop: 2,

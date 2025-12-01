@@ -2,7 +2,7 @@ const currencySymbol = "$";
 
 export function formatCompact(
   num,
-  { locale = "en-US", precision = 2, minDecimals = 2 } = {},
+  { locale = "en-US", precision = 2, minDecimals = 2, showUnits = ['K'] } = {},
 ) {
   const abs = Math.abs(num);
 
@@ -10,8 +10,8 @@ export function formatCompact(
     { value: 1e12, symbol: "T" },
     { value: 1e9, symbol: "B" },
     { value: 1e6, symbol: "M" },
-    // { value: 1e3,  symbol: "K" }
-  ];
+    { value: 1e3,  symbol: "K" }
+  ].filter(u => !showUnits.includes(u.symbol));
 
   for (const u of units) {
     if (abs >= u.value) {

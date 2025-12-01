@@ -165,6 +165,32 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
     };
   }, [agent, closedTrades, enrichedPositions]);
 
+
+  // Full detailed view for crypto perpetual futures trading
+  const totalPnl =
+    (balanceMetrics.realizedPnl || 0) + (balanceMetrics.unrealizedPnl || 0);
+  const totalPnlPercent = balanceMetrics.wallet
+    ? (totalPnl / balanceMetrics.wallet) * 100
+    : 0;
+  const unrealizedPnlPercent = balanceMetrics.equity
+    ? ((balanceMetrics.unrealizedPnl || 0) / balanceMetrics.equity) * 100
+    : 0;
+
+  // Calculate position value (total notional value of all positions)
+  const positionValue =
+    enrichedPositions?.reduce((sum, position) => {
+      const quantity = position.positionQuantity || 0;
+      const currentPrice =
+        position.currentPrice || parseFloat(position.entry_price) || 0;
+      return sum + quantity * currentPrice;
+    }, 0) || 0;
+
+  // Calculate leverage ratio
+  const leverageRatio = balanceMetrics.accountValue
+    ? positionValue / balanceMetrics.accountValue
+    : 0;
+
+
   return {
     wallet: balanceMetrics.initialCapital,
     equity: balanceMetrics.accountValue,
@@ -174,5 +200,11 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
     realizedPnl: balanceMetrics.realizedPnl,
     enrichedPositions,
     isLoading: !agent,
+
+    totalPnl,
+    totalPnlPercent,
+    unrealizedPnlPercent,
+    positionValue,
+    leverageRatio,
   };
 }

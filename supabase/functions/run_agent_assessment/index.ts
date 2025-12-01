@@ -36,7 +36,7 @@ export async function runAgentAssessment(
       accountSummary,
       candleData,
     ] = await Promise.all([
-      getAccountSummary(agentId, agent.simulate),
+      getAccountSummary(agent.hyperliquid_address, agent.simulate),
       fetchAllCandleData({assetNames: tradeableAssets.map((a) => a.Ticker), intervalString: "5m", lookbackHours: 3}),
     ]);
 
