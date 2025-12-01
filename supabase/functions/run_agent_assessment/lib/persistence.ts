@@ -10,7 +10,6 @@ export interface Assessment {
   id: string;
   agent_id: string;
   timestamp: string;
-  market_data_snapshot: MarketDataSnapshot;
   llm_prompt_used: string;
   llm_response_text: string;
   parsed_llm_response: Record<string, unknown> | null;

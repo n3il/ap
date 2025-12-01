@@ -34,17 +34,16 @@ export async function runAgentAssessment(
     const tradeableAssets = await fetchTradeableAssets();
     const [
       accountSummary,
-      candleData,
+      // candleData,
     ] = await Promise.all([
       getAccountSummary(agent.hyperliquid_address, agent.simulate),
-      //
-      fetchAllCandleData({assetNames: tradeableAssets.slice(5).map((a) => a.Ticker), intervalString: "5m", lookbackHours: 3}),
+      // fetchAllCandleData({assetNames: tradeableAssets.slice(5).map((a) => a.Ticker), intervalString: "5m", lookbackHours: 3}),
     ]);
 
     // Build prompt
     const serviceClient = createSupabaseServiceClient();
     const promptTemplate = await fetchPrompt(serviceClient, agent);
-    const prompt = buildPrompt(promptTemplate, { tradeableAssets, accountSummary, candleData });
+    const prompt = buildPrompt(promptTemplate, { tradeableAssets, accountSummary, candleData: [] });
 
     // Generate analysis
     const provider = agent.llm_provider;

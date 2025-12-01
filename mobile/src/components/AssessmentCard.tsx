@@ -4,17 +4,14 @@ import { Pressable } from "react-native";
 import Markdown from "react-native-markdown-display";
 import SectionTitle from "@/components/SectionTitle";
 import {
-  Avatar,
   Card,
-  StatusBadge,
   Text,
   TouchableOpacity,
   View,
 } from "@/components/ui";
 import { useColors } from "@/theme";
 import type { AssessmentType } from "@/types/agent";
-import { formatRelativeDate } from "@/utils/date";
-import TradeActionDisplay from "./TradeActionDisplay";
+import TradeActionDisplay, { TradeSummary } from "./TradeActionDisplay";
 import { AssessmentPreview } from "@/components/AgentCard";
 import { ROUTES } from "@/config/routes";
 
@@ -218,24 +215,6 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         }}
         activeOpacity={0.7}
       >
-
-        {tradeActions.length > 0 && (
-          <View
-            sx={{
-              marginTop: 3,
-            }}
-          >
-            <SectionTitle title="Trade Summary" />
-            {tradeActions.map((action, index) => (
-              <TradeActionDisplay
-                key={`${action.asset ?? "action"}-${index}`}
-                actionData={action}
-                showReason={expanded}
-              />
-            ))}
-          </View>
-        )}
-
         <AssessmentPreview assessmentData={assessment} />
 
         {expanded ? (
@@ -307,6 +286,23 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
           </View>
         ) : null}
       </TouchableOpacity>
+
+    <TradeSummary tradeActions={tradeActions} />
+    {tradeActions.length > 0 && (
+      <View
+        sx={{
+          marginTop: 3,
+        }}
+      >
+        {tradeActions.map((action, index) => (
+          <TradeActionDisplay
+            key={`${action.asset ?? "action"}-${index}`}
+            actionData={action}
+            showReason={expanded}
+          />
+        ))}
+      </View>
+    )}
     </Card>
   );
 }

@@ -134,16 +134,16 @@ export default function AgentHeader({ agentId, onBookmarkPress, style }: Props) 
             name={"binoculars"}
             size={24}
             color={isWatchlisted ? palette?.accent : palette?.foreground}
-            style={{
-              width: 40,
-              height: 40,
-            }}
           />
         )}
       </GlassButton>
       <GlassButton
         onPress={handleRunAssessment}
         disabled={!agentId || isTriggeringAssessment}
+        style={{
+          width: 40,
+          height: 40,
+        }}
       >
         {isTriggeringAssessment ? (
           <ActivityIndicator size="small" color={palette.foreground} />

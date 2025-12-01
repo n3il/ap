@@ -10,6 +10,8 @@ import { sentimentToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import PositionList from "./PositionList";
 import { StatsAbbreviated } from "@/components/agent/AccountStats";
+import { Pressable } from "react-native";
+import { TradeSummary } from "@/components/TradeActionDisplay";
 
 export function AssessmentPreview({ assessmentData, style = {} }) {
   const { colors: palette } = useColors();
@@ -117,7 +119,7 @@ export default function AgentCard({
       ]}
       {...props}
     >
-      <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+      <Pressable onPress={onPress}>
         <View
           style={{
             flexDirection: "row",
@@ -141,11 +143,17 @@ export default function AgentCard({
             }}
           />
         </View>
-      </TouchableOpacity>
 
-      {agent.latest_assessment?.parsed_llm_response ? (
-        <AssessmentPreview assessmentData={agent.latest_assessment} />
-      ) : null}
+        {agent.latest_assessment?.parsed_llm_response ? (
+          <AssessmentPreview assessmentData={agent.latest_assessment} />
+        ) : null}
+
+        {agent.latest_assessment?.parsed_llm_response?.tradeActions?.length > 0 && (
+          <TradeSummary
+            tradeActions={agent.latest_assessment?.parsed_llm_response?.tradeActions}
+          />
+        )}
+      </Pressable>
 
       {!hideOpenPositions && (
         <View sx={{ marginTop: 2 }}>

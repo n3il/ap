@@ -221,7 +221,7 @@ export default function PositionList({ positions = [], top = 3 }) {
           tone="muted"
           sx={{ textAlign: "right", width: "100%", fontStyle: "italic" }}
         >
-          no active positions
+          Open positions: none
         </Text>
       )}
 

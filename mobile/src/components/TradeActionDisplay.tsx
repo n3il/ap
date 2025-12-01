@@ -174,7 +174,7 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
     parts.push(`~${formatAmount(totalOpenNotional)} notional`);
   }
   if (!parts.length) {
-    parts.push("Trade plan generated");
+    return null
   }
 
   return (

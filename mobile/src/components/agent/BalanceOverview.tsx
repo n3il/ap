@@ -79,8 +79,8 @@ export default function BalanceOverview({
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Lev."
-            value={accountData.leverageRatio || "-"}
+            label="7 day ROI"
+            value={accountData.leverageRatio}
             alignRight
             formatter={formatDecimal}
           />

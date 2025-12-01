@@ -503,7 +503,6 @@ CREATE TABLE IF NOT EXISTS "public"."assessments" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
     "agent_id" "uuid" NOT NULL,
     "timestamp" timestamp with time zone NOT NULL,
-    "market_data_snapshot" "jsonb" NOT NULL,
     "llm_prompt_used" "text" NOT NULL,
     "llm_response_text" "text" NOT NULL,
     "trade_action_taken" "text",
@@ -1700,7 +1699,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
 
 
 

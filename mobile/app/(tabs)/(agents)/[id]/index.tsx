@@ -7,7 +7,7 @@ import AgentHeader from "@/components/agent/Header";
 import HeaderChart from "@/components/agent/HeaderChart";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
 import ContainerView, { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
-import { Animated, Avatar, GlassButton, View } from "@/components/ui";
+import { Animated, Avatar, GlassButton, Text, View } from "@/components/ui";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
@@ -45,13 +45,18 @@ export default function AgentReadScreen() {
           },
         ]}
       >
-        <PaddedView style={{ gap: 12 }}>
-          <Avatar
-            size="md"
-            imgSrc={agent.avatar_url}
-            name={agent.name.slice(0, 70)}
-            backgroundColor={palette.providers[agent.llm_provider]}
-          />
+        <PaddedView style={{ gap: 12, paddingHorizontal: 16 }}>
+          <View>
+            <Avatar
+              size="md"
+              imgSrc={agent.avatar_url}
+              name={agent.name.slice(0, 70)}
+              backgroundColor={palette.providers[agent.llm_provider]}
+            />
+            <Text>
+              {JSON.stringify(agent)}
+            </Text>
+          </View>
           <BalanceOverview agentId={agent?.id} />
         </PaddedView>
         <HeaderChart agentId={agent?.id} />
