@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Puppet",
     slug: "puppet-ai",
-    scheme: "ap",
+    scheme: ["com.puppetai"],
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
@@ -13,12 +13,18 @@ export default {
       backgroundColor: "#232323"
     },
     ios: {
+      usesAppleSignIn: true,
       supportsTablet: true,
       bundleIdentifier: "com.puppetai.app",
-      deploymentTarget: "13.0",
+      deploymentTarget: "18.0",
       infoPlist: {
-        ITSAppUsesNonExemptEncryption: false
-        // Remove ATS override unless truly required.
+        ITSAppUsesNonExemptEncryption: false,
+        NSUserNotificationsUsageDescription:
+          "This app uses notifications to send you updates, alerts, and important information."
+      },
+      entitlements: {
+        "com.apple.developer.applesignin": ["Default"],
+        "aps-environment": "development"
       }
     },
     android: {
@@ -28,7 +34,6 @@ export default {
       },
       edgeToEdgeEnabled: true,
       package: "com.puppetai.app",
-      // Only needed for debugging:
       usesCleartextTraffic: false
     },
     web: {
@@ -48,6 +53,8 @@ export default {
       "expo-localization",
       "expo-secure-store",
       "expo-web-browser",
+      "expo-apple-authentication",
+      "expo-notifications"
     ],
     extra: {
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,

@@ -2,6 +2,7 @@ import { makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/config/supabase";
+import * as AppleAuthentication from 'expo-apple-authentication';
 
 // import useRouteAuth from '@/hooks/useRouteAuth';
 // import { useRouter } from 'expo-router';
@@ -22,19 +23,11 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
 
-  // const router = useRouter();
-
-  // useEffect(() => {
-  //   console.log(router.pathname)
-  //   if (!isRouteAccessible(router.pathname)) {
-  //     return router.push(ROUTES.AUTH_INDEX.path);
-  //   }
-  // }, [router])
-
   useEffect(() => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      console.log(session)
       setUser(session?.user ?? null);
 
       // Check onboarding status from user metadata or fallback to database query
@@ -219,20 +212,102 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+
   const signInWithApple = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "apple",
         options: {
-          redirectTo: "ap://",
+          redirectTo: redirectUrl,
+          skipBrowserRedirect: true,
         },
       });
+
       if (error) throw error;
-      return { data, error: null };
+      if (!data?.url) throw new Error("No OAuth URL generated");
+
+      const result = await WebBrowser.openAuthSessionAsync(
+        data.url,
+        redirectUrl
+      );
+
+      if (result.type !== "success" || !result.url)
+        return { data: null, error: new Error("Browser session cancelled") };
+
+      const url = result.url;
+      let access_token, refresh_token;
+
+      if (url.includes("#")) {
+        const hash = url.split("#")[1];
+        const params = new URLSearchParams(hash);
+        access_token = params.get("access_token");
+        refresh_token = params.get("refresh_token");
+      }
+
+      if (!access_token || !refresh_token)
+        return { data: null, error: new Error("No tokens received") };
+
+      const { error: sessionError } = await supabase.auth.setSession({
+        access_token,
+        refresh_token,
+      });
+
+      if (sessionError) throw sessionError;
+      return { data: { session: true }, error: null };
     } catch (error) {
       return { data: null, error };
     }
   };
+
+
+  const signInWithAppleNative = async () => {
+    try {
+      const credential = await AppleAuthentication.signInAsync({
+        requestedScopes: [
+          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+          AppleAuthentication.AppleAuthenticationScope.EMAIL,
+        ],
+      })
+      // Sign in via Supabase Auth.
+      if (credential.identityToken) {
+        const {
+          error,
+          data,
+        } = await supabase.auth.signInWithIdToken({
+          provider: 'apple',
+          token: credential.identityToken,
+        })
+        console.log(JSON.stringify({ error, data }, null, 2))
+        if (!error) {
+          // Apple only provides the user's full name on the first sign-in
+          // Save it to user metadata if available
+          if (credential.fullName) {
+            const nameParts = []
+            if (credential.fullName.givenName) nameParts.push(credential.fullName.givenName)
+            if (credential.fullName.middleName) nameParts.push(credential.fullName.middleName)
+            if (credential.fullName.familyName) nameParts.push(credential.fullName.familyName)
+            const fullName = nameParts.join(' ')
+            await supabase.auth.updateUser({
+              data: {
+                full_name: fullName,
+                given_name: credential.fullName.givenName,
+                family_name: credential.fullName.familyName,
+              }
+            })
+          }
+          return { data, error };
+        }
+      } else {
+        throw new Error('No identityToken.')
+      }
+    } catch (error) {
+      // if (error.code === 'ERR_REQUEST_CANCELED') {
+        // return { data: null, error };
+      // } else {
+        return { data: null, error };
+      // }
+    }
+  }
 
   const signInWithPhone = async (phoneNumber) => {
     try {
@@ -328,6 +403,7 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     signInWithGoogle,
     signInWithApple,
+    signInWithAppleNative,
     signInWithPhone,
     verifyPhoneCode,
     signInWithEmailOtp,

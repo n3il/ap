@@ -128,7 +128,6 @@ export default function OnboardingScreen() {
           <>
             <LottieView
               autoPlay
-              loop
               resizeMode="cover"
               style={{
                 width,

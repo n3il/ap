@@ -79,8 +79,8 @@
       "profile": {
         "title": "Complete Your Profile",
         "subtitle": "Tell us a bit about yourself",
-        "displayName": "Display Name *",
-        "displayNamePlaceholder": "How should we call you?",
+        "displayName": "First Name",
+        "displayNamePlaceholder": "",
         "bio": "Bio (Optional)",
         "bioPlaceholder": "Tell us about yourself...",
         "back": "Back",

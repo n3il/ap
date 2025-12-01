@@ -34,6 +34,7 @@ export default function Auth() {
   const {
     signInWithGoogle,
     signInWithApple,
+    signInWithAppleNative,
     signInWithPhone,
     signInWithEmailOtp,
   } = useAuth();
@@ -114,7 +115,7 @@ export default function Auth() {
 
   const handleAppleSignIn = async () => {
     setLoading(true);
-    const { error } = await signInWithApple();
+    const { error } = await (Platform.OS === "ios" ? signInWithAppleNative : signInWithApple)();
     setLoading(false);
 
     if (error) {
