@@ -487,6 +487,18 @@ COMMENT ON COLUMN "public"."agents"."simulate" IS 'When true, agent trades in si
 
 
 
+CREATE TABLE IF NOT EXISTS "public"."agents_watchlist" (
+    "user_id" "uuid" NOT NULL,
+    "agent_id" "uuid" NOT NULL,
+    "created_at" timestamp with time zone DEFAULT "now"() NOT NULL,
+    CONSTRAINT "agents_watchlist_pkey" PRIMARY KEY ("user_id", "agent_id")
+);
+
+
+ALTER TABLE "public"."agents_watchlist" OWNER TO "postgres";
+
+
+
 CREATE TABLE IF NOT EXISTS "public"."assessments" (
     "id" "uuid" DEFAULT "extensions"."uuid_generate_v4"() NOT NULL,
     "agent_id" "uuid" NOT NULL,
@@ -811,6 +823,14 @@ CREATE INDEX "idx_assessments_timestamp" ON "public"."assessments" USING "btree"
 
 
 
+CREATE INDEX "idx_agents_watchlist_agent_id" ON "public"."agents_watchlist" USING "btree" ("agent_id");
+
+
+
+CREATE INDEX "idx_agents_watchlist_user_id" ON "public"."agents_watchlist" USING "btree" ("user_id");
+
+
+
 CREATE INDEX "idx_profiles_email" ON "public"."profiles" USING "btree" ("email");
 
 
@@ -951,6 +971,16 @@ ALTER TABLE ONLY "public"."agents"
 
 
 
+ALTER TABLE ONLY "public"."agents_watchlist"
+    ADD CONSTRAINT "agents_watchlist_agent_id_fkey" FOREIGN KEY ("agent_id") REFERENCES "public"."agents"("id") ON DELETE CASCADE;
+
+
+
+ALTER TABLE ONLY "public"."agents_watchlist"
+    ADD CONSTRAINT "agents_watchlist_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "auth"."users"("id") ON DELETE CASCADE;
+
+
+
 ALTER TABLE ONLY "public"."assessments"
     ADD CONSTRAINT "assessments_agent_id_fkey" FOREIGN KEY ("agent_id") REFERENCES "public"."agents"("id") ON DELETE CASCADE;
 
@@ -1057,6 +1087,10 @@ CREATE POLICY "Prompts are readable by owner or global" ON "public"."prompts" FO
 
 
 
+CREATE POLICY "Users can view their watchlist" ON "public"."agents_watchlist" FOR SELECT USING (("auth"."uid"() = "user_id"));
+
+
+
 CREATE POLICY "Public profiles are viewable by everyone." ON "public"."profiles" FOR SELECT USING (true);
 
 
@@ -1074,6 +1108,10 @@ CREATE POLICY "Users can delete their own trading orders" ON "public"."trading_o
 
 
 CREATE POLICY "Users can delete their prompts" ON "public"."prompts" FOR DELETE USING (("auth"."uid"() = "user_id"));
+
+
+
+CREATE POLICY "Users can manage their watchlist" ON "public"."agents_watchlist" FOR ALL USING (("auth"."uid"() = "user_id")) WITH CHECK (("auth"."uid"() = "user_id"));
 
 
 
@@ -1159,6 +1197,9 @@ ALTER TABLE "public"."agent_pnl_snapshots" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."agents" ENABLE ROW LEVEL SECURITY;
+
+
+ALTER TABLE "public"."agents_watchlist" ENABLE ROW LEVEL SECURITY;
 
 
 ALTER TABLE "public"."assessments" ENABLE ROW LEVEL SECURITY;
@@ -1569,6 +1610,12 @@ GRANT ALL ON TABLE "public"."agents" TO "service_role";
 
 
 
+GRANT ALL ON TABLE "public"."agents_watchlist" TO "anon";
+GRANT ALL ON TABLE "public"."agents_watchlist" TO "authenticated";
+GRANT ALL ON TABLE "public"."agents_watchlist" TO "service_role";
+
+
+
 GRANT ALL ON TABLE "public"."assessments" TO "anon";
 GRANT ALL ON TABLE "public"."assessments" TO "authenticated";
 GRANT ALL ON TABLE "public"."assessments" TO "service_role";
@@ -1653,14 +1700,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
-
-
-
-
-
-
-
 
 
 
