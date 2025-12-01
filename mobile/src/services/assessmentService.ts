@@ -24,19 +24,38 @@ const parseTimeframe = (timeframe) => {
   }
 };
 
+const DEFAULT_ASSESSMENT_STATUSES = ["completed"];
+
+const buildAssessmentQuery = (
+  columns = "*",
+  { selectOptions, statuses = DEFAULT_ASSESSMENT_STATUSES } = {},
+) => {
+  let query = supabase.from("assessments").select(columns, selectOptions);
+  if (statuses?.length) {
+    query = query.in("status", statuses);
+  }
+  return query;
+};
+
 export const assessmentService = {
   // Fetch all assessments for a specific agent
   async getAssessmentsByAgent(
     agentId,
-    { pageParam = 0, pageSize = 10, timeframe = null, after = null } = {},
+    {
+      pageParam = 0,
+      pageSize = 10,
+      timeframe = null,
+      after = null,
+      statuses = DEFAULT_ASSESSMENT_STATUSES,
+    } = {},
   ) {
     const from = pageParam * pageSize;
     const to = from + pageSize - 1;
 
-    let query = supabase
-      .from("assessments")
-      .select("*, agent:agents(*)", { count: "exact" })
-      .eq("agent_id", agentId);
+    let query = buildAssessmentQuery("*, agent:agents(*)", {
+      selectOptions: { count: "exact" },
+      statuses,
+    }).eq("agent_id", agentId);
 
     // Filter by timeframe if provided
     if (timeframe) {
@@ -65,7 +84,7 @@ export const assessmentService = {
   },
 
   // Fetch all assessments for the current user (across all agents)
-  async getAllAssessments() {
+  async getAllAssessments({ statuses = DEFAULT_ASSESSMENT_STATUSES } = {}) {
     const {
       data: { user },
     } = await supabase.auth.getUser();
@@ -84,15 +103,16 @@ export const assessmentService = {
     if (agentIds.length === 0) return [];
 
     // Then get all assessments for those agents
-    const { data, error } = await supabase
-      .from("assessments")
-      .select(`
+    const { data, error } = await buildAssessmentQuery(
+      `
           *,
           agents (
             name,
             model_name
           )
-        `)
+        `,
+      { statuses },
+    )
       .in("agent_id", agentIds)
       .order("timestamp", { ascending: false });
 
@@ -101,10 +121,11 @@ export const assessmentService = {
   },
 
   // Get the latest assessment for an agent
-  async getLatestAssessment(agentId) {
-    const { data, error } = await supabase
-      .from("assessments")
-      .select("*")
+  async getLatestAssessment(
+    agentId,
+    { statuses = DEFAULT_ASSESSMENT_STATUSES } = {},
+  ) {
+    const { data, error } = await buildAssessmentQuery("*", { statuses })
       .eq("agent_id", agentId)
       .order("timestamp", { ascending: false })
       .limit(1)
@@ -115,8 +136,11 @@ export const assessmentService = {
   },
 
   // Get assessment statistics
-  async getAssessmentStats(agentId = null) {
-    let query = supabase.from("assessments").select("*");
+  async getAssessmentStats(
+    agentId = null,
+    { statuses = DEFAULT_ASSESSMENT_STATUSES } = {},
+  ) {
+    let query = buildAssessmentQuery("*", { statuses });
 
     if (agentId) {
       query = query.eq("agent_id", agentId);
@@ -155,16 +179,20 @@ export const assessmentService = {
   },
 
   // Get assessment by ID
-  async getAssessmentById(id) {
-    const { data, error } = await supabase
-      .from("assessments")
-      .select(`
+  async getAssessmentById(
+    id,
+    { statuses = DEFAULT_ASSESSMENT_STATUSES } = {},
+  ) {
+    const { data, error } = await buildAssessmentQuery(
+      `
           *,
           agents (
             name,
             model_name
           )
-        `)
+        `,
+      { statuses },
+    )
       .eq("id", id)
       .single();
 
@@ -173,17 +201,23 @@ export const assessmentService = {
   },
 
   // Get sentiment scores for agents (performant, JSON column selection)
-  async getSentimentScores(agentIds, { timeframe = null, limit = 100 } = {}) {
+  async getSentimentScores(
+    agentIds,
+    {
+      timeframe = null,
+      limit = 100,
+      statuses = DEFAULT_ASSESSMENT_STATUSES,
+    } = {},
+  ) {
     // Ensure agentIds is an array
     const ids = Array.isArray(agentIds) ? agentIds : [agentIds];
 
     if (ids.length === 0) return [];
 
-    let query = supabase
-      .from("assessments")
-      .select(
-        "id, timestamp, agent_id, parsed_llm_response->headline->sentiment_score",
-      )
+    let query = buildAssessmentQuery(
+      "id, timestamp, agent_id, parsed_llm_response->headline->sentiment_score",
+      { statuses },
+    )
       .order("timestamp", { ascending: false })
       .in("agent_id", ids);
 

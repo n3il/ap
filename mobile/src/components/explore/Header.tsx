@@ -56,7 +56,7 @@ export const ConnectionIndicator = () => {
         <MaterialCommunityIcons
           name="signal-off"
           size={16}
-          color={colors.warning}
+          color={colors.error}
         />
       ) : (
         <MaterialCommunityIcons

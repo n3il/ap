@@ -33,6 +33,9 @@ export default function AgentReadScreen() {
     extrapolate: "clamp",
   });
 
+  // initiate assessment mutation
+  // assessmentService.initiateAssessment(agent?.id);
+
   return (
     <ContainerView style={{ flex: 1 }}>
       <LinearGradient
@@ -68,14 +71,14 @@ export default function AgentReadScreen() {
 
         <GlassButton onPress={() => {}}>
           <MaterialCommunityIcons
-            name="bookmark-check"
+            name="bookmark-outline"
             size={24}
             color="white"
           />
         </GlassButton>
-        <GlassButton onPress={() => {}}>
+        <GlassButton onPress={initiateAssessment}>
           <MaterialCommunityIcons
-            name="one-up"
+            name="lightning-bolt"
             size={24}
             color="white"
           />

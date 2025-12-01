@@ -45,6 +45,7 @@ export interface AssessmentRecordType {
   llm_prompt_used: string;
   llm_response_text: string;
   parsed_llm_response: any;
+  status: "in_progress" | "completed" | "errored";
 }
 
 export interface AgentType {

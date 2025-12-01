@@ -4,6 +4,8 @@ import type { LLMResponse, LLMTradeAction } from '../../_shared/llm/types.ts';
 import type { PnLMetrics } from '../../_shared/lib/pnl.ts';
 import { sanitizeNumericValue } from '../../_shared/lib/numeric.ts';
 
+export type AssessmentStatus = 'in_progress' | 'completed' | 'errored';
+
 export interface Assessment {
   id: string;
   agent_id: string;
@@ -13,6 +15,7 @@ export interface Assessment {
   llm_response_text: string;
   parsed_llm_response: Record<string, unknown> | null;
   trade_action_taken: string;
+  status: AssessmentStatus;
 }
 
 /**
@@ -22,6 +25,7 @@ export async function saveAssessment(
   agentId: string,
   prompt: { systemInstruction: string; userQuery: string },
   llmResponse: LLMResponse,
+  status: AssessmentStatus = 'in_progress',
 ): Promise<Assessment> {
   const serviceClient = createSupabaseServiceClient();
   const { data: assessment, error } = await serviceClient
@@ -32,12 +36,32 @@ export async function saveAssessment(
       llm_prompt_used: `${prompt.systemInstruction}\n\n${prompt.userQuery}`,
       llm_response_text: llmResponse.text,
       parsed_llm_response: llmResponse.parsed ?? null,
+      status,
     }])
     .select()
     .single();
 
   if (error) throw error;
   return assessment;
+}
+
+/**
+ * Updates the status of an assessment
+ */
+export async function updateAssessmentStatus(
+  assessmentId: string,
+  status: AssessmentStatus,
+): Promise<void> {
+  const serviceClient = createSupabaseServiceClient();
+  const { error } = await serviceClient
+    .from('assessments')
+    .update({ status })
+    .eq('id', assessmentId);
+
+  if (error) {
+    console.error('Failed to update assessment status', { assessmentId, status, error });
+    throw error;
+  }
 }
 
 /**

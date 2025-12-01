@@ -3,6 +3,7 @@ import { Stack, useRouter } from "expo-router";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { KeyboardProvider } from "react-native-keyboard-controller";
 import DebugOverlay from "@/components/DebugOverlay";
 import SplashScreen from "@/components/SplashScreen";
 import { ROUTES } from "@/config/routes";
@@ -100,13 +101,15 @@ function AuthNavigator() {
 export default function RootLayout() {
   return (
     <ThemeProvider>
-      <SafeAreaProvider>
-        <QueryClientProvider client={queryClient}>
-          <AuthProvider>
-            <AuthNavigator />
-          </AuthProvider>
-        </QueryClientProvider>
-      </SafeAreaProvider>
+      <KeyboardProvider>
+        <SafeAreaProvider>
+          <QueryClientProvider client={queryClient}>
+            <AuthProvider>
+              <AuthNavigator />
+            </AuthProvider>
+          </QueryClientProvider>
+        </SafeAreaProvider>
+      </KeyboardProvider>
     </ThemeProvider>
   );
 }

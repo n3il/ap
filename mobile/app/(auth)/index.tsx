@@ -9,7 +9,6 @@ import {
   Alert,
   Button,
   GlassButton,
-  KeyboardAvoidingView,
   Platform,
   Text,
   TextInput,
@@ -20,6 +19,7 @@ import PhoneInputAutoDetect from "@/components/ui/PhoneInputAutoDetect";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useColors } from "@/theme";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 
 export default function Auth() {
   const [authMode, setAuthMode] = useState("phone"); // 'phone' or 'email'
@@ -124,16 +124,14 @@ export default function Auth() {
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
         style={{
-          flexGrow: 1,
+          flex: 1,
           paddingHorizontal: 16,
         }}
       >
         <AnimatedBox
           layout={LinearTransition.duration(300).springify()}
           style={{
-            flex: 1,
-            justifyContent: "center",
-            paddingTop: "-20%",
+            marginVertical: "auto",
           }}
         >
           {authMode === "phone" && (
@@ -175,7 +173,6 @@ export default function Auth() {
                     borderWidth: 0,
                     borderRadius: 0,
                     // borderBottomWidth: 1,
-                    textAlign: "center",
 
                     // backgroundColor: palette.surface,
                     // borderRadius: 999,
@@ -310,71 +307,78 @@ export default function Auth() {
           </View>
         </AnimatedBox>
 
-        {authMode === "phone" && (
-          <View
-            key="phone-mode"
-            entering={FadeIn.duration(300)}
-            exiting={FadeOut.duration(200)}
-            style={{ gap: 8 }}
-          >
-            <Text
-              variant="xs"
-              tone="subtle"
-              sx={{
-                textAlign: "center",
-                paddingHorizontal: 6,
-                marginBottom: 2,
-              }}
+        <View
+          style={{
+            flexShrink: 0,
+          }}
+        >
+          {authMode === "phone" && (
+            <View
+              key="phone-mode"
+              entering={FadeIn.duration(300)}
+              exiting={FadeOut.duration(200)}
+              style={{ gap: 8 }}
             >
-              {t("login.smsLegal")}
-            </Text>
+              <Text
+                variant="xs"
+                tone="subtle"
+                sx={{
+                  textAlign: "center",
+                  paddingHorizontal: 6,
+                  marginBottom: 2,
+                }}
+              >
+                {t("login.smsLegal")}
+              </Text>
 
-            <GlassButton
-              onPress={handlePhoneSubmit}
-              disabled={loading}
-              styleVariant="paddedFull"
-              tintColor={palette.surface}
-              glassEffectStyle="regular"
-              style={{
-                paddingVertical: 14,
-              }}
-            >
-              {loading ? (
-                <ActivityIndicator color={palette.foreground} />
-              ) : (
-                t("login.sendCode")
-              )}
-            </GlassButton>
-          </View>
-        )}
+              <GlassButton
+                onPress={handlePhoneSubmit}
+                disabled={loading}
+                styleVariant="paddedFull"
+                tintColor={palette.surface}
+                glassEffectStyle="regular"
+                style={{
+                  paddingVertical: 14,
+                }}
+              >
+                {loading ? (
+                  <ActivityIndicator color={palette.foreground} />
+                ) : (
+                  t("login.sendCode")
+                )}
+              </GlassButton>
+            </View>
+          )}
 
-        {authMode === "email" && (
-          <AnimatedBox
-            key="email-mode"
-            entering={FadeIn.duration(300)}
-            exiting={FadeOut.duration(200)}
-            style={{ gap: 8 }}
-          >
-            <Button
-              variant="surface"
-              sx={{
-                borderColor: "primary",
-                borderRadius: "full",
-                borderWidth: 2,
-                marginBottom: 4,
-              }}
-              textProps={{ style: { fontWeight: "600" } }}
-              onPress={handleEmailSubmit}
-              disabled={loading}
+          {authMode === "email" && (
+            <AnimatedBox
+              key="email-mode"
+              entering={FadeIn.duration(300)}
+              exiting={FadeOut.duration(200)}
+              style={{ gap: 8 }}
             >
-              {loading ? (
-                <ActivityIndicator color="white" />
-              ) : (
-                t("login.sendCode")
-              )}
-            </Button>
-          </AnimatedBox>
-        )}
+              <Button
+                variant="surface"
+                sx={{
+                  borderColor: "primary",
+                  borderRadius: "full",
+                  borderWidth: 2,
+                  marginBottom: 4,
+                }}
+                textProps={{ style: { fontWeight: "600" } }}
+                onPress={handleEmailSubmit}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  t("login.sendCode")
+                )}
+              </Button>
+            </AnimatedBox>
+          )}
+        </View>
+
       </KeyboardAvoidingView>
     </ContainerView>
   );

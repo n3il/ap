@@ -496,7 +496,9 @@ CREATE TABLE IF NOT EXISTS "public"."assessments" (
     "llm_response_text" "text" NOT NULL,
     "trade_action_taken" "text",
     "prompt_id" "uuid",
-    "parsed_llm_response" "jsonb"
+    "parsed_llm_response" "jsonb",
+    "status" "text" DEFAULT 'in_progress'::"text" NOT NULL,
+    CONSTRAINT "assessments_status_check" CHECK (("status" = ANY (ARRAY['in_progress'::text, 'completed'::text, 'errored'::text])))
 );
 
 
@@ -504,6 +506,8 @@ ALTER TABLE "public"."assessments" OWNER TO "postgres";
 
 
 COMMENT ON COLUMN "public"."assessments"."parsed_llm_response" IS 'Structured LLM output (headline, overview, tradeActions) stored as JSON.';
+
+COMMENT ON COLUMN "public"."assessments"."status" IS 'Tracks assessment execution status (in_progress, completed, errored).';
 
 
 
@@ -1649,7 +1653,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
 
 
 

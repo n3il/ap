@@ -237,13 +237,14 @@ const PriceColumn = ({
       Extrapolation.CLAMP,
     );
     return {
-      // height: interpolate(progress, [0, 1], [0, 30], Extrapolation.CLAMP),
+      height: interpolate(progress, [0, 1], [0, 30], Extrapolation.CLAMP),
       opacity: interpolate(progress, [0, 1], [0, 0.2], Extrapolation.CLAMP),
     };
   }, [scrollY]);
 
   const color = palette?.[numberToColor(rangePercent)] | '#fff';
 
+  console.log(isHistoryLoading, sparklineData.length)
   return (
     <GlassButton
       style={{

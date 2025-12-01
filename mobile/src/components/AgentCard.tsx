@@ -37,24 +37,15 @@ export default function AgentCard({
 }) {
   const { colors: palette, withOpacity } = useColors();
   const accountData = useAccountBalance(agent.id, hideOpenPositions);
-  // Calculate total PnL (realized + unrealized)
-  // const isPublished = Boolean(agent.published_at);
 
   // Animation values
   const scale = useSharedValue(1);
   const borderOpacity = useSharedValue(0);
 
-  useEffect(() => {
-    borderOpacity.value = withSpring(isActive ? 1 : 0.2, {
-      damping: 30,
-      stiffness: 150,
-    });
-  }, [isActive, borderOpacity]);
-
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
     // borderWidth: transparent ? 0 : .1,
-    // borderColor: withOpacity(palette.accent, borderOpacity.value),
+    borderColor: `rgba(124, 255, 170, ${borderOpacity.value})`,
   }));
 
   const parsedAssessment = agent.latest_assessment?.parsed_llm_response;
@@ -65,11 +56,9 @@ export default function AgentCard({
         {
           paddingVertical: 18,
           paddingHorizontal: 18,
-          borderWidth: transparent ? 0 : 0.5,
-          // borderColor: '#000',
-          borderColor: withOpacity(palette.accent, 0.4),
           backgroundColor: transparent ? "transparent" : "#0f1522ff",
           borderRadius: 12,
+          marginHorizontal: 10
         },
         animatedStyle,
       ]}

@@ -5,7 +5,7 @@ import { callLLMProvider } from '../_shared/llm/providers.ts';
 import { buildPrompt } from '../_shared/llm/gemini.ts';
 import { fetchPrompt } from '../_shared/lib/prompts.ts';
 import { fetchAndValidateAgent } from '../_shared/lib/agent.ts';
-import { saveAssessment } from './lib/persistence.ts';
+import { saveAssessment, updateAssessmentStatus } from './lib/persistence.ts';
 import { createSupabaseServiceClient } from '../_shared/supabase.ts';
 import initSentry from "../_shared/sentry.ts";
 import {
@@ -27,46 +27,61 @@ export async function runAgentAssessment(
 ) {
   const authContext = await authenticateRequest(authHeader);
   const agent = await fetchAndValidateAgent(agentId, authContext);
+  let assessmentId: string | null = null;
 
-  // Gather prompt data
-  const tradeableAssets = await fetchTradeableAssets();
-  const [
-    accountSummary,
-    candleData,
-  ] = await Promise.all([
-    getAccountSummary(agentId, agent.simulate),
-    fetchAllCandleData({assetNames: tradeableAssets.map((a) => a.Ticker), intervalString: "5m", lookbackHours: 3}),
-  ]);
+  try {
+    // Gather prompt data
+    const tradeableAssets = await fetchTradeableAssets();
+    const [
+      accountSummary,
+      candleData,
+    ] = await Promise.all([
+      getAccountSummary(agentId, agent.simulate),
+      fetchAllCandleData({assetNames: tradeableAssets.map((a) => a.Ticker), intervalString: "5m", lookbackHours: 3}),
+    ]);
 
-  // Build prompt
-  const serviceClient = createSupabaseServiceClient();
-  const promptTemplate = await fetchPrompt(serviceClient, agent);
-  const prompt = buildPrompt(promptTemplate, { tradeableAssets, accountSummary, candleData });
+    // Build prompt
+    const serviceClient = createSupabaseServiceClient();
+    const promptTemplate = await fetchPrompt(serviceClient, agent);
+    const prompt = buildPrompt(promptTemplate, { tradeableAssets, accountSummary, candleData });
 
-  // Generate analysis
-  const provider = agent.llm_provider;
-  const modelName = typeof agent.model_name === 'string' ? agent.model_name : undefined;
-  const llmResponse = await callLLMProvider(provider, prompt, modelName);
-  const assessment = await saveAssessment(agentId, prompt, llmResponse);
+    // Generate analysis
+    const provider = agent.llm_provider;
+    const modelName = typeof agent.model_name === 'string' ? agent.model_name : undefined;
+    const llmResponse = await callLLMProvider(provider, prompt, modelName);
+    const assessment = await saveAssessment(agentId, prompt, llmResponse);
+    assessmentId = assessment.id;
 
-  // Perform trades
-  const tradeActions = llmResponse.parsed?.tradeActions || [];
-  console.log('LLM response received, trade actions:', tradeActions.length);
+    // Perform trades
+    const tradeActions = llmResponse.parsed?.tradeActions || [];
+    console.log('LLM response received, trade actions:', tradeActions.length);
 
-  const tradeResults = await Promise.all(tradeActions.map(async (tradeAction) => {
-    const assetId = tradeableAssets.find((a) => a.Ticker === tradeAction.asset)?.AssetId;
-    const tradeResult = await executeTrade(assetId, tradeAction, agent);
-    return tradeResult;
-  }));
+    const tradeResults = await Promise.all(tradeActions.map(async (tradeAction) => {
+      const assetId = tradeableAssets.find((a) => a.Ticker === tradeAction.asset)?.AssetId;
+      const tradeResult = await executeTrade(assetId, tradeAction, agent);
+      return tradeResult;
+    }));
 
-  return {
-    success: true,
-    assessment_id: assessment.id,
-    trade_actions: tradeActions,
-    trade_results: tradeResults,
-    agent_name: agent.name,
-    simulate: agent.simulate,
-  };
+    await updateAssessmentStatus(assessment.id, 'completed');
+
+    return {
+      success: true,
+      assessment_id: assessment.id,
+      trade_actions: tradeActions,
+      trade_results: tradeResults,
+      agent_name: agent.name,
+      simulate: agent.simulate,
+    };
+  } catch (error) {
+    if (assessmentId) {
+      try {
+        await updateAssessmentStatus(assessmentId, 'errored');
+      } catch (statusError) {
+        console.error('Failed to mark assessment errored', statusError);
+      }
+    }
+    throw error;
+  }
 }
 
 /**
