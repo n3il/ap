@@ -15,6 +15,8 @@ import { useColors } from "@/theme";
 import type { AssessmentType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
 import TradeActionDisplay from "./TradeActionDisplay";
+import { AssessmentPreview } from "@/components/AgentCard";
+import { ROUTES } from "@/config/routes";
 
 const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;
@@ -197,28 +199,6 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
     [overview],
   );
 
-  const sentimentScore =
-    typeof headline?.sentiment_score === "number"
-      ? headline.sentiment_score
-      : null;
-  const sentimentWord = hasContent(headline?.sentiment_word)
-    ? headline.sentiment_word.trim()
-    : "";
-  const sentimentLabel = sentimentWord
-    ? sentimentScore !== null
-      ? `${sentimentWord} (${sentimentScore.toFixed(2)})`
-      : sentimentWord
-    : "";
-
-  const sentimentVariant =
-    sentimentScore === null
-      ? "info"
-      : sentimentScore > 0.2
-        ? "success"
-        : sentimentScore < -0.2
-          ? "error"
-          : "warning";
-
   const showStructured = Boolean(parsedResponse);
 
   return (
@@ -230,33 +210,14 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       glassTintColor={withOpacity("#000", 0.9)}
     >
       <TouchableOpacity
-        onPress={() => setExpanded(!expanded)}
+        onPress={() => {
+          router.push({
+            pathname: ROUTES.TABS_EXPLORE_AGENT_ID_ASSESSMENT.path,
+            params: { id: assessment.agent?.id, assessmentId: assessment.id },
+          });
+        }}
         activeOpacity={0.7}
       >
-        <View
-          sx={{
-            flexDirection: "row",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <Avatar
-            backgroundColor={palette.providers[assessment.agent?.llm_provider]}
-            name={assessment.agent?.name}
-            // email={assessment.agent?.model_name}
-            size="sm"
-          />
-          <Pressable
-            onPress={() => {
-              router.push(`/agents/${assessment.agent?.id}/${assessment.id}`);
-            }}
-            style={{ flexDirection: "row", alignItems: "center", gap: 2 }}
-          >
-            <Text variant="xs" tone="muted">
-              {formatRelativeDate(assessment.timestamp) || ""}
-            </Text>
-          </Pressable>
-        </View>
 
         {tradeActions.length > 0 && (
           <View
@@ -264,7 +225,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
               marginTop: 3,
             }}
           >
-            <SectionTitle title="New trades" />
+            <SectionTitle title="Trade Summary" />
             {tradeActions.map((action, index) => (
               <TradeActionDisplay
                 key={`${action.asset ?? "action"}-${index}`}
@@ -275,26 +236,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
           </View>
         )}
 
-        {sentimentLabel ? (
-          <StatusBadge
-            variant={sentimentVariant}
-            size="small"
-            sx={{
-              borderWidth: 0,
-              marginTop: 2,
-              paddingHorizontal: 0,
-            }}
-            textSx={{
-              fontStyle: "italic",
-            }}
-          >
-            {sentimentLabel}
-          </StatusBadge>
-        ) : null}
-
-        <Text variant="md" sx={{ fontWeight: "500", lineHeight: 24 }}>
-          {shortSummary || ""}
-        </Text>
+        <AssessmentPreview assessmentData={assessment} />
 
         {expanded ? (
           <View

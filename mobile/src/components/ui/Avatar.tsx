@@ -9,7 +9,7 @@ import View from "./View";
 const AVATAR_SIZES = {
   xs: { size: 20, fontSize: 12, lineHeight: 16, nameSize: 14, emailSize: 12 },
   sm: { size: 28, fontSize: 12, lineHeight: 12, nameSize: 16, emailSize: 13 },
-  md: { size: 64, fontSize: 22, lineHeight: 26, nameSize: 18, emailSize: 14 },
+  md: { size: 36, fontSize: 22, lineHeight: 26, nameSize: 18, emailSize: 14 },
   lg: { size: 96, fontSize: 30, lineHeight: 36, nameSize: 24, emailSize: 16 },
   xl: { size: 128, fontSize: 42, lineHeight: 50, nameSize: 28, emailSize: 18 },
 };
@@ -49,6 +49,13 @@ export default function Avatar({
   email,
   size = "lg",
   showDetails = true,
+}: {
+  imgSrc?: string;
+  backgroundColor?: string;
+  name?: string;
+  email?: string;
+  size?: keyof typeof AVATAR_SIZES;
+  showDetails?: boolean;
 }) {
   // Get size configuration
   const sizeConfig = AVATAR_SIZES[size] || AVATAR_SIZES.lg;
@@ -85,7 +92,7 @@ export default function Avatar({
   const shouldShowDetails = showDetails && (name || email);
 
   return (
-    <View sx={{ flexDirection: "row", alignItems: "center", flexShrink: 1 }}>
+    <View sx={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginRight: 'auto' }}>
       <View
         sx={{
           width: avatarSize,
@@ -125,16 +132,14 @@ export default function Avatar({
       {shouldShowDetails && (
         <View
           sx={{
-            marginLeft: size === "xs" ? 2 : size === "sm" ? 3 : 4,
-            flex: 1,
-            justifyContent: "center",
+            marginLeft: size === "xs" ? 2 : size === "sm" ? 3 : 2,
           }}
         >
           {name && (
             <Text
               sx={{
                 fontSize: nameSize,
-                fontWeight: "700",
+                fontWeight: 700,
                 color: "textPrimary",
                 // truncate
                 ...FONT_STYLES.default,

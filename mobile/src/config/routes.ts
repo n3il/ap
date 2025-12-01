@@ -58,6 +58,10 @@ export const ROUTES = {
     path: "/(tabs)/(agents)/[id]",
     requiresAuthentication: "optional",
   },
+  TABS_EXPLORE_AGENT_ID_ASSESSMENT: {
+    path: "/(tabs)/(agents)/[id]/[assessmentId]",
+    requiresAuthentication: "optional",
+  },
   TABS_EXPLORE_AGENT_ID_INDEX: {
     path: "/(tabs)/(agents)/[id]/index",
     requiresAuthentication: "optional",

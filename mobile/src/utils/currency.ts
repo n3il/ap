@@ -58,14 +58,11 @@ export function numberToColor(num) {
 }
 
 export function sentimentToColor(sentimentScore) {
-  switch (true) {
-    case sentimentScore > 0.8:
-      return "long";
-    case sentimentScore > 0.5:
-      return "warning";
-    case sentimentScore > 0.2:
-      return "errorLight";
-    default:
-      return "error";
+  if (sentimentScore == 0) {
+    return "mutedForeground";
   }
+
+  const color = sentimentScore > 0 ? "success" : "error";
+  const modifier = Math.abs(sentimentScore) > 0.7 ? "" : "Light";
+  return `${color}${modifier}`;
 }

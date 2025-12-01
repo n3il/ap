@@ -57,7 +57,6 @@ const Sparkline = ({
     })
     .join(" ");
 
-  console.log({ color })
   return (
     <Svg width={width} height={height}>
       <Polyline

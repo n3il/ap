@@ -1,7 +1,7 @@
 import { Text, View } from "@/components/ui";
 import LabelValue from "@/components/ui/LabelValue";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
-import { formatAmount, formatPercent } from "@/utils/currency";
+import { formatAmount, formatDecimal, formatPercent } from "@/utils/currency";
 
 export default function BalanceOverview({
   agentId,
@@ -22,32 +22,14 @@ export default function BalanceOverview({
           {formatAmount(accountData.equity)}
         </Text>
 
-        {/* Total P&L */}
-        <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-          <Text variant="xs" tone="muted">
-            All-Time P&L
-          </Text>
-          <Text
-            variant="sm"
-            sx={{
-              color:
-                accountData.totalPnl > 0
-                  ? "success"
-                  : accountData.totalPnl < 0
-                    ? "error"
-                    : "foreground",
-            }}
-          >
-            {`${formatAmount(accountData.totalPnl)} (${formatAmount(accountData.totalPnlPercent, { showSign: true })}%)`}
-          </Text>
-        </View>
+
       </View>
 
       <View
         sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}
       >
         <View sx={{ flex: 1 }}>
-          <LabelValue label="Init. Capital" value={accountData.wallet || 0} />
+          <LabelValue label="Initial" value={accountData.wallet || 0} />
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
@@ -91,16 +73,16 @@ export default function BalanceOverview({
       >
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Res. Capital"
-            value={accountData.availableMargin || 0}
+            label="Mkt. Value"
+            value={accountData.equity - accountData.availableMargin || 0}
           />
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Lev."
-            value={accountData.leverageRatio?.toFixed(2) || "-"}
+            value={accountData.leverageRatio || "-"}
             alignRight
-            formatter={(l) => l}
+            formatter={formatDecimal}
           />
         </View>
       </View>

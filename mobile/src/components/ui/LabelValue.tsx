@@ -37,7 +37,6 @@ export const FormattedValueLabel = ({
         fontWeight: "300",
         fontFamily: "monospace",
         textAlign: alignRight ? "right" : "left",
-        flexGrow: 1,
         ...(colorize
           ? {
               color: value > 0 ? "success" : value < 0 ? "error" : "foreground",

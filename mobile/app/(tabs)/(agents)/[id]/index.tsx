@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useRef } from "react";
 import { StyleSheet } from "react-native";
 import { LinearGradient } from "react-native-svg";
@@ -6,17 +6,20 @@ import AgentCard from "@/components/AgentCard";
 import AgentHeader from "@/components/agent/Header";
 import HeaderChart from "@/components/agent/HeaderChart";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
-import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
-import { Animated, View } from "@/components/ui";
+import ContainerView, { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
+import { Animated, Avatar, GlassButton, View } from "@/components/ui";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import BalanceOverview from "@/components/agent/BalanceOverview";
 
-const HEADER_HEIGHT = 400 + 30;
+const HEADER_HEIGHT = 400 + 60;
 
 export default function AgentReadScreen() {
   const { colors: palette } = useColors();
   const { id } = useLocalSearchParams();
   const { data: agent } = useAgent(id);
+  const router = useRouter();
 
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -42,10 +45,29 @@ export default function AgentReadScreen() {
           },
         ]}
       >
-        <AgentCard agent={agent} hideOpenPositions transparent />
+        <PaddedView style={{ gap: 12 }}>
+          <Avatar
+            size="md"
+            imgSrc={agent.avatar_url}
+            name={agent.name.slice(0, 70)}
+            backgroundColor={palette.providers[agent.llm_provider]}
+          />
+          <BalanceOverview agentId={agent?.id} />
+        </PaddedView>
         <HeaderChart agentId={agent?.id} />
       </Animated.View>
 
+      <GlassButton
+        onPress={() => router.back()}
+        style={{
+          position: "absolute",
+          top: 64,
+          left: 20,
+          zIndex: 50,
+        }}
+      >
+        <MaterialCommunityIcons name="chevron-left" size={24} color="white" />
+      </GlassButton>
       <AgentHeader agentId={agent?.id} style={styles.topButtonsContainer} />
 
       <ThoughtsTab
@@ -72,7 +94,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: "100%",
     height: HEADER_HEIGHT,
-    top: 50,
+    top: 50 + 80,
     left: 0,
   },
   topButtonsContainer: {

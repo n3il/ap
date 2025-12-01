@@ -125,3 +125,69 @@ export default function TradeActionDisplay({
     </View>
   );
 }
+
+
+type TradeSummaryProps = {
+  tradeActions?: TradeActionType[];
+};
+
+export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
+  const { colors: palette } = useColors();
+
+  if (!tradeActions.length) {
+    return (
+      <View sx={{ paddingVertical: 2 }}>
+        <Text variant="xs" tone="muted">
+          No trade actions generated
+        </Text>
+      </View>
+    );
+  }
+
+  const openActions = tradeActions.filter((action) => action.type === "OPEN");
+  const closeActions = tradeActions.filter((action) => action.type === "CLOSE");
+
+  const openedLongs = openActions.filter(
+    (action) => action.type === "OPEN" && action.direction === "LONG",
+  ).length;
+  const openedShorts = openActions.filter(
+    (action) => action.type === "OPEN" && action.direction === "SHORT",
+  ).length;
+  const closedPositions = closeActions.length;
+
+  const totalOpenNotional = openActions.reduce((acc, action) => {
+    const amount = _asNumber((action as any).trade_amount);
+    return acc + (amount ?? 0);
+  }, 0);
+
+  const parts: string[] = [];
+  if (openedLongs) {
+    parts.push(`Opened ${openedLongs} long${openedLongs > 1 ? "s" : ""}`);
+  }
+  if (openedShorts) {
+    parts.push(`Opened ${openedShorts} short${openedShorts > 1 ? "s" : ""}`);
+  }
+  if (closedPositions) {
+    parts.push(`Closed ${closedPositions} position${closedPositions > 1 ? "s" : ""}`);
+  }
+  if (totalOpenNotional > 0) {
+    parts.push(`~${formatAmount(totalOpenNotional)} notional`);
+  }
+  if (!parts.length) {
+    parts.push("Trade plan generated");
+  }
+
+  return (
+    <View sx={{ paddingVertical: 2 }}>
+      <Text
+        variant="xs"
+        sx={{
+          color: palette.muted?.foreground ?? palette.mutedForeground,
+          fontWeight: "500",
+        }}
+      >
+        {parts.join(" · ")}
+      </Text>
+    </View>
+  );
+}

@@ -23,6 +23,7 @@ import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAnimationKey } from "@/hooks/useAnimationKey";
 import { useColors } from "@/theme";
+import LockScreen from "@/components/ui/LockScreen";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
@@ -92,15 +93,7 @@ export default function ProfileScreen() {
   }
 
   if (!user) {
-    return (
-      <ContainerView>
-        <View sx={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
-          <Pressable onPress={() => router.push(ROUTES.AUTH_INDEX.path)}>
-            <MaterialIcons name="lock" size={64} color={palette.muted} />
-          </Pressable>
-        </View>
-      </ContainerView>
-    );
+    return <LockScreen />
   }
 
   return (

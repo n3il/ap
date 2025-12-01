@@ -122,14 +122,22 @@ export default function AgentHeader({ agentId, onBookmarkPress, style }: Props) 
       <GlassButton
         onPress={onBookmarkPress ?? handleToggleWatchlist}
         disabled={watchlistButtonDisabled}
+        style={{
+          width: 40,
+          height: 40,
+        }}
       >
         {showWatchlistSpinner ? (
           <ActivityIndicator size="small" color={palette.foreground} />
         ) : (
           <MaterialCommunityIcons
-            name={watchlistIcon}
+            name={"binoculars"}
             size={24}
-            color={palette.foreground}
+            color={isWatchlisted ? palette?.accent : palette?.foreground}
+            style={{
+              width: 40,
+              height: 40,
+            }}
           />
         )}
       </GlassButton>
@@ -141,7 +149,7 @@ export default function AgentHeader({ agentId, onBookmarkPress, style }: Props) 
           <ActivityIndicator size="small" color={palette.foreground} />
         ) : (
           <MaterialCommunityIcons
-            name="lightning-bolt"
+            name="radar"
             size={24}
             color={palette.foreground}
           />

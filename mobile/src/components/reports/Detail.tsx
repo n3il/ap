@@ -4,6 +4,8 @@ import TradeActionDisplay from "@/components/TradeActionDisplay";
 import { Avatar, StatusBadge, Text, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatRelativeDate } from "@/utils/date";
+import ContainerView from "@/components/ContainerView";
+import LockScreen from "@/components/ui/LockScreen";
 
 const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;
@@ -92,11 +94,7 @@ export default function ReportDetail({ assessment }) {
   const showStructured = Boolean(parsedResponse);
 
   if (!assessment) {
-    return (
-      <Text variant="md" tone="muted">
-        Log in to view assessments
-      </Text>
-    );
+    return <LockScreen />;
   }
 
   return (
