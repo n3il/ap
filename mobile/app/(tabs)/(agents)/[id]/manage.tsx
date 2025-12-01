@@ -16,7 +16,7 @@ import {
   View,
 } from "@/components/ui";
 import { useAuth } from "@/contexts/AuthContext";
-import { promptService } from "@/services";
+import { promptService } from "@/services/promptService";
 import { agentService } from "@/services/agentService";
 import { useColors } from "@/theme";
 

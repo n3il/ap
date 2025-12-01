@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { agentService } from "@/services";
+import { agentService } from "@/services/agentService";
 
 /**
  * Hook to fetch performance snapshots for a single agent

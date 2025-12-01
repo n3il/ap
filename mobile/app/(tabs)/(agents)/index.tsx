@@ -13,7 +13,7 @@ import {
   View,
 } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
-import { promptService } from "@/services";
+import { promptService } from "@/services/promptService";
 import { useColors } from "@/theme";
 
 export default function AgentsScreen() {

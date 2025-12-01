@@ -57,7 +57,7 @@ export default function GetStartedScreen() {
   };
 
   const handleContinueWithoutAuth = () => {
-    router.push(getDefaultUnauthenticatedRoute());
+    router.push(ROUTES.TABS_INDEX.path);
   };
 
   const videoSrc = require("@/../assets/3571264-hd_1920_1080_30fps.mp4");

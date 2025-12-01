@@ -4,7 +4,7 @@ import ContainerView, { PaddedView } from "@/components/ContainerView";
 import SectionTitle from "@/components/SectionTitle";
 import { useColors, withOpacity } from "@/theme";
 import { useQueryClient } from "@tanstack/react-query";
-import { agentService } from "@/services";
+import { agentService } from "@/services/agentService";
 import { useMutation } from "@tanstack/react-query";
 import { router, Link } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";

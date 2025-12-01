@@ -14,7 +14,7 @@ import {
   View,
 } from "@/components/ui";
 import { supabase } from "@/config/supabase";
-import { PROMPT_PLACEHOLDERS, promptService } from "@/services";
+import { PROMPT_PLACEHOLDERS, promptService } from "@/services/promptService";
 import { useColors } from "@/theme";
 import GlassCard from "./GlassCard";
 
