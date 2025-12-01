@@ -65,15 +65,15 @@ export default function VerifyOTPScreen() {
     }, 1000);
   };
 
-  const handleVerifyCode = async () => {
-    if (!verificationCode || verificationCode.length !== 6) {
+  const handleVerifyCode = async (code: string) => {
+    if (!code || code.length !== 6) {
       return;
     }
 
     setLoading(true);
 
     if (type === "phone") {
-      const { error } = await verifyPhoneCode(phoneNumber, verificationCode);
+      const { error } = await verifyPhoneCode(phoneNumber, code);
       setLoading(false);
 
       if (error) {
@@ -83,7 +83,7 @@ export default function VerifyOTPScreen() {
         router.replace("/(auth)/onboarding");
       }
     } else if (type === "email") {
-      const { error } = await verifyEmailOtp(email, verificationCode);
+      const { error } = await verifyEmailOtp(email, code);
       setLoading(false);
 
       if (error) {
@@ -164,7 +164,7 @@ export default function VerifyOTPScreen() {
               secureTextEntry={false}
               focusStickBlinkingDuration={3000}
               onTextChange={setVerificationCode}
-              onFilled={handleVerifyCode}
+              onFilled={(c) => handleVerifyCode(c)}
               textInputProps={{
                 accessibilityLabel: "One-Time Password",
               }}
@@ -206,7 +206,7 @@ export default function VerifyOTPScreen() {
               marginBottom: 4,
             }}
             textProps={{ style: { fontWeight: "600" } }}
-            onPress={handleVerifyCode}
+            onPress={() => handleVerifyCode(verificationCode)}
             disabled={loading || verificationCode.length !== 6}
           >
             {loading ? (

@@ -128,33 +128,13 @@ export default function GetStartedScreen() {
                 gap: 3,
               }}
             >
-              <GlassButton
-                onPress={() => handleAuth("login")}
-                style={{
-                  flex: 1,
-                  textAlign: "center",
-                }}
-                tintColor={withOpacity(palette.surface, 0.9)}
-                glassEffectStyle="clear"
-              >
-                <Text
-                  variant="lg"
-                  sx={{
-                    fontWeight: 300,
-                    color: "foreground",
-                    textAlign: "center",
-                  }}
-                >
-                  Log in
-                </Text>
-              </GlassButton>
 
               <GlassButton
                 onPress={() => handleAuth("signup")}
                 style={{
                   flexGrow: 1,
                 }}
-                tintColor={palette.primary500}
+                tintColor={withOpacity(palette.primary500, .9)}
                 glassEffectStyle="regular"
               >
                 <View
@@ -184,7 +164,7 @@ export default function GetStartedScreen() {
               </GlassButton>
             </View>
 
-            {true && (
+            {process.env.EXPO_PUBLIC_REQUIRE_AUTH !== "true" && (
               <GlassButton
                 style={{
                   alignItems: "center",

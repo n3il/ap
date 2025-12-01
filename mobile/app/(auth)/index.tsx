@@ -23,11 +23,7 @@ import { useColors } from "@/theme";
 
 export default function Auth() {
   const [authMode, setAuthMode] = useState("phone"); // 'phone' or 'email'
-  const [phoneNumber, setPhoneNumber] = useState({
-    raw: null,
-    formatted: null,
-    e164: null,
-  });
+  const [phoneNumber, setPhoneNumber] = useState("");
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -53,13 +49,13 @@ export default function Auth() {
   };
 
   const handlePhoneSubmit = async () => {
-    if (!validatePhoneNumber(phoneNumber.raw)) {
+    if (!validatePhoneNumber(phoneNumber)) {
       Alert.alert(t("common.error"), t("login.errors.invalidPhoneNumber"));
       return;
     }
 
     setLoading(true);
-    const { error } = await signInWithPhone(phoneNumber.e164);
+    const { error } = await signInWithPhone(phoneNumber);
     setLoading(false);
 
     if (error) {
@@ -68,7 +64,7 @@ export default function Auth() {
       // Navigate to OTP verification screen
       router.push({
         pathname: "verify-otp",
-        params: { phoneNumber: phoneNumber.formatted, type: "phone" },
+        params: { phoneNumber: phoneNumber, type: "phone" },
       });
     }
   };
@@ -154,8 +150,7 @@ export default function Auth() {
                 />
 
                 <PhoneInputAutoDetect
-                  value={phoneNumber.raw}
-                  onChange={setPhoneNumber}
+                  onChange={(e164Value) => setPhoneNumber(e164Value)}
                 />
               </View>
             </AnimatedBox>
