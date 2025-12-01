@@ -27,7 +27,6 @@ export const AuthProvider = ({ children }) => {
     // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      console.log(session)
       setUser(session?.user ?? null);
 
       // Check onboarding status from user metadata or fallback to database query
@@ -277,7 +276,6 @@ export const AuthProvider = ({ children }) => {
           provider: 'apple',
           token: credential.identityToken,
         })
-        console.log(JSON.stringify({ error, data }, null, 2))
         if (!error) {
           // Apple only provides the user's full name on the first sign-in
           // Save it to user metadata if available

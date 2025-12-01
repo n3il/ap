@@ -481,7 +481,7 @@ const SvgChart = ({
   const animatedStyle = useAnimatedStyle(() => {
     "worklet";
     if (!scrollY) {
-      return { paddingVertical: 16, height: chartHeight };
+      return { height: chartHeight };
     }
 
     const progress = interpolate(

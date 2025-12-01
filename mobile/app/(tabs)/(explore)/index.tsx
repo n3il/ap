@@ -64,8 +64,6 @@ export default function ExploreScreen() {
     };
   }, [scrollY]);
 
-  console.log({b: borderStyle})
-
   return (
     <View
       style={{
@@ -116,7 +114,7 @@ export default function ExploreScreen() {
               style={{
                 elevation: 10,
                 shadowColor: palette.shadow,
-                shadowOffset: { width: 0, height: 1 },
+                shadowOffset: { width: 0, height: 10 },
                 shadowOpacity: 0.9,
                 shadowRadius: 3.84,
               }}

@@ -5,7 +5,6 @@ import { priceService } from "@/services/priceService";
 const DEFAULT_TICKERS = ["BTC", "ETH", "SOL"];
 
 const connectionStrengthThresholds = (diff) => {
-  console.log(diff)
   if (diff < 5000) return "strong";
   if (diff < 1000) return "moderate";
   return "weak";
