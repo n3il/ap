@@ -36,14 +36,15 @@ const tokenize = (code: string): Token[] => {
     Object.entries(patterns) as Array<[Exclude<TokenType, "plain">, RegExp]>
   ).forEach(([type, pattern]) => {
     const regex = new RegExp(pattern.source, pattern.flags);
-    let match: RegExpExecArray | null;
-    while ((match = regex.exec(code)) != null) {
+    let match: RegExpExecArray | null = regex.exec(code);
+    while (match !== null) {
       matches.push({
         type,
         value: match[0],
         start: match.index,
         end: match.index + match[0].length,
       });
+      match = regex.exec(code);
     }
   });
 
@@ -90,7 +91,7 @@ interface CodeBlockProps {
   language?: string;
 }
 
-export default function CodeBlock({ code, language }: CodeBlockProps) {
+export default function CodeBlock({ code }: CodeBlockProps) {
   const tokens = tokenize(code ?? "");
   const { colors: palette, primary, secondary, error, info } = useColors();
   const tokenStyles = useMemo<

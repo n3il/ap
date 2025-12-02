@@ -11,7 +11,7 @@ const hasContent = (value) =>
 
 export default function ReportDetail({ assessment }) {
   const [expanded, _setExpanded] = useState(false);
-  const { colors: palette, withOpacity } = useColors();
+  const { colors: palette } = useColors();
 
   const [parsedResponse, _] = useState(() => {
     try {

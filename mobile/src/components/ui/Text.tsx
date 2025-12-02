@@ -63,10 +63,10 @@ const Text = React.forwardRef<React.ComponentRef<typeof RNText>, TextProps>(
 );
 
 // Helper to detect complex values that Dripsy can't handle
-function hasComplexValues(sx: any): boolean {
+function hasComplexValues(sx?: SxProp): boolean {
   if (!sx || typeof sx !== "object") return false;
 
-  for (const value of Object.values(sx)) {
+  for (const value of Object.values(sx as Record<string, unknown>)) {
     // Check for strings that look like CSS values (em, rem, %, etc.)
     if (typeof value === "string" && /\d+(em|rem|%|vh|vw)/.test(value)) {
       return true;

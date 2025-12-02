@@ -17,7 +17,10 @@ export interface FormFieldProps extends TextInputProps {
   hintSx?: SxProp;
 }
 
-const FormField = React.forwardRef<any, FormFieldProps>(
+const FormField = React.forwardRef<
+  React.ElementRef<typeof TextInput>,
+  FormFieldProps
+>(
   (
     {
       label,

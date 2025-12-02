@@ -13,7 +13,6 @@ import {
   View,
 } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
-import useRouteAuth from "@/hooks/useRouteAuth";
 import { useColors } from "@/theme";
 
 const { width, height } = Dimensions.get("window");
@@ -22,7 +21,6 @@ export default function GetStartedScreen() {
   const [_currentSlide, setCurrentSlide] = useState(null);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.95)).current;
-  const { requireAuth } = useRouteAuth();
   const { colors: palette, withOpacity } = useColors();
   const gradient = useMemo(
     () => [

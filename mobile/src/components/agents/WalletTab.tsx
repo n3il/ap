@@ -5,7 +5,6 @@ import WalletAddressCard from "../WalletAddressCard";
 
 export default function WalletTab({
   agent,
-  isOwnAgent,
   headerContent,
   tabBar,
   onRefresh,

@@ -210,35 +210,41 @@ export default function InfoSlides({ onSlideChange }) {
 
                   {slide.features && (
                     <View sx={{ gap: 3 }}>
-                      {slide.features.map((feature, idx) => (
-                        <View
-                          key={idx}
-                          sx={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 3,
-                          }}
-                        >
+                      {slide.features.map((feature, idx) => {
+                        const featureKey =
+                          typeof feature === "string"
+                            ? feature
+                            : `${slide.id}-feature-${idx}`;
+                        return (
                           <View
-                            style={{
-                              width: 6,
-                              height: 6,
-                              borderRadius: 3,
-                              backgroundColor: accent,
-                            }}
-                          />
-                          <Text
-                            variant="body"
-                            style={{
-                              fontSize: 15,
-                              fontWeight: "500",
-                              color: withOpacity(foreground, 0.9),
+                            key={featureKey}
+                            sx={{
+                              flexDirection: "row",
+                              alignItems: "center",
+                              gap: 3,
                             }}
                           >
-                            {feature}
-                          </Text>
-                        </View>
-                      ))}
+                            <View
+                              style={{
+                                width: 6,
+                                height: 6,
+                                borderRadius: 3,
+                                backgroundColor: accent,
+                              }}
+                            />
+                            <Text
+                              variant="body"
+                              style={{
+                                fontSize: 15,
+                                fontWeight: "500",
+                                color: withOpacity(foreground, 0.9),
+                              }}
+                            >
+                              {feature}
+                            </Text>
+                          </View>
+                        );
+                      })}
                     </View>
                   )}
                 </Card>

@@ -6,10 +6,12 @@ import { useColors } from "@/theme";
 import { LLM_PROVIDERS } from "./CreateAgentModal";
 
 export default function AgentBalanceHeader({ agent, onMenuPress }) {
-  const { colors: palette, success, error, withOpacity } = useColors();
+  const { colors: palette, success, withOpacity } = useColors();
 
-  const { equity, unrealizedPnl, realizedPnl, enrichedPositions } =
-    useAccountBalance(agent?.id, false);
+  const { equity, unrealizedPnl, realizedPnl } = useAccountBalance(
+    agent?.id,
+    false,
+  );
 
   const totalPnl = (realizedPnl || 0) + (unrealizedPnl || 0);
   const pnlSign = totalPnl > 0 ? "+" : "";

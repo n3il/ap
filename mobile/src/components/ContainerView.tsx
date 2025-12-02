@@ -3,7 +3,6 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import View, { type ViewProps } from "@/components/ui/View";
 // import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from "@/contexts/ThemeContext";
-import { useColors } from "@/theme";
 
 // import { Gradient } from 'dripsy/gradient'
 
@@ -22,9 +21,7 @@ export default function ContainerView({
   transparent,
   ...props
 }: ContainerViewProps) {
-  const { background } = useColors();
   const {
-    isDark,
     theme: { colors },
   } = useTheme();
 

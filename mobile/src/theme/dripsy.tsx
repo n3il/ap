@@ -166,7 +166,14 @@ const buildTextVariants = (legacy: LegacyTheme) => {
     };
   };
 
-  const variants: Record<string, any> = {
+  type TextVariantConfig = {
+    fontSize: number;
+    lineHeight?: number;
+    fontWeight: string;
+    color: string;
+  };
+
+  const variants: Record<string, TextVariantConfig> = {
     body: resolveVariant("body") ?? {
       fontSize: 16,
       lineHeight: 24,

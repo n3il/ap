@@ -3,9 +3,7 @@
  * Centralized mock data generation for agent performance charts
  */
 
-import darkTheme, { PROVIDER_COLORS } from "@/theme/base";
-
-const { colors: themeColors } = darkTheme;
+import { PROVIDER_COLORS } from "@/theme/base";
 
 export const getProviderColor = (llmProvider) => {
   if (!llmProvider) return PROVIDER_COLORS.default;
@@ -138,7 +136,7 @@ export const generateNormalizedMockData = (agentConfig) => {
     const time = i / (dataPoints - 1); // Normalize to 0-1
 
     // Calculate trend to ensure positive by crossover point
-    let trend;
+    let trend: number;
     if (i < crossoverPoint) {
       // Before crossover: gentle positive trend
       trend = 0.3;

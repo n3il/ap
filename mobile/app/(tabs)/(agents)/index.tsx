@@ -1,5 +1,4 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useQuery } from "@tanstack/react-query";
 import { router } from "expo-router";
 import AgentList from "@/components/AgentList";
 import ContainerView from "@/components/ContainerView";
@@ -12,19 +11,12 @@ import {
   View,
 } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
-import { promptService } from "@/services/promptService";
 import { useColors } from "@/theme";
 
 export default function AgentsScreen() {
   const { theme } = useTheme();
   const colorUtils = useColors();
   const palette = colorUtils.colors;
-
-  // Fetch prompts for the modal
-  const { data: prompts = [] } = useQuery({
-    queryKey: ["prompts"],
-    queryFn: () => promptService.listPrompts(),
-  });
 
   const handleCreateAgent = () => {
     router.push("/modal_create_agent");

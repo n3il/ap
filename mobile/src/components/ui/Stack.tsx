@@ -17,7 +17,7 @@ export interface StackProps {
     | "space-between"
     | "space-around"
     | "space-evenly";
-  sx?: Record<string, any>;
+  sx?: Record<string, unknown>;
   style?: ViewStyle;
 }
 

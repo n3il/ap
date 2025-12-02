@@ -147,9 +147,12 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
 
     // Calculate margin used (position value / leverage)
     const marginUsed = enrichedPositions.reduce((sum, p) => {
-      const collateral =
-        parseFloat(p.collateral != null ? p.collateral : (p.size as any)) || 0;
-      return sum + collateral;
+      const collateralValue =
+        p.collateral != null ? Number(p.collateral) : Number(p.size ?? 0);
+      const normalizedCollateral = Number.isFinite(collateralValue)
+        ? collateralValue
+        : 0;
+      return sum + normalizedCollateral;
     }, 0);
 
     const remainingCash = accountValue - marginUsed;

@@ -113,82 +113,89 @@ export default function MarketOrderBook({ symbol = "XPL", price = 0 }) {
       </View>
 
       <View style={{ gap: 6 }}>
-        {levels.map((level, index) => (
-          <View
-            key={`depth-${index}`}
-            style={{ flexDirection: "row", gap: 8, overflow: "hidden" }}
-          >
+        {levels.map((level) => {
+          const levelKey = `${level.bid.price}-${level.ask.price}-${level.bid.amount}-${level.ask.amount}`;
+          return (
             <View
-              style={{
-                flex: 1,
-                borderRadius: 10,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                backgroundColor: withOpacity(colors.success.DEFAULT, 0.08),
-                overflow: "hidden",
-              }}
+              key={levelKey}
+              style={{ flexDirection: "row", gap: 8, overflow: "hidden" }}
             >
               <View
                 style={{
-                  position: "absolute",
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: `${Math.min(100, level.bid.amount / 4)}%`,
-                  backgroundColor: withOpacity(colors.success.DEFAULT, 0.15),
-                }}
-              />
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
+                  flex: 1,
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  backgroundColor: withOpacity(colors.success.DEFAULT, 0.08),
+                  overflow: "hidden",
                 }}
               >
-                <Text style={{ color: colors.text.primary, fontWeight: "600" }}>
-                  {level.bid.total.toFixed(2)}
-                </Text>
-                <Text style={{ color: colors.success.DEFAULT }}>
-                  {formatPriceDisplay(level.bid.price)}
-                </Text>
+                <View
+                  style={{
+                    position: "absolute",
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: `${Math.min(100, level.bid.amount / 4)}%`,
+                    backgroundColor: withOpacity(colors.success.DEFAULT, 0.15),
+                  }}
+                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Text
+                    style={{ color: colors.text.primary, fontWeight: "600" }}
+                  >
+                    {level.bid.total.toFixed(2)}
+                  </Text>
+                  <Text style={{ color: colors.success.DEFAULT }}>
+                    {formatPriceDisplay(level.bid.price)}
+                  </Text>
+                </View>
               </View>
-            </View>
 
-            <View
-              style={{
-                flex: 1,
-                borderRadius: 10,
-                paddingHorizontal: 10,
-                paddingVertical: 6,
-                backgroundColor: withOpacity(colors.error.DEFAULT, 0.08),
-                overflow: "hidden",
-              }}
-            >
               <View
                 style={{
-                  position: "absolute",
-                  left: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: `${Math.min(100, level.ask.amount / 4)}%`,
-                  backgroundColor: withOpacity(colors.error.DEFAULT, 0.15),
-                }}
-              />
-              <View
-                style={{
-                  flexDirection: "row",
-                  justifyContent: "space-between",
+                  flex: 1,
+                  borderRadius: 10,
+                  paddingHorizontal: 10,
+                  paddingVertical: 6,
+                  backgroundColor: withOpacity(colors.error.DEFAULT, 0.08),
+                  overflow: "hidden",
                 }}
               >
-                <Text style={{ color: colors.error.DEFAULT }}>
-                  {formatPriceDisplay(level.ask.price)}
-                </Text>
-                <Text style={{ color: colors.text.primary, fontWeight: "600" }}>
-                  {level.ask.total.toFixed(2)}
-                </Text>
+                <View
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    top: 0,
+                    bottom: 0,
+                    width: `${Math.min(100, level.ask.amount / 4)}%`,
+                    backgroundColor: withOpacity(colors.error.DEFAULT, 0.15),
+                  }}
+                />
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Text style={{ color: colors.error.DEFAULT }}>
+                    {formatPriceDisplay(level.ask.price)}
+                  </Text>
+                  <Text
+                    style={{ color: colors.text.primary, fontWeight: "600" }}
+                  >
+                    {level.ask.total.toFixed(2)}
+                  </Text>
+                </View>
               </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </View>
     </View>
   );

@@ -1,6 +1,6 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { OtpInput } from "react-native-otp-entry";
 import { LinearTransition } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
@@ -39,17 +39,7 @@ export default function VerifyOTPScreen() {
 
   const { phoneNumber, email, type } = params;
 
-  // Start countdown on mount
-  useEffect(() => {
-    startCountdown();
-    return () => {
-      if (countdownInterval.current) {
-        clearInterval(countdownInterval.current);
-      }
-    };
-  }, [startCountdown]);
-
-  const startCountdown = () => {
+  const startCountdown = useCallback(() => {
     setCountdown(RESEND_COUNTDOWN);
     if (countdownInterval.current) {
       clearInterval(countdownInterval.current);
@@ -63,7 +53,17 @@ export default function VerifyOTPScreen() {
         return prev - 1;
       });
     }, 1000);
-  };
+  }, []);
+
+  // Start countdown on mount
+  useEffect(() => {
+    startCountdown();
+    return () => {
+      if (countdownInterval.current) {
+        clearInterval(countdownInterval.current);
+      }
+    };
+  }, [startCountdown]);
 
   const handleVerifyCode = async (code: string) => {
     if (!code || code.length !== 6) {

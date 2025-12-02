@@ -13,7 +13,6 @@ export default function MarketOrderTicket({
   price,
   availableBalance = 0,
   onSubmit,
-  variant = "card",
   initialSide = "buy",
   isSubmitting = false,
 }) {

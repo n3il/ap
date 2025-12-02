@@ -146,12 +146,7 @@ const SvgChart = ({
   const [touchX, setTouchX] = useState(0); // Normalized 0-1
   const pulseAnim = useRef(new RNAnimated.Value(1)).current;
   const [chartWidth, setChartWidth] = useState(DEFAULT_CHART_WIDTH);
-  const {
-    colors: palette,
-    success,
-    error: errorColor,
-    withOpacity,
-  } = useColors();
+  const { colors: palette, withOpacity } = useColors();
   const mutedColor = palette.mutedForeground;
   const secondaryTextColor = palette.textSecondary;
 
@@ -523,9 +518,9 @@ const SvgChart = ({
         >
           <Svg width={chartWidth} height="100%">
             {/* Vertical grid lines for time intervals */}
-            {verticalGridPositions.map((grid, i) => (
+            {verticalGridPositions.map((grid) => (
               <Line
-                key={`vgrid-${i}`}
+                key={`vgrid-${grid.x}`}
                 x1={grid.x}
                 y1={PADDING.top}
                 x2={grid.x}
@@ -536,10 +531,10 @@ const SvgChart = ({
             ))}
 
             {/* Horizontal grid lines and Y-axis labels for left axis */}
-            {axisConfig.left?.yTicks.map((tick, i) => {
+            {axisConfig.left?.yTicks.map((tick) => {
               const y = scaleY(tick, "left");
               return (
-                <React.Fragment key={`left-${i}`}>
+                <React.Fragment key={`left-${tick}`}>
                   <Line
                     x1={PADDING.left}
                     y1={y}
@@ -564,10 +559,10 @@ const SvgChart = ({
             })}
 
             {/* Grid lines and Y-axis labels for right axis */}
-            {axisConfig.right?.yTicks.map((tick, i) => {
+            {axisConfig.right?.yTicks.map((tick) => {
               const y = scaleY(tick, "right");
               return (
-                <React.Fragment key={`right-${i}`}>
+                <React.Fragment key={`right-${tick}`}>
                   <SvgText
                     x={PADDING.left + plotWidth - 6}
                     y={y + 4}
@@ -821,8 +816,8 @@ const SvgChart = ({
           bottom: 0,
         }}
       >
-        {timeLabels.map((label, i) => (
-          <Text key={i} sx={{ fontSize: 10, color: "secondary500" }}>
+        {timeLabels.map((label) => (
+          <Text key={label} sx={{ fontSize: 10, color: "secondary500" }}>
             {label}
           </Text>
         ))}

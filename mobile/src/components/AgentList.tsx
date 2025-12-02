@@ -58,8 +58,6 @@ export default function AgentList({
     data: agents = [],
     isLoading,
     isFetching,
-    error,
-    refetch,
   } = useQuery({
     queryKey: [
       "agent-list",

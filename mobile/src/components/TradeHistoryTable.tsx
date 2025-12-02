@@ -14,7 +14,7 @@ const COLUMN_WIDTHS = {
 
 const ROW_HEIGHT = 68;
 
-export default function TradeHistoryTable({ userId, agentId }) {
+export default function TradeHistoryTable({ agentId }) {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const { theme } = useTheme();

@@ -18,25 +18,32 @@ function hexToRgbString(hex: string) {
   return `${r} ${g} ${b}`;
 }
 
+type NestedRecord = Record<string, unknown>;
+type TransformFn = (value: string | number) => string | number;
+
 function flatten(
-  obj: Record<string, any>,
+  obj: NestedRecord,
   prefix = "",
-  transformValue = (v: any) => v,
+  transformValue: TransformFn = (v) => v,
 ) {
   const res: Record<string, string> = {};
   for (const [key, value] of Object.entries(obj)) {
     const newKey = prefix ? `${prefix}-${key}` : key;
-    if (typeof value === "object" && !Array.isArray(value)) {
-      Object.assign(res, flatten(value, newKey, transformValue));
-    } else {
-      res[`--${newKey}`] = transformValue(value);
+    if (value && typeof value === "object" && !Array.isArray(value)) {
+      Object.assign(
+        res,
+        flatten(value as NestedRecord, newKey, transformValue),
+      );
+    } else if (typeof value === "string" || typeof value === "number") {
+      const transformed = transformValue(value);
+      res[`--${newKey}`] = String(transformed);
     }
   }
   return res;
 }
 
-function makeColorVars(colors: Record<string, any>) {
-  return flatten(colors, "color", (v: string) =>
+function makeColorVars(colors: NestedRecord) {
+  return flatten(colors, "color", (v) =>
     typeof v === "string" && v.startsWith("#") ? hexToRgbString(v) : v,
   );
 }

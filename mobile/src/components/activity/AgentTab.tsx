@@ -13,7 +13,7 @@ import { assessmentService } from "@/services/assessmentService";
 import { useColors } from "@/theme";
 
 export default function AgentTab() {
-  const { colors: palette, withOpacity } = useColors();
+  const { colors: palette } = useColors();
 
   // Fetch all assessments
   const {

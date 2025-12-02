@@ -1,11 +1,9 @@
 import { useMemo, useRef } from "react";
 import WebView from "react-native-webview";
-import { ActivityIndicator, Dimensions, View } from "@/components/ui";
+import { ActivityIndicator, View } from "@/components/ui";
 
 import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";
-
-const { width } = Dimensions.get("window");
 
 export default function TradingViewChart({
   symbol = "BTCUSD",
@@ -125,12 +123,9 @@ export default function TradingViewChart({
             <ActivityIndicator size="large" color={theme.colors.info.DEFAULT} />
           </View>
         )}
-        onError={(syntheticEvent) => {
-          const { nativeEvent } = syntheticEvent;
-        }}
         onMessage={(event) => {
           try {
-            const _message = JSON.parse(event.nativeEvent.data);
+            JSON.parse(event.nativeEvent.data);
           } catch (_e) {
             // Ignore
           }

@@ -3,7 +3,6 @@ import React, { useCallback, useRef } from "react";
 import { Animated, Text, View } from "react-native";
 import AssessmentCard from "@/components/AssessmentCard";
 import { assessmentService } from "@/services/assessmentService";
-import { useColors } from "@/theme";
 
 export default function ThoughtsTab({
   agentId,
@@ -11,7 +10,6 @@ export default function ThoughtsTab({
   refreshing: parentRefreshing = false,
   listProps = {},
 }) {
-  const { info, error: errorColor } = useColors();
   const scrollY = useRef(new Animated.Value(0)).current;
 
   // Fetch assessments for this agent with infinite scroll

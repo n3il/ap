@@ -6,13 +6,13 @@ import SectionTitle from "../SectionTitle";
 
 export default function TradesTab({
   trades = [],
-  isOwnAgent,
+  isOwnAgent = false,
   headerContent,
   tabBar,
   onRefresh,
   refreshing = false,
 }) {
-  const ownerVisibilityRestriction = false;
+  const ownerVisibilityRestriction = !isOwnAgent;
   const colors = useColors();
   const scrollY = useRef(new Animated.Value(0)).current;
 

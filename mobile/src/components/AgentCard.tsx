@@ -14,8 +14,6 @@ import { formatRelativeDate } from "@/utils/date";
 import PositionList from "./PositionList";
 
 export function AssessmentPreview({ assessmentData, style = {} }) {
-  const { colors: palette } = useColors();
-
   return (
     <View style={style}>
       <View
@@ -88,7 +86,7 @@ export default function AgentCard({
   isActive?: boolean;
   asListItem?: boolean;
 }) {
-  const { colors: palette, withOpacity } = useColors();
+  const { colors: palette } = useColors();
   const accountData = useAccountBalance(agent.id, hideOpenPositions);
 
   // Animation values

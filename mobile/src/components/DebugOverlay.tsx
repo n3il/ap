@@ -1,7 +1,7 @@
 import { MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import * as SecureStore from "expo-secure-store";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -34,13 +34,13 @@ function DebugOverlayComponent() {
   const textPrimary = palette.textPrimary ?? palette.foreground;
   const textSecondary = palette.textSecondary ?? palette.mutedForeground;
 
-  const maskString = (str) => {
+  const maskString = useCallback((str?: string | null) => {
     if (!str) return "NOT SET";
     if (str.length < 10) return "***";
     return `${str.substring(0, 8)}...${str.substring(str.length - 4)}`;
-  };
+  }, []);
 
-  const runDiagnostics = async () => {
+  const runDiagnostics = useCallback(async () => {
     setConnectionStatus((prev) => ({
       ...prev,
       loading: true,
@@ -127,7 +127,7 @@ function DebugOverlayComponent() {
 
       // Test 3: Try a simple database query
       try {
-        const { data, error, count } = await supabase
+        const { error, count } = await supabase
           .from("profiles")
           .select("*", { count: "exact", head: true });
 
@@ -155,7 +155,7 @@ function DebugOverlayComponent() {
 
       // Test 4: Check API key validity
       try {
-        const { data, error } = await supabase.auth.getUser();
+        const { error } = await supabase.auth.getUser();
 
         if (error?.message.includes("Invalid API key")) {
           results.push({
@@ -365,7 +365,7 @@ function DebugOverlayComponent() {
         testResults: results,
       });
     }
-  };
+  }, [maskString]);
 
   useEffect(() => {
     if (isOpen) {
@@ -550,9 +550,9 @@ function DebugOverlayComponent() {
               )}
 
               {!connectionStatus.loading &&
-                connectionStatus.testResults.map((result, index) => (
+                connectionStatus.testResults.map((result) => (
                   <View
-                    key={index}
+                    key={result.test}
                     style={{
                       backgroundColor:
                         palette.secondary700 ?? palette.surfaceSecondary,
@@ -633,7 +633,5 @@ function DebugOverlayComponent() {
 }
 
 export default function DebugOverlay() {
-  if (!true) return null;
-
   return <DebugOverlayComponent />;
 }

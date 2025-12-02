@@ -7,27 +7,29 @@ const _asNumber = (value) => {
   return Number.isFinite(num) ? num : undefined;
 };
 
-type TradeActionType =
-  | {
-      type: "OPEN";
-      asset: string;
-      direction: "LONG" | "SHORT";
-      trade_amount: number;
-      leverage: number;
-      limit_price?: number;
-      target_price?: number;
-      stop_loss?: number;
-      reason: string;
-      confidenceScore?: number;
-    }
-  | {
-      type: "CLOSE";
-      asset: string;
-      position_id: string;
-      exit_limit_price?: number;
-      reason: string;
-      confidenceScore?: number;
-    };
+type OpenTradeAction = {
+  type: "OPEN";
+  asset: string;
+  direction: "LONG" | "SHORT";
+  trade_amount: number;
+  leverage: number;
+  limit_price?: number;
+  target_price?: number;
+  stop_loss?: number;
+  reason: string;
+  confidenceScore?: number;
+};
+
+type CloseTradeAction = {
+  type: "CLOSE";
+  asset: string;
+  position_id: string;
+  exit_limit_price?: number;
+  reason: string;
+  confidenceScore?: number;
+};
+
+type TradeActionType = OpenTradeAction | CloseTradeAction;
 
 function getActionMeta(action: TradeActionType, palette) {
   if (action.type === "OPEN") {
@@ -63,8 +65,11 @@ export default function TradeActionDisplay({
 }) {
   const { colors: palette } = useColors();
   const config = getActionMeta(actionData, palette);
-  const { type, asset, confidenceScore, leverage, reason, trade_amount } =
-    actionData as any;
+  const asset = actionData.asset?.replace("-PERP", "") || "N/A";
+  const reason = actionData.reason;
+  const tradeAmount =
+    actionData.type === "OPEN" ? actionData.trade_amount : undefined;
+  const leverage = actionData.type === "OPEN" ? actionData.leverage : undefined;
 
   return (
     <View
@@ -83,7 +88,7 @@ export default function TradeActionDisplay({
           }}
         >
           <Text variant="sm" sx={{ fontSize: 12, fontWeight: "400" }}>
-            {asset.replace("-PERP", "") || "N/A"}
+            {asset}
           </Text>
 
           <View
@@ -94,11 +99,11 @@ export default function TradeActionDisplay({
               gap: 2,
             }}
           >
-            {(trade_amount !== undefined || leverage !== undefined) && (
+            {(tradeAmount !== undefined || leverage !== undefined) && (
               <View sx={{ flexDirection: "row", gap: 2 }}>
-                {trade_amount !== undefined && (
+                {tradeAmount !== undefined && (
                   <Text variant="xs" tone="muted">
-                    {formatAmount(trade_amount)}
+                    {formatAmount(tradeAmount)}
                   </Text>
                 )}
                 {leverage !== undefined && (
@@ -114,14 +119,16 @@ export default function TradeActionDisplay({
         </View>
       </TouchableOpacity>
 
-      <View sx={{ marginTop: 2, borderTopWidth: 1 }}>
-        <Text
-          variant="sm"
-          sx={{ lineHeight: 14, fontSize: 10, fontWeight: 300 }}
-        >
-          {reason || "-"}
-        </Text>
-      </View>
+      {showReason && (
+        <View sx={{ marginTop: 2, borderTopWidth: 1 }}>
+          <Text
+            variant="sm"
+            sx={{ lineHeight: 14, fontSize: 10, fontWeight: 300 }}
+          >
+            {reason || "-"}
+          </Text>
+        </View>
+      )}
     </View>
   );
 }
@@ -143,8 +150,12 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
     );
   }
 
-  const openActions = tradeActions.filter((action) => action.type === "OPEN");
-  const closeActions = tradeActions.filter((action) => action.type === "CLOSE");
+  const openActions = tradeActions.filter(
+    (action): action is OpenTradeAction => action.type === "OPEN",
+  );
+  const closeActions = tradeActions.filter(
+    (action): action is CloseTradeAction => action.type === "CLOSE",
+  );
 
   const openedLongs = openActions.filter(
     (action) => action.type === "OPEN" && action.direction === "LONG",
@@ -155,7 +166,7 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
   const closedPositions = closeActions.length;
 
   const totalOpenNotional = openActions.reduce((acc, action) => {
-    const amount = _asNumber((action as any).trade_amount);
+    const amount = _asNumber(action.trade_amount);
     return acc + (amount ?? 0);
   }, 0);
 

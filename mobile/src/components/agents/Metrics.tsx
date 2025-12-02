@@ -8,29 +8,22 @@ import { tradeService } from "@/services/tradeService";
 
 export default function Metrics() {
   // Fetch agents
-  const {
-    data: agents = [],
-    isLoading,
-    isFetching,
-    error,
-    refetch,
-  } = useQuery({
+  const { data: agents = [] } = useQuery({
     queryKey: ["agents"],
     queryFn: agentService.getAgents,
   });
 
   // Fetch trade stats
-  const { data: stats, isFetching: statsFetching } = useQuery({
+  const { data: stats } = useQuery({
     queryKey: ["trade-stats"],
     queryFn: () => tradeService.getTradeStats(),
   });
 
   // Fetch assessment stats
-  const { data: assessmentStats, isFetching: assessmentStatsFetching } =
-    useQuery({
-      queryKey: ["assessment-stats"],
-      queryFn: () => assessmentService.getAssessmentStats(),
-    });
+  const { data: assessmentStats } = useQuery({
+    queryKey: ["assessment-stats"],
+    queryFn: () => assessmentService.getAssessmentStats(),
+  });
 
   const overviewMetrics = useMemo(() => {
     const activeAgents = agents.filter((agent) => agent.is_active).length;

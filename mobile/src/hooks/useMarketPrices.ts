@@ -213,7 +213,6 @@ export function useMarketPrices(tickers) {
     initTicker,
     updateTickers,
     setError,
-    clearTicker,
     connectionStatus,
     connectionStrength,
     lastConnectionChange,
@@ -221,7 +220,6 @@ export function useMarketPrices(tickers) {
     setConnectionStatus,
     updateConnectionState,
     incrementReconnectAttempts,
-    resetReconnectAttempts,
   } = useMarketPricesStore();
 
   const reconnectTimeoutRef = useRef(null);

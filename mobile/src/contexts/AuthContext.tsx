@@ -1,7 +1,13 @@
 import * as AppleAuthentication from "expo-apple-authentication";
 import { makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 import { supabase } from "@/config/supabase";
 
 // import useRouteAuth from '@/hooks/useRouteAuth';
@@ -22,6 +28,26 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+
+  const checkOnboardingStatus = useCallback(async (userId) => {
+    const { data, error } = await supabase
+      .from("profiles")
+      .select("onboarding_completed")
+      .eq("id", userId)
+      .single();
+
+    if (error && error.code !== "PGRST116") {
+      return;
+    }
+
+    const onboardingCompleted = data?.onboarding_completed || false;
+    setHasCompletedOnboarding(onboardingCompleted);
+
+    // Sync to user metadata for future sessions
+    await supabase.auth.updateUser({
+      data: { onboarding_completed: onboardingCompleted },
+    });
+  }, []);
 
   useEffect(() => {
     // Get initial session
@@ -73,30 +99,7 @@ export const AuthProvider = ({ children }) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [
-    // Fallback: query profiles table
-    checkOnboardingStatus,
-  ]);
-
-  const checkOnboardingStatus = async (userId) => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("onboarding_completed")
-      .eq("id", userId)
-      .single();
-
-    if (error && error.code !== "PGRST116") {
-      return;
-    }
-
-    const onboardingCompleted = data?.onboarding_completed || false;
-    setHasCompletedOnboarding(onboardingCompleted);
-
-    // Sync to user metadata for future sessions
-    await supabase.auth.updateUser({
-      data: { onboarding_completed: onboardingCompleted },
-    });
-  };
+  }, [checkOnboardingStatus]);
 
   const signUp = async (email, password, metadata = {}) => {
     try {
@@ -177,7 +180,8 @@ export const AuthProvider = ({ children }) => {
         if (result.type === "success" && result.url) {
           // Parse tokens from URL hash
           const url = result.url;
-          let access_token, refresh_token;
+          let access_token: string | null = null;
+          let refresh_token: string | null = null;
 
           if (url.includes("#")) {
             const hashPart = url.split("#")[1];
@@ -233,7 +237,8 @@ export const AuthProvider = ({ children }) => {
         return { data: null, error: new Error("Browser session cancelled") };
 
       const url = result.url;
-      let access_token, refresh_token;
+      let access_token: string | null = null;
+      let refresh_token: string | null = null;
 
       if (url.includes("#")) {
         const hash = url.split("#")[1];

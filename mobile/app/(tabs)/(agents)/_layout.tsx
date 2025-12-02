@@ -1,10 +1,8 @@
 import { useSx } from "dripsy";
 import { Stack } from "expo-router";
-import { useColors } from "@/theme";
 
 export default function Layout() {
   const _sx = useSx();
-  const { colors: palette } = useColors();
   return (
     <Stack
       screenOptions={{
