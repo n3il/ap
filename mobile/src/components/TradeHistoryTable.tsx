@@ -4,6 +4,10 @@ import { Text, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { tradeService } from "@/services/tradeService";
 
+type TradeHistoryTableProps = {
+  agentId?: string;
+};
+
 const COLUMN_WIDTHS = {
   symbol: 140,
   status: 80,
@@ -14,7 +18,7 @@ const COLUMN_WIDTHS = {
 
 const ROW_HEIGHT = 68;
 
-export default function TradeHistoryTable({ agentId }) {
+export default function TradeHistoryTable({ agentId }: TradeHistoryTableProps) {
   const [trades, setTrades] = useState([]);
   const [loading, setLoading] = useState(true);
   const { theme } = useTheme();

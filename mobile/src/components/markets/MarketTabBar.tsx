@@ -2,7 +2,22 @@ import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";
 
-export default function MarketTabBar({ tabs = [], activeTab, onChange }) {
+type MarketTab = {
+  key: string;
+  label: string;
+};
+
+type MarketTabBarProps = {
+  tabs?: MarketTab[];
+  activeTab?: string;
+  onChange?: (key: string) => void;
+};
+
+export default function MarketTabBar({
+  tabs = [],
+  activeTab,
+  onChange,
+}: MarketTabBarProps) {
   const { theme } = useTheme();
   const { colors } = theme;
 

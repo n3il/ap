@@ -1,4 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import type { ComponentProps } from "react";
 import TradingViewChart from "@/components/trading/TradingViewChart";
 import { Text, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -13,7 +14,19 @@ const TOOLBAR_ICONS = [
   "cursor-move",
 ];
 
-export default function MarketChartPanel({ asset, price, volume, timeframe }) {
+type MarketChartPanelProps = {
+  asset?: { symbol?: string };
+  price?: number;
+  volume?: number;
+  timeframe: string;
+};
+
+export default function MarketChartPanel({
+  asset,
+  price,
+  volume,
+  timeframe,
+}: MarketChartPanelProps) {
   const { theme } = useTheme();
   const { colors } = theme;
 
@@ -128,7 +141,12 @@ export default function MarketChartPanel({ asset, price, volume, timeframe }) {
   );
 }
 
-const IconPill = ({ name, colors }) => (
+type IconPillProps = {
+  name: ComponentProps<typeof MaterialCommunityIcons>["name"];
+  colors: ReturnType<typeof useTheme>["theme"]["colors"];
+};
+
+const IconPill = ({ name, colors }: IconPillProps) => (
   <View
     style={{
       width: 34,

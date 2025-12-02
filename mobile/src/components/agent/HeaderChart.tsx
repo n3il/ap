@@ -1,11 +1,15 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { type ComponentProps, useMemo } from "react";
 import SvgChart from "@/components/SvgChart";
 import { useAgentSnapshots } from "@/hooks/useAgentSnapshots";
 import { assessmentService } from "@/services/assessmentService";
 import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
 
-export default function HeaderChart({ agentId, ...props }) {
+type HeaderChartProps = {
+  agentId: string;
+} & Partial<ComponentProps<typeof SvgChart>>;
+
+export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
   // const { timeframe } = useTimeframeStore();
   const timeframe = "30d";
 

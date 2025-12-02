@@ -3,7 +3,17 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";
 import { formatCompactNumber } from "./utils";
 
-export default function MarketStatsStrip({ asset }) {
+type MarketStatsStripProps = {
+  asset?: {
+    marketCap?: number;
+    liquidity?: number;
+    volume24h?: number;
+    top10?: number;
+    holders?: number | string;
+  };
+};
+
+export default function MarketStatsStrip({ asset }: MarketStatsStripProps) {
   const { theme } = useTheme();
   const { colors } = theme;
 

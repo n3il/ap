@@ -13,7 +13,29 @@ import { withOpacity } from "@/theme/utils";
 
 const FILTER_OPTIONS = ["All", "Profitable", "Loss", "Open", "Closed"];
 
-export default function TradeHistory({ trades = [], isLoading = false }) {
+type TradeHistoryItem = {
+  id?: string;
+  asset: string;
+  side: "LONG" | "SHORT" | string;
+  status: "OPEN" | "CLOSED" | string;
+  size?: number | string;
+  entry_price?: number | string;
+  exit_price?: number | string;
+  entry_timestamp?: string;
+  exit_timestamp?: string;
+  realized_pnl?: number | string;
+  unrealized_pnl?: number | string;
+};
+
+type TradeHistoryProps = {
+  trades?: TradeHistoryItem[];
+  isLoading?: boolean;
+};
+
+export default function TradeHistory({
+  trades = [],
+  isLoading = false,
+}: TradeHistoryProps) {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
   const [filter, setFilter] = useState("All");
@@ -57,7 +79,7 @@ export default function TradeHistory({ trades = [], isLoading = false }) {
     };
   }, [trades]);
 
-  const renderTrade = ({ item }) => {
+  const renderTrade = ({ item }: { item: TradeHistoryItem }) => {
     const isLong = item.side === "LONG";
     const isClosed = item.status === "CLOSED";
     const pnl = isClosed

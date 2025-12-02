@@ -2,7 +2,13 @@ import { ScrollView, Text, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";
 
-export default function IndicatorChips({ indicators = [] }) {
+type IndicatorChipsProps = {
+  indicators?: string[];
+};
+
+export default function IndicatorChips({
+  indicators = [],
+}: IndicatorChipsProps) {
   const { theme } = useTheme();
   const { colors } = theme;
 

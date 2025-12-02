@@ -3,7 +3,24 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";
 import { formatPriceDisplay, formatTradeSize } from "./utils";
 
-export default function MarketTradesTable({ trades = [], symbol = "XPL" }) {
+type MarketTrade = {
+  id: string;
+  direction?: string;
+  price?: number;
+  size?: number;
+  symbol?: string;
+  time?: string;
+};
+
+type MarketTradesTableProps = {
+  trades?: MarketTrade[];
+  symbol?: string;
+};
+
+export default function MarketTradesTable({
+  trades = [],
+  symbol = "XPL",
+}: MarketTradesTableProps) {
   const { theme } = useTheme();
   const { colors } = theme;
 

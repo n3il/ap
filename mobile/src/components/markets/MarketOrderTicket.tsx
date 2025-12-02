@@ -8,6 +8,23 @@ import { formatPriceDisplay, formatUsdValue } from "./utils";
 const BUY_PRESETS = ["0.001", "0.1", "0.4", "0.8"];
 const SELL_PRESETS = ["10%", "25%", "50%", "100%"];
 
+type OrderPayload = {
+  symbol?: string;
+  side: "LONG" | "SHORT";
+  amount: number;
+  type: string;
+  price: number;
+};
+
+type MarketOrderTicketProps = {
+  asset: { symbol?: string; quote?: string };
+  price?: number;
+  availableBalance?: number;
+  onSubmit?: (payload: OrderPayload) => void;
+  initialSide?: "buy" | "sell";
+  isSubmitting?: boolean;
+};
+
 export default function MarketOrderTicket({
   asset,
   price,
@@ -15,7 +32,7 @@ export default function MarketOrderTicket({
   onSubmit,
   initialSide = "buy",
   isSubmitting = false,
-}) {
+}: MarketOrderTicketProps) {
   const { theme } = useTheme();
   const { colors } = theme;
   const [activeTab, setActiveTab] = useState("instant");

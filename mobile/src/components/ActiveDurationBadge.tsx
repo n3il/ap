@@ -1,7 +1,7 @@
 import { Text } from "@/components/ui";
 import { formatRelativeDate } from "@/utils/date";
 
-const _getActiveDuration = (isActive) => {
+const _getActiveDuration = (isActive: Date | string | null | undefined) => {
   if (!isActive) return null;
 
   const activeDate = new Date(isActive);
@@ -26,7 +26,17 @@ const _getActiveDuration = (isActive) => {
   return `${diffMonths}mo`;
 };
 
-export default function ActiveDurationBadge({ isActive, variant = "small" }) {
+type ActiveDurationVariant = "small" | "large";
+
+type ActiveDurationBadgeProps = {
+  isActive: Date | string | null | undefined;
+  variant?: ActiveDurationVariant;
+};
+
+export default function ActiveDurationBadge({
+  isActive,
+  variant = "small",
+}: ActiveDurationBadgeProps) {
   const duration = formatRelativeDate(isActive);
 
   if (!duration) return null;
@@ -44,7 +54,7 @@ export default function ActiveDurationBadge({ isActive, variant = "small" }) {
     },
   };
 
-  const variantStyle = styles[variant] || styles.small;
+  const variantStyle = styles[variant as ActiveDurationVariant] || styles.small;
 
   return (
     <Text

@@ -5,7 +5,26 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";
 import { MARKET_INFO_TABS } from "./constants";
 
-export default function TradeHistoryPanel({ trades = [] }) {
+type TradeHistoryPanelTrade = {
+  id: string;
+  coin: string;
+  time: string;
+  size: string;
+  direction: string;
+  price: string;
+  tradeValue: string;
+  pnl: string;
+  pnlRaw: number;
+  fee: string;
+};
+
+type TradeHistoryPanelProps = {
+  trades?: TradeHistoryPanelTrade[];
+};
+
+export default function TradeHistoryPanel({
+  trades = [],
+}: TradeHistoryPanelProps) {
   const { theme } = useTheme();
   const { colors } = theme;
   const [activeTab, setActiveTab] = useState("tradeHistory");
@@ -229,7 +248,13 @@ export default function TradeHistoryPanel({ trades = [] }) {
   );
 }
 
-const LabelValue = ({ label, value, colors }) => {
+type LabelValueProps = {
+  label: string;
+  value: string;
+  colors: ReturnType<typeof useTheme>["theme"]["colors"];
+};
+
+const LabelValue = ({ label, value, colors }: LabelValueProps) => {
   return (
     <View>
       <Text style={{ color: colors.text.secondary, fontSize: 11 }}>
@@ -242,7 +267,14 @@ const LabelValue = ({ label, value, colors }) => {
   );
 };
 
-const Detail = ({ label, value, valueStyle = {}, colors }) => (
+type DetailProps = {
+  label: string;
+  value: string;
+  valueStyle?: Record<string, unknown>;
+  colors: ReturnType<typeof useTheme>["theme"]["colors"];
+};
+
+const Detail = ({ label, value, valueStyle = {}, colors }: DetailProps) => (
   <View style={{ width: "48%" }}>
     <Text style={{ color: colors.text.secondary, fontSize: 11 }}>{label}</Text>
     <Text

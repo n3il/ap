@@ -5,7 +5,35 @@ import { useColors } from "@/theme";
 import { formatAmount, formatCompact, formatPercent } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 
-function PositionDetailRow({ label, value, valueStyle }) {
+type PositionDetailRowProps = {
+  label: string;
+  value: string | number;
+  valueStyle?: Record<string, unknown>;
+};
+
+export type EnrichedPosition = {
+  id?: string;
+  agent_id?: string;
+  asset?: string;
+  symbol?: string;
+  coin?: string;
+  side?: "LONG" | "SHORT" | string;
+  size: number;
+  szi?: number;
+  entry_price?: number | string;
+  currentPrice?: number | string;
+  unrealizedPnl?: number;
+  pnlPercent?: number;
+  leverage?: number;
+  positionValue?: number;
+  entry_timestamp?: string;
+};
+
+function PositionDetailRow({
+  label,
+  value,
+  valueStyle,
+}: PositionDetailRowProps) {
   return (
     <View
       sx={{
@@ -42,7 +70,7 @@ function PositionDetailRow({ label, value, valueStyle }) {
 //   unrealizedPnl: number;
 // };
 
-export function PositionRow(position) {
+export function PositionRow(position: EnrichedPosition) {
   const [expanded, setExpanded] = useState(false);
   const { colors: palette } = useColors();
 
@@ -201,7 +229,15 @@ export function PositionRow(position) {
   );
 }
 
-export default function PositionList({ positions = [], top = 3 }) {
+type PositionListProps = {
+  positions?: EnrichedPosition[];
+  top?: number;
+};
+
+export default function PositionList({
+  positions = [],
+  top = 3,
+}: PositionListProps) {
   const safeEnrichedPositions = Array.isArray(positions) ? positions : [];
   const topPositions = safeEnrichedPositions
     .sort((a, b) => b.size - a.size)

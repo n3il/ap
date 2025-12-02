@@ -1,5 +1,5 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { useMemo, useState } from "react";
+import { type ComponentProps, useMemo, useState } from "react";
 import ContainerView from "@/components/ContainerView";
 import {
   AssetSelectorModal,
@@ -170,7 +170,11 @@ export default function MarketsScreen() {
   );
 }
 
-function TouchableIcon({ name }) {
+type TouchableIconProps = {
+  name: ComponentProps<typeof MaterialCommunityIcons>["name"];
+};
+
+function TouchableIcon({ name }: TouchableIconProps) {
   const { theme } = useTheme();
   const { colors } = theme;
   return (

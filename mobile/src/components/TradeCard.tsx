@@ -8,7 +8,24 @@ import {
 } from "@/components/ui";
 import GlassCard from "./GlassCard";
 
-export default function TradeCard({ trade }) {
+type TradeCardData = {
+  id?: string;
+  asset: string;
+  status: "OPEN" | "CLOSED" | string;
+  side: "LONG" | "SHORT" | string;
+  realized_pnl?: number;
+  size: number | string;
+  entry_price: number | string;
+  exit_price?: number | string;
+  entry_timestamp?: string;
+  exit_timestamp?: string;
+};
+
+type TradeCardProps = {
+  trade: TradeCardData;
+};
+
+export default function TradeCard({ trade }: TradeCardProps) {
   const isOpen = trade.status === "OPEN";
   const isLong = trade.side === "LONG";
 
@@ -16,7 +33,7 @@ export default function TradeCard({ trade }) {
   const pnlColor = pnl >= 0 ? "success" : "error";
   const pnlSign = pnl >= 0 ? "+" : "";
 
-  const formatDate = (timestamp) => {
+  const formatDate = (timestamp?: string) => {
     if (!timestamp) return "-";
     return new Date(timestamp).toLocaleDateString("en-US", {
       month: "short",

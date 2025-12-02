@@ -4,12 +4,17 @@ import TradeActionDisplay from "@/components/TradeActionDisplay";
 import { Avatar, StatusBadge, Text, View } from "@/components/ui";
 import LockScreen from "@/components/ui/LockScreen";
 import { useColors } from "@/theme";
+import type { AssessmentRecordType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
 
-const hasContent = (value) =>
+const hasContent = (value: string | null | undefined) =>
   typeof value === "string" && value.trim().length > 0;
 
-export default function ReportDetail({ assessment }) {
+type ReportDetailProps = {
+  assessment?: AssessmentRecordType | null;
+};
+
+export default function ReportDetail({ assessment }: ReportDetailProps) {
   const [expanded, _setExpanded] = useState(false);
   const { colors: palette } = useColors();
 

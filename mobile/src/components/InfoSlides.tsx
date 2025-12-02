@@ -8,7 +8,11 @@ import Image from "./ui/Image";
 
 const { width } = Dimensions.get("window");
 
-export default function InfoSlides({ onSlideChange }) {
+type InfoSlidesProps = {
+  onSlideChange?: (slide: ReturnType<typeof useInfoSlides>[number]) => void;
+};
+
+export default function InfoSlides({ onSlideChange }: InfoSlidesProps) {
   const slides = useInfoSlides();
   const scrollX = useRef(new Animated.Value(0)).current;
   const [activeSlide, setActiveSlide] = useState(0);

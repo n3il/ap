@@ -4,6 +4,11 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";
 import { formatPriceDisplay } from "./utils";
 
+type MarketOrderBookProps = {
+  symbol?: string;
+  price?: number;
+};
+
 const generateDepth = (price, depth = 12) => {
   const safePrice = Number.isFinite(price) && price > 0 ? price : 1;
   let bidPrice = safePrice * 0.9995;
@@ -32,7 +37,10 @@ const generateDepth = (price, depth = 12) => {
   return levels;
 };
 
-export default function MarketOrderBook({ symbol = "XPL", price = 0 }) {
+export default function MarketOrderBook({
+  symbol = "XPL",
+  price = 0,
+}: MarketOrderBookProps) {
   const { theme } = useTheme();
   const { colors } = theme;
   const levels = useMemo(() => generateDepth(price), [price]);

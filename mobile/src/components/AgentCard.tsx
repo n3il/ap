@@ -8,12 +8,20 @@ import { TradeSummary } from "@/components/TradeActionDisplay";
 import { Avatar, Text, View } from "@/components/ui";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useColors } from "@/theme";
-import type { AgentType } from "@/types/agent";
+import type { AgentType, AssessmentRecordType } from "@/types/agent";
 import { sentimentToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import PositionList from "./PositionList";
 
-export function AssessmentPreview({ assessmentData, style = {} }) {
+type AssessmentPreviewProps = {
+  assessmentData: AssessmentRecordType;
+  style?: Record<string, unknown>;
+};
+
+export function AssessmentPreview({
+  assessmentData,
+  style = {},
+}: AssessmentPreviewProps) {
   return (
     <View style={style}>
       <View

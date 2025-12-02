@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { GlassContainer, GlassView } from "expo-glass-effect";
-import { useEffect, useRef, useState } from "react";
+import { type ComponentProps, useEffect, useRef, useState } from "react";
 import { Animated, Pressable, View } from "react-native";
 import GlassButton from "@/components/ui/GlassButton";
 import Text from "@/components/ui/Text";
@@ -100,7 +100,9 @@ const AnimatedOption = ({
   );
 };
 
-export default function GlassSelector({ ...props }) {
+type GlassSelectorProps = ComponentProps<typeof GlassView>;
+
+export default function GlassSelector({ style, ...props }: GlassSelectorProps) {
   const { colors } = useColors();
   const [activeSelection, setActiveSelection] = useState(options[0]);
   const [open, setOpen] = useState(false);
@@ -126,7 +128,7 @@ export default function GlassSelector({ ...props }) {
   };
 
   return (
-    <GlassContainer style={props.style} spacing={100}>
+    <GlassContainer style={style} spacing={100}>
       <GlassButton
         onPress={handleToggle}
         style={{

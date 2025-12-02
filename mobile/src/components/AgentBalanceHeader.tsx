@@ -3,9 +3,18 @@ import { LinearGradient } from "expo-linear-gradient";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useColors } from "@/theme";
+import type { AgentType } from "@/types/agent";
 import { LLM_PROVIDERS } from "./CreateAgentModal";
 
-export default function AgentBalanceHeader({ agent, onMenuPress }) {
+type AgentBalanceHeaderProps = {
+  agent?: AgentType | null;
+  onMenuPress?: () => void;
+};
+
+export default function AgentBalanceHeader({
+  agent,
+  onMenuPress,
+}: AgentBalanceHeaderProps) {
   const { colors: palette, success, withOpacity } = useColors();
 
   const { equity, unrealizedPnl, realizedPnl } = useAccountBalance(

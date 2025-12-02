@@ -1,4 +1,5 @@
-import { useMemo } from "react";
+import { type ComponentProps, useMemo } from "react";
+import type { SharedValue } from "react-native-reanimated";
 import SvgChart from "@/components/SvgChart";
 import { useMultiAgentSnapshots } from "@/hooks/useAgentSnapshots";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
@@ -6,7 +7,15 @@ import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import { createTimeNormalizer } from "@/utils/chartUtils";
 
-export default function MultiAgentChart({ scrollY, style }) {
+type MultiAgentChartProps = {
+  scrollY?: SharedValue<number> | null;
+  style?: ComponentProps<typeof SvgChart>["style"];
+};
+
+export default function MultiAgentChart({
+  scrollY,
+  style,
+}: MultiAgentChartProps) {
   const { colors } = useColors();
   const { timeframe } = useTimeframeStore();
   const agents = useExploreAgentsStore((state) => state.agents);

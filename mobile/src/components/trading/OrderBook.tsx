@@ -3,10 +3,29 @@ import { ActivityIndicator, FlatList, Text, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { withOpacity } from "@/theme/utils";
 
+type OrderBookEntry = {
+  price: number;
+  amount: number;
+  total: number;
+};
+
+type OrderBookData = {
+  bids: OrderBookEntry[];
+  asks: OrderBookEntry[];
+};
+
+type OrderBookProps = {
+  currentPrice?: number;
+  isLoading?: boolean;
+};
+
 // Mock order book data generator for demo
-const generateMockOrderBook = (currentPrice, depth = 15) => {
-  const bids = [];
-  const asks = [];
+const generateMockOrderBook = (
+  currentPrice: number,
+  depth = 15,
+): OrderBookData => {
+  const bids: OrderBookEntry[] = [];
+  const asks: OrderBookEntry[] = [];
   let bidPrice = currentPrice * 0.999;
   let askPrice = currentPrice * 1.001;
 
@@ -28,7 +47,10 @@ const generateMockOrderBook = (currentPrice, depth = 15) => {
   return { bids, asks };
 };
 
-export default function OrderBook({ currentPrice = 0, isLoading = false }) {
+export default function OrderBook({
+  currentPrice = 0,
+  isLoading = false,
+}: OrderBookProps) {
   const { theme } = useTheme();
   const styles = useMemo(() => createStyles(theme), [theme]);
 
@@ -58,7 +80,7 @@ export default function OrderBook({ currentPrice = 0, isLoading = false }) {
   const maxAskTotal = Math.max(...asks.map((a) => a.total));
   const maxTotal = Math.max(maxBidTotal, maxAskTotal);
 
-  const renderBid = ({ item }) => {
+  const renderBid = ({ item }: { item: OrderBookEntry }) => {
     const widthPercent = (item.total / maxTotal) * 100;
     return (
       <View style={styles.orderRow}>
@@ -78,7 +100,7 @@ export default function OrderBook({ currentPrice = 0, isLoading = false }) {
     );
   };
 
-  const renderAsk = ({ item }) => {
+  const renderAsk = ({ item }: { item: OrderBookEntry }) => {
     const widthPercent = (item.total / maxTotal) * 100;
     return (
       <View style={styles.orderRow}>
@@ -145,7 +167,7 @@ export default function OrderBook({ currentPrice = 0, isLoading = false }) {
   );
 }
 
-const createStyles = (theme) => {
+const createStyles = (theme: ReturnType<typeof useTheme>["theme"]) => {
   const { colors } = theme;
   return {
     container: {

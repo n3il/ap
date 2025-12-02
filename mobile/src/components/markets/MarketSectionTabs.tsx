@@ -1,7 +1,22 @@
 import { ScrollView, Text, TouchableOpacity, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 
-export default function MarketSectionTabs({ sections = [], active, onChange }) {
+type MarketSection = {
+  key: string;
+  label: string;
+};
+
+type MarketSectionTabsProps = {
+  sections?: MarketSection[];
+  active?: string;
+  onChange?: (key: string) => void;
+};
+
+export default function MarketSectionTabs({
+  sections = [],
+  active,
+  onChange,
+}: MarketSectionTabsProps) {
   const { theme } = useTheme();
   const { colors } = theme;
 
