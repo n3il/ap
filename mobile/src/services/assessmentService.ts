@@ -179,10 +179,7 @@ export const assessmentService = {
   },
 
   // Get assessment by ID
-  async getAssessmentById(
-    id,
-    { statuses = DEFAULT_ASSESSMENT_STATUSES } = {},
-  ) {
+  async getAssessmentById(id, { statuses = DEFAULT_ASSESSMENT_STATUSES } = {}) {
     const { data, error } = await buildAssessmentQuery(
       `
           *,

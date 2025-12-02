@@ -1,13 +1,13 @@
+import { MaterialIcons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { Pressable } from "react-native";
 import ContainerView from "@/components/ContainerView";
 import View from "@/components/ui/View";
 import { ROUTES } from "@/config/routes";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Pressable } from "react-native";
 import { useColors } from "@/theme";
-import { useRouter } from "expo-router";
 
 export default function LockScreen() {
-  const router = useRouter()
+  const router = useRouter();
   const { colors: palette } = useColors();
   return (
     <ContainerView>

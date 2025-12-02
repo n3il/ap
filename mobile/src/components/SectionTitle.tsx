@@ -1,5 +1,5 @@
+import type { SxProp } from "dripsy";
 import { Text, View } from "@/components/ui";
-import { SxProp } from "dripsy";
 
 export default function SectionTitle({
   title,

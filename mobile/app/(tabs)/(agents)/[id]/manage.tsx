@@ -16,8 +16,8 @@ import {
   View,
 } from "@/components/ui";
 import { useAuth } from "@/contexts/AuthContext";
-import { promptService } from "@/services/promptService";
 import { agentService } from "@/services/agentService";
+import { promptService } from "@/services/promptService";
 import { useColors } from "@/theme";
 
 const AgentManageScreen = () => {

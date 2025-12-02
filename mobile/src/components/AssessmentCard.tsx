@@ -1,19 +1,12 @@
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
-import { Pressable } from "react-native";
 import Markdown from "react-native-markdown-display";
-import SectionTitle from "@/components/SectionTitle";
-import {
-  Card,
-  Text,
-  TouchableOpacity,
-  View,
-} from "@/components/ui";
+import { AssessmentPreview } from "@/components/AgentCard";
+import { Card, Text, TouchableOpacity, View } from "@/components/ui";
+import { ROUTES } from "@/config/routes";
 import { useColors } from "@/theme";
 import type { AssessmentType } from "@/types/agent";
 import TradeActionDisplay, { TradeSummary } from "./TradeActionDisplay";
-import { AssessmentPreview } from "@/components/AgentCard";
-import { ROUTES } from "@/config/routes";
 
 const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;
@@ -167,7 +160,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
     [parsedResponse],
   );
 
-  const shortSummary = hasContent(headline?.short_summary)
+  const _shortSummary = hasContent(headline?.short_summary)
     ? headline.short_summary.trim()
     : "";
   const extendedSummary = hasContent(headline?.extended_summary)
@@ -287,22 +280,22 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         ) : null}
       </TouchableOpacity>
 
-    <TradeSummary tradeActions={tradeActions} />
-    {tradeActions.length > 0 && (
-      <View
-        sx={{
-          marginTop: 3,
-        }}
-      >
-        {tradeActions.map((action, index) => (
-          <TradeActionDisplay
-            key={`${action.asset ?? "action"}-${index}`}
-            actionData={action}
-            showReason={expanded}
-          />
-        ))}
-      </View>
-    )}
+      <TradeSummary tradeActions={tradeActions} />
+      {tradeActions.length > 0 && (
+        <View
+          sx={{
+            marginTop: 3,
+          }}
+        >
+          {tradeActions.map((action, index) => (
+            <TradeActionDisplay
+              key={`${action.asset ?? "action"}-${index}`}
+              actionData={action}
+              showReason={expanded}
+            />
+          ))}
+        </View>
+      )}
     </Card>
   );
 }

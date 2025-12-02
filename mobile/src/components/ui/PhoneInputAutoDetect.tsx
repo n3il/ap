@@ -1,9 +1,14 @@
-import React, { useState, useMemo, useCallback } from 'react';
-import { View, TextInput } from 'react-native';
-import { CountryCode, AsYouType, parsePhoneNumberFromString, getCountryCallingCode } from 'libphonenumber-js';
-import { useColors } from '@/theme';
+import {
+  AsYouType,
+  type CountryCode,
+  getCountryCallingCode,
+  parsePhoneNumberFromString,
+} from "libphonenumber-js";
+import { useCallback, useMemo, useState } from "react";
+import { TextInput, View } from "react-native";
+import { useColors } from "@/theme";
 
-const DEFAULT_COUNTRY: CountryCode = 'US';
+const DEFAULT_COUNTRY: CountryCode = "US";
 
 export default function PhoneInputAutoDetect({
   onChange,
@@ -12,46 +17,50 @@ export default function PhoneInputAutoDetect({
 }) {
   const { colors: palette } = useColors();
   const [displayValue, setDisplayValue] = useState(
-    `+${getCountryCallingCode(DEFAULT_COUNTRY)}`
+    `+${getCountryCallingCode(DEFAULT_COUNTRY)}`,
   );
 
   const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY);
 
   const formatter = useMemo(() => new AsYouType(countryCode), [countryCode]);
 
-  const processAndReport = useCallback((input: string, currentCountry: CountryCode) => {
-    const digitsOnly = input.replace(/[^\d+]/g, '');
-    formatter.reset();
-    const formattedDisplay = formatter.input(digitsOnly);
-    if (formattedDisplay !== displayValue) {
+  const processAndReport = useCallback(
+    (input: string, currentCountry: CountryCode) => {
+      const digitsOnly = input.replace(/[^\d+]/g, "");
+      formatter.reset();
+      const formattedDisplay = formatter.input(digitsOnly);
+      if (formattedDisplay !== displayValue) {
         setDisplayValue(formattedDisplay);
-    }
+      }
 
-    const phoneNumber = parsePhoneNumberFromString(formattedDisplay, currentCountry);
+      const phoneNumber = parsePhoneNumberFromString(
+        formattedDisplay,
+        currentCountry,
+      );
 
-    let e164 = '';
-    let raw = digitsOnly;
-    let formatted = formattedDisplay;
-    let newCountry = currentCountry;
+      let e164 = "";
+      let _raw = digitsOnly;
+      let _formatted = formattedDisplay;
+      let newCountry = currentCountry;
 
-    if (phoneNumber && phoneNumber.isValid()) {
-      e164 = phoneNumber.number;
-      formatted = phoneNumber.formatNational();
-      newCountry = phoneNumber.country || currentCountry;
-      raw = phoneNumber.nationalNumber; // Use the parsed national number digits
-    } else if (digitsOnly.startsWith('+')) {
-      e164 = digitsOnly;
-      formatted = digitsOnly;
-    }
+      if (phoneNumber?.isValid()) {
+        e164 = phoneNumber.number;
+        _formatted = phoneNumber.formatNational();
+        newCountry = phoneNumber.country || currentCountry;
+        _raw = phoneNumber.nationalNumber; // Use the parsed national number digits
+      } else if (digitsOnly.startsWith("+")) {
+        e164 = digitsOnly;
+        _formatted = digitsOnly;
+      }
 
+      if (newCountry !== currentCountry) {
+        setCountryCode(newCountry);
+      }
 
-    if (newCountry !== currentCountry) {
-      setCountryCode(newCountry);
-    }
-
-    onChange(e164);
-
-  }, [formatter, onChange]); // Depend on formatter and onChange
+      onChange(e164);
+    },
+    [formatter, onChange, displayValue],
+  ); // Depend on formatter and onChange
 
   const handleTextChange = (text: string) => {
     processAndReport(text, countryCode);
@@ -60,8 +69,8 @@ export default function PhoneInputAutoDetect({
   return (
     <View
       style={{
-        flexDirection: 'row',
-        alignItems: 'center',
+        flexDirection: "row",
+        alignItems: "center",
         padding: 8,
         borderRadius: 8,
       }}
@@ -73,7 +82,7 @@ export default function PhoneInputAutoDetect({
           height: 40,
           paddingHorizontal: 8,
           color: "#fff",
-          letterSpacing: 2
+          letterSpacing: 2,
         }}
         selectionColor={palette.foreground}
         value={displayValue}

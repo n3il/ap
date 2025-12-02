@@ -4,7 +4,7 @@ export type LedgerTradeRow = {
   account_id?: string;
   user_id?: string;
   symbol: string;
-  type?: 'paper' | 'real';
+  type?: "paper" | "real";
   price?: number;
   quantity?: number;
   executed_at?: string;
@@ -16,8 +16,8 @@ export type LedgerPosition = {
   id: string;
   agent_id: string;
   asset: string;
-  side: 'LONG' | 'SHORT';
-  status: 'OPEN' | 'CLOSED';
+  side: "LONG" | "SHORT";
+  status: "OPEN" | "CLOSED";
   size: number;
   collateral: number;
   quantity: number;
@@ -29,11 +29,11 @@ export type LedgerPosition = {
   realized_pnl?: number;
   account_id?: string;
   user_id?: string;
-  type?: 'paper' | 'real';
+  type?: "paper" | "real";
 };
 
-const OPEN_ACTIONS = new Set(['OPEN']);
-const CLOSE_ACTIONS = new Set(['CLOSE']);
+const OPEN_ACTIONS = new Set(["OPEN"]);
+const CLOSE_ACTIONS = new Set(["CLOSE"]);
 
 const toNumber = (value: unknown, fallback = 0) => {
   if (typeof value === "number") return value;
@@ -44,9 +44,7 @@ const toNumber = (value: unknown, fallback = 0) => {
   return fallback;
 };
 
-const parseMeta = (
-  meta: LedgerTradeRow["meta"],
-): Record<string, unknown> => {
+const parseMeta = (meta: LedgerTradeRow["meta"]): Record<string, unknown> => {
   if (!meta) return {};
   if (typeof meta === "string") {
     try {
@@ -111,7 +109,9 @@ export function buildPositionsFromLedger(
       collateral,
       quantity,
       entry_price: entryPrice,
-      entry_timestamp: String(openMeta.entry_timestamp ?? open.executed_at ?? ""),
+      entry_timestamp: String(
+        openMeta.entry_timestamp ?? open.executed_at ?? "",
+      ),
       leverage,
       account_id: open.account_id,
       user_id: open.user_id,
@@ -143,10 +143,14 @@ export function buildPositionsFromLedger(
   });
 }
 
-export function filterOpenPositions(positions: LedgerPosition[]): LedgerPosition[] {
+export function filterOpenPositions(
+  positions: LedgerPosition[],
+): LedgerPosition[] {
   return positions.filter((position) => position.status === "OPEN");
 }
 
-export function filterClosedPositions(positions: LedgerPosition[]): LedgerPosition[] {
+export function filterClosedPositions(
+  positions: LedgerPosition[],
+): LedgerPosition[] {
   return positions.filter((position) => position.status === "CLOSED");
 }

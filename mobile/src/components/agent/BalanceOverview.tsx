@@ -21,8 +21,6 @@ export default function BalanceOverview({
         <Text variant="xl" sx={{ fontWeight: "600", fontFamily: "monospace" }}>
           {formatAmount(accountData.equity)}
         </Text>
-
-
       </View>
 
       <View
@@ -62,7 +60,7 @@ export default function BalanceOverview({
                       : "foreground",
               }}
             >
-              {`(${accountData.unrealizedPnlPercent ? formatPercent(accountData.unrealizedPnlPercent) : '-'})`}
+              {`(${accountData.unrealizedPnlPercent ? formatPercent(accountData.unrealizedPnlPercent) : "-"})`}
             </Text>
           </LabelValue>
         </View>

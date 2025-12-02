@@ -1,30 +1,27 @@
-import { useState } from "react";
-import { LLM_PROVIDERS } from "@/components/CreateAgentModal";
-import ContainerView, { PaddedView } from "@/components/ContainerView";
-import SectionTitle from "@/components/SectionTitle";
-import { useColors, withOpacity } from "@/theme";
-import { useQueryClient } from "@tanstack/react-query";
-import { agentService } from "@/services/agentService";
-import { useMutation } from "@tanstack/react-query";
-import { router, Link } from "expo-router";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useMutation } from "@tanstack/react-query";
+import { router } from "expo-router";
+import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import ContainerView, { PaddedView } from "@/components/ContainerView";
+import { LLM_PROVIDERS } from "@/components/CreateAgentModal";
+import SectionTitle from "@/components/SectionTitle";
 import {
-  KeyboardAvoidingView,
-  ScrollView,
-  TextInput,
-  TouchableOpacity,
-  View,
   GlassButton,
+  KeyboardAvoidingView,
   Platform,
+  ScrollView,
   Text,
+  TextInput,
+  View,
 } from "@/components/ui";
-import { GlassView } from "expo-glass-effect";
+import { agentService } from "@/services/agentService";
+import { useColors, withOpacity } from "@/theme";
 
 export default function ModalCreateAgent() {
-  const insets = useSafeAreaInsets();
+  const _insets = useSafeAreaInsets();
   const { colors: palette } = useColors();
-   const isPresented = router.canGoBack();
+  const isPresented = router.canGoBack();
   const [formData, setFormData] = useState({
     name: "",
     llm_provider: "google",
@@ -76,10 +73,14 @@ export default function ModalCreateAgent() {
               <SectionTitle title="Create" sx={{ padding: 6, fontSize: 16 }} />
               {isPresented && (
                 <GlassButton
-                  onPress={() => router.push('../')}
+                  onPress={() => router.push("../")}
                   tintColor={palette.glassTint}
                 >
-                  <MaterialCommunityIcons name="close" size={14} color={palette.foreground} />
+                  <MaterialCommunityIcons
+                    name="close"
+                    size={14}
+                    color={palette.foreground}
+                  />
                 </GlassButton>
               )}
             </View>
@@ -98,7 +99,6 @@ export default function ModalCreateAgent() {
                   marginTop: 0,
                   paddingVertical: 22,
                   fontSize: 14,
-                  fontWeight: 300,
                   backgroundColor: palette.surface,
                   borderWidth: 0,
                   borderRadius: 18,
@@ -108,8 +108,8 @@ export default function ModalCreateAgent() {
                   shadowOpacity: 1,
                   shadowRadius: 1,
                   letterSpacing: 3,
-                  fontFamily: 'monospace',
-                  fontWeight: '700',
+                  fontFamily: "monospace",
+                  fontWeight: "700",
                 }}
                 placeholder="(╯° _ °）╯  ノ( º _ ºノ) "
                 placeholderTextColor={
@@ -214,11 +214,10 @@ export default function ModalCreateAgent() {
             onPress={() => createAgentMutation.mutate(formData)}
             activeOpacity={0.8}
           >
-
             Continue
           </GlassButton>
         </PaddedView>
       </KeyboardAvoidingView>
     </ContainerView>
-  )
+  );
 }

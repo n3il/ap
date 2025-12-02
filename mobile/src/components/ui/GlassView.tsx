@@ -1,6 +1,5 @@
-import { StyleProp, ViewStyle } from "react-native";
 import { GlassView } from "expo-glass-effect";
-import { Pressable } from "react-native";
+import { Pressable, type StyleProp, type ViewStyle } from "react-native";
 import { useColors } from "@/theme";
 
 export default function GlassButton({

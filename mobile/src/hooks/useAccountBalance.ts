@@ -95,7 +95,8 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
         const priceChange = referencePrice - entryPrice;
         unrealizedPnl = direction * priceChange * positionQuantity;
         const collateralBase =
-          collateral || (positionQuantity && leverage
+          collateral ||
+          (positionQuantity && leverage
             ? (positionQuantity * entryPrice) / leverage
             : 0);
         pnlPercent = collateralBase
@@ -147,9 +148,7 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
     // Calculate margin used (position value / leverage)
     const marginUsed = enrichedPositions.reduce((sum, p) => {
       const collateral =
-        parseFloat(
-          p.collateral != null ? p.collateral : (p.size as any),
-        ) || 0;
+        parseFloat(p.collateral != null ? p.collateral : (p.size as any)) || 0;
       return sum + collateral;
     }, 0);
 
@@ -164,7 +163,6 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
       remainingCash,
     };
   }, [agent, closedTrades, enrichedPositions]);
-
 
   // Full detailed view for crypto perpetual futures trading
   const totalPnl =
@@ -189,7 +187,6 @@ export function useAccountBalance(agentId, hideOpenPositions = false) {
   const leverageRatio = balanceMetrics.accountValue
     ? positionValue / balanceMetrics.accountValue
     : 0;
-
 
   return {
     wallet: balanceMetrics.initialCapital,

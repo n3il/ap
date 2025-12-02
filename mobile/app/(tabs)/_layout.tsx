@@ -1,7 +1,6 @@
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
 import { DynamicColorIOS } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";
-import { Stack } from "expo-router";
 
 export default function TabsLayout() {
   const { theme } = useTheme();

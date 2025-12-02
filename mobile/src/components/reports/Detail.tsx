@@ -2,10 +2,9 @@ import { useMemo, useState } from "react";
 import Markdown from "react-native-markdown-display";
 import TradeActionDisplay from "@/components/TradeActionDisplay";
 import { Avatar, StatusBadge, Text, View } from "@/components/ui";
+import LockScreen from "@/components/ui/LockScreen";
 import { useColors } from "@/theme";
 import { formatRelativeDate } from "@/utils/date";
-import ContainerView from "@/components/ContainerView";
-import LockScreen from "@/components/ui/LockScreen";
 
 const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;

@@ -1,13 +1,14 @@
 import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ContainerView from "@/components/ContainerView";
 import SectionTitle from "@/components/SectionTitle";
 import {
   ActivityIndicator,
   Alert,
-  Button,
   GlassButton,
   Platform,
   Text,
@@ -19,8 +20,6 @@ import PhoneInputAutoDetect from "@/components/ui/PhoneInputAutoDetect";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useColors } from "@/theme";
-import { KeyboardAvoidingView } from "react-native-keyboard-controller";
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function Auth() {
   const [authMode, setAuthMode] = useState("phone"); // 'phone' or 'email'
@@ -113,7 +112,9 @@ export default function Auth() {
 
   const handleAppleSignIn = async () => {
     setLoading(true);
-    const { error } = await (Platform.OS === "ios" ? signInWithAppleNative : signInWithApple)();
+    const { error } = await (Platform.OS === "ios"
+      ? signInWithAppleNative
+      : signInWithApple)();
     setLoading(false);
 
     if (error) {
@@ -360,7 +361,6 @@ export default function Auth() {
               exiting={FadeOut.duration(200)}
               style={{ gap: 8 }}
             >
-
               <GlassButton
                 onPress={handleEmailSubmit}
                 disabled={loading}
@@ -380,7 +380,6 @@ export default function Auth() {
             </AnimatedBox>
           )}
         </View>
-
       </KeyboardAvoidingView>
     </ContainerView>
   );

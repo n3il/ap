@@ -1,15 +1,18 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useRef } from "react";
 import { StyleSheet } from "react-native";
+import BalanceOverview from "@/components/agent/BalanceOverview";
 import AgentHeader from "@/components/agent/Header";
 import HeaderChart from "@/components/agent/HeaderChart";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
-import ContainerView, { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
-import { Animated, Avatar, GlassButton, Text, View } from "@/components/ui";
+import ContainerView, {
+  GLOBAL_PADDING,
+  PaddedView,
+} from "@/components/ContainerView";
+import { Animated, Avatar, GlassButton, View } from "@/components/ui";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import BalanceOverview from "@/components/agent/BalanceOverview";
 
 const HEADER_HEIGHT = 400 + 60;
 

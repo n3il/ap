@@ -22,9 +22,9 @@ import { useMarketHistory } from "@/hooks/useMarketHistory";
 import { useMarketPrices, useMarketPricesStore } from "@/hooks/useMarketPrices";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors, withOpacity } from "@/theme";
+import { numberToColor } from "@/utils/currency";
 import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
 import { GLOBAL_PADDING } from "./ContainerView";
-import { numberToColor } from "@/utils/currency";
 
 const { width } = Dimensions.get("window");
 
@@ -61,7 +61,7 @@ const Sparkline = ({
     <Svg width={width} height={height}>
       <Polyline
         points={points}
-        fill={withOpacity(color, .5)}
+        fill={withOpacity(color, 0.5)}
         stroke={color}
         strokeWidth={2}
         strokeLinejoin="round"
@@ -109,7 +109,7 @@ const PriceColumn = ({
     [asset, symbol],
   );
 
-  const hasChange = Number.isFinite(rangePercent);
+  const _hasChange = Number.isFinite(rangePercent);
 
   // Price flash effect
   const priceOpacity = useSharedValue(1);
@@ -242,7 +242,8 @@ const PriceColumn = ({
     };
   }, [scrollY]);
 
-  const color = palette?.[numberToColor(rangePercent)] || palette.mutedForeground;
+  const color =
+    palette?.[numberToColor(rangePercent)] || palette.mutedForeground;
 
   return (
     <GlassButton
@@ -344,10 +345,7 @@ const PriceColumn = ({
         ]}
       >
         {!isHistoryLoading && sparklineData.length > 0 && (
-          <Sparkline
-            data={sparklineData}
-            color={color}
-          />
+          <Sparkline data={sparklineData} color={color} />
         )}
       </Animated.View>
     </GlassButton>

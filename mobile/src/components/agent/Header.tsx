@@ -1,7 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { Alert, StyleProp, ViewStyle } from "react-native";
+import { Alert, type StyleProp, type ViewStyle } from "react-native";
 import { ActivityIndicator, View } from "@/components/ui";
 import GlassButton from "@/components/ui/GlassButton";
 import { supabase } from "@/config/supabase";
@@ -39,63 +39,73 @@ async function runAgentAssessment(agentId: string) {
   return data;
 }
 
-export default function AgentHeader({ agentId, onBookmarkPress, style }: Props) {
+export default function AgentHeader({
+  agentId,
+  onBookmarkPress,
+  style,
+}: Props) {
   const { colors: palette } = useColors();
   const queryClient = useQueryClient();
 
-  const { data: isWatchlisted = false, isLoading: isWatchlistLoading } = useQuery({
-    queryKey: ["agent-watchlist", agentId],
-    queryFn: () => agentWatchlistService.isWatchlisted(agentId as string),
-    enabled: !!agentId,
-  });
+  const { data: isWatchlisted = false, isLoading: isWatchlistLoading } =
+    useQuery({
+      queryKey: ["agent-watchlist", agentId],
+      queryFn: () => agentWatchlistService.isWatchlisted(agentId as string),
+      enabled: !!agentId,
+    });
 
-  const {
-    mutateAsync: toggleWatchlist,
-    isPending: isUpdatingWatchlist,
-  } = useMutation({
-    mutationFn: async () => {
-      if (!agentId) throw new Error("Agent is still loading.");
-      if (isWatchlisted) {
-        await agentWatchlistService.remove(agentId);
-        return "removed";
-      }
-      await agentWatchlistService.add(agentId);
-      return "added";
-    },
-    onSuccess: (action) => {
-      queryClient.invalidateQueries({ queryKey: ["agent-watchlist", agentId] });
-      Alert.alert(
-        "Watchlist updated",
-        action === "added"
-          ? "Agent added to your watchlist."
-          : "Agent removed from your watchlist.",
-      );
-    },
-    onError: (error: Error) => {
-      Alert.alert("Unable to update watchlist", error.message);
-    },
-  });
+  const { mutateAsync: toggleWatchlist, isPending: isUpdatingWatchlist } =
+    useMutation({
+      mutationFn: async () => {
+        if (!agentId) throw new Error("Agent is still loading.");
+        if (isWatchlisted) {
+          await agentWatchlistService.remove(agentId);
+          return "removed";
+        }
+        await agentWatchlistService.add(agentId);
+        return "added";
+      },
+      onSuccess: (action) => {
+        queryClient.invalidateQueries({
+          queryKey: ["agent-watchlist", agentId],
+        });
+        Alert.alert(
+          "Watchlist updated",
+          action === "added"
+            ? "Agent added to your watchlist."
+            : "Agent removed from your watchlist.",
+        );
+      },
+      onError: (error: Error) => {
+        Alert.alert("Unable to update watchlist", error.message);
+      },
+    });
 
-  const {
-    mutateAsync: runAssessment,
-    isPending: isTriggeringAssessment,
-  } = useMutation({
-    mutationFn: async () => {
-      if (!agentId) {
-        throw new Error("Agent is still loading.");
-      }
-      return runAgentAssessment(agentId);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["agent", agentId] });
-      queryClient.invalidateQueries({ queryKey: ["agent-assessments", agentId] });
-      queryClient.invalidateQueries({ queryKey: ["sentimentScores", agentId] });
-      Alert.alert("Assessment triggered", "We'll notify you when it's ready.");
-    },
-    onError: (error: Error) => {
-      Alert.alert("Unable to run assessment", error.message);
-    },
-  });
+  const { mutateAsync: runAssessment, isPending: isTriggeringAssessment } =
+    useMutation({
+      mutationFn: async () => {
+        if (!agentId) {
+          throw new Error("Agent is still loading.");
+        }
+        return runAgentAssessment(agentId);
+      },
+      onSuccess: () => {
+        queryClient.invalidateQueries({ queryKey: ["agent", agentId] });
+        queryClient.invalidateQueries({
+          queryKey: ["agent-assessments", agentId],
+        });
+        queryClient.invalidateQueries({
+          queryKey: ["sentimentScores", agentId],
+        });
+        Alert.alert(
+          "Assessment triggered",
+          "We'll notify you when it's ready.",
+        );
+      },
+      onError: (error: Error) => {
+        Alert.alert("Unable to run assessment", error.message);
+      },
+    });
 
   const handleToggleWatchlist = useCallback(async () => {
     try {
@@ -115,7 +125,7 @@ export default function AgentHeader({ agentId, onBookmarkPress, style }: Props) 
 
   const watchlistButtonDisabled = !agentId || isUpdatingWatchlist;
   const showWatchlistSpinner = isWatchlistLoading || isUpdatingWatchlist;
-  const watchlistIcon = isWatchlisted ? "binoculars" : "binoculars-outline";
+  const _watchlistIcon = isWatchlisted ? "binoculars" : "binoculars-outline";
 
   return (
     <View style={[{ flexDirection: "row" }, style]}>

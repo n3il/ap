@@ -92,7 +92,7 @@ export default function CreateAgentModal({
   const selectedProvider = LLM_PROVIDERS.find(
     (p) => p.id === formData.llm_provider,
   );
-  const selectedPrompt = promptLibrary.find(
+  const _selectedPrompt = promptLibrary.find(
     (prompt) => prompt.id === formData.prompt_id,
   );
 

@@ -12,7 +12,7 @@ import {
   Text,
   View,
 } from "@/components/ui";
-import { getDefaultUnauthenticatedRoute, ROUTES } from "@/config/routes";
+import { ROUTES } from "@/config/routes";
 import useRouteAuth from "@/hooks/useRouteAuth";
 import { useColors } from "@/theme";
 
@@ -128,13 +128,12 @@ export default function GetStartedScreen() {
                 gap: 3,
               }}
             >
-
               <GlassButton
                 onPress={() => handleAuth("signup")}
                 style={{
                   flexGrow: 1,
                 }}
-                tintColor={withOpacity(palette.primary500, .9)}
+                tintColor={withOpacity(palette.primary500, 0.9)}
                 glassEffectStyle="regular"
               >
                 <View

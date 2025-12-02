@@ -32,7 +32,9 @@ export default function ContainerView({
     <View
       sx={{
         flex: 1,
-        backgroundColor: transparent ? "transparent" : colors.backgroundSecondary,
+        backgroundColor: transparent
+          ? "transparent"
+          : colors.backgroundSecondary,
       }}
       {...props}
       style={style}

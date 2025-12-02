@@ -1,11 +1,5 @@
-import {
-  Feather,
-  Ionicons,
-  MaterialCommunityIcons,
-  MaterialIcons,
-} from "@expo/vector-icons";
+import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import { Pressable } from "react-native";
 import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import SectionTitle from "@/components/SectionTitle";
@@ -19,11 +13,10 @@ import {
   View,
 } from "@/components/ui";
 import { AnimatedBox } from "@/components/ui/animated";
-import { ROUTES } from "@/config/routes";
+import LockScreen from "@/components/ui/LockScreen";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAnimationKey } from "@/hooks/useAnimationKey";
 import { useColors } from "@/theme";
-import LockScreen from "@/components/ui/LockScreen";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
@@ -93,7 +86,7 @@ export default function ProfileScreen() {
   }
 
   if (!user) {
-    return <LockScreen />
+    return <LockScreen />;
   }
 
   return (

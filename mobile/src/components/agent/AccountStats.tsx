@@ -1,8 +1,7 @@
 import { Text, View } from "@/components/ui";
 import LabelValue, { FormattedValueLabel } from "@/components/ui/LabelValue";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
-import { formatAmount, formatPercent } from "@/utils/currency";
-
+import { formatPercent } from "@/utils/currency";
 
 export function StatsAbbreviated({
   agentId,
@@ -15,9 +14,23 @@ export function StatsAbbreviated({
 
   return (
     <View sx={style}>
-      <View sx={{ flexDirection: "column", justifyContent: 'flex-start', alignItems: "flex-start", gap: 2 }}>
-
-        <View sx={{ flexDirection: "row", justifyContent: 'flex-end', alignItems: "flex-end", gap: 2, marginLeft: 'auto' }}>
+      <View
+        sx={{
+          flexDirection: "column",
+          justifyContent: "flex-start",
+          alignItems: "flex-start",
+          gap: 2,
+        }}
+      >
+        <View
+          sx={{
+            flexDirection: "row",
+            justifyContent: "flex-end",
+            alignItems: "flex-end",
+            gap: 2,
+            marginLeft: "auto",
+          }}
+        >
           <FormattedValueLabel
             value={accountData.unrealizedPnl || 0}
             colorize
@@ -46,7 +59,11 @@ export function StatsAbbreviated({
       </View>
       <LabelValue
         label=""
-        value={accountData.equity + accountData.realizedPnl + accountData.unrealizedPnl}
+        value={
+          accountData.equity +
+          accountData.realizedPnl +
+          accountData.unrealizedPnl
+        }
         orientation="horizontal"
         textVariant="xs"
         valueTextVariant="xs"
@@ -55,25 +72,25 @@ export function StatsAbbreviated({
   );
 }
 
-
-
-
-export function StatsAsTicker({
-  agentId,
-}: {
-  agentId: string;
-}) {
+export function StatsAsTicker({ agentId }: { agentId: string }) {
   const accountData = useAccountBalance(agentId, true);
 
   return (
-    <View sx={{
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between", gap: 2
-    }}>
+    <View
+      sx={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        gap: 2,
+      }}
+    >
       <LabelValue
         label="AUM"
-        value={accountData.equity + accountData.realizedPnl + accountData.unrealizedPnl}
+        value={
+          accountData.equity +
+          accountData.realizedPnl +
+          accountData.unrealizedPnl
+        }
         orientation="horizontal"
         textVariant="xs"
         valueTextVariant="xs"
@@ -95,7 +112,7 @@ export function StatsAsTicker({
                     : "foreground",
             }}
           >
-            {`(${accountData.unrealizedPnlPercent ? formatPercent(accountData.unrealizedPnlPercent) : '-'})`}
+            {`(${accountData.unrealizedPnlPercent ? formatPercent(accountData.unrealizedPnlPercent) : "-"})`}
           </Text>
         </LabelValue>
       </View>

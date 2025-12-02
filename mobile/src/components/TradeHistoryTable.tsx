@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet } from "react-native";
 import { Text, View } from "@/components/ui";
-import { tradeService } from "@/services/tradeService";
 import { useTheme } from "@/contexts/ThemeContext";
+import { tradeService } from "@/services/tradeService";
 
 const COLUMN_WIDTHS = {
   symbol: 140,

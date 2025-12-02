@@ -126,7 +126,6 @@ export default function TradeActionDisplay({
   );
 }
 
-
 type TradeSummaryProps = {
   tradeActions?: TradeActionType[];
 };
@@ -168,13 +167,15 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
     parts.push(`Opened ${openedShorts} short${openedShorts > 1 ? "s" : ""}`);
   }
   if (closedPositions) {
-    parts.push(`Closed ${closedPositions} position${closedPositions > 1 ? "s" : ""}`);
+    parts.push(
+      `Closed ${closedPositions} position${closedPositions > 1 ? "s" : ""}`,
+    );
   }
   if (totalOpenNotional > 0) {
     parts.push(`~${formatAmount(totalOpenNotional)} notional`);
   }
   if (!parts.length) {
-    return null
+    return null;
   }
 
   return (

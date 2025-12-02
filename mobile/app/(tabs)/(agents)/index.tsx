@@ -5,7 +5,6 @@ import AgentList from "@/components/AgentList";
 import ContainerView from "@/components/ContainerView";
 import SectionTitle from "@/components/SectionTitle";
 import {
-  Button,
   GlassButton,
   ScrollView,
   SwipeableTabs,
@@ -41,13 +40,7 @@ export default function AgentsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: "70%" }}
         >
-          <AgentList
-            compactView
-            isActive={true}
-            emptyState={(
-              <View />
-            )}
-          />
+          <AgentList compactView isActive={true} emptyState={<View />} />
         </ScrollView>
       ),
     },

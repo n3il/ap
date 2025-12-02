@@ -1,17 +1,17 @@
+import { Pressable } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { Avatar, Text, TouchableOpacity, View } from "@/components/ui";
+import { StatsAbbreviated } from "@/components/agent/AccountStats";
+import { TradeSummary } from "@/components/TradeActionDisplay";
+import { Avatar, Text, View } from "@/components/ui";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useColors } from "@/theme";
 import type { AgentType } from "@/types/agent";
 import { sentimentToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import PositionList from "./PositionList";
-import { StatsAbbreviated } from "@/components/agent/AccountStats";
-import { Pressable } from "react-native";
-import { TradeSummary } from "@/components/TradeActionDisplay";
 
 export function AssessmentPreview({ assessmentData, style = {} }) {
   const { colors: palette } = useColors();
@@ -31,18 +31,14 @@ export function AssessmentPreview({ assessmentData, style = {} }) {
           variant="xs"
           sx={{
             color: sentimentToColor(
-              assessmentData.parsed_llm_response?.headline
-                ?.sentiment_score,
+              assessmentData.parsed_llm_response?.headline?.sentiment_score,
             ),
             fontStyle: "italic",
             fontWeight: "300",
             marginBottom: 2,
           }}
         >
-          feeling {
-            assessmentData.parsed_llm_response?.headline
-              ?.sentiment_word
-          }{" "}
+          feeling {assessmentData.parsed_llm_response?.headline?.sentiment_word}{" "}
           {`(${assessmentData.parsed_llm_response?.headline?.sentiment_score})`}
         </Text>
 
@@ -67,7 +63,7 @@ export function AssessmentPreview({ assessmentData, style = {} }) {
         {assessmentData.parsed_llm_response?.headline?.thesis}
       </Text>
     </View>
-  )
+  );
 }
 
 export default function AgentCard({
@@ -113,7 +109,7 @@ export default function AgentCard({
           paddingHorizontal: 18,
           backgroundColor: transparent ? "transparent" : "#0f1522ff",
           borderRadius: 12,
-          marginHorizontal: 10
+          marginHorizontal: 10,
         },
         animatedStyle,
       ]}
@@ -134,12 +130,14 @@ export default function AgentCard({
             name={agent.name.slice(0, 70)}
             backgroundColor={palette.providers[agent.llm_provider]}
           />
-          <StatsAbbreviated agentId={agent.id} style={{
+          <StatsAbbreviated
+            agentId={agent.id}
+            style={{
               flexDirection: "column",
               flexShrink: 1,
               alignItems: "flex-end",
               justifyContent: "flex-end",
-              marginLeft: 'auto',
+              marginLeft: "auto",
             }}
           />
         </View>
@@ -148,9 +146,12 @@ export default function AgentCard({
           <AssessmentPreview assessmentData={agent.latest_assessment} />
         ) : null}
 
-        {agent.latest_assessment?.parsed_llm_response?.tradeActions?.length > 0 && (
+        {agent.latest_assessment?.parsed_llm_response?.tradeActions?.length >
+          0 && (
           <TradeSummary
-            tradeActions={agent.latest_assessment?.parsed_llm_response?.tradeActions}
+            tradeActions={
+              agent.latest_assessment?.parsed_llm_response?.tradeActions
+            }
           />
         )}
       </Pressable>

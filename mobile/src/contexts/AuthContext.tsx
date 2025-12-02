@@ -1,8 +1,8 @@
+import * as AppleAuthentication from "expo-apple-authentication";
 import { makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import { createContext, useContext, useEffect, useState } from "react";
 import { supabase } from "@/config/supabase";
-import * as AppleAuthentication from 'expo-apple-authentication';
 
 // import useRouteAuth from '@/hooks/useRouteAuth';
 // import { useRouter } from 'expo-router';
@@ -211,7 +211,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
   const signInWithApple = async () => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
@@ -227,7 +226,7 @@ export const AuthProvider = ({ children }) => {
 
       const result = await WebBrowser.openAuthSessionAsync(
         data.url,
-        redirectUrl
+        redirectUrl,
       );
 
       if (result.type !== "success" || !result.url)
@@ -258,7 +257,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-
   const signInWithAppleNative = async () => {
     try {
       const credential = await AppleAuthentication.signInAsync({
@@ -266,46 +264,46 @@ export const AuthProvider = ({ children }) => {
           AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
           AppleAuthentication.AppleAuthenticationScope.EMAIL,
         ],
-      })
+      });
       // Sign in via Supabase Auth.
       if (credential.identityToken) {
-        const {
-          error,
-          data,
-        } = await supabase.auth.signInWithIdToken({
-          provider: 'apple',
+        const { error, data } = await supabase.auth.signInWithIdToken({
+          provider: "apple",
           token: credential.identityToken,
-        })
+        });
         if (!error) {
           // Apple only provides the user's full name on the first sign-in
           // Save it to user metadata if available
           if (credential.fullName) {
-            const nameParts = []
-            if (credential.fullName.givenName) nameParts.push(credential.fullName.givenName)
-            if (credential.fullName.middleName) nameParts.push(credential.fullName.middleName)
-            if (credential.fullName.familyName) nameParts.push(credential.fullName.familyName)
-            const fullName = nameParts.join(' ')
+            const nameParts = [];
+            if (credential.fullName.givenName)
+              nameParts.push(credential.fullName.givenName);
+            if (credential.fullName.middleName)
+              nameParts.push(credential.fullName.middleName);
+            if (credential.fullName.familyName)
+              nameParts.push(credential.fullName.familyName);
+            const fullName = nameParts.join(" ");
             await supabase.auth.updateUser({
               data: {
                 full_name: fullName,
                 given_name: credential.fullName.givenName,
                 family_name: credential.fullName.familyName,
-              }
-            })
+              },
+            });
           }
           return { data, error };
         }
       } else {
-        throw new Error('No identityToken.')
+        throw new Error("No identityToken.");
       }
     } catch (error) {
       // if (error.code === 'ERR_REQUEST_CANCELED') {
-        // return { data: null, error };
+      // return { data: null, error };
       // } else {
-        return { data: null, error };
+      return { data: null, error };
       // }
     }
-  }
+  };
 
   const signInWithPhone = async (phoneNumber) => {
     try {

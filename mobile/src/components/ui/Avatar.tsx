@@ -92,7 +92,14 @@ export default function Avatar({
   const shouldShowDetails = showDetails && (name || email);
 
   return (
-    <View sx={{ flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginRight: 'auto' }}>
+    <View
+      sx={{
+        flexDirection: "row",
+        alignItems: "center",
+        justifyContent: "space-between",
+        marginRight: "auto",
+      }}
+    >
       <View
         sx={{
           width: avatarSize,

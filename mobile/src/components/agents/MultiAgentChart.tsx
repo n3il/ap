@@ -31,7 +31,8 @@ export default function MultiAgentChart({ scrollY, style }) {
     return agents
       .map((agent) => {
         const initialCapital = parseFloat(agent.initial_capital);
-        if (!Number.isFinite(initialCapital) || initialCapital === 0) return null;
+        if (!Number.isFinite(initialCapital) || initialCapital === 0)
+          return null;
 
         const snapshots = (data[agent.id] || [])
           .slice()

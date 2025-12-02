@@ -44,8 +44,8 @@ export default function ExploreScreen() {
     },
   });
 
-  const borderStyle = useAnimatedStyle(() => {
-    if (!scrollY) return { borderBottomColor: '#fff', borderBottomWidth: 1 };
+  const _borderStyle = useAnimatedStyle(() => {
+    if (!scrollY) return { borderBottomColor: "#fff", borderBottomWidth: 1 };
 
     const progress = interpolate(
       scrollY.value,
@@ -57,7 +57,7 @@ export default function ExploreScreen() {
       borderBottomColor: interpolate(
         progress,
         [0, 1],
-        ['rgba(255, 255, 255, 0)', 'rgba(255, 255, 255, 1)'],
+        ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 1)"],
         Extrapolation.CLAMP,
       ),
       borderBottomWidth: 10,
@@ -127,8 +127,8 @@ export default function ExploreScreen() {
                 gap: 4,
                 paddingTop: 2,
                 paddingBottom: 1,
-                borderBottomWidth: .5,
-                borderBottomColor: palette.border
+                borderBottomWidth: 0.5,
+                borderBottomColor: palette.border,
               }}
             >
               <GlassSelector />
