@@ -466,7 +466,6 @@ CREATE TABLE IF NOT EXISTS "public"."agents" (
     "name" "text" NOT NULL,
     "llm_provider" "text" NOT NULL,
     "model_name" "text" NOT NULL,
-    "hyperliquid_address" "text" NOT NULL,
     "initial_capital" numeric NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"(),
     "published_at" timestamp with time zone,
@@ -658,11 +657,9 @@ CREATE TABLE IF NOT EXISTS "public"."trading_accounts" (
     "agent_id" "uuid",
     "label" "text" DEFAULT 'Primary'::"text" NOT NULL,
     "type" "public"."trading_record_type" DEFAULT 'paper'::"public"."trading_record_type" NOT NULL,
-    "base_currency" "text" DEFAULT 'USD'::"text" NOT NULL,
-    "starting_balance" numeric(18,2) DEFAULT 100000.00 NOT NULL,
-    "buying_power" numeric(18,2) DEFAULT 100000.00 NOT NULL,
-    "equity" numeric(18,2) DEFAULT 100000.00 NOT NULL,
-    "margin_used" numeric(18,2) DEFAULT 0 NOT NULL,
+    "hyperliquid_address" "text",
+    "hyperliquid_wallet_address" "text",
+    "hyperliquid_wallet_private_key" "text",
     "settings" "jsonb" DEFAULT '{}'::"jsonb" NOT NULL,
     "created_at" timestamp with time zone DEFAULT "now"(),
     "updated_at" timestamp with time zone DEFAULT "now"()
@@ -1699,8 +1696,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
-
 
 
 

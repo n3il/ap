@@ -1,7 +1,6 @@
 import * as hl from "@nktkas/hyperliquid";
 
 import { CandleData, HyperliquidOrderBody } from "./types.ts";
-import { ensureTradingAccount } from "../lib/ledger.ts";
 
 type CandleInterval =
   | '1m' | '3m' | '5m' | '15m' | '30m'

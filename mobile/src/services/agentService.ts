@@ -1,11 +1,13 @@
-import * as Crypto from "expo-crypto";
 import { supabase } from "@/config/supabase";
 import { tradeService } from "@/services/tradeService";
 
+const tradingAccountColumns =
+  "trading_accounts(id,label,type,hyperliquid_address,hyperliquid_wallet_address)";
+
 const buildAgentSelectQuery = (includeLatestAssessment = false) => {
   const baseColumns = includeLatestAssessment
-    ? "*, latest_assessment:assessments(*)"
-    : "*";
+    ? `*, ${tradingAccountColumns}, latest_assessment:assessments(*)`
+    : `*, ${tradingAccountColumns}`;
 
   let query = supabase.from("agents").select(baseColumns);
 
@@ -27,14 +29,6 @@ const normalizeAgent = (agent, includeLatestAssessment) => {
     ...agent,
     latest_assessment: agent.latest_assessment?.[0] ?? null,
   };
-};
-
-const generateHyperliquidAddress = async () => {
-  const bytes = await Crypto.getRandomBytesAsync(20);
-  const hex = Array.from(bytes)
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-  return `0x${hex}`;
 };
 
 export const agentService = {
@@ -101,8 +95,6 @@ export const agentService = {
     } = await supabase.auth.getUser();
     if (!user) throw new Error("Not authenticated");
 
-    const hyperliquidAddress = await generateHyperliquidAddress();
-
     const { data, error } = await supabase
       .from("agents")
       .insert([
@@ -111,7 +103,6 @@ export const agentService = {
           user_id: user.id,
           is_active: new Date().toISOString(),
           published_at: null,
-          hyperliquid_address: hyperliquidAddress,
         },
       ])
       .select()
@@ -211,7 +202,6 @@ export const agentService = {
     if (fetchError) throw fetchError;
 
     const duplicatedName = `${sourceAgent.name} Copy`;
-    const hyperliquidAddress = await generateHyperliquidAddress();
     const { data, error } = await supabase
       .from("agents")
       .insert([
@@ -219,7 +209,6 @@ export const agentService = {
           name: duplicatedName,
           llm_provider: sourceAgent.llm_provider,
           model_name: sourceAgent.model_name,
-          hyperliquid_address: hyperliquidAddress,
           initial_capital: sourceAgent.initial_capital,
           user_id: user.id,
           is_active: null,

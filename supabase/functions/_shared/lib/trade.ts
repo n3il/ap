@@ -1,7 +1,5 @@
-import { createSupabaseServiceClient } from '../supabase.ts';
 import { executeHyperliquidTrade } from '../hyperliquid/index.ts';
-import { recordLedgerExecution } from './ledger.ts';
-import type { Agent } from './types.ts';
+import type { Agent, TradingAccount } from './types.ts';
 import type { LLMTradeAction } from '../llm/types.ts';
 import { toHyperliquidOrder } from "../hyperliquid/mapping.ts";
 
@@ -10,14 +8,17 @@ export async function executeTrade(
   assetId: number,
   tradeAction: LLMTradeAction,
   agent: Agent,
+  tradingAccount: TradingAccount,
 ) {
-  // const supabase = createSupabaseServiceClient();
+  if (!tradingAccount.hyperliquid_wallet_private_key) {
+    throw new Error('Trading account is missing Hyperliquid wallet credentials');
+  }
 
   // Execute trade on Hyperliquid (only for real trades)
   const tradeResult = await executeHyperliquidTrade(
     toHyperliquidOrder(assetId, tradeAction),
     agent.simulate,
-    agent.hyperliquid_address
+    tradingAccount.hyperliquid_wallet_private_key
   );
 
   // // Record in ledger (to-do, offload to background job)

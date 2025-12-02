@@ -14,6 +14,7 @@ import {
   fetchAllCandleData,
  } from '../_shared/hyperliquid/index.ts';
 import { executeTrade } from '../_shared/lib/trade.ts';
+import { ensureTradingAccount } from '../_shared/lib/ledger.ts';
 
 const Sentry = initSentry();
 Sentry.setTag('edge_function', 'run_agent_assessment');
@@ -27,6 +28,18 @@ export async function runAgentAssessment(
 ) {
   const authContext = await authenticateRequest(authHeader);
   const agent = await fetchAndValidateAgent(agentId, authContext);
+  const serviceClient = createSupabaseServiceClient();
+  const tradingType = agent.simulate ? 'paper' : 'real';
+  const tradingAccount = await ensureTradingAccount({
+    supabase: serviceClient,
+    userId: agent.user_id,
+    agentId: agent.id,
+    agentName: agent.name,
+    type: tradingType,
+  });
+  if (!tradingAccount?.hyperliquid_address) {
+    throw new Error('Trading account is missing a Hyperliquid address');
+  }
   let assessmentId: string | null = null;
 
   try {
@@ -36,12 +49,11 @@ export async function runAgentAssessment(
       accountSummary,
       // candleData,
     ] = await Promise.all([
-      getAccountSummary(agent.hyperliquid_address, agent.simulate),
+      getAccountSummary(tradingAccount.hyperliquid_address, agent.simulate),
       // fetchAllCandleData({assetNames: tradeableAssets.slice(5).map((a) => a.Ticker), intervalString: "5m", lookbackHours: 3}),
     ]);
 
     // Build prompt
-    const serviceClient = createSupabaseServiceClient();
     const promptTemplate = await fetchPrompt(serviceClient, agent);
     const prompt = buildPrompt(promptTemplate, { tradeableAssets, accountSummary, candleData: [] });
 
@@ -58,7 +70,7 @@ export async function runAgentAssessment(
 
     // const tradeResults = await Promise.all(tradeActions.map(async (tradeAction) => {
     //   const assetId = tradeableAssets.find((a) => a.Ticker === tradeAction.asset)?.AssetId;
-    //   const tradeResult = await executeTrade(assetId, tradeAction, agent);
+    //   const tradeResult = await executeTrade(assetId, tradeAction, agent, tradingAccount);
     //   return tradeResult;
     // }));
 

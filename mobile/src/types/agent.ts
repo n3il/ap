@@ -50,9 +50,16 @@ export interface AssessmentRecordType {
   status: "in_progress" | "completed" | "errored";
 }
 
+export interface TradingAccountType {
+  id: string;
+  label: string;
+  type: "paper" | "real";
+  hyperliquid_address?: string | null;
+  hyperliquid_wallet_address?: string | null;
+}
+
 export interface AgentType {
   created_at: string;
-  hyperliquid_address: string;
   id: string;
   initial_capital: number;
   is_active: boolean | string; // adjust based on actual meaning
@@ -67,4 +74,5 @@ export interface AgentType {
   published_at: string;
   simulate: boolean;
   user_id: string;
+  trading_accounts?: TradingAccountType[];
 }

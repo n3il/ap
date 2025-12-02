@@ -1,5 +1,28 @@
 import { sanitizeMetadata } from './validation.ts';
 import { sanitizeNumericValue } from './numeric.ts';
+import { generatePrivateKey, privateKeyToAccount } from 'npm:viem/accounts';
+
+const TRADING_ACCOUNT_FIELDS = [
+  'id',
+  'label',
+  'type',
+  'agent_id',
+  'user_id',
+  'hyperliquid_address',
+  'hyperliquid_wallet_address',
+  'hyperliquid_wallet_private_key',
+].join(', ');
+
+function createHyperliquidWallet() {
+  const privateKey = generatePrivateKey();
+  const account = privateKeyToAccount(privateKey);
+
+  return {
+    hyperliquid_address: account.address,
+    hyperliquid_wallet_address: account.address,
+    hyperliquid_wallet_private_key: privateKey,
+  };
+}
 
 export type TradingRecordType = 'paper' | 'real';
 export type ExecutionSide = 'BUY' | 'SELL';
@@ -23,7 +46,7 @@ export async function ensureTradingAccount({
 }) {
   const { data: existingAccount, error: fetchError } = await supabase
     .from('trading_accounts')
-    .select('id, label')
+    .select(TRADING_ACCOUNT_FIELDS)
     .eq('user_id', userId)
     .eq('type', type)
     .eq('agent_id', agentId)
@@ -37,12 +60,36 @@ export async function ensureTradingAccount({
   }
 
   if (existingAccount) {
-    return existingAccount;
+    const needsWalletSync =
+      !existingAccount.hyperliquid_address ||
+      !existingAccount.hyperliquid_wallet_address ||
+      !existingAccount.hyperliquid_wallet_private_key;
+
+    if (!needsWalletSync) {
+      return existingAccount;
+    }
+
+    const walletDetails = createHyperliquidWallet();
+    const { data: updatedAccount, error: updateError } = await supabase
+      .from('trading_accounts')
+      .update(walletDetails)
+      .eq('id', existingAccount.id)
+      .select(TRADING_ACCOUNT_FIELDS)
+      .single();
+
+    if (updateError) {
+      console.error('Error refreshing trading account wallet:', updateError);
+      throw updateError;
+    }
+
+    return updatedAccount;
   }
 
   const defaultLabel = agentName
     ? `${agentName} (${type === 'real' ? 'Real' : 'Paper'})`
     : `${type === 'real' ? 'Real' : 'Paper'} Account`;
+
+  const walletDetails = createHyperliquidWallet();
 
   const { data: createdAccount, error: createError } = await supabase
     .from('trading_accounts')
@@ -51,8 +98,9 @@ export async function ensureTradingAccount({
       agent_id: agentId,
       label: defaultLabel,
       type,
+      ...walletDetails,
     })
-    .select('id, label')
+    .select(TRADING_ACCOUNT_FIELDS)
     .single();
 
   if (createError) {

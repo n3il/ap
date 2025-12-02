@@ -10,7 +10,6 @@ export interface Agent {
   initial_capital: string | number;
   llm_provider: string;
   model_name: string;
-  hyperliquid_address: string;
   prompt_id: string;
   simulate: boolean;
   published_at: string;
@@ -58,6 +57,9 @@ export interface TradingAccount {
   agent_id: string;
   label: string;
   type: 'paper' | 'real';
+  hyperliquid_address?: string;
+  hyperliquid_wallet_address?: string;
+  hyperliquid_wallet_private_key?: string;
 }
 
 export interface HyperliquidTradeResult {
