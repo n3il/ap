@@ -84,26 +84,66 @@ export default function AgentHeader({
   const { mutateAsync: runAssessment, isPending: isTriggeringAssessment } =
     useMutation({
       mutationFn: async () => {
-        if (!agentId) {
-          throw new Error("Agent is still loading.");
-        }
+        if (!agentId) throw new Error("Agent is still loading.");
         return runAgentAssessment(agentId);
       },
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ["agent", agentId] });
-        queryClient.invalidateQueries({
-          queryKey: ["agent-assessments", agentId],
-        });
-        queryClient.invalidateQueries({
-          queryKey: ["sentimentScores", agentId],
-        });
-        Alert.alert(
-          "Assessment triggered",
-          "We'll notify you when it's ready.",
+
+      // ⭐️ Optimistically add pending assessment
+      onMutate: async () => {
+        // Cancel queries so we don’t overwrite optimistic update
+        await queryClient.cancelQueries(["agent-assessments", agentId]);
+
+        const prevData = queryClient.getQueryData([
+          "agent-assessments",
+          agentId,
+          timeframe,
+        ]);
+
+        const optimisticAssessment = {
+          id: `pending-${Date.now()}`,
+          timestamp: new Date().toISOString(),
+          status: "pending",
+          agent_id: agentId,
+        };
+
+        // Update cached infinite data
+        queryClient.setQueryData(
+          ["agent-assessments", agentId, timeframe],
+          (old) => {
+            if (!old) return old;
+
+            return {
+              ...old,
+              pages: old.pages.map((page, i) => {
+                if (i !== 0) return page;
+
+                // prepend to first page
+                return {
+                  ...page,
+                  data: [optimisticAssessment, ...page.data],
+                };
+              }),
+            };
+          },
         );
+
+        return { prevData };
       },
-      onError: (error: Error) => {
-        Alert.alert("Unable to run assessment", error.message);
+
+      // Restore on error
+      onError: (err, _, context) => {
+        if (context?.prevData) {
+          queryClient.setQueryData(
+            ["agent-assessments", agentId, timeframe],
+            context.prevData,
+          );
+        }
+        Alert.alert("Unable to run assessment", err.message);
+      },
+
+      // Refetch real data
+      onSuccess: () => {
+        queryClient.invalidateQueries(["agent-assessments", agentId]);
       },
     });
 

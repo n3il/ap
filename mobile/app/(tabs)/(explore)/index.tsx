@@ -124,7 +124,7 @@ export default function ExploreScreen() {
               sx={{
                 alignItems: "center",
                 flexDirection: "row",
-                gap: 4,
+                gap: 2,
                 paddingTop: 2,
                 paddingBottom: 1,
                 borderBottomWidth: 0.5,

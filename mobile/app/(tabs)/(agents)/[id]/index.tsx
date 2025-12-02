@@ -47,14 +47,14 @@ export default function AgentReadScreen() {
         ]}
       >
         <PaddedView style={{ gap: 12, paddingHorizontal: 16 }}>
-          <View>
+          {/* <View>
             <Avatar
               size="md"
               imgSrc={agent.avatar_url}
               name={agent.name.slice(0, 70)}
               backgroundColor={palette.providers[agent.llm_provider]}
             />
-          </View>
+          </View> */}
           <BalanceOverview agentId={agent?.id} />
         </PaddedView>
         <HeaderChart agentId={agent?.id} />

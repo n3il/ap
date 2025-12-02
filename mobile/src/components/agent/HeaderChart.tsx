@@ -3,7 +3,13 @@ import { type ComponentProps, useMemo } from "react";
 import SvgChart from "@/components/SvgChart";
 import { useAgentSnapshots } from "@/hooks/useAgentSnapshots";
 import { assessmentService } from "@/services/assessmentService";
-import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
+import { useAgent } from "@/hooks/useAgent";
+import { useColors } from "@/theme";
+import {
+  buildNormalizedAgentLines,
+  normalizeDataSeries,
+} from "@/utils/chartUtils";
+import { timeFrameToStart } from "@/utils/date";
 
 type HeaderChartProps = {
   agentId: string;
@@ -11,14 +17,16 @@ type HeaderChartProps = {
 
 export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
   // const { timeframe } = useTimeframeStore();
-  const timeframe = "30d";
+  const timeframe = "7d";
+  const { colors } = useColors();
+  const { data: agent } = useAgent(agentId);
 
   // Fetch sentiment scores using performant JSON column selection
   const { data: sentimentScores = [] } = useQuery({
     queryKey: ["sentimentScores", agentId, timeframe],
     queryFn: () =>
       assessmentService.getSentimentScores(agentId, {
-        timeframe,
+        timeframe: timeFrameToStart(timeframe),
         limit: 100,
       }),
     enabled: !!agentId,
@@ -36,64 +44,75 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
     return snapshots;
   }, [snapshots]);
 
-  // Memoize final chart data structure with normalized timestamps
-  const chartData = useMemo(() => {
-    const lines = [];
+  const sentimentTimestampSeries = useMemo(() => {
+    if (!rawSentimentData.length) return [];
+    const timestamps = rawSentimentData
+      .map((entry) =>
+        entry?.created_at ? { timestamp: entry.created_at } : null,
+      )
+      .filter(
+        (entry): entry is { timestamp: string | number | Date } =>
+          entry !== null,
+      );
+    return timestamps.length ? [timestamps] : [];
+  }, [rawSentimentData]);
 
-    // Create time normalizer for both data series
-    // Note: assessments use 'created_at', snapshots use 'timestamp'
-    const allData = [
-      ...rawSentimentData.map((d) => ({ timestamp: d.created_at })),
-      ...rawEquityData.map((d) => ({ timestamp: d.timestamp })),
-    ];
+  const {
+    lines: equityLines,
+    normalizeTimestamp,
+    hasData: hasNormalizedTimeData,
+  } = useMemo(
+    () =>
+      buildNormalizedAgentLines({
+        agents: agent ? [agent] : [],
+        snapshotsByAgent: agent
+          ? {
+              [agent.id]: rawEquityData,
+            }
+          : {},
+        axisGroup: "right",
+        getLineColor: (currentAgent) =>
+          colors.providers[currentAgent.llm_provider] || colors.primary,
+        additionalTimestampSeries: sentimentTimestampSeries,
+      }),
+    [agent, rawEquityData, colors, sentimentTimestampSeries],
+  );
 
-    const { normalizeTimestamp, hasData } = createTimeNormalizer(
-      [allData],
-      "timestamp",
+  const sentimentLine = useMemo(() => {
+    if (
+      !rawSentimentData.length ||
+      !hasNormalizedTimeData ||
+      typeof normalizeTimestamp !== "function"
+    ) {
+      return null;
+    }
+
+    const normalizedSentiment = normalizeDataSeries(
+      rawSentimentData,
+      normalizeTimestamp,
+      "created_at",
+      "sentiment_score",
     );
 
-    if (!hasData) return { lines };
+    if (normalizedSentiment.length === 0) return null;
 
-    // Normalize sentiment data
-    if (rawSentimentData.length > 0) {
-      const normalizedSentiment = normalizeDataSeries(
-        rawSentimentData,
-        normalizeTimestamp,
-        "created_at",
-        "sentiment_score",
-      );
+    return {
+      id: "Sentiment",
+      name: "Sentiment",
+      data: normalizedSentiment,
+      axisGroup: "left" as const,
+      color: colors.accent || colors.primary,
+    };
+  }, [rawSentimentData, normalizeTimestamp, hasNormalizedTimeData, colors]);
 
-      if (normalizedSentiment.length > 0) {
-        lines.push({
-          id: "Sentiment",
-          name: "Sentiment",
-          data: normalizedSentiment,
-          axisGroup: "left",
-        });
-      }
-    }
+  const lines = useMemo(() => {
+    const combined = [];
+    if (sentimentLine) combined.push(sentimentLine);
+    if (equityLines.length > 0) combined.push(...equityLines);
+    return combined;
+  }, [sentimentLine, equityLines]);
 
-    // Normalize equity data
-    if (rawEquityData.length > 0) {
-      const normalizedEquity = normalizeDataSeries(
-        rawEquityData,
-        normalizeTimestamp,
-        "timestamp",
-        "equity",
-      );
+  console.log({ lines: JSON.stringify(lines) })
 
-      if (normalizedEquity.length > 0) {
-        lines.push({
-          id: "Equity",
-          name: "Equity",
-          data: normalizedEquity,
-          axisGroup: "right",
-        });
-      }
-    }
-
-    return { lines };
-  }, [rawSentimentData, rawEquityData]);
-
-  return <SvgChart lines={chartData.lines} isLoading={isLoading} {...props} />;
+  return <SvgChart lines={lines} isLoading={isLoading} {...props} />;
 }

@@ -209,7 +209,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         activeOpacity={0.7}
       >
         <AssessmentPreview assessmentData={assessment} />
-
+        <Text>{assessment?.status ?? 'unknown'}</Text>
         {expanded ? (
           <View
             sx={{
@@ -280,7 +280,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         ) : null}
       </TouchableOpacity>
 
-      <TradeSummary tradeActions={tradeActions} />
+      {/* <TradeSummary tradeActions={tradeActions} /> */}
       {tradeActions.length > 0 && (
         <View
           sx={{

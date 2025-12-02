@@ -5,7 +5,7 @@ import { useMultiAgentSnapshots } from "@/hooks/useAgentSnapshots";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
-import { createTimeNormalizer } from "@/utils/chartUtils";
+import { buildNormalizedAgentLines } from "@/utils/chartUtils";
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
@@ -25,57 +25,15 @@ export default function MultiAgentChart({
   const lines = useMemo(() => {
     if (!data || agents.length === 0) return [];
 
-    // Collect all snapshots across all agents
-    const allSnapshots = agents.flatMap((agent) => data[agent.id] || []);
+    const { lines: normalizedLines } = buildNormalizedAgentLines({
+      agents,
+      snapshotsByAgent: data,
+      axisGroup: "right",
+      getLineColor: (agent) =>
+        colors.providers[agent.llm_provider] || colors.primary,
+    });
 
-    // Create time normalizer based on all data
-    const { normalizeTimestamp, hasData } = createTimeNormalizer(
-      [allSnapshots],
-      "timestamp",
-    );
-
-    if (!hasData) return [];
-
-    // Create lines with globally normalized time
-    return agents
-      .map((agent) => {
-        const initialCapital = parseFloat(agent.initial_capital);
-        if (!Number.isFinite(initialCapital) || initialCapital === 0)
-          return null;
-
-        const snapshots = (data[agent.id] || [])
-          .slice()
-          .sort(
-            (a, b) =>
-              new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
-          );
-
-        const chartData = snapshots
-          .map((snapshot) => {
-            const time = normalizeTimestamp(snapshot.timestamp);
-            const equity = parseFloat(snapshot.equity);
-            if (time === null || !Number.isFinite(equity)) return null;
-
-            const percentChange =
-              ((equity - initialCapital) / initialCapital) * 100;
-            return {
-              time,
-              value: percentChange,
-            };
-          })
-          .filter((point) => point !== null);
-
-        if (chartData.length === 0) return null;
-
-        return {
-          id: agent.id,
-          name: agent.name,
-          data: chartData,
-          axisGroup: "right",
-          color: colors.providers[agent.llm_provider] || colors.primary,
-        };
-      })
-      .filter((line) => line !== null);
+    return normalizedLines;
   }, [data, agents, colors]);
 
   return (

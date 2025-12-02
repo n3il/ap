@@ -44,3 +44,27 @@ export function formatRelativeDate(date: Date | string): string {
   // Older than the current year
   return format(_date, "MMM d, yyyy");
 }
+
+export function timeFrameToStart(timeframe: string) {
+    const now = new Date();
+    const startTime = new Date(now);
+
+    switch (timeframe) {
+      case "1h":
+        startTime.setHours(now.getHours() - 1);
+        break;
+      case "24h":
+        startTime.setHours(now.getHours() - 24);
+        break;
+      case "7d":
+        startTime.setDate(now.getDate() - 7);
+        break;
+      case "30d":
+        startTime.setDate(now.getDate() - 30);
+        break;
+      default:
+        startTime.setHours(now.getHours() - 24);
+    }
+
+    return startTime;
+}

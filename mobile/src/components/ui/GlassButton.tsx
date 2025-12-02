@@ -1,13 +1,16 @@
 import { GlassView } from "expo-glass-effect";
-import { Pressable, View } from "react-native";
+import { Pressable, View, ViewProps } from "react-native";
 import Text from "@/components/ui/Text";
 import { useColors } from "@/theme";
 
 const styleVariants = {
-  default: {},
-  paddedFull: {
+  default: {
     paddingHorizontal: 8,
     paddingVertical: 8,
+  },
+  paddedFull: {
+    paddingHorizontal: 8,
+    paddingVertical: 14,
     marginHorizontal: 0,
     flexGrow: 1,
     justifyContent: "center",
@@ -26,9 +29,14 @@ export default function GlassButton({
   ...props // glassProps
 }) {
   const { colors } = useColors();
+  const pressableStyle = styleVariants[styleVariant as keyof typeof styleVariants] || styleVariants.default;
 
   const PressableComponent = (
-    <Pressable onPress={onPress} disabled={disabled}>
+    <Pressable
+      onPress={onPress}
+      disabled={disabled}
+      style={[{flexGrow: 1}, pressableStyle, style]}
+    >
       {typeof children === "string" ? (
         <Text style={{ fontWeight: "600", textAlign: "center" }}>
           {children}
@@ -45,11 +53,8 @@ export default function GlassButton({
         style={[
           {
             borderRadius: 32,
-            paddingHorizontal: 8,
-            paddingVertical: 8,
             marginHorizontal: 4,
           },
-          style,
         ]}
       >
         {PressableComponent}
@@ -62,10 +67,7 @@ export default function GlassButton({
       style={[
         {
           borderRadius: 32,
-          paddingHorizontal: 8,
-          paddingVertical: 8,
           marginHorizontal: 4,
-          ...styleVariants[styleVariant],
         },
         style,
       ]}

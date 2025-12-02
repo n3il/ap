@@ -28,7 +28,7 @@ export default function ThoughtsTab({
       assessmentService.getAssessmentsByAgent(agentId, {
         pageParam,
         pageSize: 2,
-        statuses: ["completed", "in_progress"],
+        statuses: ["completed", "in_progress", "error"],
       }),
     getNextPageParam: (lastPage) => lastPage?.nextPage ?? undefined,
     initialPageParam: 0,

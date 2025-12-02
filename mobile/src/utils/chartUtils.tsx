@@ -85,3 +85,128 @@ export function normalizeDataSeries(
     })
     .filter((d) => d !== null);
 }
+
+type AgentLike = {
+  id: string;
+  name: string;
+  initial_capital: string | number;
+  llm_provider?: string;
+};
+
+type SnapshotPoint = {
+  timestamp: string | number | Date;
+  equity: string | number | null | undefined;
+};
+
+type SnapshotMap = Record<string, Array<SnapshotPoint>>;
+
+type TimestampEntry = { timestamp: string | number | Date };
+
+type NormalizedLine = {
+  id: string;
+  name: string;
+  data: Array<{ time: number; value: number }>;
+  axisGroup: "left" | "right";
+  color?: string;
+};
+
+type BuildNormalizedAgentLinesOptions = {
+  agents?: AgentLike[];
+  snapshotsByAgent?: SnapshotMap;
+  getLineColor?: (agent: AgentLike) => string | undefined;
+  axisGroup?: "left" | "right";
+  additionalTimestampSeries?: Array<Array<TimestampEntry>>;
+};
+
+/**
+ * Creates chart-ready agent lines with globally normalized time values.
+ * Returns both the generated lines and the normalizeTimestamp function
+ * so other data series (e.g. sentiment) can align to the same timeline.
+ */
+export function buildNormalizedAgentLines({
+  agents = [],
+  snapshotsByAgent = {},
+  getLineColor,
+  axisGroup = "left",
+  additionalTimestampSeries = [],
+}: BuildNormalizedAgentLinesOptions) {
+  const sanitizedAdditionalSeries = additionalTimestampSeries
+    .map((series = []) =>
+      series
+        ?.map((entry) => {
+          if (!entry || !entry.timestamp) return null;
+          return { timestamp: entry.timestamp };
+        })
+        .filter(
+          (entry): entry is TimestampEntry =>
+            entry !== null && typeof entry.timestamp !== "undefined",
+        ),
+    )
+    .filter((series) => Array.isArray(series) && series.length > 0);
+
+  const snapshotSeries = agents.map((agent) => {
+    const agentSnapshots = snapshotsByAgent?.[agent.id];
+    if (!Array.isArray(agentSnapshots)) return [];
+    return agentSnapshots;
+  });
+
+  const timestampSeries = [...snapshotSeries, ...sanitizedAdditionalSeries].filter(
+    (series) => Array.isArray(series) && series.length > 0,
+  );
+
+  const { normalizeTimestamp, hasData } = createTimeNormalizer(
+    timestampSeries,
+    "timestamp",
+  );
+
+  const lines: NormalizedLine[] = agents
+    .map((agent) => {
+      const initialCapital = parseFloat(agent.initial_capital as string);
+      if (!Number.isFinite(initialCapital) || initialCapital === 0) return null;
+
+      const snapshots = (snapshotsByAgent?.[agent.id] || [])
+        .slice()
+        .sort(
+          (a, b) =>
+            new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime(),
+        );
+
+      const chartData = snapshots
+        .map((snapshot) => {
+          const time = normalizeTimestamp(snapshot.timestamp);
+          const parsedEquity = parseFloat(snapshot.equity as string);
+
+          if (time === null) return null;
+
+          const equity = Number.isFinite(parsedEquity)
+            ? parsedEquity
+            : initialCapital;
+          const percentChange =
+            initialCapital === 0
+              ? 0
+              : ((equity - initialCapital) / initialCapital) * 100;
+
+          return { time, value: percentChange };
+        })
+        .filter(
+          (point): point is { time: number; value: number } => point !== null,
+        );
+
+      if (chartData.length === 0) return null;
+
+      return {
+        id: agent.id,
+        name: agent.name,
+        data: chartData,
+        axisGroup,
+        color: getLineColor ? getLineColor(agent) : undefined,
+      };
+    })
+    .filter((line): line is NormalizedLine => line !== null);
+
+  return {
+    lines,
+    normalizeTimestamp,
+    hasData,
+  };
+}

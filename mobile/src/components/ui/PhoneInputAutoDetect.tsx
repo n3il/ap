@@ -16,9 +16,10 @@ export default function PhoneInputAutoDetect({
   onChange: (value: string) => void;
 }) {
   const { colors: palette } = useColors();
-  const [displayValue, setDisplayValue] = useState(
+  const [countryCodeValue, setCountryCodeValue] = useState(
     `+${getCountryCallingCode(DEFAULT_COUNTRY)}`,
   );
+  const [displayValue, setDisplayValue] = useState('');
 
   const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY);
 
@@ -70,11 +71,28 @@ export default function PhoneInputAutoDetect({
     <View
       style={{
         flexDirection: "row",
+        justifyContent: "flex-start",
         alignItems: "center",
         padding: 8,
         borderRadius: 8,
       }}
     >
+
+      <TextInput
+        style={{
+          fontSize: 18,
+          height: 40,
+          paddingHorizontal: 8,
+          color: "#fff",
+          letterSpacing: 2,
+        }}
+        selectionColor={palette.foreground}
+        value={countryCodeValue}
+        placeholder="+1"
+        keyboardType="phone-pad"
+        textContentType="telephoneNumber"
+        onChangeText={setCountryCodeValue}
+      />
       <TextInput
         style={{
           flex: 1,
@@ -86,7 +104,7 @@ export default function PhoneInputAutoDetect({
         }}
         selectionColor={palette.foreground}
         value={displayValue}
-        placeholder="+1 (000) 000-0000"
+        placeholder="(000) 000-0000"
         keyboardType="phone-pad"
         textContentType="telephoneNumber"
         onChangeText={handleTextChange}

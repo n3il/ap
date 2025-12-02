@@ -135,7 +135,7 @@ export default function GlassSelector({ style, ...props }: GlassSelectorProps) {
           flexDirection: "row",
           alignItems: "center",
           gap: 4,
-          borderRadius: 100,
+          borderRadius: 999,
           paddingVertical: 3,
         }}
       >

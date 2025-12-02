@@ -49,7 +49,7 @@ export default function Auth() {
     return re.test(phone.replace(/[\s()-]/g, ""));
   };
 
-  const handlePhoneSubmit = async () => {
+  const handlePhoneSubmit = async (phoneNumber) => {
     if (!validatePhoneNumber(phoneNumber)) {
       Alert.alert(t("common.error"), t("login.errors.invalidPhoneNumber"));
       return;
@@ -336,14 +336,11 @@ export default function Auth() {
               </Text>
 
               <GlassButton
-                onPress={handlePhoneSubmit}
+                onPress={() => handlePhoneSubmit(phoneNumber)}
                 disabled={loading}
                 styleVariant="paddedFull"
                 tintColor={palette.surface}
                 glassEffectStyle="regular"
-                style={{
-                  paddingVertical: 14,
-                }}
               >
                 {loading ? (
                   <ActivityIndicator color={palette.foreground} />
@@ -367,9 +364,6 @@ export default function Auth() {
                 styleVariant="paddedFull"
                 tintColor={palette.surface}
                 glassEffectStyle="regular"
-                style={{
-                  paddingVertical: 14,
-                }}
               >
                 {loading ? (
                   <ActivityIndicator color="white" />

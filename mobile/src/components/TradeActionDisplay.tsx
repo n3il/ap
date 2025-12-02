@@ -18,6 +18,7 @@ type OpenTradeAction = {
   stop_loss?: number;
   reason: string;
   confidenceScore?: number;
+  action: string;
 };
 
 type CloseTradeAction = {
@@ -27,6 +28,7 @@ type CloseTradeAction = {
   exit_limit_price?: number;
   reason: string;
   confidenceScore?: number;
+  action: string;
 };
 
 type TradeActionType = OpenTradeAction | CloseTradeAction;
@@ -50,7 +52,7 @@ function getActionMeta(action: TradeActionType, palette) {
 
   return {
     icon: "close-circle",
-    label: "Close Position",
+    label: "Close",
     color: palette.long,
     variant: "neutral",
   };
@@ -71,12 +73,12 @@ export default function TradeActionDisplay({
     actionData.type === "OPEN" ? actionData.trade_amount : undefined;
   const leverage = actionData.type === "OPEN" ? actionData.leverage : undefined;
 
+  if (actionData.action === "NO_ACTION") {
+    return null;
+  }
   return (
     <View
       sx={{
-        borderBottomWidth: 1,
-        borderColor: palette.border,
-        paddingVertical: 2,
       }}
     >
       <TouchableOpacity activeOpacity={0.7}>
@@ -87,48 +89,40 @@ export default function TradeActionDisplay({
             justifyContent: "space-between",
           }}
         >
-          <Text variant="sm" sx={{ fontSize: 12, fontWeight: "400" }}>
+          <Text
+            variant="xs"
+            sx={{
+              textTransform: 'capitalize'
+            }}
+          >
+              {actionData.action?.replace('_', ' ') || '-'}
+          </Text>
+
+          <Text variant="xs" sx={{ fontSize: 12, fontWeight: "400" }}>
             {asset}
           </Text>
 
-          <View
-            sx={{
-              flexGrow: 0,
-              flexDirection: "row",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            {(tradeAmount !== undefined || leverage !== undefined) && (
-              <View sx={{ flexDirection: "row", gap: 2 }}>
-                {tradeAmount !== undefined && (
-                  <Text variant="xs" tone="muted">
-                    {formatAmount(tradeAmount)}
-                  </Text>
-                )}
-                {leverage !== undefined && (
-                  <Text variant="xs" sx={{ fontWeight: "500" }}>
-                    {`${leverage}x`}
-                  </Text>
-                )}
-              </View>
-            )}
+          <Text variant="xs" sx={{ fontWeight: "500" }}>
+            {leverage ? `${leverage}x` : '-'}
+          </Text>
+          <Text variant="xs" tone="muted">
+            {tradeAmount ? formatAmount(tradeAmount) : '-'}
+          </Text>
 
-            <StatusBadge variant={config.variant}>{config.label}</StatusBadge>
-          </View>
         </View>
       </TouchableOpacity>
 
-      {showReason && (
-        <View sx={{ marginTop: 2, borderTopWidth: 1 }}>
+      {reason ? (
+        <View sx={{ marginVertical: 4, borderTopWidth: 1 }}>
           <Text
-            variant="sm"
-            sx={{ lineHeight: 14, fontSize: 10, fontWeight: 300 }}
+            variant="xs"
+
+            sx={{ fontFamily: "monospace", fontStyle: "italic", color: palette.mutedForeground }}
           >
             {reason || "-"}
           </Text>
         </View>
-      )}
+      ) : null}
     </View>
   );
 }
@@ -141,13 +135,7 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
   const { colors: palette } = useColors();
 
   if (!tradeActions.length) {
-    return (
-      <View sx={{ paddingVertical: 2 }}>
-        <Text variant="xs" tone="muted">
-          No trade actions generated
-        </Text>
-      </View>
-    );
+    return null;
   }
 
   const openActions = tradeActions.filter(
@@ -157,33 +145,22 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
     (action): action is CloseTradeAction => action.type === "CLOSE",
   );
 
-  const openedLongs = openActions.filter(
-    (action) => action.type === "OPEN" && action.direction === "LONG",
-  ).length;
-  const openedShorts = openActions.filter(
-    (action) => action.type === "OPEN" && action.direction === "SHORT",
-  ).length;
-  const closedPositions = closeActions.length;
-
-  const totalOpenNotional = openActions.reduce((acc, action) => {
+  const netPositionChange = tradeActions.reduce((acc, action) => {
     const amount = _asNumber(action.trade_amount);
     return acc + (amount ?? 0);
   }, 0);
 
   const parts: string[] = [];
-  if (openedLongs) {
-    parts.push(`Opened ${openedLongs} long${openedLongs > 1 ? "s" : ""}`);
+  if (openActions.length) {
+    parts.push(`Opened ${openActions.length} positions`);
   }
-  if (openedShorts) {
-    parts.push(`Opened ${openedShorts} short${openedShorts > 1 ? "s" : ""}`);
-  }
-  if (closedPositions) {
+  if (closeActions.length) {
     parts.push(
-      `Closed ${closedPositions} position${closedPositions > 1 ? "s" : ""}`,
+      `Closed ${closeActions.length} position${closeActions.length > 1 ? "s" : ""}`,
     );
   }
-  if (totalOpenNotional > 0) {
-    parts.push(`~${formatAmount(totalOpenNotional)} notional`);
+  if (openActions.length || closeActions.length) {
+    parts.push(`(net ${formatAmount(netPositionChange), { showSign: true }})`);
   }
   if (!parts.length) {
     return null;
