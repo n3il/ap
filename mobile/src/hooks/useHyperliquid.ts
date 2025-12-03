@@ -60,12 +60,10 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
       return;
     }
 
-    if (msg.channel === "subscriptionResponse") {
-      const key = JSON.stringify(msg.data.subscription);
-      const handlers = registry.get(key);
-      if (!handlers) return;
-      handlers.forEach((h) => h(msg.data));
-    }
+    const key = msg.channel;
+    const handlers = registry.get(key);
+    if (!handlers) return;
+    handlers.forEach((h) => h(msg.data));
   });
 
   const ping = async () => {
@@ -116,7 +114,7 @@ export function useHLSubscription(
   enabled = true
 ) {
   const { client, registry } = useHyperliquidStore.getState();
-  const key = JSON.stringify({ method, params });
+  const key = method;
 
   useEffect(() => {
     if (!enabled) return;

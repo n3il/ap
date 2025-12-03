@@ -19,7 +19,7 @@ import {
 } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useMarketHistory } from "@/hooks/useMarketHistory";
-import { useMarketPrices, useMarketPricesStore } from "@/hooks/useMarketPrices";
+import { NormalizedAsset, useMarketPrices, useMarketPricesStore } from "@/hooks/useMarketPrices";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors, withOpacity } from "@/theme";
 import { numberToColor } from "@/utils/currency";
@@ -61,7 +61,7 @@ const Sparkline = ({
     <Svg width={width} height={height}>
       <Polyline
         points={points}
-        fill={withOpacity(color, 0.5)}
+        fill={withOpacity(color, 0.3)}
         stroke={color}
         strokeWidth={2}
         strokeLinejoin="round"
@@ -72,14 +72,14 @@ const Sparkline = ({
 };
 
 const PriceColumn = ({
-  symbol,
+  tickerData: displayAsset,
   sparklineData,
   rangeDelta,
   rangePercent,
   isHistoryLoading,
   scrollY,
 }: {
-  symbol: string;
+  tickerData: NormalizedAsset;
   sparklineData: number[];
   rangeDelta: number;
   rangePercent: number;
@@ -89,25 +89,9 @@ const PriceColumn = ({
   const router = useRouter();
   const { colors: palette } = useColors();
 
-  // Get asset data from Zustand store
-  const asset = useMarketPricesStore(
-    useCallback((state) => state.tickers[symbol]?.asset, [symbol]),
-  );
-
   const onPress = () => {
     router.push(ROUTES.TABS_MARKETS_TRADE.path);
   };
-
-  const displayAsset = useMemo(
-    () =>
-      asset ?? {
-        id: symbol,
-        symbol: symbol,
-        name: symbol,
-        price: null,
-      },
-    [asset, symbol],
-  );
 
   const _hasChange = Number.isFinite(rangePercent);
 
@@ -352,33 +336,13 @@ const PriceColumn = ({
   );
 };
 
-export default function MarketPricesWidget({ tickers, sx: customSx, scrollY }) {
+export default function MarketPricesWidget({ sx: customSx, scrollY }) {
   const { colors: palette } = useColors();
   const { timeframe } = useTimeframeStore();
-  const { normalizedTickers, assets, isLoading } = useMarketPrices(tickers);
+  const { tickers, isLoading } = useMarketPrices();
   const { data: historyData, isFetching: historyFetching } = useMarketHistory(
-    normalizedTickers,
     timeframe,
   );
-
-  console.log({ assets })
-
-  const displayAssets = useMemo(() => {
-    if (!normalizedTickers.length) return assets;
-    return normalizedTickers.map((symbol) => {
-      const uppercase = symbol.toUpperCase();
-      return (
-        assets.find(
-          (asset) => asset?.id === uppercase || asset?.symbol === uppercase,
-        ) ?? {
-          id: uppercase,
-          symbol: uppercase,
-          name: uppercase,
-          price: null,
-        }
-      );
-    });
-  }, [assets, normalizedTickers]);
 
   return (
     <Animated.View style={[customSx]}>
@@ -388,8 +352,8 @@ export default function MarketPricesWidget({ tickers, sx: customSx, scrollY }) {
         contentContainerStyle={[{ gap: 0, paddingRight: GLOBAL_PADDING }]}
         showsHorizontalScrollIndicator={false}
       >
-        {displayAssets.length ? (
-          displayAssets.map((asset, index) => {
+        {tickers.length ? (
+          tickers.map((asset, index) => {
             const symbol = asset?.symbol;
             const history = historyData?.[symbol] ?? [];
             const sparklinePoints = history.map((point) => point.close);
@@ -409,7 +373,7 @@ export default function MarketPricesWidget({ tickers, sx: customSx, scrollY }) {
             return (
               <PriceColumn
                 key={symbol ?? index}
-                symbol={symbol}
+                tickerData={asset}
                 sparklineData={sparklinePoints}
                 rangeDelta={rangeDelta}
                 rangePercent={rangePercent}

@@ -1,10 +1,8 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { create } from "zustand";
 
-import { useHLSubscription, useHyperliquidRequests, useHyperliquidStore } from "@/hooks/useHyperliquid";
+import { useHLSubscription, useHyperliquidRequests } from "@/hooks/useHyperliquid";
 import { getTopKAssets } from "@/data/utils";
-
-const DEFAULT_TICKERS = ["BTC", "ETH", "SOL"];
 
 export interface NormalizedAsset {
   symbol: string;
@@ -55,132 +53,42 @@ export function normalizeHLAsset(raw: any): NormalizedAsset {
   };
 }
 
-const connectionStrengthThresholds = (diff) => {
-  if (diff < 5000) return "strong";
-  if (diff < 10000) return "moderate";
-  return "weak";
-};
-
-// Normalize tickers input to array of uppercase strings
-export const normalizeTickers = (tickers) => {
-  if (!tickers) return DEFAULT_TICKERS;
-  if (Array.isArray(tickers)) {
-    return tickers.length
-      ? tickers.map((t) => t.toUpperCase())
-      : DEFAULT_TICKERS;
-  }
-  if (typeof tickers === "string") {
-    const parsed = tickers
-      .split(",")
-      .map((t) => t.trim().toUpperCase())
-      .filter(Boolean);
-    return parsed.length ? parsed : DEFAULT_TICKERS;
-  }
-  return DEFAULT_TICKERS;
-};
-
 // Zustand store for market prices
 export const useMarketPricesStore = create((set, get) => ({
-  tickers: {},
-
-  // Connection state derived from HL store
-  connectionStatus: "disconnected",
-  connectionStrength: null,
-  lastConnectionChange: null,
-  timeDiff: null,
-
-  initTicker: (symbol) => {
-    const current = get().tickers;
-    if (!current[symbol]) {
-      current[symbol] = {
-        asset: null,
-        isLoading: true,
-        isUpdating: false,
-        error: null,
-        lastUpdated: null,
-        previousMids: {},
-      };
-      set({ tickers: { ...current } });
-    }
-  },
+  tickers: [] as NormalizedAsset[],
 
   setTickers: (tickers: NormalizedAsset[]) => set({ tickers }),
 
-  updateTickers: (assets, timestamp) => {
-    const current = get().tickers;
-    const next = { ...current };
-
-    assets.forEach((a) => {
-      const symbol = a.symbol;
-      if (!next[symbol]) {
-        next[symbol] = {
-          asset: null,
-          isLoading: true,
-          isUpdating: false,
-          error: null,
-          lastUpdated: null,
-          previousMids: {},
-        };
-      }
-
-      const previousMids = { ...next[symbol].previousMids };
-      if (Number.isFinite(a.price)) previousMids[symbol] = a.price;
-
-      next[symbol] = {
-        ...next[symbol],
-        asset: a,
-        isLoading: false,
-        isUpdating: false,
-        error: null,
-        lastUpdated: timestamp,
-        previousMids,
-      };
-    });
-
-    set({ tickers: next });
+  updateTickers: (mids: Record<string, string>, timestamp: number) => {
+    const updated = get().tickers.map(t => ({
+      ...t,
+      // midPx: mids[t.symbol] ? Number(mids[t.symbol]) : t.midPx,
+      price: mids[t.symbol] ? Number(mids[t.symbol]) : t.midPx,
+      lastUpdated: timestamp,
+    }));
+    set({ tickers: updated });
   },
 
-  setError: (symbols, error) => {
-    const current = get().tickers;
-    const next = { ...current };
-
-    symbols.forEach((s) => {
-      if (next[s]) {
-        next[s] = {
-          ...next[s],
-          error,
-          isLoading: false,
-          isUpdating: false,
-        };
-      }
-    });
-
-    set({ tickers: next });
-  },
+  isLoading: false,
+  setLoading: (val: boolean) => set({ isLoading: val }),
 }));
 
 /**
  * Hook to subscribe to live prices from Hyperliquid
  */
-export function useMarketPrices(tickers) {
-  const normalizedTickers = useMemo(
-    () => normalizeTickers(tickers),
-    [tickers]
-  );
-
+export function useMarketPrices() {
   const {
-    tickers: storeTickers,
+    tickers,
     setTickers,
     updateTickers,
-    connectionStatus,
-    connectionStrength,
-    lastConnectionChange,
-    timeDiff,
+    setLoading,
+    isLoading,
   } = useMarketPricesStore();
 
   const { sendRequest } = useHyperliquidRequests()
   useEffect(() => {
     async function load() {
+      setLoading(true);
       const data = await sendRequest({
         type: "info",
         payload: {
@@ -190,96 +98,27 @@ export function useMarketPrices(tickers) {
       if (data.payload.data) {
         const [{universe}, assetContexts] = data.payload.data;
         const topK = getTopKAssets(universe, assetContexts);
-        setTickers(topK.map(normalizeHLAsset));
+        const tickerData = topK.map(normalizeHLAsset);
+        setTickers(tickerData);
       }
+      setLoading(false);
     }
     load();
   }, []);
 
-  console.log(storeTickers.length)
-
   useHLSubscription(
     "allMids",
-    { dex: "perp" },
-    (msg: any) => {
-      console.log('----', { msg })
-      if (msg?.isSnapshot) return;
-
-      const mids = msg.data?.mids;
-      if (!mids) return;
-
-      const timestamp = Date.now();
-
-      const assets = normalizedTickers
-        .map((symbol) => {
-          const price = mids[symbol];
-          if (!price) return null;
-          return {
-            symbol,
-            id: symbol,
-            name: symbol,
-            price,
-          };
-        })
-        .filter(Boolean);
-
-      updateTickers(assets, timestamp);
+    {},
+    (msg) => {
+      if (!msg.mids) return;
+      updateTickers(msg.mids, Date.now());
     },
-    Boolean(storeTickers.length)
+    tickers.length > 0
   );
-
-  // Return computed data
-  const assets = useMemo(() => {
-    return normalizedTickers.map((symbol) => {
-      const t = storeTickers[symbol];
-      return (
-        t?.asset ?? {
-          id: symbol,
-          symbol,
-          name: symbol,
-          price: null,
-        }
-      );
-    });
-  }, [normalizedTickers, storeTickers]);
-
-  const isLoading = normalizedTickers.some(
-    (s) => storeTickers[s]?.isLoading ?? true
-  );
-
-  const isUpdating = normalizedTickers.some(
-    (s) => storeTickers[s]?.isUpdating ?? false
-  );
-
-  const error = (() => {
-    for (const s of normalizedTickers) {
-      const e = storeTickers[s]?.error;
-      if (e) return e;
-    }
-    return null;
-  })();
-
-  const lastUpdated = (() => {
-    let latest = null;
-    normalizedTickers.forEach((s) => {
-      const t = storeTickers[s]?.lastUpdated;
-      if (t && (!latest || t > latest)) latest = t;
-    });
-    return latest;
-  })();
 
   return {
-    normalizedTickers,
-    assets,
+    tickers: tickers,
+    assets: tickers || {},
     isLoading,
-    isUpdating,
-    error,
-    lastUpdated,
-
-    // ⭐ NEW: comes from HL WebSocket state
-    connectionStatus,
-    connectionStrength,
-    lastConnectionChange,
-    timeDiff,
   };
 }

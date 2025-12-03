@@ -14,9 +14,8 @@ export default {
     },
     ios: {
       usesAppleSignIn: true,
-      supportsTablet: true,
       bundleIdentifier: "com.puppetai.app",
-      deploymentTarget: "18.0",
+      deploymentTarget: "16.0",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSUserNotificationsUsageDescription:
