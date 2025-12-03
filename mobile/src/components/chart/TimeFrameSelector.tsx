@@ -2,17 +2,7 @@ import { GlassView } from "expo-glass-effect";
 import { StyleSheet } from "react-native";
 import { ScrollView, Text, TouchableOpacity } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useTimeframeStore } from "@/stores/useTimeframeStore";
-
-const TIMEFRAME_OPTIONS = [
-  // { id: "5m", label: "5m" },
-  // { id: "15m", label: "15m" },
-  { id: "1h", label: "1H" },
-  { id: "24h", label: "24H" },
-  { id: "7d", label: "7D" },
-  { id: '1M', label: '1M' },
-  { id: 'All', label: 'All' },
-];
+import { TIMEFRAME_OPTIONS, useTimeframeStore } from "@/stores/useTimeframeStore";
 
 export default function TimeFrameSelector() {
   const { theme } = useTheme();

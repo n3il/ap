@@ -453,7 +453,7 @@ const SvgChart = ({
       return "";
     };
 
-    return [0, 0.5, 1].map(getTimeLabel);
+    return [0, 0.25, 0.75, 1].map(getTimeLabel);
   }, [timeframe]);
 
   // Create scale functions for each axis

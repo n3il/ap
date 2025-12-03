@@ -126,7 +126,7 @@ export default function AgentCard({
         <View
           style={{
             flexDirection: "row",
-            alignItems: "flex-start",
+            alignItems: "center",
             gap: 2,
             justifyContent: "space-between",
           }}
@@ -156,14 +156,14 @@ export default function AgentCard({
           />
         ) : null}
 
-        {agent.latest_assessment?.parsed_llm_response?.tradeActions?.length >
+        {/* {agent.latest_assessment?.parsed_llm_response?.tradeActions?.length >
           0 && (
           <TradeSummary
             tradeActions={
               agent.latest_assessment?.parsed_llm_response?.tradeActions
             }
           />
-        )}
+        )} */}
       </Pressable>
 
       {!hideOpenPositions && accountData.openPositions.length > 0 ? (

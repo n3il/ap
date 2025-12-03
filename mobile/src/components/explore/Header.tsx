@@ -31,6 +31,7 @@ export const AppLogo = () => {
           fontWeight: "600",
           color: "accent700",
           letterSpacing: 3,
+          textTransform: 'uppercase',
         }}
       >
         {process.env.EXPO_PUBLIC_APP_NAME}

@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useHyperliquidRequests } from "@/hooks/useHyperliquid";
 import { useHLSubscription } from "@/hooks/useHyperliquid";
+import { useMarketPricesStore } from "@/hooks/useMarketPrices";
 
 type MarginSummary = {
   accountValue: string;      // total account value in USD
@@ -63,7 +64,8 @@ export function calcPnLByTimeframe(data: any) {
         return [timeframe, { first: null, last: null, pnl: null, pnlPct: null }];
       }
 
-      const first = parseFloat(history[0][1]);
+      const firstWithValue = history.findIndex(h => parseFloat(h[1]) > 0);
+      const first = parseFloat(history[firstWithValue][1]);
       const last = parseFloat(history[history.length - 1][1]);
       const pnl = last - first;
       const pnlPct = first !== 0 ? (pnl / first) * 100 : null;
@@ -144,7 +146,6 @@ export function useAccountBalanceNew({ userId }: { userId: string | null }) {
     },
     Boolean(userId)
   );
-
   // ── Derived values from clearinghouseState ─────────────────────
   const equity = useMemo(
     () =>
@@ -170,6 +171,8 @@ export function useAccountBalanceNew({ userId }: { userId: string | null }) {
         : 0,
     [clearinghouseState]
   );
+
+  const { mids } = useMarketPricesStore();
 
   const openPnl = useMemo(
     () =>
@@ -226,25 +229,25 @@ export function useAccountBalanceNew({ userId }: { userId: string | null }) {
   );
 
   const openPositions = useMemo(() => {
-  if (!clearinghouseState) return [];
+    if (!clearinghouseState) return [];
 
-  return clearinghouseState.assetPositions.map(ap => {
-    const p = ap.position;
+    return clearinghouseState.assetPositions.map(ap => {
+      const p = ap.position;
 
-    return {
-      coin: p.coin,
-      size: Number(p.szi),
-      entryPrice: Number(p.entryPx),
-      positionValue: Number(p.positionValue),
-      unrealizedPnl: Number(p.unrealizedPnl),
-      liquidationPx: Number(p.liquidationPx),
-      marginUsed: Number(p.marginUsed),
-      leverage: p.leverage?.value ?? null,
-      roe: Number(p.returnOnEquity),
-      type: ap.type,
-    };
-  });
-}, [clearinghouseState]);
+      return {
+        coin: p.coin,
+        size: Number(p.szi),
+        entryPrice: Number(p.entryPx),
+        positionValue: Number(p.positionValue),
+        unrealizedPnl: Number(p.unrealizedPnl),
+        liquidationPx: Number(p.liquidationPx),
+        marginUsed: Number(p.marginUsed),
+        leverage: p.leverage?.value ?? null,
+        roe: Number(p.returnOnEquity),
+        type: ap.type,
+      };
+    });
+  }, [clearinghouseState]);
 
   return {
     // history / PnL

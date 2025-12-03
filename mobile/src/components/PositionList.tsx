@@ -5,6 +5,7 @@ import { useColors } from "@/theme";
 import { formatAmount, formatCompact, formatPercent } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import { useMarketPricesStore } from "@/hooks/useMarketPrices";
+import { SxProp } from "dripsy";
 
 type PositionDetailRowProps = {
   label: string;
@@ -90,19 +91,14 @@ export const mapOpenPositionToUI = (p: OpenPosition) => {
     symbol: p.coin,
     coin: p.coin,
     side: p.size >= 0 ? "long" : "short",
-
     size: p.size,
     szi: p.size, // alias for size
-
     entry_price: p.entryPrice,
-    currentPrice: p.positionValue / Math.abs(p.size || 1), // best guess unless you have mark price
-
     unrealizedPnl: p.unrealizedPnl,
     pnlPercent: p.roe * 100,
-
     leverage: p.leverage,
     positionValue: p.positionValue,
-
+    liquidationPrice: p.liquidationPx,
     entry_timestamp: undefined, // HL does not supply this in your structure
   };
 };
@@ -129,8 +125,7 @@ export function PositionRow({ position }: {position: OpenPosition}) {
     entry_timestamp,
   } = uiPosition;
 
-  const { mids } = useMarketPricesStore();
-  const currentPriceValue = Number(mids[symbol]) || 0;
+  const currentPriceValue = 0 // Number(mids[symbol]) || 0;
   console.log({ currentPriceValue, position })
 
 
@@ -225,7 +220,7 @@ export function PositionRow({ position }: {position: OpenPosition}) {
                 variant="xs"
                 sx={{ fontWeight: "500", color: positionPnlColor }}
               >
-                {formatAmount(unrealizedPnlValue)} (
+                {formatAmount(unrealizedPnlValue, { showSign: true })} (
                 {formatPercent(pnlPercentValue)})
               </Text>
             </View>
@@ -247,9 +242,8 @@ export function PositionRow({ position }: {position: OpenPosition}) {
           <PositionDetailRow label="Size" value={sizeLabel} />
 
           <PositionDetailRow label="Entry" value={entry_price} />
-          {currentPriceLabel && (
-            <PositionDetailRow label="Current" value={currentPriceLabel} />
-          )}
+          <PositionDetailRow label="Current" value={currentPriceValue} />
+          <PositionDetailRow label="Liq. Price" value={uiPosition.liquidationPrice} />
 
           <PositionDetailRow
             label="Unrealized PnL"
@@ -273,18 +267,20 @@ export function PositionRow({ position }: {position: OpenPosition}) {
 type PositionListProps = {
   positions?: EnrichedPosition[];
   top?: number;
+  sx?: SxProp;
 };
 
 export default function PositionList({
   positions = [],
   top = 3,
+  sx = {},
 }: PositionListProps) {
   const safeEnrichedPositions = Array.isArray(positions) ? positions : [];
   const topPositions = safeEnrichedPositions
     .sort((a, b) => b.size - a.size)
     .slice(0, top);
   return (
-    <View sx={{ marginTop: 3 }}>
+    <View sx={sx}>
       {topPositions.length > 0 ? (
         topPositions.map((position, i) => (
           <PositionRow

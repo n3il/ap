@@ -99,7 +99,6 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
 
   const showStructured = Boolean(parsedResponse);
 
-  console.log({ assessment })
   if (!assessment) {
     return <LockScreen />;
   }

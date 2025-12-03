@@ -22,6 +22,7 @@ export function StatsAbbreviated({
         value={accountData.openPnl}
         orientation="horizontal"
         textVariant="xs"
+        colorize
         valueTextVariant="xs"
       />
     </View>

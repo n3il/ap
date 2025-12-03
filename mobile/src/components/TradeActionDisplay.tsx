@@ -145,36 +145,21 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
     (action): action is OpenTradeAction => action.type === "OPEN",
   );
   const closeActions = tradeActions.filter(
-    (action): action is CloseTradeAction => action.type === "CLOSE",
+    (action): action is CloseTradeAction => action.type !== "OPEN",
   );
 
-  const netPositionChange = tradeActions.reduce((acc, action) => {
-    const amount = _asNumber(action.trade_amount);
-    return acc + (amount ?? 0);
-  }, 0);
-
-  const parts: string[] = [];
-  if (openActions.length) {
-    parts.push(`Opened ${openActions.map(a => `${a.asset} ${a.direction?.toLowerCase()}`).join(', ')}`);
-  }
-  if (closeActions.length) {
-    parts.push(
-      `Closed ${closeActions.map(a => `${a.asset} ${(a.direction || 'short').toLowerCase()}`).join(', ')}`,
-    );
-  }
-  // if (openActions.length || closeActions.length) {
-  //   parts.push(`(net ${formatAmount(netPositionChange), { showSign: true }})`);
-  // }
-  if (!parts.length) {
-    return null;
-  }
+  const parts = [
+    "Opened: " + openActions.map(a => `${a.asset} ${a.direction?.toLowerCase()}`).join(', '),
+    "Closed: " + closeActions.length,
+  ]
 
   return (
     <View sx={{ paddingVertical: 2 }}>
+      <Text variant="xs">Moves: </Text>
       <Text
         variant="xs"
         sx={{
-          color: palette.textTertiary,
+          color: palette.textSecondary,
           fontWeight: "500",
         }}
       >

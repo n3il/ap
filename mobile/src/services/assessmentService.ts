@@ -206,7 +206,6 @@ export const assessmentService = {
       statuses = DEFAULT_ASSESSMENT_STATUSES,
     } = {},
   ) {
-    console.log('--------')
     // Ensure agentIds is an array
     const ids = Array.isArray(agentIds) ? agentIds : [agentIds];
 
@@ -232,7 +231,6 @@ export const assessmentService = {
       .order("timestamp", { ascending: false })
       .limit(limit);
 
-    console.log({ query })
     if (error) throw error;
 
     // Filter out null sentiment scores and format the response

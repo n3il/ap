@@ -1,16 +1,17 @@
 import { Text, View } from "@/components/ui";
 import LabelValue, { FormattedValueLabel } from "@/components/ui/LabelValue";
-import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
-import { shadows, useColors } from "@/theme";
+import { useTimeframeStore } from "@/stores/useTimeframeStore";
+import { useColors } from "@/theme";
 import { AgentType } from "@/types/agent";
-import { formatAmount, formatDecimal, formatPercent } from "@/utils/currency";
+import { formatPercent } from "@/utils/currency";
+import { Pressable } from "react-native";
 
-const timeframeLabel = {
-  day: "1D",
-  week: "1W",
-  month: "1M",
-  alltime: "All",
+const accountBalanceTimeframes = {
+  day: { id: "1D", label: "1D" },
+  week: { id: "1W", label: "1W" },
+  month: { id: "1M", label: "1M" },
+  alltime: { id: "All", label: "All" },
 }
 
 export default function BalanceOverview({
@@ -22,6 +23,7 @@ export default function BalanceOverview({
   const tradingAccountType = agent?.simulate ? "paper" : "real";
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
   const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
+  const { setTimeframe } = useTimeframeStore();
 
   return (
     <View sx={{
@@ -49,15 +51,20 @@ export default function BalanceOverview({
         <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-evenly" }}>
           {Object.keys(accountData.accountValueHistory).filter(tf => tf.includes('perp')).map((timeframe) => {
             const { pnlPct } = accountData.accountValueHistory[timeframe];
-            const tflabel = timeframe.replace('perp', '').toLowerCase()
+            const timeframeOpt = accountBalanceTimeframes[
+              timeframe.replace('perp', '').toLowerCase()
+            ]
+            if (!timeframeOpt) return null;
+
             return (
-              <LabelValue
-                key={timeframe}
-                label={`${timeframeLabel[tflabel] || timeframe} P&L`}
-                value={pnlPct}
-                formatter={formatPercent}
-                alignRight
-              />
+              <Pressable key={timeframeOpt.id} onPress={() => setTimeframe(timeframeOpt.id)}>
+                <LabelValue
+                  label={`${timeframeOpt.label || timeframe} P&L`}
+                  value={pnlPct}
+                  formatter={formatPercent}
+                  alignRight
+                />
+              </Pressable>
             )
           })}
         </View>
