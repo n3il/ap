@@ -15,7 +15,7 @@ export async function executeTrade(
   if (!tradingAccount.hyperliquid_wallet_private_key) {
     throw new Error('Trading account is missing Hyperliquid wallet credentials');
   }
-  const hyperliquidOrder = toHyperliquidOrder(asset["Asset-Id"], tradeAction);
+  const hyperliquidOrder = toHyperliquidOrder(asset, tradeAction);
   Sentry.setContext("trade", {
     asset: JSON.stringify(asset),
     trade_action: JSON.stringify(tradeAction),
@@ -26,7 +26,7 @@ export async function executeTrade(
   const tradeResult = await executeHyperliquidTrade(
     hyperliquidOrder,
     agent.simulate,
-    tradingAccount.hyperliquid_wallet_private_key
+    tradingAccount.hyperliquid_wallet_private_key,
   );
 
   // // Record in ledger (to-do, offload to background job)

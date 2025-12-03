@@ -1,9 +1,25 @@
 import { LLMTradeAction } from "../llm/types.ts";
 import { HyperliquidOrderBody, HyperliquidOrder } from "./types.ts";
+import { formatPrice, formatSize } from "@nktkas/hyperliquid/utils";
 
+type AssetType = {
+  Ticker: string;
+  "Sz-Decimals": number;
+  "Max-Leverage": number;
+  "Day-Ntl-Vlm": number;
+  Funding: number;
+  "Impact-Pxs": [number, number];
+  "Mark-Px": number;
+  "Mid-Px": number;
+  "Open-Interest": number;
+  "Oracle-Px": number;
+  Premium: number;
+  "Prev-Day-Px": number;
+  "Asset-Id": number;
+};
 
 export function toHyperliquidOrder(
-  assetId: number,
+  asset: AssetType,
   trade: LLMTradeAction,
   opts?: {
     cloid?: string;
@@ -26,13 +42,16 @@ export function toHyperliquidOrder(
     const isBuy = trade.direction === "LONG";
 
     const price = trade.limit_price
-      ? trade.limit_price.toString()
-      : "0"; // market order if price = "0"
+      ? formatPrice(trade.limit_price, asset["Sz-Decimals"], true) // `true` for perp (default), `false` for spot
+      : "0"; // market order if price = "0" ?
 
-    const size = trade.trade_amount.toString();
+    const notionalAmount = trade.trade_amount / (trade.limit_price || asset["Mid-Px"])
+    const size = trade.limit_price
+      ? formatSize((notionalAmount).toString(), asset["Sz-Decimals"])
+      : "0";
 
     const order: HyperliquidOrder = {
-      a: assetId,
+      a: asset["Asset-Id"],
       b: isBuy,
       p: price,
       s: size,
