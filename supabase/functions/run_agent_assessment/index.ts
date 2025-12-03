@@ -55,7 +55,11 @@ export async function runAgentAssessment(
 
     // Build prompt
     const promptTemplate = await fetchPrompt(serviceClient, agent);
-    const prompt = buildPrompt(promptTemplate, { tradeableAssets, accountSummary, candleData: [] });
+    const prompt = buildPrompt(promptTemplate, {
+      tradeableAssets,
+      accountSummary,
+      candleData: [],
+    });
 
     // Generate analysis
     const provider = agent.llm_provider;

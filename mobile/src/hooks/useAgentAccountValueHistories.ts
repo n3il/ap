@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { calcPnLByTimeframe } from "@/hooks/useAccountBalanceNew";
+import { calcPnLByTimeframe } from "@/hooks/useAccountBalance";
 import { useHyperliquidRequests } from "@/hooks/useHyperliquid";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 

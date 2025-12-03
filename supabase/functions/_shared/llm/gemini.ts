@@ -3,6 +3,9 @@ import { tryParseText } from "./providers.ts";
 import type {
   ParsedLLMResponse,
 } from './types.ts'
+import initSentry from "../../_shared/sentry.ts";
+
+const Sentry = initSentry();
 
 export interface GeminiPrompt {
   systemInstruction: string
@@ -74,6 +77,10 @@ export async function callGeminiAPI(
   if (!data.candidates || data.candidates.length === 0) {
     throw new Error('No response from Gemini API')
   }
+
+  Sentry.setContext("external_request", {
+    data
+  });
 
   const text = data.candidates[0].content.parts[0].text;
   const parsed = tryParseText(text);

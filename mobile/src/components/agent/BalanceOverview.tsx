@@ -1,6 +1,6 @@
 import { Text, View } from "@/components/ui";
 import LabelValue, { FormattedValueLabel } from "@/components/ui/LabelValue";
-import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import { AgentType } from "@/types/agent";
@@ -22,7 +22,7 @@ export default function BalanceOverview({
   const { colors: palette } = useColors();
   const tradingAccountType = agent?.simulate ? "paper" : "real";
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
-  const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
+  const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
   const { setTimeframe } = useTimeframeStore();
 
   return (

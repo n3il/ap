@@ -12,7 +12,7 @@ import type { AgentType, AssessmentRecordType } from "@/types/agent";
 import { sentimentToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import PositionList from "./PositionList";
-import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 
 type AssessmentPreviewProps = {
   assessmentData: AssessmentRecordType;
@@ -96,7 +96,7 @@ export default function AgentCard({
   const { colors: palette } = useColors();
   const tradingAccountType = agent.simulate ? "paper" : "real";
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
-  const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
+  const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
 
   // Animation values
   const scale = useSharedValue(1);

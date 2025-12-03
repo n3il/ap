@@ -1,6 +1,6 @@
 import { View } from "@/components/ui";
 import LabelValue from "@/components/ui/LabelValue";
-import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { AgentType } from "@/types/agent";
 import { ViewStyle } from "react-native";
 
@@ -13,7 +13,7 @@ export function StatsAbbreviated({
 }) {
   const tradingAccountType = agent.simulate ? "paper" : "real";
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
-  const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
+  const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
 
   return (
     <View style={style}>
