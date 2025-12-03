@@ -361,6 +361,8 @@ export default function MarketPricesWidget({ tickers, sx: customSx, scrollY }) {
     timeframe,
   );
 
+  console.log({ assets })
+
   const displayAssets = useMemo(() => {
     if (!normalizedTickers.length) return assets;
     return normalizedTickers.map((symbol) => {

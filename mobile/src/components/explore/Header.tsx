@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { ActivityIndicator, Image, Text, View } from "@/components/ui";
 import { useMarketPricesStore } from "@/hooks/useMarketPrices";
 import { useColors } from "@/theme";
+import { useHyperliquidStore } from "@/hooks/useHyperliquid";
 
 export const AppLogo = () => {
   const { colors } = useColors();
@@ -39,35 +40,49 @@ export const AppLogo = () => {
 };
 
 export const ConnectionIndicator = () => {
-  const { colors } = useColors();
-  const { connectionStatus, connectionStrength } = useMarketPricesStore();
+  const { colors: palette } = useColors();
+  const { connectionState, latencyMs } = useHyperliquidStore();
+
+  const connectionStrength =
+    latencyMs == null
+      ? "weak"
+      : latencyMs < 1000
+      ? "strong"
+      : latencyMs < 3000
+      ? "moderate"
+      : "weak";
 
   const connectionStrengthIndicator = {
-    strong: colors.success,
-    moderate: colors.warning,
-    weak: colors.error,
+    strong: palette.success,
+    moderate: palette.warning,
+    weak: palette.error,
   }[connectionStrength];
 
   return (
     <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-      {connectionStatus === "connecting" ? (
-        <ActivityIndicator size="small" color={colors.mutedForeground} />
-      ) : connectionStatus === "error" ? (
+      {connectionState === "connecting" ? (
+        <ActivityIndicator size="small" color={palette.mutedForeground} />
+      ) : connectionState === "disconnected" ? (
         <MaterialCommunityIcons
           name="signal-off"
           size={16}
-          color={colors.error}
+          color={palette.error}
         />
       ) : (
-        <MaterialCommunityIcons
-          name="signal"
-          size={16}
-          color={connectionStrengthIndicator}
-        />
+       <>
+          <Text sx={{ display: 'none', fontSize: 11, color: "mutedForeground" }}>
+            {latencyMs?.toFixed()}ms
+          </Text>
+          <MaterialCommunityIcons
+            name="signal"
+            size={16}
+            color={connectionStrengthIndicator}
+          />
+       </>
       )}
-      {connectionStatus === "error" && (
+      {connectionState === "disconnected" && (
         <Text sx={{ fontSize: 11, color: "mutedForeground" }}>
-          {connectionStatus}
+          {connectionState}
         </Text>
       )}
     </View>

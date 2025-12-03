@@ -55,7 +55,7 @@ export default function AnimatedPhraseSlider({
   return (
     <View style={[{ height: 24, overflow: "hidden" }, style]}>
       <Animated.View style={animatedStyle}>
-        <Text variant="sm" style={{ fontStyle: "italic", fontFamily: "monospace", color: palette.foregroundSecondary }}>
+        <Text variant="sm" style={{ fontStyle: "italic", fontFamily: "monospace", color: palette.textSecondary }}>
           {phrases[index]}
         </Text>
       </Animated.View>

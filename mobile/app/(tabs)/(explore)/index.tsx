@@ -23,6 +23,8 @@ import { useColors } from "@/theme";
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ExploreScreen() {
+
+
   const [isFetching, setIsFetching] = useState(false);
   const queryClient = useQueryClient();
   const colors = useColors();
@@ -100,7 +102,6 @@ export default function ExploreScreen() {
             }}
           >
             <MarketPricesWidget
-              tickers={["SUI", "TON", "ETH", "SOL", "DOGE"]}
               timeframe={timeframe}
               scrollY={scrollY}
               sx={{
