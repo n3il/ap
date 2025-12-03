@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
+import ManualLinkingCard from "@/components/auth/ManualLinkingCard";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -19,6 +20,9 @@ import { supabase } from "@/config/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
+import { Pressable } from "react-native";
+import SettingField from "@/components/auth/SettingFields";
+import parseNumber from "libphonenumber-js";
 
 export default function AccountSettingsScreen() {
   const { user } = useAuth();
@@ -31,8 +35,8 @@ export default function AccountSettingsScreen() {
   const [isSaving, setIsSaving] = useState(false);
 
   const [formData, setFormData] = useState({
-    full_name: user?.user_metadata?.full_name || "",
-    phone: user?.user_metadata?.phone || "",
+    full_name: user?.full_name || "",
+    phone: user.phone,
     email: user?.email || "",
   });
 
@@ -105,71 +109,9 @@ export default function AccountSettingsScreen() {
     );
   };
 
-  const SettingField = ({
-    label,
-    value,
-    onChangeText,
-    editable = true,
-    keyboardType = "default",
-    icon,
-  }) => (
-    <View sx={{ marginBottom: 6 }}>
-      <Text
-        variant="sm"
-        tone="muted"
-        sx={{ fontWeight: "500", marginBottom: 2 }}
-      >
-        {label}
-      </Text>
-      <View sx={{ flexDirection: "row", alignItems: "center" }}>
-        {icon && (
-          <View sx={{ marginRight: 3 }}>
-            <Ionicons
-              name={icon}
-              size={20}
-              color={theme.colors.text.secondary}
-            />
-          </View>
-        )}
-        <TextInput
-          value={value}
-          onChangeText={onChangeText}
-          editable={isEditing && editable}
-          keyboardType={keyboardType}
-          placeholderTextColor={theme.colors.text.tertiary}
-          sx={{
-            flex: 1,
-            fontSize: 16,
-            color: "textPrimary",
-            paddingVertical: 3,
-            paddingHorizontal: 4,
-            borderRadius: "xl",
-            borderWidth: 1,
-            backgroundColor:
-              isEditing && editable
-                ? colors.withOpacity(palette.brand500 ?? palette.info, 0.05)
-                : "transparent",
-            borderColor:
-              isEditing && editable
-                ? colors.withOpacity(palette.brand500 ?? palette.info, 0.3)
-                : "border",
-          }}
-          style={{
-            fontFamily: Platform.OS === "ios" ? "System" : "sans-serif",
-          }}
-        />
-      </View>
-      {!editable && (
-        <Text variant="xs" tone="subtle" sx={{ marginTop: 1 }}>
-          Email cannot be changed
-        </Text>
-      )}
-    </View>
-  );
-
   return (
     <ContainerView style={{ flex: 1, paddingBottom: 120 }}>
-      <KeyboardAvoidingView sx={{ flex: 1 }}>
+      <KeyboardAvoidingView style={{ flex: 1 }}>
         <View
           sx={{
             paddingHorizontal: 6,
@@ -286,7 +228,7 @@ export default function AccountSettingsScreen() {
               </Text>
 
               <SettingField
-                label="Full Name"
+                label="Name"
                 value={formData.full_name}
                 onChangeText={(text) =>
                   setFormData({ ...formData, full_name: text })
@@ -321,13 +263,7 @@ export default function AccountSettingsScreen() {
             entering={FadeInDown.delay(200).springify()}
             sx={{ paddingHorizontal: 6, marginBottom: 6 }}
           >
-            <GlassView
-              glassEffectStyle="clear"
-              tintColor={
-                isDark
-                  ? colors.withOpacity(palette.background, 0.9)
-                  : colors.withOpacity(palette.foreground, 0.9)
-              }
+            <View
               style={{
                 borderRadius: 24,
                 padding: 20,
@@ -344,10 +280,10 @@ export default function AccountSettingsScreen() {
                 Security
               </Text>
 
-              <TouchableOpacity
+              <Pressable
                 onPress={handleChangePassword}
                 activeOpacity={0.7}
-                sx={{
+                style={{
                   flexDirection: "row",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -397,8 +333,8 @@ export default function AccountSettingsScreen() {
                   size={20}
                   color={theme.colors.text.secondary}
                 />
-              </TouchableOpacity>
-            </GlassView>
+              </Pressable>
+            </View>
           </AnimatedBox>
 
           <AnimatedBox
@@ -604,6 +540,13 @@ export default function AccountSettingsScreen() {
                 </View>
               </View>
             </GlassView>
+          </AnimatedBox>
+
+          <AnimatedBox
+            entering={FadeInDown.delay(320).springify()}
+            sx={{ paddingHorizontal: 6, marginBottom: 6 }}
+          >
+            <ManualLinkingCard />
           </AnimatedBox>
 
           <AnimatedBox

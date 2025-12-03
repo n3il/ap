@@ -38,12 +38,12 @@ export function toHyperliquidOrder(
       s: size,
       r: false,
       t: {
-        // limit: {
-        //   tif: opts.tif ?? "Gtc",
-        // },
-        trigger: {
-          isMarket: true,
-        }
+        limit: {
+          tif: opts.tif ?? "Gtc",
+        },
+        // trigger: {
+        //   isMarket: true,
+        // }
       },
       ...(opts.cloid ? { c: opts.cloid } : {}),
     };

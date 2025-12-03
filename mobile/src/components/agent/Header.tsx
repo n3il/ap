@@ -7,11 +7,13 @@ import GlassButton from "@/components/ui/GlassButton";
 import { supabase } from "@/config/supabase";
 import { agentWatchlistService } from "@/services/agentWatchlistService";
 import { useColors } from "@/theme";
+import { RadarSpinner } from "@/components/ui/SpinningIcon";
 
 type Props = {
   agentId?: string;
   onBookmarkPress?: () => void;
   style?: StyleProp<ViewStyle>;
+  timeframe?: string;
 };
 
 async function runAgentAssessment(agentId: string) {
@@ -43,6 +45,7 @@ export default function AgentHeader({
   agentId,
   onBookmarkPress,
   style,
+  timeframe = "24h",
 }: Props) {
   const { colors: palette } = useColors();
   const queryClient = useQueryClient();
@@ -91,13 +94,21 @@ export default function AgentHeader({
       // ⭐️ Optimistically add pending assessment
       onMutate: async () => {
         // Cancel queries so we don’t overwrite optimistic update
-        await queryClient.cancelQueries(["agent-assessments", agentId]);
+        await queryClient.cancelQueries({
+          queryKey: ["agent-assessments", agentId],
+        });
 
-        const prevData = queryClient.getQueryData([
+        const queryKeyWithTimeframe = [
           "agent-assessments",
           agentId,
           timeframe,
-        ]);
+        ];
+        const queryKeyBase = ["agent-assessments", agentId];
+
+        const prevWithTimeframe = queryClient.getQueryData(
+          queryKeyWithTimeframe,
+        );
+        const prevBase = queryClient.getQueryData(queryKeyBase);
 
         const optimisticAssessment = {
           id: `pending-${Date.now()}`,
@@ -106,36 +117,38 @@ export default function AgentHeader({
           agent_id: agentId,
         };
 
-        // Update cached infinite data
-        queryClient.setQueryData(
-          ["agent-assessments", agentId, timeframe],
-          (old) => {
-            if (!old) return old;
+        const prependOptimistic = (oldData: any) => {
+          if (!oldData?.pages) return oldData;
+          return {
+            ...oldData,
+            pages: oldData.pages.map((page: any, index: number) => {
+              if (index !== 0 || !page?.data) return page;
+              return {
+                ...page,
+                data: [optimisticAssessment, ...page.data],
+              };
+            }),
+          };
+        };
 
-            return {
-              ...old,
-              pages: old.pages.map((page, i) => {
-                if (i !== 0) return page;
+        queryClient.setQueryData(queryKeyWithTimeframe, prependOptimistic);
+        queryClient.setQueryData(queryKeyBase, prependOptimistic);
 
-                // prepend to first page
-                return {
-                  ...page,
-                  data: [optimisticAssessment, ...page.data],
-                };
-              }),
-            };
-          },
-        );
-
-        return { prevData };
+        return { prevWithTimeframe, prevBase };
       },
 
       // Restore on error
       onError: (err, _, context) => {
-        if (context?.prevData) {
+        if (context?.prevWithTimeframe) {
           queryClient.setQueryData(
             ["agent-assessments", agentId, timeframe],
-            context.prevData,
+            context.prevWithTimeframe,
+          );
+        }
+        if (context?.prevBase) {
+          queryClient.setQueryData(
+            ["agent-assessments", agentId],
+            context.prevBase,
           );
         }
         Alert.alert("Unable to run assessment", err.message);
@@ -143,7 +156,9 @@ export default function AgentHeader({
 
       // Refetch real data
       onSuccess: () => {
-        queryClient.invalidateQueries(["agent-assessments", agentId]);
+        queryClient.invalidateQueries({
+          queryKey: ["agent-assessments", agentId],
+        });
       },
     });
 
@@ -195,15 +210,7 @@ export default function AgentHeader({
           height: 40,
         }}
       >
-        {isTriggeringAssessment ? (
-          <ActivityIndicator size="small" color={palette.foreground} />
-        ) : (
-          <MaterialCommunityIcons
-            name="radar"
-            size={24}
-            color={palette.foreground}
-          />
-        )}
+        <RadarSpinner isTriggeringAssessment={isTriggeringAssessment} palette={palette} />
       </GlassButton>
     </View>
   );

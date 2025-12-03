@@ -6,6 +6,7 @@ import LockScreen from "@/components/ui/LockScreen";
 import { useColors } from "@/theme";
 import type { AssessmentRecordType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
+import useMarkdownStyles from "@/hooks/useMarkdownStyles";
 
 const hasContent = (value: string | null | undefined) =>
   typeof value === "string" && value.trim().length > 0;
@@ -17,6 +18,7 @@ type ReportDetailProps = {
 export default function ReportDetail({ assessment }: ReportDetailProps) {
   const [expanded, _setExpanded] = useState(false);
   const { colors: palette } = useColors();
+  const markdownStyles = useMarkdownStyles()
 
   const [parsedResponse, _] = useState(() => {
     try {
@@ -97,6 +99,7 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
 
   const showStructured = Boolean(parsedResponse);
 
+  console.log({ assessment })
   if (!assessment) {
     return <LockScreen />;
   }

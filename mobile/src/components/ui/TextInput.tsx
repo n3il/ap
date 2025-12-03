@@ -36,6 +36,7 @@ const TextInput = React.forwardRef<RNTextInput, TextInputProps>(
     const current = tones[tone] ?? tones.default;
 
     const baseStyle: TextStyle & ViewStyle = {
+      flex: 1,
       backgroundColor: current.backgroundColor,
       borderColor: current.borderColor,
       color: current.textColor,

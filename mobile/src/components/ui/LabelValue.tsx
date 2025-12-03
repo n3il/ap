@@ -63,6 +63,12 @@ const LabelValue: React.FC<LabelValueProps> = ({
   formatter = formatAmount,
 
   children,
+}: LabelValueProps & {
+  textVariant?: string;
+  showSign?: boolean;
+  alignRight?: boolean;
+  valueTextVariant?: string;
+  formatter?: (value: number, options?: { showSign?: boolean }) => string;
 }) => {
   return (
     <View

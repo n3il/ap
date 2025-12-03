@@ -206,6 +206,7 @@ export const assessmentService = {
       statuses = DEFAULT_ASSESSMENT_STATUSES,
     } = {},
   ) {
+    console.log('--------')
     // Ensure agentIds is an array
     const ids = Array.isArray(agentIds) ? agentIds : [agentIds];
 
@@ -223,14 +224,15 @@ export const assessmentService = {
       const ms = parseTimeframe(timeframe);
       if (ms) {
         const cutoffDate = new Date(Date.now() - ms).toISOString();
-        query = query.gte("created_at", cutoffDate);
+        query = query.gte("timestamp", cutoffDate);
       }
     }
 
     const { data, error } = await query
-      .order("created_at", { ascending: false })
+      .order("timestamp", { ascending: false })
       .limit(limit);
 
+    console.log({ query })
     if (error) throw error;
 
     // Filter out null sentiment scores and format the response
@@ -242,7 +244,7 @@ export const assessmentService = {
       .map((item) => ({
         id: item.id,
         agent_id: item.agent_id,
-        created_at: item.created_at,
+        created_at: item.timestamp,
         sentiment_score: item.sentiment_score,
       }));
   },

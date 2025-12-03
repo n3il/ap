@@ -21,8 +21,8 @@ export default function TabsLayout() {
       }}
       blurEffect="systemMaterialDark"
       tintColor={DynamicColorIOS({
-        dark: "black",
-        light: "black",
+        dark: "#000000",
+        light: "#000000",
       })}
     >
       <NativeTabs.Trigger name="(explore)">

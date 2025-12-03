@@ -97,49 +97,26 @@ const interpolateValue = (data, targetX) => {
   return Number.isFinite(result) ? result : 0;
 };
 
-/**
- * Reusable SVG Chart Component
- *
- * @param {Object} props
- * @param {Array} props.lines - Array of line data objects
- * @param {string} props.lines[].id - Unique identifier for the line
- * @param {string} props.lines[].name - Display name for the line
- * @param {string} props.lines[].color - Color for the line
- * @param {Array} props.lines[].data - Data points [{ time: 0-1, value: number }]
- * @param {string} props.lines[].axisGroup - Axis grouping: 'left' | 'right' (default: 'left')
- * @param {Function} props.lines[].formatValue - Custom value formatter for this line
- * @param {string} props.timeframe - Time range: '1h' | '24h' | '7d'
- * @param {number} [props.xAxisPaddingPoints=0] - Number of additional data point intervals reserved to the right of the chart
- *
- * @example
- * <SvgChart
- *   lines={[
- *     {
- *       id: 'agent-1',
- *       name: 'Agent 1',
- *       color: '#10b981',
- *       data: [{ time: 0, value: 0 }, { time: 1, value: 10 }],
- *       axisGroup: 'left',
- *       formatValue: (val) => `${val.toFixed(1)}%`
- *     },
- *     {
- *       id: 'balance',
- *       name: 'Balance',
- *       color: '#3b82f6',
- *       data: [{ time: 0, value: 1000 }, { time: 1, value: 1500 }],
- *       axisGroup: 'right',
- *       formatValue: (val) => `$${val.toFixed(0)}`
- *     }
- *   ]}
- *   timeframe="24h"
- * />
- */
 const SvgChart = ({
   lines = [],
   scrollY,
   style = {},
   xAxisPaddingPoints = 1,
   isLoading = false,
+  chartAspectRatio = CHART_ASPECT_RATIO,
+}: {
+  lines?: Array<{
+    id: string;
+    name: string;
+    color: string;
+    data: Array<{ time: number; value: number }>;
+    axisGroup?: 'left' | 'right';
+    formatValue?: (value: number) => string;
+  }>;
+  scrollY?: SharedValue<number>;
+  style?: ViewStyle;
+  xAxisPaddingPoints?: number;
+  isLoading?: boolean;
 }) => {
   const { timeframe } = useTimeframeStore();
   const [touchActive, setTouchActive] = useState(false);
@@ -151,7 +128,7 @@ const SvgChart = ({
   const secondaryTextColor = palette.textSecondary;
 
   const chartHeight = useMemo(() => {
-    const calculatedHeight = chartWidth * CHART_ASPECT_RATIO;
+    const calculatedHeight = chartWidth * chartAspectRatio;
     const minimumHeight = PADDING.top + PADDING.bottom + 1;
     return Math.max(calculatedHeight, minimumHeight);
   }, [chartWidth]);
@@ -458,17 +435,6 @@ const SvgChart = ({
         ],
         axisGroup: "left",
         formatValue: (val) => `${val.toFixed(1)}%`,
-      },
-      {
-        id: "balance",
-        name: "Balance",
-        color: "#3b82f6",
-        data: [
-          { time: 0, value: 1000 },
-          { time: 1, value: 10 },
-        ],
-        axisGroup: "right",
-        formatValue: (val) => `$${val.toFixed(0)}`,
       },
     ];
   }

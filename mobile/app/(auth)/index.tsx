@@ -176,6 +176,7 @@ export default function Auth() {
                     backgroundColor: "transparent",
                     borderWidth: 0,
                     borderRadius: 0,
+                    flex: 0,
                     // borderBottomWidth: 1,
 
                     // backgroundColor: palette.surface,

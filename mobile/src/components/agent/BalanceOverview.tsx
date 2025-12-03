@@ -12,26 +12,52 @@ export default function BalanceOverview({
   return (
     <View sx={{ gap: 4 }}>
       {/* Header: Account Equity */}
-      <View sx={{ gap: 2 }}>
-        <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-          <Text variant="xs" tone="muted" sx={{}}>
-            AUM
+
+      <View sx={{ flexDirection: "row", gap: 2, justifyContent: "space-between" }}>
+
+        <View sx={{ flexDirection: "column", gap: 2, marginRight: 4 }}>
+          <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+            <Text variant="xs" tone="muted" sx={{}}>
+              Open P&L
+            </Text>
+          </View>
+          <Text variant="xl" sx={{ fontWeight: "600", fontFamily: "monospace" }}>
+            {formatAmount(accountData.realizedPnl + accountData.unrealizedPnl)}
           </Text>
         </View>
-        <Text variant="xl" sx={{ fontWeight: "600", fontFamily: "monospace" }}>
-          {formatAmount(accountData.equity)}
-        </Text>
+
+      <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-between" }}>
+
+        <LabelValue
+          label="1h P&L"
+          value={accountData.enrichedPositions.length}
+        />
+        <LabelValue
+          label="24h P&L"
+          value={accountData.enrichedPositions.length}
+        />
+        <LabelValue
+          label="7d P&L"
+          value={23.3}
+          formatter={formatPercent}
+          colorize
+        />
+        <LabelValue
+          label="All P&L"
+          value={accountData.unrealizedPnl}
+        />
+      </View>
       </View>
 
       <View
         sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}
       >
         <View sx={{ flex: 1 }}>
-          <LabelValue label="Initial" value={accountData.wallet || 0} />
+          <LabelValue label="Account Value" value={accountData.equity || 0} />
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="# Trades"
+            label="Active Positions"
             value={accountData.enrichedPositions.length}
             alignRight
           />

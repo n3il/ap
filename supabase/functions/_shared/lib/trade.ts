@@ -2,10 +2,12 @@ import { executeHyperliquidTrade } from '../hyperliquid/index.ts';
 import type { Agent, TradingAccount } from './types.ts';
 import type { LLMTradeAction } from '../llm/types.ts';
 import { toHyperliquidOrder } from "../hyperliquid/mapping.ts";
+import initSentry from "../../_shared/sentry.ts";
 
+const Sentry = initSentry();
 
 export async function executeTrade(
-  assetId: number,
+  asset: number,
   tradeAction: LLMTradeAction,
   agent: Agent,
   tradingAccount: TradingAccount,
@@ -13,10 +15,16 @@ export async function executeTrade(
   if (!tradingAccount.hyperliquid_wallet_private_key) {
     throw new Error('Trading account is missing Hyperliquid wallet credentials');
   }
+  const hyperliquidOrder = toHyperliquidOrder(asset["Asset-Id"], tradeAction);
+  Sentry.setContext("trade", {
+    asset: JSON.stringify(asset),
+    trade_action: JSON.stringify(tradeAction),
+    hyperliquid_order: JSON.stringify(hyperliquidOrder),
+  });
 
   // Execute trade on Hyperliquid (only for real trades)
   const tradeResult = await executeHyperliquidTrade(
-    toHyperliquidOrder(assetId, tradeAction),
+    hyperliquidOrder,
     agent.simulate,
     tradingAccount.hyperliquid_wallet_private_key
   );

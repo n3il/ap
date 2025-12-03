@@ -7,6 +7,8 @@ import { ROUTES } from "@/config/routes";
 import { useColors } from "@/theme";
 import type { AssessmentType } from "@/types/agent";
 import TradeActionDisplay, { TradeSummary } from "./TradeActionDisplay";
+import PendingAssessmentCard from "@/components/PendingAssessmentCard";
+import useMarkdownStyles from "@/hooks/useMarkdownStyles";
 
 const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;
@@ -15,124 +17,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const { colors: palette, withOpacity } = useColors();
-
-  const markdownStyles = useMemo(
-    () => ({
-      body: {
-        color: palette.textPrimary,
-        fontSize: 16,
-        lineHeight: 24,
-        fontWeight: "300",
-      },
-      paragraph: {
-        marginTop: 0,
-        marginBottom: 8,
-        color: palette.textPrimary,
-        fontSize: 16,
-        lineHeight: 24,
-        fontWeight: "300",
-      },
-      heading1: {
-        color: palette.textPrimary,
-        fontSize: 20,
-        fontWeight: "700",
-        marginBottom: 8,
-        marginTop: 12,
-      },
-      heading2: {
-        color: palette.textPrimary,
-        fontSize: 18,
-        fontWeight: "600",
-        marginBottom: 6,
-        marginTop: 10,
-      },
-      heading3: {
-        color: palette.textPrimary,
-        fontSize: 16,
-        fontWeight: "600",
-        marginBottom: 4,
-        marginTop: 8,
-      },
-      strong: {
-        fontWeight: "700",
-        color: palette.textPrimary,
-      },
-      em: {
-        fontStyle: "italic",
-        color: palette.textSecondary,
-      },
-      code_inline: {
-        backgroundColor: withOpacity(
-          palette.surface ?? palette.background,
-          0.5,
-        ),
-        color: palette.primary,
-        paddingHorizontal: 4,
-        paddingVertical: 2,
-        borderRadius: 4,
-        fontFamily: "monospace",
-        fontSize: 13,
-      },
-      code_block: {
-        backgroundColor: withOpacity(
-          palette.surface ?? palette.background,
-          0.5,
-        ),
-        color: palette.textSecondary,
-        padding: 12,
-        borderRadius: 8,
-        fontFamily: "monospace",
-        fontSize: 12,
-        marginVertical: 8,
-      },
-      fence: {
-        backgroundColor: withOpacity(
-          palette.surface ?? palette.background,
-          0.5,
-        ),
-        color: palette.textSecondary,
-        padding: 12,
-        borderRadius: 8,
-        fontFamily: "monospace",
-        fontSize: 12,
-        marginVertical: 8,
-      },
-      bullet_list: {
-        marginVertical: 4,
-      },
-      ordered_list: {
-        marginVertical: 4,
-      },
-      list_item: {
-        marginVertical: 2,
-        color: palette.textPrimary,
-        fontSize: 14,
-        lineHeight: 22,
-      },
-      blockquote: {
-        backgroundColor: withOpacity(
-          palette.surface ?? palette.background,
-          0.3,
-        ),
-        borderLeftWidth: 3,
-        borderLeftColor: palette.primary,
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        marginVertical: 8,
-        borderRadius: 4,
-      },
-      link: {
-        color: palette.primary,
-        textDecorationLine: "underline",
-      },
-      hr: {
-        backgroundColor: withOpacity(palette.foreground, 0.2),
-        height: 1,
-        marginVertical: 12,
-      },
-    }),
-    [palette, withOpacity],
-  );
+  const markdownStyles = useMarkdownStyles()
 
   const [parsedResponse, _] = useState(() => {
     try {
@@ -191,6 +76,10 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
 
   const showStructured = Boolean(parsedResponse);
 
+  if (assessment.status === "pending") {
+    return <PendingAssessmentCard assessment={assessment} />
+  }
+
   return (
     <Card
       isInteractive={expanded}
@@ -209,7 +98,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         activeOpacity={0.7}
       >
         <AssessmentPreview assessmentData={assessment} />
-        <Text>{assessment?.status ?? 'unknown'}</Text>
+        <Text>{assessment?.status}</Text>
         {expanded ? (
           <View
             sx={{

@@ -16,21 +16,21 @@ type HeaderChartProps = {
 } & Partial<ComponentProps<typeof SvgChart>>;
 
 export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
-  // const { timeframe } = useTimeframeStore();
   const timeframe = "7d";
   const { colors } = useColors();
   const { data: agent } = useAgent(agentId);
 
   // Fetch sentiment scores using performant JSON column selection
-  const { data: sentimentScores = [] } = useQuery({
+  const { data: sentimentScores = [], error: errorr } = useQuery({
     queryKey: ["sentimentScores", agentId, timeframe],
     queryFn: () =>
       assessmentService.getSentimentScores(agentId, {
-        timeframe: timeFrameToStart(timeframe),
+        timeframe,
         limit: 100,
       }),
     enabled: !!agentId,
   });
+  console.log({ sentimentScores, errorr})
 
   const { data: snapshots, isLoading } = useAgentSnapshots(agentId, timeframe);
 
@@ -38,6 +38,8 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
   const rawSentimentData = useMemo(() => {
     return sentimentScores; // Already filtered and formatted by the service
   }, [sentimentScores]);
+
+  console.log({ rawSentimentData })
 
   const rawEquityData = useMemo(() => {
     if (!snapshots?.length) return [];
@@ -48,10 +50,10 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
     if (!rawSentimentData.length) return [];
     const timestamps = rawSentimentData
       .map((entry) =>
-        entry?.created_at ? { timestamp: entry.created_at } : null,
+        entry?.created_at ? { created_at: entry.created_at } : null,
       )
       .filter(
-        (entry): entry is { timestamp: string | number | Date } =>
+        (entry): entry is { created_at: string | number | Date } =>
           entry !== null,
       );
     return timestamps.length ? [timestamps] : [];
@@ -114,5 +116,14 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
 
   console.log({ lines: JSON.stringify(lines) })
 
-  return <SvgChart lines={lines} isLoading={isLoading} {...props} />;
+  return (
+    <>
+      <SvgChart
+        lines={lines}
+        isLoading={isLoading}
+        chartAspectRatio={3 / 5}
+        {...props}
+      />
+    </>
+  );
 }

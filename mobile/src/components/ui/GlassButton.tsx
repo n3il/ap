@@ -26,7 +26,16 @@ export default function GlassButton({
   onPress = () => {},
   style = {},
   styleVariant = "default",
+  buttonProps = {},
   ...props // glassProps
+}: {
+  children: React.ReactNode;
+  disabled?: boolean;
+  enabled?: boolean;
+  onPress?: () => void;
+  style?: ViewProps["style"];
+  styleVariant?: keyof typeof styleVariants;
+  buttonProps?: ViewProps;
 }) {
   const { colors } = useColors();
   const pressableStyle = styleVariants[styleVariant as keyof typeof styleVariants] || styleVariants.default;
@@ -36,6 +45,7 @@ export default function GlassButton({
       onPress={onPress}
       disabled={disabled}
       style={[{flexGrow: 1}, pressableStyle, style]}
+      {...buttonProps}
     >
       {typeof children === "string" ? (
         <Text style={{ fontWeight: "600", textAlign: "center" }}>

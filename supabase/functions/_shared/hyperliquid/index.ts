@@ -1,6 +1,9 @@
 import * as hl from "@nktkas/hyperliquid";
-
+import initSentry from "../../_shared/sentry.ts";
 import { CandleData, HyperliquidOrderBody } from "./types.ts";
+import { getTopKAssets } from "./utils.ts";
+
+const Sentry = initSentry();
 
 type CandleInterval =
   | '1m' | '3m' | '5m' | '15m' | '30m'
@@ -62,38 +65,7 @@ export async function fetchAllCandleData({
 
 export async function fetchTradeableAssets()  {
   const [{universe}, assetContexts] = await infoClient(true).metaAndAssetCtxs()
-
-  return universe
-    .map((u, i) => ({ assetData: u, ctx: assetContexts[i], assetId: i }))
-    .sort((a, b) => (parseFloat(a.ctx.dayNtlVlm)) - parseFloat(b.ctx.dayNtlVlm))
-    .slice(10)
-    .map(({assetData, ctx, assetId}: any) => {
-      return {
-        "Ticker": assetData.name,
-        "Sz-Decimals": assetData.szDecimals,
-        "Max-Leverage": assetData.maxLeverage,
-        "Day-Ntl-Vlm": ctx.dayNtlVlm,
-        "Funding": ctx.funding,
-        "Impact-Pxs": ctx.impactPxs,
-        "Mark-Px": ctx.markPx,
-        "Mid-Px": ctx.midPx,
-        "Open-Interest": ctx.openInterest,
-        "Oracle-Px": ctx.oraclePx,
-        "Premium": ctx.premium,
-        "Prev-Day-Px": ctx.prevDayPx,
-        "Asset-Id": assetId
-
-        // "dayNtlVlm":"1169046.29406",
-        // "funding":"0.0000125",
-        // "impactPxs":[ "14.3047", "14.3444"],
-        // "markPx":"14.3161",
-        // "midPx":"14.314",
-        // "openInterest":"688.11",
-        // "oraclePx":"14.32",
-        // "premium":"0.00031774",
-        // "prevDayPx":"15.322"
-      }
-    })
+  return getTopKAssets(universe, assetContexts);
 }
 
 export async function getAccountSummary(userId: string, isTestnet: boolean): Promise<hl.ClearinghouseStateResponse> {
@@ -105,6 +77,10 @@ export async function executeHyperliquidTrade(
   isTestnet: boolean,
   wallet: string
 ): Promise<{ success: boolean, orderId: string | null, message: string }> {
+  Sentry.setContext("external_request", {
+    requestBody: JSON.stringify(orderPayload),
+  });
+
   const orderResult = await exchangeClient(wallet, isTestnet).order(orderPayload.action)
 
   const status = orderResult.response?.data?.statuses?.[0]

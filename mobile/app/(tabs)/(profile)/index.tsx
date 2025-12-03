@@ -33,7 +33,7 @@ export default function ProfileScreen() {
         onPress: async () => {
           const { error } = await signOut();
           if (error) {
-            Alert.alert("Error", "Failed to sign out. Please try again.");
+            Alert.alert("Error", error.message || String(error));
           }
         },
       },

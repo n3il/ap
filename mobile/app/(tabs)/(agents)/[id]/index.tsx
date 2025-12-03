@@ -57,21 +57,29 @@ export default function AgentReadScreen() {
           </View> */}
           <BalanceOverview agentId={agent?.id} />
         </PaddedView>
-        <HeaderChart agentId={agent?.id} />
+        <HeaderChart
+          agentId={agent?.id}
+          style={{
+            zIndex: 9999
+          }}
+        />
       </Animated.View>
 
       <GlassButton
         onPress={() => router.back()}
         style={{
-          position: "absolute",
-          top: 64,
-          left: 20,
-          zIndex: 50,
+          flex: 0,
+          flexGrow: 0,
+          marginRight: 'auto',
+          width: 100
         }}
       >
         <MaterialCommunityIcons name="chevron-left" size={24} color="white" />
       </GlassButton>
-      <AgentHeader agentId={agent?.id} style={styles.topButtonsContainer} />
+      <AgentHeader
+        agentId={agent?.id}
+        style={styles.topButtonsContainer}
+      />
 
       <ThoughtsTab
         agentId={agent?.id}
