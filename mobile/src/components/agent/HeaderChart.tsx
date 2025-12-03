@@ -30,7 +30,6 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
       }),
     enabled: !!agentId,
   });
-  console.log({ sentimentScores, errorr})
 
   const { data: snapshots, isLoading } = useAgentSnapshots(agentId, timeframe);
 
@@ -38,8 +37,6 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
   const rawSentimentData = useMemo(() => {
     return sentimentScores; // Already filtered and formatted by the service
   }, [sentimentScores]);
-
-  console.log({ rawSentimentData })
 
   const rawEquityData = useMemo(() => {
     if (!snapshots?.length) return [];
@@ -113,8 +110,6 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
     if (equityLines.length > 0) combined.push(...equityLines);
     return combined;
   }, [sentimentLine, equityLines]);
-
-  console.log({ lines: JSON.stringify(lines) })
 
   return (
     <>

@@ -87,6 +87,9 @@ export default function TradeActionDisplay({
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
+            borderTopWidth: .5,
+            borderTopColor: palette.border,
+            paddingTop: 2
           }}
         >
           <Text
@@ -95,11 +98,11 @@ export default function TradeActionDisplay({
               textTransform: 'capitalize'
             }}
           >
-              {actionData.action?.replace('_', ' ') || '-'}
+              {`${actionData.type}ed ${actionData.direction || 'short'}` || '-'}
           </Text>
 
           <Text variant="xs" sx={{ fontSize: 12, fontWeight: "400" }}>
-            {asset}
+            {asset}/USDC
           </Text>
 
           <Text variant="xs" sx={{ fontWeight: "500" }}>
@@ -113,13 +116,13 @@ export default function TradeActionDisplay({
       </TouchableOpacity>
 
       {reason ? (
-        <View sx={{ marginVertical: 4, borderTopWidth: 1 }}>
+        <View sx={{ marginTop: 4, borderTopWidth: 1 }}>
           <Text
             variant="xs"
 
             sx={{ fontFamily: "monospace", fontStyle: "italic", color: palette.mutedForeground }}
           >
-            {reason || "-"}
+            {reason}
           </Text>
         </View>
       ) : null}
@@ -152,16 +155,16 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
 
   const parts: string[] = [];
   if (openActions.length) {
-    parts.push(`Opened ${openActions.length} positions`);
+    parts.push(`Opened ${openActions.map(a => `${a.asset} ${a.direction?.toLowerCase()}`).join(', ')}`);
   }
   if (closeActions.length) {
     parts.push(
-      `Closed ${closeActions.length} position${closeActions.length > 1 ? "s" : ""}`,
+      `Closed ${closeActions.map(a => `${a.asset} ${(a.direction || 'short').toLowerCase()}`).join(', ')}`,
     );
   }
-  if (openActions.length || closeActions.length) {
-    parts.push(`(net ${formatAmount(netPositionChange), { showSign: true }})`);
-  }
+  // if (openActions.length || closeActions.length) {
+  //   parts.push(`(net ${formatAmount(netPositionChange), { showSign: true }})`);
+  // }
   if (!parts.length) {
     return null;
   }
@@ -171,7 +174,7 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
       <Text
         variant="xs"
         sx={{
-          color: palette.muted?.foreground ?? palette.mutedForeground,
+          color: palette.textTertiary,
           fontWeight: "500",
         }}
       >

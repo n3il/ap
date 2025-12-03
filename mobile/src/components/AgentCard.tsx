@@ -12,6 +12,7 @@ import type { AgentType, AssessmentRecordType } from "@/types/agent";
 import { sentimentToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import PositionList from "./PositionList";
+import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
 
 type AssessmentPreviewProps = {
   assessmentData: AssessmentRecordType;
@@ -95,7 +96,9 @@ export default function AgentCard({
   asListItem?: boolean;
 }) {
   const { colors: palette } = useColors();
-  const accountData = useAccountBalance(agent.id, hideOpenPositions);
+  const tradingAccountType = agent.simulate ? "paper" : "real";
+  const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
+  const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
 
   // Animation values
   const scale = useSharedValue(1);
@@ -137,7 +140,7 @@ export default function AgentCard({
             backgroundColor={palette.providers[agent.llm_provider]}
           />
           <StatsAbbreviated
-            agentId={agent.id}
+            agent={agent}
             style={{
               flexDirection: "column",
               flexShrink: 1,
@@ -164,7 +167,7 @@ export default function AgentCard({
 
       {!hideOpenPositions && (
         <View sx={{ marginTop: 2 }}>
-          <PositionList positions={accountData.enrichedPositions} top={3} />
+          <PositionList positions={accountData.openPositions} top={3} />
         </View>
       )}
 

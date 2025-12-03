@@ -277,7 +277,8 @@ const styles = StyleSheet.create({
   },
   pageContent: {
     flex: 1,
-    paddingHorizontal: GLOBAL_PADDING,
+    paddingTop: 8,
+    paddingHorizontal: 0,
     width: SCREEN_WIDTH,
   },
 });

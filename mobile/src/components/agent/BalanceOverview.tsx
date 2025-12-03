@@ -2,6 +2,7 @@ import { Text, View } from "@/components/ui";
 import LabelValue from "@/components/ui/LabelValue";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
+import { shadows, useColors } from "@/theme";
 import { AgentType } from "@/types/agent";
 import { formatAmount, formatDecimal, formatPercent } from "@/utils/currency";
 
@@ -17,14 +18,21 @@ export default function BalanceOverview({
 }: {
   agent: AgentType;
 }) {
-  const tradingAccountType = agent.simulate ? "paper" : "real";
+  const { colors: palette, shadowd } = useColors();
+  const tradingAccountType = agent?.simulate ? "paper" : "real";
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
   const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
 
   return (
-    <View sx={{ gap: 4 }}>
+    <View sx={{
+      gap: 4,
+      backgroundColor: palette.surface,
+      padding: 3,
+      borderWidth: 1.5,
+      ...shadows.lg,
+      borderRadius: 4
+      }}>
       <View sx={{ flexDirection: "row", gap: 2, justifyContent: "space-between" }}>
-
         <View sx={{ flexDirection: "column", gap: 2, marginRight: 4 }}>
           <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
             <Text variant="xs" tone="muted" sx={{}}>
@@ -46,7 +54,7 @@ export default function BalanceOverview({
                 label={`${timeframeLabel[tflabel] || timeframe} P&L`}
                 value={pnlPct}
                 formatter={formatPercent}
-                alrignRight
+                alignRight
               />
             )
           })}

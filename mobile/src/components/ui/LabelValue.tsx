@@ -78,7 +78,6 @@ const LabelValue: React.FC<LabelValueProps> = ({
         gap: orientation === "vertical" ? 1 : 2,
         alignItems: orientation === "vertical" ? "flex-start" : "center",
         justifyContent: alignRight ? "flex-end" : "flex-start",
-        backgroundColor: "#000",
         ...sx,
       }}
     >

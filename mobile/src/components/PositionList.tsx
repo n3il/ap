@@ -70,9 +70,47 @@ function PositionDetailRow({
 //   unrealizedPnl: number;
 // };
 
-export function PositionRow(position: EnrichedPosition) {
+export type OpenPosition = {
+  coin: string;
+  entryPrice: number;
+  leverage: number;
+  liquidationPx: number;
+  marginUsed: number;
+  positionValue: number;
+  roe: number;
+  size: number;
+  type: "oneWay" | "hedged" | string; // adjust if you want stricter
+  unrealizedPnl: number;
+};
+
+export const mapOpenPositionToUI = (p: OpenPosition) => {
+  return {
+    asset: p.coin,
+    symbol: p.coin,
+    coin: p.coin,
+    side: p.size >= 0 ? "long" : "short",
+
+    size: p.size,
+    szi: p.size, // alias for size
+
+    entry_price: p.entryPrice,
+    currentPrice: p.positionValue / Math.abs(p.size || 1), // best guess unless you have mark price
+
+    unrealizedPnl: p.unrealizedPnl,
+    pnlPercent: p.roe * 100,
+
+    leverage: p.leverage,
+    positionValue: p.positionValue,
+
+    entry_timestamp: undefined, // HL does not supply this in your structure
+  };
+};
+
+export function PositionRow({ position }: {position: OpenPosition}) {
   const [expanded, setExpanded] = useState(false);
   const { colors: palette } = useColors();
+
+  const uiPosition = mapOpenPositionToUI(position);
 
   const {
     asset = "",
@@ -88,7 +126,7 @@ export function PositionRow(position: EnrichedPosition) {
     leverage,
     positionValue,
     entry_timestamp,
-  } = position;
+  } = uiPosition;
 
   // ---- Labels ----
   const assetLabel = (asset || symbol || coin || "").replace("-PERP", "/USDC");
@@ -157,20 +195,20 @@ export function PositionRow(position: EnrichedPosition) {
               <Text variant="sm" sx={{ fontSize: 12 }}>
                 {assetLabel}
               </Text>
-              <Text sx={{ fontSize: 9 }}>
+             {entry_timestamp ? <Text sx={{ fontSize: 9 }}>
                 {formatRelativeDate(entry_timestamp)}
-              </Text>
+              </Text> : null}
             </View>
 
             <View sx={{ flexDirection: "row", alignItems: "center" }}>
-              <Text variant="xs" sx={{ color: sideColor, marginRight: 2 }}>
+              <Text variant="xs" sx={{ marginRight: 2 }}>
                 {leverage}X {side}
               </Text>
-              <MaterialCommunityIcons
+              {/* <MaterialCommunityIcons
                 name={sideIcon}
                 size={16}
                 color={sideColor}
-              />
+              /> */}
             </View>
           </View>
 
@@ -242,24 +280,17 @@ export default function PositionList({
   const topPositions = safeEnrichedPositions
     .sort((a, b) => b.size - a.size)
     .slice(0, top);
+  console.log(positions)
   return (
     <View sx={{ marginTop: 3 }}>
       {topPositions.length > 0 ? (
         topPositions.map((position, i) => (
           <PositionRow
-            key={position?.id || position?.symbol || i}
-            {...position}
+            key={position?.coin}
+            position={position}
           />
         ))
-      ) : (
-        <Text
-          variant="xs"
-          tone="muted"
-          sx={{ textAlign: "right", width: "100%", fontStyle: "italic" }}
-        >
-          Open positions: none
-        </Text>
-      )}
+      ) : null}
 
       {positions.length > top ? (
         <Text

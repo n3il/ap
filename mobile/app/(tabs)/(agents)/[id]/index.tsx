@@ -47,7 +47,7 @@ export default function AgentReadScreen() {
           },
         ]}
       >
-        <PaddedView style={{ gap: 12, paddingHorizontal: 16 }}>
+        <PaddedView style={{ gap: 12, paddingHorizontal: 8 }}>
           {/* <View>
             <Avatar
               size="md"
@@ -66,21 +66,7 @@ export default function AgentReadScreen() {
         />
       </Animated.View>
 
-      <GlassButton
-        onPress={() => router.back()}
-        style={{
-          flex: 0,
-          flexGrow: 0,
-          marginRight: 'auto',
-          width: 100
-        }}
-      >
-        <MaterialCommunityIcons name="chevron-left" size={24} color="white" />
-      </GlassButton>
-      <AgentHeader
-        agentId={agent?.id}
-        style={styles.topButtonsContainer}
-      />
+      <AgentHeader agentId={agent?.id} agentName={agent?.name} />
 
       <ThoughtsTab
         agentId={agent?.id}
@@ -109,11 +95,5 @@ const styles = StyleSheet.create({
     top: 50 + 80,
     left: 0,
   },
-  topButtonsContainer: {
-    position: "absolute",
-    top: 64,
-    right: 20,
-    flexDirection: "row",
-    zIndex: 50,
-  },
+
 });

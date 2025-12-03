@@ -1,69 +1,32 @@
 import { Text, View } from "@/components/ui";
 import LabelValue, { FormattedValueLabel } from "@/components/ui/LabelValue";
-import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
+import { AgentType } from "@/types/agent";
 import { formatPercent } from "@/utils/currency";
 
 export function StatsAbbreviated({
-  agentId,
+  agent,
   style = {},
 }: {
-  agentId: string;
+  agent: AgentType;
   style?: StyleProp<ViewStyle>;
 }) {
-  const accountData = useAccountBalance(agentId, true);
+  const tradingAccountType = agent.simulate ? "paper" : "real";
+  const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
+  const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
 
   return (
     <View sx={style}>
-      <View
-        sx={{
-          flexDirection: "column",
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
-          gap: 2,
-        }}
-      >
-        <View
-          sx={{
-            flexDirection: "row",
-            justifyContent: "flex-end",
-            alignItems: "flex-end",
-            gap: 2,
-            marginLeft: "auto",
-          }}
-        >
-          <FormattedValueLabel
-            value={accountData.unrealizedPnl || 0}
-            colorize
-            showSign
-            valueTextVariant="xs"
-            formatter={formatPercent}
-          />
-          <FormattedValueLabel
-            value={accountData.unrealizedPnl || 0}
-            colorize
-            showSign
-            valueTextVariant="xs"
-            formatter={formatPercent}
-          />
-        </View>
-
-        <Text
-          variant={"xs"}
-          tone="muted"
-          sx={{
-            fontFamily: "monospace",
-          }}
-        >
-          Open P&L
-        </Text>
-      </View>
       <LabelValue
-        label=""
-        value={
-          accountData.equity +
-          accountData.realizedPnl +
-          accountData.unrealizedPnl
-        }
+        label="Open P&L"
+        value={accountData.openPnl}
+        orientation="horizontal"
+        textVariant="xs"
+        valueTextVariant="xs"
+      />
+      <LabelValue
+        label="Positions"
+        value={accountData.openPositions.length}
         orientation="horizontal"
         textVariant="xs"
         valueTextVariant="xs"

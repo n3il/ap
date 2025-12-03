@@ -82,7 +82,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
 
   return (
     <Card
-      isInteractive={expanded}
+      isInteractive
       glassEffectStyle="clear"
       variant="glass"
       sx={{ marginBottom: 3 }}

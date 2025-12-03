@@ -1,6 +1,6 @@
 import React from "react";
 import AnimatedPhraseSlider from "@/components/ui/AnimatedPhraseSlider";
-import { Card, Skeleton, Text, View } from "@/components/ui";
+import { ActivityIndicator, Card, Skeleton, Text, View } from "@/components/ui";
 import { useColors, withOpacity } from "@/theme";
 import type { AssessmentType } from "@/types/agent";
 
@@ -30,15 +30,10 @@ function PendingAssessmentCard({ assessment }: { assessment: AssessmentType }) {
             alignItems: "center",
           }}
         >
-          <Text variant="xs" tone="muted" sx={{ fontStyle: "italic" }}>
-            Waiting for assessment
-          </Text>
-          <Text variant="xs" sx={{ fontWeight: "300" }}>
-            {assessment.agent?.name ?? "Agent"}
-          </Text>
+          <AnimatedPhraseSlider phrases={LOADING_PHRASES} />
+          <ActivityIndicator />
         </View>
 
-        <AnimatedPhraseSlider phrases={LOADING_PHRASES} />
 
         <View sx={{ gap: 2 }}>
           <Skeleton height={16} width="65%" />

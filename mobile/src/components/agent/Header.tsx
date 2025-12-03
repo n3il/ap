@@ -2,12 +2,13 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { Alert, type StyleProp, type ViewStyle } from "react-native";
-import { ActivityIndicator, View } from "@/components/ui";
+import { ActivityIndicator, Text, View } from "@/components/ui";
 import GlassButton from "@/components/ui/GlassButton";
 import { supabase } from "@/config/supabase";
 import { agentWatchlistService } from "@/services/agentWatchlistService";
 import { useColors } from "@/theme";
 import { RadarSpinner } from "@/components/ui/SpinningIcon";
+import { useRouter } from "expo-router";
 
 type Props = {
   agentId?: string;
@@ -43,10 +44,12 @@ async function runAgentAssessment(agentId: string) {
 
 export default function AgentHeader({
   agentId,
+  agentName,
   onBookmarkPress,
   style,
   timeframe = "24h",
 }: Props) {
+  const router = useRouter()
   const { colors: palette } = useColors();
   const queryClient = useQueryClient();
 
@@ -183,35 +186,60 @@ export default function AgentHeader({
   const _watchlistIcon = isWatchlisted ? "binoculars" : "binoculars-outline";
 
   return (
-    <View style={[{ flexDirection: "row" }, style]}>
+    <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 1}}>
       <GlassButton
-        onPress={onBookmarkPress ?? handleToggleWatchlist}
-        disabled={watchlistButtonDisabled}
+        onPress={() => router.back()}
         style={{
-          width: 40,
-          height: 40,
+          flex: 0,
+          flexGrow: 0,
+          marginRight: 'auto',
         }}
       >
-        {showWatchlistSpinner ? (
-          <ActivityIndicator size="small" color={palette.foreground} />
-        ) : (
-          <MaterialCommunityIcons
-            name={"binoculars"}
-            size={24}
-            color={isWatchlisted ? palette?.accent : palette?.foreground}
-          />
-        )}
+        <MaterialCommunityIcons name="chevron-left" size={24} color="white" />
       </GlassButton>
-      <GlassButton
-        onPress={handleRunAssessment}
-        disabled={!agentId || isTriggeringAssessment}
-        style={{
-          width: 40,
-          height: 40,
-        }}
-      >
-        <RadarSpinner isTriggeringAssessment={isTriggeringAssessment} palette={palette} />
-      </GlassButton>
+      <Text style={{
+        flex: 1,
+        marginLeft: 8,
+        fontFamily: "monospace",
+        textTransform: "uppercase",
+        fontWeight: "500",
+        letterSpacing: 2,
+        color: palette.glassTint,
+        fontSize: 18,
+        textShadowColor: palette.foreground,
+        textShadowOffset: { width: 0, height: 0 },
+        textShadowRadius: 20,
+      }}>{agentName}</Text>
+      <View style={[{ flexDirection: "row" }, style]}>
+        <GlassButton
+          onPress={onBookmarkPress ?? handleToggleWatchlist}
+          disabled={watchlistButtonDisabled}
+          style={{
+            width: 40,
+            height: 40,
+          }}
+        >
+          {showWatchlistSpinner ? (
+            <ActivityIndicator size="small" color={palette.foreground} />
+          ) : (
+            <MaterialCommunityIcons
+              name={"binoculars"}
+              size={24}
+              color={isWatchlisted ? palette?.accent : palette?.foreground}
+            />
+          )}
+        </GlassButton>
+        <GlassButton
+          onPress={handleRunAssessment}
+          disabled={!agentId || isTriggeringAssessment}
+          style={{
+            width: 40,
+            height: 40,
+          }}
+        >
+          <RadarSpinner isTriggeringAssessment={isTriggeringAssessment} palette={palette} />
+        </GlassButton>
+      </View>
     </View>
   );
 }
