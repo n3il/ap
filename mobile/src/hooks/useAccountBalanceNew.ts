@@ -1,57 +1,62 @@
 import { useState, useEffect, useMemo } from "react";
 import { useHyperliquidRequests } from "@/hooks/useHyperliquid";
 import { useHLSubscription } from "@/hooks/useHyperliquid";
-import { AgentType } from "@/types/agent";
 
-// {
-//   "assetPositions": [
-//     {
-//       "position": {
-//         "coin": "ETH",
-//         "cumFunding": {
-//           "allTime": "514.085417",
-//           "sinceChange": "0.0",
-//           "sinceOpen": "0.0"
-//         },
-//         "entryPx": "2986.3",
-//         "leverage": {
-//           "rawUsd": "-95.059824",
-//           "type": "isolated",
-//           "value": 20
-//         },
-//         "liquidationPx": "2866.26936529",
-//         "marginUsed": "4.967826",
-//         "maxLeverage": 50,
-//         "positionValue": "100.02765",
-//         "returnOnEquity": "-0.0026789",
-//         "szi": "0.0335",
-//         "unrealizedPnl": "-0.0134"
-//       },
-//       "type": "oneWay"
-//     }
-//   ],
-//   "crossMaintenanceMarginUsed": "0.0",
-//   "crossMarginSummary": {
-//     "accountValue": "13104.514502",
-//     "totalMarginUsed": "0.0",
-//     "totalNtlPos": "0.0",
-//     "totalRawUsd": "13104.514502"
-//   },
-//   "marginSummary": {
-//     "accountValue": "13109.482328",
-//     "totalMarginUsed": "4.967826",
-//     "totalNtlPos": "100.02765",
-//     "totalRawUsd": "13009.454678"
-//   },
-//   "time": 1708622398623,
-//   "withdrawable": "13104.514502"
-// }
+type MarginSummary = {
+  accountValue: string;      // total account value in USD
+  totalMarginUsed: string;
+  totalNtlPos: string;
+  totalRawUsd: string;
+};
 
-export function calcPnLByTimeframe(data) {
+type AssetPosition = {
+  type: string;
+  position: {
+    coin: string;
+    cumFunding: {
+      allTime: string;
+      sinceChange: string;
+      sinceOpen: string;
+    };
+    entryPx: string;
+    leverage: {
+      rawUsd: string;
+      type: "isolated" | "cross" | string;
+      value: number;
+    };
+    liquidationPx: string;
+    marginUsed: string;
+    maxLeverage: number;
+    positionValue: string;
+    returnOnEquity: string;
+    szi: string;
+    unrealizedPnl: string;
+  };
+};
+
+type ClearinghouseState = {
+  assetPositions: AssetPosition[];
+  crossMaintenanceMarginUsed: string;
+  crossMarginSummary: MarginSummary;
+  marginSummary: MarginSummary;
+  time: number;
+  withdrawable: string;
+};
+
+type TimeframePnl = {
+  first: number | null;
+  last: number | null;
+  pnl: number | null;
+  pnlPct: number | null;
+};
+
+type PnLByTimeframe = Record<string, TimeframePnl>;
+
+export function calcPnLByTimeframe(data: any) {
   if (!data) return {};
 
   return Object.fromEntries(
-    data.map(([timeframe, summary]) => {
+    data.map(([timeframe, summary]: [string, any]) => {
       const history = summary.accountValueHistory || [];
 
       if (!history.length) {
@@ -68,101 +73,197 @@ export function calcPnLByTimeframe(data) {
   );
 }
 
-export function useAccountBalanceNew({ userId }: { userId: string }) {
-  console.log({ userId })
+export function useAccountBalanceNew({ userId }: { userId: string | null }) {
   const { sendRequest } = useHyperliquidRequests();
 
-  const [portfolioData, setPortfolioData] = useState<any>({});
-  const [wallet, setWallet] = useState<number | null>(null);
-  const [equity, setEquity] = useState<number | null>(null);
-  const [availableMargin, setAvailableMargin] = useState<number | null>(null);
-  const [realizedPnl, setRealizedPnl] = useState<number | null>(null);
-  const [openPnl, setOpenPnl] = useState<number | null>(null);
-  const [openPositions, setOpenPositions] = useState<any[]>([]);
+  const [accountValueHistory, setAccountValueHistory] =
+    useState<PnLByTimeframe>({});
+  const [clearinghouseState, setClearinghouseState] =
+    useState<ClearinghouseState | null>(null);
+
   const [isLoading, setIsLoading] = useState(true);
 
+  // ── Initial load ────────────────────────────────────────────────
   useEffect(() => {
+    if (!userId) return;
+
+    let cancelled = false;
+
     async function loadInitial() {
-      if (!userId) return;
+      try {
+        // 1) Whatever endpoint you already have that returns accountValueHistory.
+        // You said this part works, so we keep it.
+        const historyResp = await sendRequest({
+          type: "info",
+          payload: {
+            type: "portfolio", // keep the working one for PnL history
+            user: userId,
+          },
+        });
 
-      const data = await sendRequest({
-        type: "info",
-        payload: {
-          type: "portfolio",
-          user: userId,
+        if (!cancelled) {
+          setAccountValueHistory(
+            calcPnLByTimeframe(historyResp?.payload?.data)
+          );
         }
-      });
-      setPortfolioData(calcPnLByTimeframe(data?.payload?.data));
 
-      // Assuming you don't need meta data here
-      setIsLoading(false);
+        // 2) Perps clearinghouseState for balances / positions
+        const chResp = await sendRequest({
+          type: "info",
+          payload: {
+            type: "clearinghouseState",
+            user: userId,
+          },
+        });
+
+        if (!cancelled && chResp?.payload?.data) {
+          setClearinghouseState(chResp.payload.data as ClearinghouseState);
+        }
+      } catch (e) {
+        console.error("Failed to load Hyperliquid account state", e);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
     }
 
     loadInitial();
-  }, []);
 
-  console.log({ portfolioData })
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, sendRequest]);
 
-  // activeAssetData
-
+  // ── Live updates via subscription ──────────────────────────────
   useHLSubscription(
     "clearinghouseState",
     { user: userId },
     (msg: any) => {
-      const s = msg?.data;
-      console.log({ s })
-
+      const s = msg?.data as ClearinghouseState | undefined;
       if (!s) return;
-
-      if (s.wallet !== undefined) setWallet(Number(s.wallet));
-      if (s.equity !== undefined) setEquity(Number(s.equity));
-      if (s.availableMargin !== undefined)
-        setAvailableMargin(Number(s.availableMargin));
-      if (s.realizedPnl !== undefined)
-        setRealizedPnl(Number(s.realizedPnl));
-      if (s.openPnl !== undefined) setOpenPnl(Number(s.openPnl));
-      if (s.positions !== undefined) setOpenPositions(s.positions);
+      setClearinghouseState(s);
     },
     Boolean(userId)
   );
 
+  // ── Derived values from clearinghouseState ─────────────────────
+  const equity = useMemo(
+    () =>
+      clearinghouseState
+        ? Number(clearinghouseState.marginSummary.accountValue)
+        : null,
+    [clearinghouseState]
+  );
+
+  const withdrawable = useMemo(
+    () =>
+      clearinghouseState ? Number(clearinghouseState.withdrawable) : null,
+    [clearinghouseState]
+  );
+
   const positionValue = useMemo(
     () =>
-      openPositions.reduce((sum, p) => sum + Number(p.value || 0), 0),
-    [openPositions]
+      clearinghouseState
+        ? clearinghouseState.assetPositions.reduce(
+            (sum, p) => sum + Number(p.position?.positionValue ?? 0),
+            0
+          )
+        : 0,
+    [clearinghouseState]
   );
 
-  const totalPnl = useMemo(
+  const openPnl = useMemo(
     () =>
-      (realizedPnl || 0) + (openPnl || 0),
-    [realizedPnl, openPnl]
+      clearinghouseState
+        ? clearinghouseState.assetPositions.reduce(
+            (sum, p) => sum + Number(p.position?.unrealizedPnl ?? 0),
+            0
+          )
+        : null,
+    [clearinghouseState]
   );
 
-  const totalPnlPercent = useMemo(
+  const marginUsed = useMemo(
     () =>
-      equity && wallet ? ((equity - wallet) / wallet) * 100 : null,
-    [equity, wallet]
+      clearinghouseState
+        ? Number(clearinghouseState.marginSummary.totalMarginUsed)
+        : null,
+    [clearinghouseState]
   );
 
   const leverageRatio = useMemo(
     () =>
-      positionValue && equity ? positionValue / equity : null,
-    [positionValue, equity]
+      equity && positionValue
+        ? positionValue / equity
+        : null,
+    [equity, positionValue]
   );
 
-  return {
-    portfolioData,
+  // Use the earliest accountValue from history as “starting equity”
+  const startingEquity = useMemo(() => {
+    const summaries = Object.values(accountValueHistory) as TimeframePnl[];
+    for (const s of summaries) {
+      if (s?.first != null) return s.first;
+    }
+    return null;
+  }, [accountValueHistory]);
 
-    wallet,
-    equity,
-    availableMargin,
-    realizedPnl,
-    openPnl,
-    openPositions,
+  const totalPnl = useMemo(
+    () =>
+      equity != null && startingEquity != null
+        ? equity - startingEquity
+        : null,
+    [equity, startingEquity]
+  );
+
+  const totalPnlPercent = useMemo(
+    () =>
+      equity != null &&
+      startingEquity != null &&
+      startingEquity !== 0
+        ? ((equity - startingEquity) / startingEquity) * 100
+        : null,
+    [equity, startingEquity]
+  );
+
+  const openPositions = useMemo(() => {
+  if (!clearinghouseState) return [];
+
+  return clearinghouseState.assetPositions.map(ap => {
+    const p = ap.position;
+
+    return {
+      coin: p.coin,
+      size: Number(p.szi),
+      entryPrice: Number(p.entryPx),
+      positionValue: Number(p.positionValue),
+      unrealizedPnl: Number(p.unrealizedPnl),
+      liquidationPx: Number(p.liquidationPx),
+      marginUsed: Number(p.marginUsed),
+      leverage: p.leverage?.value ?? null,
+      roe: Number(p.returnOnEquity),
+      type: ap.type,
+    };
+  });
+}, [clearinghouseState]);
+
+  return {
+    // history / PnL
+    accountValueHistory,
     totalPnl,
     totalPnlPercent,
+
+    // raw HL state (if you need more fields)
+    clearinghouseState,
+
+    // convenient derived values
+    equity,
+    withdrawable,
     positionValue,
+    openPnl,
+    marginUsed,
     leverageRatio,
+
     isLoading,
+    openPositions,
   };
 }

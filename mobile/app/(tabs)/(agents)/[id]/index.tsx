@@ -20,7 +20,6 @@ export default function AgentReadScreen() {
   const { colors: palette } = useColors();
   const { id } = useLocalSearchParams();
   const { data: agent } = useAgent(id);
-  console.log({ agent })
   const router = useRouter();
 
   const scrollY = useRef(new Animated.Value(0)).current;

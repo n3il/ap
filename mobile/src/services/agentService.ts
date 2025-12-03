@@ -85,6 +85,10 @@ export const agentService = {
       .eq("id", agentId)
       .single();
 
+      console.log('-|||||||||||||----')
+    console.log(JSON.stringify(data || '{}'))
+      console.log('-----')
+
     if (error) throw error;
     return normalizeAgent(data, includeLatestAssessment);
   },

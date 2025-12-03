@@ -5,20 +5,24 @@ import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
 import { AgentType } from "@/types/agent";
 import { formatAmount, formatDecimal, formatPercent } from "@/utils/currency";
 
+const timeframeLabel = {
+  day: "1D",
+  week: "1W",
+  month: "1M",
+  alltime: "All",
+}
+
 export default function BalanceOverview({
   agent,
 }: {
   agent: AgentType;
 }) {
-  console.log({ a: agent?.trading_accounts })
   const tradingAccountType = agent.simulate ? "paper" : "real";
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
   const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
 
   return (
     <View sx={{ gap: 4 }}>
-      {/* Header: Account Equity */}
-
       <View sx={{ flexDirection: "row", gap: 2, justifyContent: "space-between" }}>
 
         <View sx={{ flexDirection: "column", gap: 2, marginRight: 4 }}>
@@ -32,27 +36,21 @@ export default function BalanceOverview({
           </Text>
         </View>
 
-      <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-evenly" }}>
-
-        <LabelValue
-          label="1h P&L"
-          value={accountData.openPositions.length}
-        />
-        <LabelValue
-          label="24h P&L"
-          value={accountData.openPositions.length}
-        />
-        <LabelValue
-          label="7d P&L"
-          value={23.3}
-          formatter={formatPercent}
-          colorize
-        />
-        <LabelValue
-          label="All P&L"
-          value={accountData.unrealizedPnl}
-        />
-      </View>
+        <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-evenly" }}>
+          {Object.keys(accountData.accountValueHistory).filter(tf => tf.includes('perp')).map((timeframe) => {
+            const { pnlPct } = accountData.accountValueHistory[timeframe];
+            const tflabel = timeframe.replace('perp', '').toLowerCase()
+            return (
+              <LabelValue
+                key={timeframe}
+                label={`${timeframeLabel[tflabel] || timeframe} P&L`}
+                value={pnlPct}
+                formatter={formatPercent}
+                alrignRight
+              />
+            )
+          })}
+        </View>
       </View>
 
       <View
@@ -61,13 +59,7 @@ export default function BalanceOverview({
         <View sx={{ flex: 1 }}>
           <LabelValue label="Account Value" value={accountData.equity || 0} />
         </View>
-        <View sx={{ flex: 1 }}>
-          <LabelValue
-            label="Active Positions"
-            value={accountData.openPositions.length}
-            alignRight
-          />
-        </View>
+
         {/* <View sx={{ flex: 1 }}>
           <LabelValue
             label="Win Trades"
@@ -80,6 +72,7 @@ export default function BalanceOverview({
             label="Open P&L"
             value={accountData.unrealizedPnl || 0}
             colorize
+            alignRight
           >
             <Text
               variant="sm"
@@ -109,10 +102,10 @@ export default function BalanceOverview({
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="7 day ROI"
-            value={accountData.leverageRatio}
+            label="Active Positions"
+            value={accountData.openPositions.length}
             alignRight
-            formatter={formatDecimal}
+            formatter={o => o}
           />
         </View>
       </View>
