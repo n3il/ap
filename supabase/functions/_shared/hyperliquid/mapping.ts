@@ -90,7 +90,7 @@ export function toHyperliquidOrder(
       : "0"; // market close if null
 
     const order: HyperliquidOrder = {
-      a: assetId,
+      a: asset["Asset-Id"],
       b: false,        // always sell to close
       p: price,
       s: "0",          // you normally use reduceOnly & let HL size = position size

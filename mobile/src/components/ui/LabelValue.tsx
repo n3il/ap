@@ -21,6 +21,7 @@ export const FormattedValueLabel = ({
   alignRight,
   valueTextVariant = "body",
   formatter = formatAmount,
+  sx = {}
 }: {
   value: number;
   colorize?: boolean;
@@ -28,6 +29,7 @@ export const FormattedValueLabel = ({
   alignRight?: boolean;
   formatter?: (value: number, options?: { showSign?: boolean }) => string;
   valueTextVariant?: string;
+  sx?: SxProp;
 }) => {
   const formattedValue = !value ? "-" : formatter(value, { showSign });
   return (
@@ -43,6 +45,7 @@ export const FormattedValueLabel = ({
               color: value > 0 ? "success" : value < 0 ? "error" : "foreground",
             }
           : {}),
+        ...sx,
       }}
     >
       {formattedValue}

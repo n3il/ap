@@ -23,8 +23,6 @@ import { useColors } from "@/theme";
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ExploreScreen() {
-
-
   const [isFetching, setIsFetching] = useState(false);
   const queryClient = useQueryClient();
   const colors = useColors();

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import Markdown from "react-native-markdown-display";
 import TradeActionDisplay from "@/components/TradeActionDisplay";
-import { Avatar, StatusBadge, Text, View } from "@/components/ui";
+import { Avatar, ScrollView, StatusBadge, Text, View } from "@/components/ui";
 import LockScreen from "@/components/ui/LockScreen";
 import { useColors } from "@/theme";
 import type { AssessmentRecordType } from "@/types/agent";
@@ -105,7 +105,11 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
   }
 
   return (
-    <View>
+    <ScrollView
+      contentContainerStyle={{
+        paddingBottom: "30%"
+      }}
+    >
       <View
         sx={{
           flexDirection: "row",
@@ -125,24 +129,6 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
           </Text>
         </View>
       </View>
-
-      {tradeActions.length > 0 && (
-        <View
-          sx={{
-            marginTop: 3,
-            borderColor: palette.border,
-            borderTopWidth: 1,
-          }}
-        >
-          {tradeActions.map((action, index) => (
-            <TradeActionDisplay
-              key={`${action.asset ?? "action"}-${index}`}
-              actionData={action}
-              showReason={expanded}
-            />
-          ))}
-        </View>
-      )}
 
       {sentimentLabel ? (
         <StatusBadge
@@ -214,6 +200,24 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
           </Text>
         )}
       </View>
-    </View>
+
+      {tradeActions.length > 0 && (
+        <View
+          sx={{
+            marginTop: 3,
+            borderColor: palette.border,
+            borderTopWidth: 1,
+          }}
+        >
+          {tradeActions.map((action, index) => (
+            <TradeActionDisplay
+              key={`${action.asset ?? "action"}-${index}`}
+              actionData={action}
+              showReason={expanded}
+            />
+          ))}
+        </View>
+      )}
+    </ScrollView>
   );
 }

@@ -20,7 +20,6 @@ export default function AgentList({
   includeLatestAssessment = true,
   isActive = null,
   hideOpenPositions = false,
-  compactView = false,
   scrollY = null, // Animated scroll position
 }) {
   const router = useRouter();
@@ -180,7 +179,6 @@ export default function AgentList({
             agent={agent}
             hideOpenPositions={hideOpenPositions}
             onPress={() => onAgentPress?.(agent)}
-            compactView={compactView}
             isActive={activeAgentId === agent.id}
             asListItem
           />

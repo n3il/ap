@@ -32,7 +32,7 @@ export default function AgentsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: "70%" }}
         >
-          <AgentList compactView isActive={true} emptyState={<View />} />
+          <AgentList isActive={true} emptyState={<View />} />
         </ScrollView>
       ),
     },

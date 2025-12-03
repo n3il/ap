@@ -4,6 +4,7 @@ import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatAmount, formatCompact, formatPercent } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
+import { useMarketPricesStore } from "@/hooks/useMarketPrices";
 
 type PositionDetailRowProps = {
   label: string;
@@ -120,7 +121,7 @@ export function PositionRow({ position }: {position: OpenPosition}) {
     size,
     szi,
     entry_price,
-    currentPrice,
+    // currentPrice,
     unrealizedPnl,
     pnlPercent,
     leverage,
@@ -128,17 +129,16 @@ export function PositionRow({ position }: {position: OpenPosition}) {
     entry_timestamp,
   } = uiPosition;
 
+  const { mids } = useMarketPricesStore();
+  const currentPriceValue = Number(mids[symbol]) || 0;
+  console.log({ currentPriceValue, position })
+
+
   // ---- Labels ----
   const assetLabel = (asset || symbol || coin || "").replace("-PERP", "/USDC");
   const sizeLabel = size || szi || "N/A";
 
   const entryPriceValue = entry_price ? Number(entry_price) : null;
-  const currentPriceValue =
-    typeof currentPrice === "number"
-      ? currentPrice
-      : currentPrice
-        ? Number(currentPrice)
-        : null;
 
   const unrealizedPnlValue = Number(unrealizedPnl) || 0;
   const pnlPercentValue = pnlPercent != null ? Number(pnlPercent) : null;
@@ -147,7 +147,7 @@ export function PositionRow({ position }: {position: OpenPosition}) {
   const positionValueLabel =
     positionValue != null
       ? `$${formatCompact(positionValue)}`
-      : size + unrealizedPnlValue;
+      : (size) * currentPriceValue + unrealizedPnlValue;
 
   const entryPriceLabel = entryPriceValue
     ? `$${formatCompact(entryPriceValue)}`
@@ -166,8 +166,8 @@ export function PositionRow({ position }: {position: OpenPosition}) {
   // ---- Colors ----
   const longColor = palette.long;
   const shortColor = palette.short;
-  const sideColor = side === "LONG" ? longColor : shortColor;
-  const sideIcon = side === "LONG" ? "trending-up" : "trending-down";
+  const sideColor = side === "long" ? longColor : shortColor;
+  const sideIcon = side === "long" ? "trending-up" : "trending-down";
 
   const positionPnlColor =
     unrealizedPnlValue > 0
@@ -193,22 +193,25 @@ export function PositionRow({ position }: {position: OpenPosition}) {
           <View sx={{ flex: 1 }}>
             <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
               <Text variant="sm" sx={{ fontSize: 12 }}>
-                {assetLabel}
+                {symbol}
               </Text>
              {entry_timestamp ? <Text sx={{ fontSize: 9 }}>
                 {formatRelativeDate(entry_timestamp)}
               </Text> : null}
+
+              <MaterialCommunityIcons
+                name={sideIcon}
+                size={16}
+                color={sideColor}
+              />
+
             </View>
 
             <View sx={{ flexDirection: "row", alignItems: "center" }}>
               <Text variant="xs" sx={{ marginRight: 2 }}>
                 {leverage}X {side}
               </Text>
-              {/* <MaterialCommunityIcons
-                name={sideIcon}
-                size={16}
-                color={sideColor}
-              /> */}
+
             </View>
           </View>
 
@@ -216,13 +219,13 @@ export function PositionRow({ position }: {position: OpenPosition}) {
           <View sx={{ alignItems: "center" }}>
             <View sx={{ flexDirection: "column", alignItems: "flex-end" }}>
               <Text variant="xs">
-                {formatAmount(positionValueLabel, { minDecimals: 0 })}
+                {formatAmount(positionValue)} {formatAmount(positionValue + unrealizedPnl)}
               </Text>
               <Text
                 variant="xs"
                 sx={{ fontWeight: "500", color: positionPnlColor }}
               >
-                {formatAmount(unrealizedPnlLabel)} (
+                {formatAmount(unrealizedPnlValue)} (
                 {formatPercent(pnlPercentValue)})
               </Text>
             </View>
@@ -243,7 +246,7 @@ export function PositionRow({ position }: {position: OpenPosition}) {
         >
           <PositionDetailRow label="Size" value={sizeLabel} />
 
-          <PositionDetailRow label="Entry" value={entryPriceLabel} />
+          <PositionDetailRow label="Entry" value={entry_price} />
           {currentPriceLabel && (
             <PositionDetailRow label="Current" value={currentPriceLabel} />
           )}
@@ -280,7 +283,6 @@ export default function PositionList({
   const topPositions = safeEnrichedPositions
     .sort((a, b) => b.size - a.size)
     .slice(0, top);
-  console.log(positions)
   return (
     <View sx={{ marginTop: 3 }}>
       {topPositions.length > 0 ? (
@@ -298,7 +300,7 @@ export default function PositionList({
           tone="muted"
           sx={{ textAlign: "right", fontStyle: "italic" }}
         >
-          + {positions.length - top} more positions
+          +{positions.length - top} more positions
         </Text>
       ) : null}
     </View>

@@ -1,5 +1,5 @@
 import { Text, View } from "@/components/ui";
-import LabelValue from "@/components/ui/LabelValue";
+import LabelValue, { FormattedValueLabel } from "@/components/ui/LabelValue";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
 import { shadows, useColors } from "@/theme";
@@ -18,7 +18,7 @@ export default function BalanceOverview({
 }: {
   agent: AgentType;
 }) {
-  const { colors: palette, shadowd } = useColors();
+  const { colors: palette } = useColors();
   const tradingAccountType = agent?.simulate ? "paper" : "real";
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
   const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
@@ -29,7 +29,6 @@ export default function BalanceOverview({
       backgroundColor: palette.surface,
       padding: 3,
       borderWidth: 1.5,
-      ...shadows.lg,
       borderRadius: 4
       }}>
       <View sx={{ flexDirection: "row", gap: 2, justifyContent: "space-between" }}>
@@ -39,9 +38,12 @@ export default function BalanceOverview({
               Open P&L
             </Text>
           </View>
-          <Text variant="xl" sx={{ fontWeight: "600", fontFamily: "monospace" }}>
-            {formatAmount(accountData.realizedPnl + accountData.unrealizedPnl)}
-          </Text>
+          <FormattedValueLabel
+            value={accountData.openPnl}
+            valueTextVariant="xl"
+            sx={{ fontWeight: "600", fontFamily: "monospace" }}
+            showSign
+          />
         </View>
 
         <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-evenly" }}>

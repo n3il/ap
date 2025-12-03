@@ -45,7 +45,7 @@ export function AssessmentPreview({
             marginBottom: 2,
           }}
         >
-          feeling {assessmentData.parsed_llm_response?.headline?.sentiment_word}{" "}
+          feeling {assessmentData.parsed_llm_response?.headline?.sentiment_word?.toLowerCase()}{" "}
           {`(${assessmentData.parsed_llm_response?.headline?.sentiment_score})`}
         </Text>
 
@@ -77,7 +77,6 @@ export default function AgentCard({
   agent,
   isOwnAgent = false,
   onPress,
-  compactView = false,
   hideOpenPositions = false,
   showPositions = true,
   transparent = false,
@@ -88,7 +87,6 @@ export default function AgentCard({
   agent: AgentType;
   isOwnAgent?: boolean;
   onPress?: () => void;
-  compactView?: boolean;
   hideOpenPositions?: boolean;
   showPositions?: boolean;
   transparent?: boolean;
@@ -152,7 +150,10 @@ export default function AgentCard({
         </View>
 
         {agent.latest_assessment?.parsed_llm_response ? (
-          <AssessmentPreview assessmentData={agent.latest_assessment} />
+          <AssessmentPreview
+            style={{ marginTop: 6 }}
+            assessmentData={agent.latest_assessment}
+          />
         ) : null}
 
         {agent.latest_assessment?.parsed_llm_response?.tradeActions?.length >
@@ -165,11 +166,11 @@ export default function AgentCard({
         )}
       </Pressable>
 
-      {!hideOpenPositions && (
+      {!hideOpenPositions && accountData.openPositions.length > 0 ? (
         <View sx={{ marginTop: 2 }}>
           <PositionList positions={accountData.openPositions} top={3} />
         </View>
-      )}
+      ) : null}
 
       {/* {parsedAssessment.tradeActions?.map((action, index) => (
       <TradeActionDisplay

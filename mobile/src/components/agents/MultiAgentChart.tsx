@@ -1,15 +1,28 @@
 import { type ComponentProps, useMemo } from "react";
 import type { SharedValue } from "react-native-reanimated";
 import SvgChart from "@/components/SvgChart";
-import { useMultiAgentSnapshots } from "@/hooks/useAgentSnapshots";
+import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
-import { buildNormalizedAgentLines } from "@/utils/chartUtils";
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
   style?: ComponentProps<typeof SvgChart>["style"];
+};
+
+const formatPercentValue = (value: number) => {
+  if (!Number.isFinite(value)) return "0.00%";
+  const sign = value > 0 ? "+" : "";
+  return `${sign}${value.toFixed(2)}%`;
+};
+
+const TIMEFRAME_KEY_MAP: Record<string, string> = {
+  "1h": "perp1h",
+  "24h": "perp24h",
+  "7d": "perp7d",
+  "30d": "perp30d",
+  "All": "perpAlltime",
 };
 
 export default function MultiAgentChart({
@@ -19,27 +32,54 @@ export default function MultiAgentChart({
   const { colors } = useColors();
   const { timeframe } = useTimeframeStore();
   const agents = useExploreAgentsStore((state) => state.agents);
-  const agentIds = agents.map((agent) => agent.id);
-  const { data, isLoading } = useMultiAgentSnapshots(agentIds, timeframe);
+  const { histories: accountHistories, isLoading } =
+    useAgentAccountValueHistories();
 
   const lines = useMemo(() => {
-    if (!data || agents.length === 0) return [];
+    if (!agents.length) return [];
 
-    const { lines: normalizedLines } = buildNormalizedAgentLines({
-      agents,
-      snapshotsByAgent: data,
-      axisGroup: "right",
-      getLineColor: (agent) =>
-        colors.providers[agent.llm_provider] || colors.primary,
-    });
+    const timeframeKey =
+      TIMEFRAME_KEY_MAP[timeframe] ?? TIMEFRAME_KEY_MAP["24h"];
 
-    return normalizedLines;
-  }, [data, agents, colors]);
+    return agents
+      .map((agent) => {
+        const agentHistory = accountHistories[agent.id];
+        const timeframeHistory = agentHistory?.histories?.[timeframeKey];
+        if (!timeframeHistory || timeframeHistory.length < 2) return null;
+
+        const startTimestamp = timeframeHistory[0]?.timestamp ?? 0;
+        const endTimestamp =
+          timeframeHistory[timeframeHistory.length - 1]?.timestamp ?? 0;
+        const timeRange = Math.max(endTimestamp - startTimestamp, 1);
+        const baseValue = timeframeHistory[0]?.value ?? 0;
+
+        const normalizedData = timeframeHistory.map((point) => {
+          const normalizedTime =
+            timeRange === 0 ? 0 : (point.timestamp - startTimestamp) / timeRange;
+          const percentChange =
+            baseValue === 0 ? 0 : ((point.value - baseValue) / baseValue) * 100;
+
+          return {
+            time: normalizedTime,
+            value: percentChange,
+          };
+        });
+
+        return {
+          id: agent.id,
+          name: agent.name,
+          axisGroup: "right" as const,
+          color: colors.providers[agent.llm_provider] || colors.primary,
+          formatValue: formatPercentValue,
+          data: normalizedData,
+        };
+      })
+      .filter((line): line is NonNullable<typeof line> => line !== null);
+  }, [agents, accountHistories, colors, timeframe]);
 
   return (
     <SvgChart
       lines={lines}
-      timeframe={timeframe}
       scrollY={scrollY}
       isLoading={isLoading}
       style={style}

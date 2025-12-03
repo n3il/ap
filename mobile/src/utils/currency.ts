@@ -34,6 +34,7 @@ export function formatAmount(num, { showSign = false, precision = 2 } = {}) {
   let signSymbol = "";
   if (showSign) {
     signSymbol = num > 0 ? "+" : num < 0 ? "-" : "";
+    num = num.toString().replace(/-|\+/, '');
   }
   return `${signSymbol}${currencySymbol}${formatCompact(num, { precision })}`;
 }

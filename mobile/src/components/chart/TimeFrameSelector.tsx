@@ -5,13 +5,13 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 
 const TIMEFRAME_OPTIONS = [
-  { id: "5m", label: "5m" },
-  { id: "15m", label: "15m" },
+  // { id: "5m", label: "5m" },
+  // { id: "15m", label: "15m" },
   { id: "1h", label: "1H" },
-  { id: "4h", label: "4H" },
-  { id: "1d", label: "1D" },
-  // { id: '1M', label: '1M' },
-  // { id: '1Y', label: '1Y' },
+  { id: "24h", label: "24H" },
+  { id: "7d", label: "7D" },
+  { id: '1M', label: '1M' },
+  { id: 'All', label: 'All' },
 ];
 
 export default function TimeFrameSelector() {

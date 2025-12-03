@@ -16,7 +16,7 @@ type HeaderChartProps = {
 } & Partial<ComponentProps<typeof SvgChart>>;
 
 export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
-  const timeframe = "7d";
+  const timeframe = "1h";
   const { colors } = useColors();
   const { data: agent } = useAgent(agentId);
 
@@ -107,7 +107,6 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
   const lines = useMemo(() => {
     const combined = [];
     if (sentimentLine) combined.push(sentimentLine);
-    if (equityLines.length > 0) combined.push(...equityLines);
     return combined;
   }, [sentimentLine, equityLines]);
 

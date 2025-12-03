@@ -56,6 +56,7 @@ export function normalizeHLAsset(raw: any): NormalizedAsset {
 // Zustand store for market prices
 export const useMarketPricesStore = create((set, get) => ({
   tickers: [] as NormalizedAsset[],
+  mids: {} as Record<string, string>,
 
   setTickers: (tickers: NormalizedAsset[]) => set({ tickers }),
 
@@ -66,7 +67,7 @@ export const useMarketPricesStore = create((set, get) => ({
       price: mids[t.symbol] ? Number(mids[t.symbol]) : t.midPx,
       lastUpdated: timestamp,
     }));
-    set({ tickers: updated });
+    set({ tickers: updated, mids });
   },
 
   isLoading: false,
@@ -80,6 +81,7 @@ export function useMarketPrices() {
   const {
     tickers,
     setTickers,
+    mids,
     updateTickers,
     setLoading,
     isLoading,
@@ -119,6 +121,7 @@ export function useMarketPrices() {
   return {
     tickers: tickers,
     assets: tickers || {},
+    mids,
     isLoading,
   };
 }

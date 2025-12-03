@@ -41,6 +41,7 @@ interface HeapItem {
   assetId: number;
   dayNtlVlmNum: number;
   fundingNum: number;
+  percentChange: number;
 }
 
 // ---------------------------------------------

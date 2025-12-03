@@ -20,7 +20,7 @@ const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
 
 const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 7;
-const PADDING = { top: 15, right: 15, bottom: 15, left: 15 };
+const PADDING = { top: 15, right: 15, bottom: 25, left: 15 };
 
 const getXValue = (point) => {
   if (!point) return null;
@@ -97,26 +97,66 @@ const interpolateValue = (data, targetX) => {
   return Number.isFinite(result) ? result : 0;
 };
 
+const clampNumber = (value: number, min: number, max: number) => {
+  if (!Number.isFinite(value)) return min;
+  return Math.min(Math.max(value, min), max);
+};
+
+const smoothLineData = (
+  data: Array<{ time: number; value?: number; percent?: number }>,
+  smoothing: number,
+) => {
+  if (!Array.isArray(data) || data.length === 0 || smoothing <= 0) {
+    return data;
+  }
+
+  let previous: number | null = null;
+  return data.map((point) => {
+    const rawValue =
+      typeof point.value === "number"
+        ? point.value
+        : typeof point.percent === "number"
+          ? point.percent
+          : null;
+
+    if (rawValue === null) return point;
+
+    const smoothed =
+      previous == null ? rawValue : previous + smoothing * (rawValue - previous);
+    previous = smoothed;
+
+    if (typeof point.value === "number") {
+      return { ...point, value: smoothed };
+    }
+    if (typeof point.percent === "number") {
+      return { ...point, percent: smoothed };
+    }
+    return point;
+  });
+};
+
 const SvgChart = ({
-  lines = [],
+  lines: inputLines = [],
   scrollY,
   style = {},
   xAxisPaddingPoints = 1,
   isLoading = false,
   chartAspectRatio = CHART_ASPECT_RATIO,
+  smoothing = 0,
 }: {
   lines?: Array<{
     id: string;
     name: string;
     color: string;
     data: Array<{ time: number; value: number }>;
-    axisGroup?: 'left' | 'right';
+    axisGroup?: "left" | "right";
     formatValue?: (value: number) => string;
   }>;
   scrollY?: SharedValue<number>;
   style?: ViewStyle;
   xAxisPaddingPoints?: number;
   isLoading?: boolean;
+  smoothing?: number;
 }) => {
   const { timeframe } = useTimeframeStore();
   const [touchActive, setTouchActive] = useState(false);
@@ -126,6 +166,7 @@ const SvgChart = ({
   const { colors: palette, withOpacity } = useColors();
   const mutedColor = palette.mutedForeground;
   const secondaryTextColor = palette.textSecondary;
+  const smoothingFactor = clampNumber(Number(smoothing) || 0, 0, 0.95);
 
   const chartHeight = useMemo(() => {
     const calculatedHeight = chartWidth * chartAspectRatio;
@@ -143,15 +184,44 @@ const SvgChart = ({
     [chartHeight],
   );
 
+  const chartLines = useMemo(() => {
+    const fallbackLines =
+      Array.isArray(inputLines) && inputLines.length > 0
+        ? inputLines
+        : [
+            {
+              id: "agent-1",
+              name: "Agent 1",
+              color: "#10b981",
+              data: [
+                { time: 0, value: 10 },
+                { time: 1, value: 10 },
+              ],
+              axisGroup: "left" as const,
+              formatValue: (val: number) => `${val.toFixed(1)}%`,
+            },
+          ];
+
+    if (smoothingFactor <= 0) return fallbackLines;
+
+    return fallbackLines.map((line) => {
+      if (!Array.isArray(line.data) || line.data.length === 0) return line;
+      return {
+        ...line,
+        data: smoothLineData(line.data, smoothingFactor),
+      };
+    });
+  }, [inputLines, smoothingFactor]);
+
   const maxLinePoints = useMemo(() => {
-    return lines.reduce((max, line) => {
+    return chartLines.reduce((max, line) => {
       if (!line?.data || !Array.isArray(line.data)) return max;
       const validCount = line.data.reduce((count, point) => {
         return count + (getXValue(point) !== null ? 1 : 0);
       }, 0);
       return Math.max(max, validCount);
     }, 0);
-  }, [lines]);
+  }, [chartLines]);
 
   const xAxisPaddingRatio = useMemo(() => {
     const safePadding = Math.max(0, xAxisPaddingPoints || 0);
@@ -197,20 +267,30 @@ const SvgChart = ({
     };
   }, [pulseAnim, chartWidth]);
 
-  // Pan responder for touch interaction
-  const panResponder = useMemo(() => {
-    const safeWidth = Math.max(plotWidth, 1);
-    const clampNormalizedX = (locationX) => {
+  const clampNormalizedX = useCallback(
+    (locationX: number) => {
+      const safeWidth = Math.max(plotWidth, 1);
       const clampedRatio = Math.max(
         0,
         Math.min(1, (locationX - PADDING.left) / safeWidth),
       );
       return clampedRatio * xAxisMaxTime;
-    };
+    },
+    [plotWidth, xAxisMaxTime],
+  );
 
+  // Pan responder for touch interaction – only engage when the user is clearly dragging horizontally
+  const panResponder = useMemo(() => {
+    const MIN_HORIZONTAL_DISTANCE = 6;
+    const MIN_DIRECTIONAL_RATIO = 1.2;
     return PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
+      onStartShouldSetPanResponder: () => false,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        const absDx = Math.abs(gestureState.dx);
+        const absDy = Math.abs(gestureState.dy);
+        if (absDx < MIN_HORIZONTAL_DISTANCE) return false;
+        return absDx > absDy * MIN_DIRECTIONAL_RATIO;
+      },
       onPanResponderGrant: (evt) => {
         setTouchX(clampNormalizedX(evt.nativeEvent.locationX));
         setTouchActive(true);
@@ -225,7 +305,7 @@ const SvgChart = ({
         setTouchActive(false);
       },
     });
-  }, [plotWidth, xAxisMaxTime]);
+  }, [clampNormalizedX]);
 
   // Group lines by axis
   const axisGroups = useMemo(() => {
@@ -234,7 +314,7 @@ const SvgChart = ({
       right: [],
     };
 
-    lines.forEach((line) => {
+    chartLines.forEach((line) => {
       const group = line.axisGroup || "left";
       if (groups[group]) {
         groups[group].push(line);
@@ -242,20 +322,20 @@ const SvgChart = ({
     });
 
     return groups;
-  }, [lines]);
+  }, [chartLines]);
 
   // Find the closest data point time to the touch position
   const snappedTouchX = useMemo(() => {
     if (
       !touchActive ||
-      lines.length === 0 ||
-      !lines[0].data ||
-      lines[0].data.length === 0
+      chartLines.length === 0 ||
+      !chartLines[0].data ||
+      chartLines[0].data.length === 0
     ) {
       return touchX;
     }
 
-    const referenceData = lines[0].data
+    const referenceData = chartLines[0].data
       .map((point) => getXValue(point))
       .filter((x) => x !== null);
 
@@ -274,16 +354,16 @@ const SvgChart = ({
     }
 
     return closestTime;
-  }, [touchActive, touchX, lines]);
+  }, [touchActive, touchX, chartLines]);
 
   // Calculate interpolated values at touch position
   const touchValues = useMemo(() => {
     if (!touchActive) return [];
-    return lines.map((line) => ({
+    return chartLines.map((line) => ({
       ...line,
       value: interpolateValue(line.data, snappedTouchX),
     }));
-  }, [touchActive, snappedTouchX, lines]);
+  }, [touchActive, snappedTouchX, chartLines]);
 
   // Calculate axis ranges and ticks for each axis group
   const axisConfig = useMemo(() => {
@@ -314,7 +394,7 @@ const SvgChart = ({
     };
 
     const generateTicks = (yMin, yMax) => {
-      const tickCount = 5;
+      const tickCount = 3;
       return Array.from({ length: tickCount }, (_, i) => {
         const value = yMin + ((yMax - yMin) / (tickCount - 1)) * i;
         return value;
@@ -422,22 +502,6 @@ const SvgChart = ({
     }
     return `${val.toFixed(1)}`;
   };
-
-  if (lines.length === 0) {
-    lines = [
-      {
-        id: "agent-1",
-        name: "Agent 1",
-        color: "#10b981",
-        data: [
-          { time: 0, value: 10 },
-          { time: 1, value: 10 },
-        ],
-        axisGroup: "left",
-        formatValue: (val) => `${val.toFixed(1)}%`,
-      },
-    ];
-  }
 
   const animatedStyle = useAnimatedStyle(() => {
     "worklet";
@@ -558,7 +622,7 @@ const SvgChart = ({
             )}
 
             {/* Render lines */}
-            {lines.map((line) => {
+            {chartLines.map((line) => {
               const axisGroup = line.axisGroup || "left";
 
               // Filter out invalid data points
@@ -783,7 +847,7 @@ const SvgChart = ({
         }}
       >
         {timeLabels.map((label) => (
-          <Text key={label} sx={{ fontSize: 10, color: "secondary500" }}>
+          <Text key={label} sx={{ fontSize: 10, color: "secondary300" }}>
             {label}
           </Text>
         ))}
