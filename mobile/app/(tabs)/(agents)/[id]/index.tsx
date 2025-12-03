@@ -20,6 +20,7 @@ export default function AgentReadScreen() {
   const { colors: palette } = useColors();
   const { id } = useLocalSearchParams();
   const { data: agent } = useAgent(id);
+  console.log({ agent })
   const router = useRouter();
 
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -35,6 +36,7 @@ export default function AgentReadScreen() {
     outputRange: [0, 0],
     extrapolate: "clamp",
   });
+
 
   return (
     <ContainerView style={{ flex: 1 }}>
@@ -55,7 +57,7 @@ export default function AgentReadScreen() {
               backgroundColor={palette.providers[agent.llm_provider]}
             />
           </View> */}
-          <BalanceOverview agentId={agent?.id} />
+          <BalanceOverview agent={agent} />
         </PaddedView>
         <HeaderChart
           agentId={agent?.id}

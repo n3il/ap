@@ -28,7 +28,7 @@ interface HLStoreState {
 
 export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   const client = new hl.SubscriptionClient({
-    transport: new hl.WebSocketTransport(),
+    transport: new hl.WebSocketTransport({ isTestnet: true }),
   });
 
   const registry = new Map<string, Set<HLSubscriptionHandler>>();

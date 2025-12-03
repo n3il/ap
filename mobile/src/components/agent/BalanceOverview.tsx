@@ -1,13 +1,19 @@
 import { Text, View } from "@/components/ui";
 import LabelValue from "@/components/ui/LabelValue";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
+import { useAccountBalanceNew } from "@/hooks/useAccountBalanceNew";
+import { AgentType } from "@/types/agent";
 import { formatAmount, formatDecimal, formatPercent } from "@/utils/currency";
 
 export default function BalanceOverview({
-  agentId,
-  hideOpenPositions = false,
+  agent,
+}: {
+  agent: AgentType;
 }) {
-  const accountData = useAccountBalance(agentId, hideOpenPositions);
+  console.log({ a: agent?.trading_accounts })
+  const tradingAccountType = agent.simulate ? "paper" : "real";
+  const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
+  const accountData = useAccountBalanceNew({userId: tradingAccount?.hyperliquid_address || ""});
 
   return (
     <View sx={{ gap: 4 }}>
@@ -26,15 +32,15 @@ export default function BalanceOverview({
           </Text>
         </View>
 
-      <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-between" }}>
+      <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-evenly" }}>
 
         <LabelValue
           label="1h P&L"
-          value={accountData.enrichedPositions.length}
+          value={accountData.openPositions.length}
         />
         <LabelValue
           label="24h P&L"
-          value={accountData.enrichedPositions.length}
+          value={accountData.openPositions.length}
         />
         <LabelValue
           label="7d P&L"
@@ -58,7 +64,7 @@ export default function BalanceOverview({
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Active Positions"
-            value={accountData.enrichedPositions.length}
+            value={accountData.openPositions.length}
             alignRight
           />
         </View>

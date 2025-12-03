@@ -38,6 +38,7 @@ export const agentService = {
     published = null,
     isActive = null,
     includeLatestAssessment = false,
+    includeTradingAccounts = true,
   } = {}) {
     let resolvedUserId = userId;
     if (!resolvedUserId && !published) {
