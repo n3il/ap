@@ -1,9 +1,7 @@
 import * as hl from "@nktkas/hyperliquid";
-import initSentry from "../../_shared/sentry.ts";
 import { CandleData, HyperliquidOrderBody } from "./types.ts";
 import { getTopKAssets } from "./utils.ts";
-
-const Sentry = initSentry();
+import { recordExternalRequest } from "../lib/external_request.ts";
 
 type CandleInterval =
   | '1m' | '3m' | '5m' | '15m' | '30m'
@@ -41,12 +39,22 @@ export async function fetchCandleData({
   const endTime = Date.now()
   const startTime = endTime - (lookbackHours * 60 * 60 * 1000)
 
-  return await infoClient().candleSnapshot({
+  const candles = await infoClient().candleSnapshot({
     coin: assetName,
     interval: intervalString,
     startTime,
     endTime,
   })
+
+  recordExternalRequest({
+    name: 'hyperliquid-candleSnapshot',
+    url: 'hyperliquid/candleSnapshot',
+    method: 'GET',
+    requestBody: { assetName, intervalString, lookbackHours },
+    responseBody: { count: candles.length },
+  });
+
+  return candles;
 }
 
 export async function fetchAllCandleData({
@@ -65,11 +73,32 @@ export async function fetchAllCandleData({
 
 export async function fetchTradeableAssets()  {
   const [{universe}, assetContexts] = await infoClient(true).metaAndAssetCtxs()
+  recordExternalRequest({
+    name: 'hyperliquid-metaAndAssetCtxs',
+    url: 'hyperliquid/metaAndAssetCtxs',
+    method: 'GET',
+    responseBody: {
+      universeCount: universe?.length ?? 0,
+      assetContextCount: assetContexts?.length ?? 0,
+    },
+  });
   return getTopKAssets(universe, assetContexts);
 }
 
 export async function getAccountSummary(userId: string, isTestnet: boolean): Promise<hl.ClearinghouseStateResponse> {
-  return await infoClient(isTestnet).clearinghouseState({ user: userId })
+  const response = await infoClient(isTestnet).clearinghouseState({ user: userId })
+
+  recordExternalRequest({
+    name: 'hyperliquid-clearinghouseState',
+    url: 'hyperliquid/clearinghouseState',
+    method: 'GET',
+    requestBody: { userId, isTestnet },
+    responseBody: {
+      accountValue: response?.userState?.marginSummary?.accountValue,
+    },
+  });
+
+  return response;
 }
 
 export async function executeHyperliquidTrade(
@@ -77,11 +106,16 @@ export async function executeHyperliquidTrade(
   isTestnet: boolean,
   wallet: string
 ): Promise<{ success: boolean, orderId: string | null, message: string }> {
-  Sentry.setContext("external_request", {
-    requestBody: JSON.stringify(orderPayload),
-  });
-
   const orderResult = await exchangeClient(wallet, isTestnet).order(orderPayload.action)
+
+  recordExternalRequest({
+    name: 'hyperliquid-order',
+    url: 'hyperliquid/order',
+    method: 'POST',
+    requestBody: orderPayload,
+    responseBody: orderResult,
+    statusText: orderResult.status,
+  });
 
   const status = orderResult.response?.data?.statuses?.[0]
   if (orderResult.status === 'ok' && status) {

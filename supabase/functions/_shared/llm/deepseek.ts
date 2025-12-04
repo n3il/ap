@@ -1,5 +1,6 @@
 import type { GeminiPrompt, LLMResponse } from './gemini.ts'
-import { tryParseText } from "./providers.ts";
+import { tryParseText } from './providers.ts';
+import { externalFetch } from '../lib/external_request.ts';
 
 const DEFAULT_MODEL = 'deepseek-chat'
 const API_URL = 'https://api.deepseek.com/chat/completions'
@@ -16,7 +17,7 @@ export async function callDeepseekAPI(
 
   const model = modelOverride || DEFAULT_MODEL
 
-  const response = await fetch(API_URL, {
+  const response = await externalFetch(API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -31,7 +32,13 @@ export async function callDeepseekAPI(
       temperature: 0.7,
       top_p: 0.95,
     }),
-  })
+  }, async (res) => ({
+    name: 'deepseek',
+    url: API_URL,
+    method: 'POST',
+    requestBody: { model },
+    responseBody: await res.clone().json().catch(() => undefined),
+  }))
 
   if (!response.ok) {
     const errorText = await response.text()

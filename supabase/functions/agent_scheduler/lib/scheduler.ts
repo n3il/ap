@@ -1,5 +1,6 @@
 import { createSupabaseServiceClient } from '../../_shared/supabase.ts';
 import type { Agent } from '../../_shared/lib/types.ts';
+import { externalFetch } from '../../_shared/lib/external_request.ts';
 
 /**
  * Fetches all active agents from the database
@@ -26,9 +27,10 @@ export async function fetchActiveAgents(): Promise<Agent[]> {
 async function triggerAgentAssessment(agent: Agent): Promise<void> {
   const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
   const SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const requestUrl = `${SUPABASE_URL}/functions/v1/run_agent_assessment`;
 
-  const response = await fetch(
-    `${SUPABASE_URL}/functions/v1/run_agent_assessment`,
+  const response = await externalFetch(
+    requestUrl,
     {
       method: 'POST',
       headers: {
@@ -36,6 +38,28 @@ async function triggerAgentAssessment(agent: Agent): Promise<void> {
         'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
       },
       body: JSON.stringify({ agent_id: agent.id }),
+    },
+    async (res) => {
+      const clonedResponse = res.clone();
+      let responseBody: unknown;
+
+      try {
+        responseBody = await clonedResponse.json();
+      } catch {
+        try {
+          responseBody = await clonedResponse.text();
+        } catch {
+          responseBody = undefined;
+        }
+      }
+
+      return {
+        name: 'run-agent-assessment',
+        url: requestUrl,
+        method: 'POST',
+        requestBody: { agentId: agent.id },
+        responseBody,
+      };
     }
   );
 

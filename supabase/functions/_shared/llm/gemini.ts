@@ -1,11 +1,9 @@
 // Google Gemini API integration
-import { tryParseText } from "./providers.ts";
+import { tryParseText } from './providers.ts';
 import type {
   ParsedLLMResponse,
 } from './types.ts'
-import initSentry from "../../_shared/sentry.ts";
-
-const Sentry = initSentry();
+import { externalFetch } from '../lib/external_request.ts';
 
 export interface GeminiPrompt {
   systemInstruction: string
@@ -37,9 +35,9 @@ export async function callGeminiAPI(
   }
 
   const model = modelOverride || 'gemini-2.0-flash-exp'
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`
+  const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`
 
-  const response = await fetch(url, {
+  const response = await externalFetch(`${endpoint}?key=${apiKey}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
@@ -64,7 +62,13 @@ export async function callGeminiAPI(
         maxOutputTokens: 9000,
       },
     }),
-  })
+  }, async (res) => ({
+    name: 'google-gemini',
+    url: endpoint,
+    method: 'POST',
+    requestBody: { model },
+    responseBody: await res.clone().json().catch(() => undefined),
+  }))
 
   if (!response.ok) {
     const errorText = await response.text()
@@ -77,10 +81,6 @@ export async function callGeminiAPI(
   if (!data.candidates || data.candidates.length === 0) {
     throw new Error('No response from Gemini API')
   }
-
-  Sentry.setContext("external_request", {
-    data
-  });
 
   const text = data.candidates[0].content.parts[0].text;
   const parsed = tryParseText(text);
@@ -111,4 +111,3 @@ export function buildPrompt(
 
   return { systemInstruction, userQuery }
 }
-

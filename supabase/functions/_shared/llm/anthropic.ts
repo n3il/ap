@@ -1,5 +1,6 @@
 import type { GeminiPrompt, LLMResponse } from '../llm/gemini.ts'
-import { tryParseText } from "./providers.ts";
+import { tryParseText } from './providers.ts';
+import { externalFetch } from '../lib/external_request.ts';
 
 const DEFAULT_MODEL = 'claude-3-5-haiku-20241022'
 const API_URL = 'https://api.anthropic.com/v1/messages'
@@ -17,7 +18,7 @@ export async function callAnthropicAPI(
 
   const model = modelOverride || DEFAULT_MODEL
 
-  const response = await fetch(API_URL, {
+  const response = await externalFetch(API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -36,7 +37,13 @@ export async function callAnthropicAPI(
         },
       ],
     }),
-  })
+  }, async (res) => ({
+    name: 'anthropic',
+    url: API_URL,
+    method: 'POST',
+    requestBody: { model },
+    responseBody: await res.clone().json().catch(() => undefined),
+  }))
 
   if (!response.ok) {
     const errorText = await response.text()
