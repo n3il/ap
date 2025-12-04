@@ -7,7 +7,13 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+
+    "build": "eas build -n --platform ios",
+    "build:preview": "eas build -n --profile preview",
+    "build:release": "eas build -n --profile production",
+    "update": "eas update --branch main",
+    "submit:ios": "eas submit -n --platform ios"
   },
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
