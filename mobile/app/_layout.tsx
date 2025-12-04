@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
 import * as ExpoSplashScreen from "expo-splash-screen";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import DebugOverlay from "@/components/DebugOverlay";
@@ -9,6 +9,7 @@ import SplashScreen from "@/components/SplashScreen";
 import { ROUTES } from "@/config/routes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { useColors } from "@/theme";
 
 // Prevent native splash screen from auto-hiding
 ExpoSplashScreen.preventAutoHideAsync();
@@ -16,6 +17,7 @@ ExpoSplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 function AuthNavigator() {
+  const { colors: palette } = useColors();
   const { user, loading, hasCompletedOnboarding } = useAuth();
   const router = useRouter();
   const [appIsReady, setAppIsReady] = useState(false);
@@ -63,9 +65,12 @@ function AuthNavigator() {
     }
   }, [loading]);
 
+  const rootBg = useMemo(() => palette.backkgroundSecondary as string, [palette])
+
   if (loading || !appIsReady) {
     return <SplashScreen />;
   }
+
 
   return (
     <>
@@ -73,6 +78,9 @@ function AuthNavigator() {
         screenOptions={{
           headerShown: false,
           presentation: "card",
+          contentStyle: {
+            backgroundColor: rootBg,
+          },
         }}
       >
         <Stack.Screen name="index" />
@@ -84,6 +92,8 @@ function AuthNavigator() {
           }}
         />
         <Stack.Screen name="(tabs)" />
+
+        <Stack.Screen name="(agent)" />
 
         <Stack.Screen
           name="modal_create_agent"

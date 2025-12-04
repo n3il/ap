@@ -203,17 +203,6 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
     }
   }, [clearinghouseState, mids])
 
-
-  const accountValueHistoryLive = useMemo(() => {
-    if (!accountValueHistory || !mids) return;
-
-
-    return {
-
-    }
-  }, [accountValueHistory, mids])
-
-
   const openPositions = useMemo(() => {
     if (!clearinghouseState) return [];
 
@@ -245,9 +234,9 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
     clearinghouseState,
 
     // convenient derived values
-    equity: clearinghouseState?.marginSummary.accountValue,
+    equity: liveData?.accountValue,
     positionValue: liveData?.allPositionsValue,
-    marginUsed: clearinghouseState?.marginSummary.accountValue,
+    marginUsed: liveData?.allPositionsValue,
     openPnl: liveData?.allPositionsValueChange,
     openPnlPct: liveData?.allPositionsPctChange,
     totalPnl: liveData?.totalPnl,

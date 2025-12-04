@@ -21,6 +21,7 @@ const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
 const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 7;
 const DEFAULT_PADDING = { top: 15, right: 15, bottom: 10, left: 15 };
+const Y_VISUAL_PADDING_PX = 8;
 
 const getXValue = (point) => {
   if (!point) return null;
@@ -384,6 +385,18 @@ const SvgChart = ({
       return { yMin, yMax };
     };
 
+    const applyVisualPadding = (range) => {
+      const safeHeight = Math.max(plotHeight, 1);
+      const axisRange = Math.max(range.yMax - range.yMin, 1e-6);
+      const valuePerPixel = axisRange / safeHeight;
+      const paddingValue = valuePerPixel * Y_VISUAL_PADDING_PX;
+
+      return {
+        yMin: range.yMin - paddingValue,
+        yMax: range.yMax + paddingValue,
+      };
+    };
+
     const generateTicks = (yMin, yMax) => {
       const tickCount = 3;
       return Array.from({ length: tickCount }, (_, i) => {
@@ -396,28 +409,32 @@ const SvgChart = ({
 
     // Configure left axis
     if (axisGroups.left.length > 0) {
-      const { yMin, yMax } = calculateAxisRange(axisGroups.left);
+      const range = applyVisualPadding(
+        calculateAxisRange(axisGroups.left),
+      );
       config.left = {
-        yMin,
-        yMax,
-        yTicks: generateTicks(yMin, yMax),
+        yMin: range.yMin,
+        yMax: range.yMax,
+        yTicks: generateTicks(range.yMin, range.yMax),
         lines: axisGroups.left,
       };
     }
 
     // Configure right axis
     if (axisGroups.right.length > 0) {
-      const { yMin, yMax } = calculateAxisRange(axisGroups.right);
+      const range = applyVisualPadding(
+        calculateAxisRange(axisGroups.right),
+      );
       config.right = {
-        yMin,
-        yMax,
-        yTicks: generateTicks(yMin, yMax),
+        yMin: range.yMin,
+        yMax: range.yMax,
+        yTicks: generateTicks(range.yMin, range.yMax),
         lines: axisGroups.right,
       };
     }
 
     return config;
-  }, [axisGroups]);
+  }, [axisGroups, plotHeight]);
 
   // Generate time labels based on timeframe
   const timeLabels = useMemo(() => {
@@ -457,11 +474,13 @@ const SvgChart = ({
         return chartPadding.top + plotHeight / 2;
 
       const normalized = (value - axis.yMin) / (axis.yMax - axis.yMin);
+      const clampedNormalized = clampNumber(normalized, 0, 1);
 
-      if (!Number.isFinite(normalized) || Number.isNaN(normalized))
+      if (!Number.isFinite(clampedNormalized) || Number.isNaN(clampedNormalized))
         return chartPadding.top + plotHeight / 2;
 
-      const result = chartPadding.top + plotHeight - normalized * plotHeight;
+      const result =
+        chartPadding.top + plotHeight - clampedNormalized * plotHeight;
       return Number.isFinite(result) ? result : chartPadding.top + plotHeight / 2;
     },
     [axisConfig, plotHeight],

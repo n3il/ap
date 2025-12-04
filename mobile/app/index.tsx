@@ -10,10 +10,10 @@ import {
   GlassButton,
   SafeAreaView,
   Text,
-  View,
 } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useColors } from "@/theme";
+import { View } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 
@@ -74,7 +74,7 @@ export default function GetStartedScreen() {
   }, []);
 
   return (
-    <View sx={{ flex: 1, backgroundColor: "black" }}>
+    <View style={{ flex: 1, backgroundColor: "#000" }}>
       <VideoView
         style={{
           width,

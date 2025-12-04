@@ -4,7 +4,7 @@ import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import { AgentType } from "@/types/agent";
-import { formatPercent } from "@/utils/currency";
+import { formatAmount, formatPercent } from "@/utils/currency";
 import { Pressable } from "react-native";
 
 const accountBalanceTimeframes = {
@@ -25,6 +25,7 @@ export default function BalanceOverview({
   const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
   const { setTimeframe } = useTimeframeStore();
 
+  console.log({ accountData })
   return (
     <View sx={{
       gap: 4,
@@ -74,7 +75,10 @@ export default function BalanceOverview({
         sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}
       >
         <View sx={{ flex: 1 }}>
-          <LabelValue label="Account Value" value={accountData.equity || 0} />
+          <LabelValue
+            label="Account Value"
+            value={formatAmount(accountData?.equity)}
+          />
         </View>
 
         {/* <View sx={{ flex: 1 }}>
@@ -87,7 +91,7 @@ export default function BalanceOverview({
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Open P&L"
-            value={accountData.unrealizedPnl || 0}
+            value={accountData.openPnl}
             colorize
             alignRight
           >
@@ -102,7 +106,7 @@ export default function BalanceOverview({
                       : "foreground",
               }}
             >
-              {`(${accountData.unrealizedPnlPercent ? formatPercent(accountData.unrealizedPnlPercent) : "-"})`}
+              {`(${accountData.openPnlPct ? formatPercent(accountData.openPnlPct) : "-"})`}
             </Text>
           </LabelValue>
         </View>

@@ -91,7 +91,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       <TouchableOpacity
         onPress={() => {
           router.push({
-            pathname: ROUTES.TABS_EXPLORE_AGENT_ID_ASSESSMENT.path,
+            pathname: ROUTES.AGENT_ASSESSMENT_ID.path,
             params: { id: assessment.agent?.id, assessmentId: assessment.id },
           });
         }}

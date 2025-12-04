@@ -54,20 +54,16 @@ export const ROUTES = {
     path: "/(tabs)/(agents)/index",
     requiresAuthentication: "optional",
   },
-  TABS_EXPLORE_AGENT_ID: {
-    path: "/(tabs)/(agents)/[id]",
+  AGENT_ID: {
+    path: "/(agent)/[id]",
     requiresAuthentication: "optional",
   },
-  TABS_EXPLORE_AGENT_ID_ASSESSMENT: {
-    path: "/(tabs)/(agents)/[id]/[assessmentId]",
+  AGENT_ASSESSMENT_ID: {
+    path: "/(agent)/[id]/[assessmentId]",
     requiresAuthentication: "optional",
   },
-  TABS_EXPLORE_AGENT_ID_INDEX: {
-    path: "/(tabs)/(agents)/[id]/index",
-    requiresAuthentication: "optional",
-  },
-  TABS_EXPLORE_AGENT_ID_MANAGE: {
-    path: "/(tabs)/(agents)/[id]/manage",
+  AGENT_ID_MANAGE: {
+    path: "/(agent)/[id]/manage",
     requiresAuthentication: true,
   },
 

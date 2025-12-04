@@ -57,7 +57,7 @@ const LabelValue: React.FC<LabelValueProps> = ({
   label,
   value,
   orientation = "vertical",
-  sx,
+  sx = {},
   textVariant = "xs",
 
   showSign = false,

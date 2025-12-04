@@ -78,7 +78,7 @@ export default function AgentList({
   const onAgentPress = useCallback(
     (agent) => {
       router.push({
-        pathname: ROUTES.TABS_EXPLORE_AGENT_ID.path,
+        pathname: ROUTES.AGENT_ID.path,
         params: { id: agent.id, name: agent.name },
       });
     },

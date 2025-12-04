@@ -7,6 +7,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
     userInterfaceStyle: "dark",
+    backgroundColor: "#000000",
     splash: {
       image: "./assets/icons/Icon-App-iTunes.png",
       resizeMode: "contain",

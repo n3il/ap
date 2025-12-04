@@ -26,7 +26,7 @@ export function StatsAbbreviated({
     ]}>
       <LabelValue
         label="Open P&L"
-        value={(accountData.openPnl - accountData.marginUsed) / (accountData.marginUsed || 1)}
+        value={accountData.openPnlPct}
         textVariant="xs"
         valueTextVariant="xs"
         colorize
@@ -36,7 +36,7 @@ export function StatsAbbreviated({
       </LabelValue>
       <LabelValue
         label="All P&L"
-        value={(accountData.totalPnlPercent)}
+        value={(accountData.openPnlPct)}
         textVariant="xs"
         valueTextVariant="xs"
         colorize
