@@ -8,7 +8,6 @@
     "web": "expo start --web",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-
     "build": "eas build -n --platform ios",
     "build:preview": "eas build -n --profile preview",
     "build:release": "eas build -n --profile production",
@@ -47,6 +46,7 @@
     "expo-video": "~3.0.12",
     "expo-web-browser": "^15.0.8",
     "fast-text-encoding": "^1.0.6",
+    "heap-js": "^2.7.1",
     "i18n-js": "^4.5.1",
     "libphonenumber-js": "^1.12.29",
     "lottie-react-native": "~7.3.1",

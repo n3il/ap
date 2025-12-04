@@ -23,7 +23,7 @@ export const TIMEFRAME_OPTIONS: TimeFrameOption[] = [
  */
 export const useTimeframeStore = create((set) => ({
   // The currently selected timeframe (default: 1h)
-  timeframe: "1h",
+  timeframe: "1h" as AvailableTimeframesEnum,
 
   // Set the timeframe
   setTimeframe: (timeframe) => set({ timeframe }),

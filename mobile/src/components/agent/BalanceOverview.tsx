@@ -114,7 +114,7 @@ export default function BalanceOverview({
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Mkt. Value"
-            value={accountData.equity - accountData.availableMargin || 0}
+            value={accountData.marginUsed}
           />
         </View>
         <View sx={{ flex: 1 }}>

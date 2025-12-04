@@ -98,7 +98,6 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         activeOpacity={0.7}
       >
         <AssessmentPreview assessmentData={assessment} />
-        <Text>{assessment?.status}</Text>
         {expanded ? (
           <View
             sx={{
@@ -170,21 +169,13 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       </TouchableOpacity>
 
       {/* <TradeSummary tradeActions={tradeActions} /> */}
-      {tradeActions.length > 0 && (
-        <View
-          sx={{
-            marginTop: 3,
-          }}
-        >
-          {tradeActions.map((action, index) => (
-            <TradeActionDisplay
-              key={`${action.asset ?? "action"}-${index}`}
-              actionData={action}
-              showReason={expanded}
-            />
-          ))}
-        </View>
-      )}
+      {tradeActions.length > 0 && tradeActions.map((action, index) => (
+        <TradeActionDisplay
+          key={`${action.asset ?? "action"}-${index}`}
+          actionData={action}
+          showReason={expanded}
+        />
+      ))}
     </Card>
   );
 }

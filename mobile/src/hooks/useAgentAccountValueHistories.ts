@@ -204,8 +204,6 @@ export function useAgentAccountValueHistories() {
     });
   }, [agentAddresses, histories]);
 
-  console.log({ histories: JSON.stringify(histories) })
-
   return {
     histories,
     isLoading: false,

@@ -50,7 +50,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
 
   client.transport.socket.addEventListener("message", (event) => {
     const msg = JSON.parse(event.data);
-
+    console.log({msg})
     if (msg.channel === "post") {
       const resolver = pendingPosts.get(msg.data.id);
       if (resolver) {

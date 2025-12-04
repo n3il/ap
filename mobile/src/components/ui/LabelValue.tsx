@@ -105,14 +105,14 @@ const LabelValue: React.FC<LabelValueProps> = ({
             marginLeft: alignRight ? 'auto': '0',
           }}
         >
-          <FormattedValueLabel
+          {<FormattedValueLabel
             value={value}
             colorize={colorize}
             formatter={formatter}
             showSign={showSign}
             alignRight={alignRight}
             valueTextVariant={valueTextVariant}
-          />
+          />}
           {children}
         </View>
       ) : (

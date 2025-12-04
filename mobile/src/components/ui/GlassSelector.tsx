@@ -136,7 +136,7 @@ export default function GlassSelector({ style, ...props }: GlassSelectorProps) {
           alignItems: "center",
           gap: 4,
           borderRadius: 999,
-          paddingVertical: 3,
+          paddingVertical: 2,
         }}
       >
         <View

@@ -4,9 +4,7 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { StatsAbbreviated } from "@/components/agent/AccountStats";
-import { TradeSummary } from "@/components/TradeActionDisplay";
 import { Avatar, Text, View } from "@/components/ui";
-import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useColors } from "@/theme";
 import type { AgentType, AssessmentRecordType } from "@/types/agent";
 import { sentimentToColor } from "@/utils/currency";
@@ -126,7 +124,7 @@ export default function AgentCard({
         <View
           style={{
             flexDirection: "row",
-            alignItems: "center",
+            alignItems: "flex-start",
             gap: 2,
             justifyContent: "space-between",
           }}
@@ -141,10 +139,7 @@ export default function AgentCard({
             agent={agent}
             style={{
               flexDirection: "column",
-              flexShrink: 1,
               alignItems: "flex-end",
-              justifyContent: "flex-end",
-              marginLeft: "auto",
             }}
           />
         </View>
@@ -167,7 +162,9 @@ export default function AgentCard({
       </Pressable>
 
       {!hideOpenPositions && accountData.openPositions.length > 0 ? (
-        <View sx={{ marginTop: 2 }}>
+        <View sx={{
+          marginTop: 2,
+        }}>
           <PositionList positions={accountData.openPositions} top={3} />
         </View>
       ) : null}

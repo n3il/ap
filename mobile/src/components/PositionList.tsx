@@ -126,8 +126,6 @@ export function PositionRow({ position }: {position: OpenPosition}) {
   } = uiPosition;
 
   const currentPriceValue = 0 // Number(mids[symbol]) || 0;
-  console.log({ currentPriceValue, position })
-
 
   // ---- Labels ----
   const assetLabel = (asset || symbol || coin || "").replace("-PERP", "/USDC");
@@ -214,7 +212,7 @@ export function PositionRow({ position }: {position: OpenPosition}) {
           <View sx={{ alignItems: "center" }}>
             <View sx={{ flexDirection: "column", alignItems: "flex-end" }}>
               <Text variant="xs">
-                {formatAmount(positionValue)} {formatAmount(positionValue + unrealizedPnl)}
+                {formatAmount(positionValue + unrealizedPnl)}
               </Text>
               <Text
                 variant="xs"

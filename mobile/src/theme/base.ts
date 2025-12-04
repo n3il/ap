@@ -92,6 +92,7 @@ const darkTheme = {
     backgroundSecondary: "#101a2c",
     surface: "#0f172a",
     surfaceBorder: "#323e59ff",
+    surfaceDark: "#232323",
     shadow: "rgba(0, 0, 0, .2)",
     foreground: "#f8fafc",
     text: {

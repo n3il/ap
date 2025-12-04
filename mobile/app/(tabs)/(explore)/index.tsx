@@ -44,26 +44,6 @@ export default function ExploreScreen() {
     },
   });
 
-  const _borderStyle = useAnimatedStyle(() => {
-    if (!scrollY) return { borderBottomColor: "#fff", borderBottomWidth: 1 };
-
-    const progress = interpolate(
-      scrollY.value,
-      [0, 50],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      borderBottomColor: interpolate(
-        progress,
-        [0, 1],
-        ["rgba(255, 255, 255, 0)", "rgba(255, 255, 255, 1)"],
-        Extrapolation.CLAMP,
-      ),
-      borderBottomWidth: 10,
-    };
-  }, [scrollY]);
-
   return (
     <View
       style={{
@@ -137,7 +117,6 @@ export default function ExploreScreen() {
         </View>
         <AgentList
           queryKey={["explore-agents"]}
-          compactView
           scrollY={scrollY}
         />
       </AnimatedScrollView>

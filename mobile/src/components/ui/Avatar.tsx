@@ -95,7 +95,7 @@ export default function Avatar({
     <View
       sx={{
         flexDirection: "row",
-        alignItems: "center",
+        alignItems: "flex-start",
         justifyContent: "space-between",
         marginRight: "auto",
       }}

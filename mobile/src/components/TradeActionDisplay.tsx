@@ -79,6 +79,7 @@ export default function TradeActionDisplay({
   return (
     <View
       sx={{
+        marginTop: 3,
       }}
     >
       <TouchableOpacity activeOpacity={0.7}>
@@ -116,7 +117,7 @@ export default function TradeActionDisplay({
       </TouchableOpacity>
 
       {reason ? (
-        <View sx={{ marginTop: 4, borderTopWidth: 1 }}>
+        <View sx={{ marginTop: 2, borderTopWidth: 1 }}>
           <Text
             variant="xs"
 

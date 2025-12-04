@@ -64,8 +64,7 @@ export function calcPnLByTimeframe(data: any) {
         return [timeframe, { first: null, last: null, pnl: null, pnlPct: null }];
       }
 
-      const firstWithValue = history.findIndex(h => parseFloat(h[1]) > 0);
-      const first = parseFloat(history[firstWithValue][1]);
+      const first = parseFloat(history[0][1]);
       const last = parseFloat(history[history.length - 1][1]);
       const pnl = last - first;
       const pnlPct = first !== 0 ? (pnl / first) * 100 : null;

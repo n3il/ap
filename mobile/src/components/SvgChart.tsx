@@ -20,7 +20,7 @@ const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
 
 const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 7;
-const PADDING = { top: 15, right: 15, bottom: 25, left: 15 };
+const DEFAULT_PADDING = { top: 15, right: 15, bottom: 10, left: 15 };
 
 const getXValue = (point) => {
   if (!point) return null;
@@ -142,6 +142,7 @@ const SvgChart = ({
   xAxisPaddingPoints = 1,
   isLoading = false,
   chartAspectRatio = CHART_ASPECT_RATIO,
+  chartPadding = DEFAULT_PADDING,
   smoothing = 0,
 }: {
   lines?: Array<{
@@ -151,12 +152,14 @@ const SvgChart = ({
     data: Array<{ time: number; value: number }>;
     axisGroup?: "left" | "right";
     formatValue?: (value: number) => string;
+
   }>;
   scrollY?: SharedValue<number>;
   style?: ViewStyle;
   xAxisPaddingPoints?: number;
   isLoading?: boolean;
   smoothing?: number;
+  chartPadding?: { top: number; right: number; bottom: number; left: number };
 }) => {
   const { timeframe } = useTimeframeStore();
   const [touchActive, setTouchActive] = useState(false);
@@ -170,17 +173,17 @@ const SvgChart = ({
 
   const chartHeight = useMemo(() => {
     const calculatedHeight = chartWidth * chartAspectRatio;
-    const minimumHeight = PADDING.top + PADDING.bottom + 1;
+    const minimumHeight = chartPadding.top + chartPadding.bottom + 1;
     return Math.max(calculatedHeight, minimumHeight);
   }, [chartWidth]);
 
   const plotWidth = useMemo(
-    () => Math.max(1, chartWidth - PADDING.left - PADDING.right),
+    () => Math.max(1, chartWidth - chartPadding.left - chartPadding.right),
     [chartWidth],
   );
 
   const plotHeight = useMemo(
-    () => Math.max(1, chartHeight - PADDING.top - PADDING.bottom),
+    () => Math.max(1, chartHeight - chartPadding.top - chartPadding.bottom),
     [chartHeight],
   );
 
@@ -188,19 +191,7 @@ const SvgChart = ({
     const fallbackLines =
       Array.isArray(inputLines) && inputLines.length > 0
         ? inputLines
-        : [
-            {
-              id: "agent-1",
-              name: "Agent 1",
-              color: "#10b981",
-              data: [
-                { time: 0, value: 10 },
-                { time: 1, value: 10 },
-              ],
-              axisGroup: "left" as const,
-              formatValue: (val: number) => `${val.toFixed(1)}%`,
-            },
-          ];
+        : [];
 
     if (smoothingFactor <= 0) return fallbackLines;
 
@@ -272,7 +263,7 @@ const SvgChart = ({
       const safeWidth = Math.max(plotWidth, 1);
       const clampedRatio = Math.max(
         0,
-        Math.min(1, (locationX - PADDING.left) / safeWidth),
+        Math.min(1, (locationX - chartPadding.left) / safeWidth),
       );
       return clampedRatio * xAxisMaxTime;
     },
@@ -433,24 +424,24 @@ const SvgChart = ({
     const now = new Date();
     const getTimeLabel = (normalizedTime) => {
       const date = new Date(now);
-
+      let timeLabel;
       if (timeframe === "1h") {
         date.setMinutes(date.getMinutes() - 60 + normalizedTime * 60);
-        return date.toLocaleTimeString("en-US", {
+        timeLabel = date.toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "2-digit",
         });
       } else if (timeframe === "24h") {
         date.setHours(date.getHours() - 24 + normalizedTime * 24);
-        return date.toLocaleTimeString("en-US", { hour: "numeric" });
+        timeLabel = date.toLocaleTimeString("en-US", { hour: "numeric" });
       } else if (timeframe === "7d") {
         date.setDate(date.getDate() - 7 + normalizedTime * 7);
-        return date.toLocaleDateString("en-US", {
+        timeLabel = date.toLocaleDateString("en-US", {
           month: "short",
           day: "numeric",
         });
       }
-      return "";
+      return { label: timeLabel, id: date.getTime() };
     };
 
     return [0, 0.25, 0.75, 1].map(getTimeLabel);
@@ -460,29 +451,29 @@ const SvgChart = ({
   const scaleY = useCallback(
     (value, axisGroup = "left") => {
       const axis = axisConfig[axisGroup];
-      if (!axis) return PADDING.top + plotHeight / 2;
+      if (!axis) return chartPadding.top + plotHeight / 2;
 
       if (!Number.isFinite(value) || Number.isNaN(value))
-        return PADDING.top + plotHeight / 2;
+        return chartPadding.top + plotHeight / 2;
 
       const normalized = (value - axis.yMin) / (axis.yMax - axis.yMin);
 
       if (!Number.isFinite(normalized) || Number.isNaN(normalized))
-        return PADDING.top + plotHeight / 2;
+        return chartPadding.top + plotHeight / 2;
 
-      const result = PADDING.top + plotHeight - normalized * plotHeight;
-      return Number.isFinite(result) ? result : PADDING.top + plotHeight / 2;
+      const result = chartPadding.top + plotHeight - normalized * plotHeight;
+      return Number.isFinite(result) ? result : chartPadding.top + plotHeight / 2;
     },
     [axisConfig, plotHeight],
   );
 
   const scaleX = useCallback(
     (time) => {
-      if (!Number.isFinite(time) || Number.isNaN(time)) return PADDING.left;
+      if (!Number.isFinite(time) || Number.isNaN(time)) return chartPadding.left;
       const clampedTime = Math.max(0, Math.min(time, xAxisMaxTime));
       const normalized = clampedTime / xAxisMaxTime;
-      const result = PADDING.left + normalized * plotWidth;
-      return Number.isFinite(result) ? result : PADDING.left;
+      const result = chartPadding.left + normalized * plotWidth;
+      return Number.isFinite(result) ? result : chartPadding.left;
     },
     [plotWidth, xAxisMaxTime],
   );
@@ -552,9 +543,9 @@ const SvgChart = ({
               <Line
                 key={`vgrid-${grid.x}`}
                 x1={grid.x}
-                y1={PADDING.top}
+                y1={chartPadding.top}
                 x2={grid.x}
-                y2={PADDING.top + plotHeight}
+                y2={chartPadding.top + plotHeight}
                 stroke={withOpacity(mutedColor, 0.1)}
                 strokeWidth={1}
               />
@@ -566,15 +557,15 @@ const SvgChart = ({
               return (
                 <React.Fragment key={`left-${tick}`}>
                   <Line
-                    x1={PADDING.left}
+                    x1={chartPadding.left}
                     y1={y}
-                    x2={PADDING.left + plotWidth}
+                    x2={chartPadding.left + plotWidth}
                     y2={y}
                     stroke={withOpacity(mutedColor, 0.3)}
                     strokeWidth={1}
                   />
                   <SvgText
-                    x={PADDING.left + 6}
+                    x={chartPadding.left + 6}
                     y={y + 4}
                     fontSize={10}
                     fill={mutedColor}
@@ -594,7 +585,7 @@ const SvgChart = ({
               return (
                 <React.Fragment key={`right-${tick}`}>
                   <SvgText
-                    x={PADDING.left + plotWidth - 6}
+                    x={chartPadding.left + plotWidth - 6}
                     y={y + 4}
                     fontSize={10}
                     fill={mutedColor}
@@ -611,9 +602,9 @@ const SvgChart = ({
             {/* Zero line for left axis */}
             {axisConfig.left && (
               <Line
-                x1={PADDING.left}
+                x1={chartPadding.left}
                 y1={scaleY(0, "left")}
-                x2={PADDING.left + plotWidth}
+                x2={chartPadding.left + plotWidth}
                 y2={scaleY(0, "left")}
                 stroke={withOpacity(mutedColor, 0.8)}
                 strokeWidth={1.5}
@@ -696,9 +687,9 @@ const SvgChart = ({
               <>
                 <Line
                   x1={scaleX(snappedTouchX)}
-                  y1={PADDING.top}
+                  y1={chartPadding.top}
                   x2={scaleX(snappedTouchX)}
-                  y2={PADDING.top + plotHeight}
+                  y2={chartPadding.top + plotHeight}
                   stroke={withOpacity(secondaryTextColor ?? mutedColor, 0.6)}
                   strokeWidth={1.5}
                   strokeDasharray="4,4"
@@ -840,14 +831,14 @@ const SvgChart = ({
           width: "100%",
           flexDirection: "row",
           justifyContent: "space-between",
-          paddingLeft: PADDING.left,
-          paddingRight: PADDING.right,
+          paddingLeft: chartPadding.left,
+          paddingRight: chartPadding.right,
           position: "absolute",
           bottom: 0,
         }}
       >
-        {timeLabels.map((label) => (
-          <Text key={label} sx={{ fontSize: 10, color: "secondary300" }}>
+        {timeLabels.map(({label, id}) => (
+          <Text key={id} sx={{ fontSize: 10, color: "secondary300" }}>
             {label}
           </Text>
         ))}

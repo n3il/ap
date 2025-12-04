@@ -99,8 +99,9 @@ export function useMarketPrices() {
       });
       if (data.payload.data) {
         const [{universe}, assetContexts] = data.payload.data;
-        const topK = getTopKAssets(universe, assetContexts);
-        const tickerData = topK.map(normalizeHLAsset);
+        const topK = getTopKAssets(universe, assetContexts, "percentChange");
+        console.log(topK);
+        const tickerData = topK.map(normalizeHLAsset).reverse();
         setTickers(tickerData);
       }
       setLoading(false);
