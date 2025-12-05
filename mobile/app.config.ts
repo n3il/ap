@@ -55,7 +55,8 @@ export default {
       "expo-secure-store",
       "expo-web-browser",
       "expo-apple-authentication",
-      "expo-notifications"
+      "expo-notifications",
+      "@sentry/react-native/expo",
     ],
     updates: {
       enabled: true,

@@ -10,6 +10,14 @@ import { ROUTES } from "@/config/routes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
+import * as Sentry from '@sentry/react-native';
+
+Sentry.init({
+  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  sendDefaultPii: true,
+  enableLogs: false,
+  spotlight: __DEV__,
+});
 
 // Prevent native splash screen from auto-hiding
 ExpoSplashScreen.preventAutoHideAsync();
@@ -108,7 +116,7 @@ function AuthNavigator() {
   );
 }
 
-export default function RootLayout() {
+export default Sentry.wrap(function RootLayout() {
   return (
     <ThemeProvider>
       <KeyboardProvider>
@@ -122,4 +130,4 @@ export default function RootLayout() {
       </KeyboardProvider>
     </ThemeProvider>
   );
-}
+});
