@@ -9,13 +9,13 @@ import ContainerView, {
   GLOBAL_PADDING,
   PaddedView,
 } from "@/components/ContainerView";
-import { Animated } from "@/components/ui";
+import { Animated, Stack } from "@/components/ui";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ROUTES } from "@/config/routes";
 
-const HEADER_HEIGHT = 400 + 60;
+const HEADER_HEIGHT = 200 + 60;
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
@@ -53,22 +53,14 @@ export default function AgentIndex() {
         ]}
       >
         <PaddedView style={{ gap: 12, paddingHorizontal: 8 }}>
-          {/* <View>
-            <Avatar
-              size="md"
-              imgSrc={agent.avatar_url}
-              name={agent.name.slice(0, 70)}
-              backgroundColor={palette.providers[agent.llm_provider]}
-            />
-          </View> */}
           <BalanceOverview agent={agent} />
         </PaddedView>
-        <HeaderChart
+        {/* <HeaderChart
           agentId={agent?.id}
           style={{
             zIndex: 9999
           }}
-        />
+        /> */}
       </Animated.View>
       <ThoughtsTab
         agentId={agentId}

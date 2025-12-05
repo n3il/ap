@@ -29,7 +29,7 @@ const accentPalette = {
 };
 
 export const PROVIDER_COLORS = {
-  openai: "#04fcbaff",
+  openai: "#064194ff",
   anthropic: "#ff009dff",
   deepseek: "#1af4ffff",
   google: "#22e200ff",

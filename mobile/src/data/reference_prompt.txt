@@ -76,11 +76,11 @@ interface OpenTrade {
   type: "OPEN";
   asset: string;                   // e.g., "BTC", "ETH"
   direction: "LONG" | "SHORT";
-  leverage: number;                // 1–50
+  leverage: number;
   trade_amount: number;            // USDT allocation
 
-  limit_price?: number;            // optional entry price
-  target_price?: number;           // forecasted target level (NOT a TP order)
+  limit_price?: number;            // optional entry price (market order if not provided)
+  target_price?: number;           // target take-profit level
   stop_loss?: number;              // protective exit level
 
   reason: string;                  // one short sentence
@@ -89,10 +89,9 @@ interface OpenTrade {
 
 interface CloseTrade {
   type: "CLOSE";
-  position_id: string;
   asset: string;
 
-  exit_limit_price?: number;       // optional planned exit price
+  exit_limit_price?: number;       // optional planned exit price. if not provided a market order will be used
 
   reason: string;                  // one short sentence
   confidenceScore: number;         // float 0–1

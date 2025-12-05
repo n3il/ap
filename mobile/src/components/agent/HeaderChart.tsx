@@ -16,7 +16,7 @@ type HeaderChartProps = {
 } & Partial<ComponentProps<typeof SvgChart>>;
 
 export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
-  const timeframe = "1h";
+  const timeframe = "24h";
   const { colors } = useColors();
   const { data: agent } = useAgent(agentId);
 
@@ -47,10 +47,10 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
     if (!rawSentimentData.length) return [];
     const timestamps = rawSentimentData
       .map((entry) =>
-        entry?.created_at ? { created_at: entry.created_at } : null,
+        entry?.timestamp ? { timestamp: entry.timestamp } : null,
       )
       .filter(
-        (entry): entry is { created_at: string | number | Date } =>
+        (entry): entry is { timestamp: string | number | Date } =>
           entry !== null,
       );
     return timestamps.length ? [timestamps] : [];
@@ -89,7 +89,7 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
     const normalizedSentiment = normalizeDataSeries(
       rawSentimentData,
       normalizeTimestamp,
-      "created_at",
+      "timestamp",
       "sentiment_score",
     );
 
