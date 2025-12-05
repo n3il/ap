@@ -49,13 +49,13 @@ export default function BalanceOverview({
           />
         </View>
 
-        <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-evenly" }}>
+        <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-evenly", marginLeft: 'auto' }}>
           {Object.keys(accountData.accountValueHistory).filter(tf => tf.includes('perp')).map((timeframe) => {
             const { pnlPct } = accountData.accountValueHistory[timeframe];
             const timeframeOpt = accountBalanceTimeframes[
               timeframe.replace('perp', '').toLowerCase()
             ]
-            if (!timeframeOpt) return null;
+            if (!timeframeOpt || (!pnlPct && timeframeOpt !== "day")) return null;
 
             return (
               <Pressable key={timeframeOpt.id} onPress={() => setTimeframe(timeframeOpt.id)}>
@@ -68,6 +68,14 @@ export default function BalanceOverview({
               </Pressable>
             )
           })}
+          <Pressable>
+            <LabelValue
+              label={`All P&L`}
+              value={accountData.totalPnlPercent}
+              formatter={formatPercent}
+              alignRight
+            />
+          </Pressable>
         </View>
       </View>
 
@@ -77,7 +85,8 @@ export default function BalanceOverview({
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Account Value"
-            value={formatAmount(accountData?.equity)}
+            value={accountData?.accountValueHistory}
+            formatter={v => v}
           />
         </View>
 
@@ -99,9 +108,9 @@ export default function BalanceOverview({
               variant="sm"
               sx={{
                 color:
-                  accountData.unrealizedPnl > 0
+                  accountData.openPnl > 0
                     ? "success"
-                    : accountData.unrealizedPnl < 0
+                    : accountData.openPnl < 0
                       ? "error"
                       : "foreground",
               }}

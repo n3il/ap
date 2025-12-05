@@ -21,7 +21,7 @@ const AnimatedCircle = RNAnimated.createAnimatedComponent(Circle);
 const DEFAULT_CHART_WIDTH = 350;
 const CHART_ASPECT_RATIO = 3 / 7;
 const DEFAULT_PADDING = { top: 15, right: 15, bottom: 10, left: 15 };
-const Y_VISUAL_PADDING_PX = 8;
+const Y_VISUAL_PADDING_PX = 30;
 
 const getXValue = (point) => {
   if (!point) return null;

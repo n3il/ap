@@ -97,35 +97,27 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
 
     async function loadInitial() {
       try {
-        // 1) Whatever endpoint you already have that returns accountValueHistory.
-        // You said this part works, so we keep it.
-        const historyResp = await sendRequest({
-          type: "info",
-          payload: {
-            type: "portfolio", // keep the working one for PnL history
-            user: userId,
-          },
-        });
-
-        console.log(historyResp?.payload?.data)
-
-        if (!cancelled) {
+        const [historyResp, chResp] = await Promise.all([
+          sendRequest({
+            type: "info",
+            payload: {
+              type: "portfolio",
+              user: userId,
+            },
+          }),
+          sendRequest({
+            type: "info",
+            payload: {
+              type: "clearinghouseState",
+              user: userId,
+            },
+          })
+        ])
+        if (!cancelled && historyResp?.payload?.data) {
           setAccountValueHistory(
             calcPnLByTimeframe(historyResp?.payload?.data)
           );
         }
-
-        // 2) Perps clearinghouseState for balances / positions
-        const chResp = await sendRequest({
-          type: "info",
-          payload: {
-            type: "clearinghouseState",
-            user: userId,
-          },
-        });
-
-        console.log(chResp?.payload?.data)
-
         if (!cancelled && chResp?.payload?.data) {
           setClearinghouseState(chResp.payload.data as ClearinghouseState);
         }
@@ -205,13 +197,30 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
 
 
   const accountValueHistoryLive = useMemo(() => {
-    if (!accountValueHistory || !mids) return;
-
-
-    return {
-
+    const liveAccountValue = liveData?.accountValue;
+    if (liveAccountValue == null) {
+      return accountValueHistory;
     }
-  }, [accountValueHistory, mids])
+
+    return Object.entries(accountValueHistory).reduce((acc, [timeframe, summary]) => {
+      if (!summary || summary.first == null) {
+        acc[timeframe] = summary;
+        return acc;
+      }
+
+      const pnl = liveAccountValue - summary.first - startingEquity;
+      const pnlPct = summary.first !== 0 ? (pnl / summary.first) * 100 : null;
+
+      acc[timeframe] = {
+        ...summary,
+        last: liveAccountValue,
+        pnl,
+        pnlPct,
+      };
+
+      return acc;
+    }, {} as PnLByTimeframe)
+  }, [accountValueHistory, liveData, startingEquity])
 
 
   const openPositions = useMemo(() => {
@@ -237,7 +246,7 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
 
   return {
     // history / PnL
-    accountValueHistory,
+    accountValueHistory: accountValueHistoryLive,
 
     leverageRatio: null,
 
@@ -248,7 +257,7 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
     equity: clearinghouseState?.marginSummary.accountValue,
     positionValue: liveData?.allPositionsValue,
     marginUsed: clearinghouseState?.marginSummary.accountValue,
-    openPnl: liveData?.allPositionsValueChange,
+    openPnl: liveData?.allPositionsValueChange || 0,
     openPnlPct: liveData?.allPositionsPctChange,
     totalPnl: liveData?.totalPnl,
     totalPnlPercent: liveData?.totalPnlPercent,
