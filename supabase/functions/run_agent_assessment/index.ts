@@ -44,14 +44,11 @@ export async function runAgentAssessment(
 
   try {
     // Gather prompt data
-    const tradeableAssets = await fetchTradeableAssets();
-    const [
-      accountSummary,
-      // candleData,
-    ] = await Promise.all([
-      getAccountSummary(tradingAccount.hyperliquid_address, agent.simulate),
-      // fetchAllCandleData({assetNames: tradeableAssets.slice(5).map((a) => a.Ticker), intervalString: "5m", lookbackHours: 3}),
-    ]);
+    const accountSummary = await getAccountSummary(tradingAccount.hyperliquid_address, agent.simulate);
+    const tradeableAssets = await fetchTradeableAssets({
+      includeSymbols: accountSummary.assetPositions.map(p => p.position.coin),
+    });
+    // fetchAllCandleData({assetNames: tradeableAssets.slice(5).map((a) => a.Ticker), intervalString: "5m", lookbackHours: 3}),
 
     // Build prompt
     const promptTemplate = await fetchPrompt(serviceClient, agent);
@@ -70,11 +67,14 @@ export async function runAgentAssessment(
 
     // Perform trades
     const tradeActions = llmResponse.parsed?.tradeActions || [];
-    console.log('LLM response received, trade actions:', tradeActions.length);
-
     const tradeResults = await Promise.all(tradeActions.map(async (tradeAction) => {
       const asset = tradeableAssets.find((a) => a.Ticker === tradeAction.asset);
-      const tradeResult = await executeTrade(asset, tradeAction, agent, tradingAccount);
+
+      const position = tradeAction.type === "CLOSE"
+        ? accountSummary.assetPositions.find(p => p.position.coin === tradeAction.asset)
+        : null;
+
+      const tradeResult = await executeTrade(asset, tradeAction, agent, tradingAccount, position);
       return tradeResult;
     }));
 

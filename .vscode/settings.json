@@ -23,4 +23,5 @@
   ],
   "windsurfPyright.disableLanguageServices": true,
   "typescript.preferences.importModuleSpecifier": "non-relative",
+  "deno.enable": true,
 }

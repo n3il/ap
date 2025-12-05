@@ -71,18 +71,53 @@ export async function fetchAllCandleData({
   )
 }
 
-export async function fetchTradeableAssets()  {
-  const [{universe}, assetContexts] = await infoClient(true).metaAndAssetCtxs()
+export async function fetchTradeableAssets({includeSymbols = []}: { includeSymbols?: string[] }) {
+  const [{ universe }, assetContexts] = await infoClient(true).metaAndAssetCtxs();
+
   recordExternalRequest({
-    name: 'hyperliquid-metaAndAssetCtxs',
-    url: 'hyperliquid/metaAndAssetCtxs',
-    method: 'GET',
+    name: "hyperliquid-metaAndAssetCtxs",
+    url: "hyperliquid/metaAndAssetCtxs",
+    method: "GET",
     responseBody: {
       universeCount: universe?.length ?? 0,
       assetContextCount: assetContexts?.length ?? 0,
     },
   });
-  return getTopKAssets(universe, assetContexts);
+
+  // First: normal top-K
+  const topK = getTopKAssets(universe, assetContexts);
+
+  // Build a set for quick dedupe
+  const existing = new Set(topK.map(a => a.Ticker));
+
+  // Ensure required symbols are included
+  for (const sym of includeSymbols) {
+    const idx = universe.findIndex(u => u.name === sym);
+    if (idx === -1) continue;
+
+    if (!existing.has(sym)) {
+      const ctx = assetContexts[idx];
+      const assetData = universe[idx];
+
+      topK.push({
+        Ticker: assetData.name,
+        "Sz-Decimals": assetData.szDecimals,
+        "Max-Leverage": assetData.maxLeverage,
+        "Day-Ntl-Vlm": ctx.dayNtlVlm,
+        Funding: ctx.funding,
+        "Impact-Pxs": ctx.impactPxs,
+        "Mark-Px": ctx.markPx,
+        "Mid-Px": ctx.midPx,
+        "Open-Interest": ctx.openInterest,
+        "Oracle-Px": ctx.oraclePx,
+        Premium: ctx.premium,
+        "Prev-Day-Px": ctx.prevDayPx,
+        "Asset-Id": idx,
+      });
+    }
+  }
+
+  return topK;
 }
 
 export async function getAccountSummary(userId: string, isTestnet: boolean): Promise<hl.ClearinghouseStateResponse> {

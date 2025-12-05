@@ -1,6 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
 import { useHyperliquidRequests } from "@/hooks/useHyperliquid";
-import { useHLSubscription } from "@/hooks/useHyperliquid";
 import { useMarketPricesStore } from "@/hooks/useMarketPrices";
 
 type MarginSummary = {
@@ -136,64 +135,114 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
     };
   }, [userId, sendRequest]);
 
-  // ── Live updates via subscription ──────────────────────────────
-  useHLSubscription(
-    "clearinghouseState",
-    { user: userId },
-    (msg: any) => {
-      const s = msg?.data as ClearinghouseState | undefined;
-      if (!s) return;
-      setClearinghouseState(s);
-    },
-    Boolean(userId)
-  );
-
   const startingEquity = useMemo(() => {
-    const summaries = Object.values(accountValueHistory) as TimeframePnl[];
-    for (const s of summaries) {
-      if (s?.first != null) return s.first;
-    return null;
+    const entries = Object.entries(accountValueHistory) as Array<
+      [string, TimeframePnl]
+    >;
+
+    if (!entries.length) return null;
+
+    // Prefer the widest timeframe if present (e.g., all > 1M > 1W > 1D)
+    const preference = ["perpall", "all", "perp1m", "perp1w", "perp1d"];
+    for (const key of preference) {
+      const match = entries.find(
+        ([timeframe, summary]) =>
+          timeframe.toLowerCase() === key && summary?.first != null,
+      );
+      if (match) return match[1].first;
     }
+
+    // Fallback: first available non-null entry
+    for (const [, summary] of entries) {
+      if (summary?.first != null) return summary.first;
+    }
+
+    return null;
   }, [accountValueHistory]);
 
-  const liveData = useMemo(() => {
-    if (!clearinghouseState || !mids) return;
+  const positions = useMemo(() => {
+    if (!clearinghouseState) return [];
 
-    let allPositionsValue = 0
-    let allPositionsInitialValue = 0
-    const positions = clearinghouseState.assetPositions.map((positionData: AssetPosition) => {
-      const percentChange = (mids[positionData.position.coin] - Number(positionData.position.entryPx)) / mids[positionData.position.coin]
+    const safeNumber = (val: unknown, fallback = 0) => {
+      const num = Number(val);
+      return Number.isFinite(num) ? num : fallback;
+    };
 
-      const livePositionValue = Number(positionData.position.marginUsed);
-      const livePositionPnl = 100 * percentChange * livePositionValue;
-      allPositionsValue += livePositionValue + livePositionPnl;
-      allPositionsInitialValue += livePositionValue;
+    return clearinghouseState.assetPositions.map((assetPosition: AssetPosition) => {
+      const p = assetPosition.position;
+      const size = safeNumber(p.szi);
+      const entryPrice = safeNumber(p.entryPx);
+      const markPriceFromMids = mids?.[p.coin];
+      const positionValue = safeNumber(p.positionValue);
+      const marginUsed = safeNumber(p.marginUsed);
+
+      const markPrice = Number.isFinite(markPriceFromMids)
+        ? markPriceFromMids
+        : Math.abs(size) > 0
+          ? positionValue / Math.abs(size)
+          : entryPrice;
+
+      const unrealizedFromState = Number(p.unrealizedPnl);
+      const unrealizedPnl = Number.isFinite(unrealizedFromState)
+        ? unrealizedFromState
+        : (markPrice - entryPrice) * size;
+
+      const notional = Math.abs(size) * markPrice;
+      const pnlPct = entryPrice !== 0
+        ? (unrealizedPnl / (Math.abs(size) * entryPrice)) * 100
+        : null;
 
       return {
-        ...positionData,
+        ...assetPosition,
         position: {
-          ...positionData.position,
-          livePnlPct: percentChange,
-          livePositionValue: livePositionValue,
-          liveUnrealizedPnl: livePositionValue - livePositionValue,
-        }
-      }
-    })
+          ...p,
+          size,
+          entryPrice,
+          markPrice,
+          positionValue: notional,
+          marginUsed,
+          unrealizedPnl,
+          livePnlPct: pnlPct,
+        },
+      };
+    });
+  }, [clearinghouseState, mids]);
 
-    const accountValue = Number(clearinghouseState.marginSummary.accountValue) + Number(allPositionsValue);
-    const totalPnl = Number(accountValue) - Number(startingEquity);
-    const totalPnlPercent = totalPnl / Number(accountValue)
+  const liveData = useMemo(() => {
+    if (!clearinghouseState) return null;
+
+    const accountValue = Number(clearinghouseState.marginSummary.accountValue);
+    const allPositionsValue = positions.reduce(
+      (sum, ap) => sum + Number(ap.position.positionValue ?? 0),
+      0,
+    );
+    const allPositionsValueChange = positions.reduce(
+      (sum, ap) => sum + Number(ap.position.unrealizedPnl ?? 0),
+      0,
+    );
+
+    const totalPnl =
+      startingEquity != null ? accountValue - Number(startingEquity) : null;
+    const totalPnlPercent =
+      startingEquity && startingEquity !== 0 && totalPnl != null
+        ? (totalPnl / startingEquity) * 100
+        : null;
+
+    const allPositionsPctChange =
+      allPositionsValue !== 0
+        ? (allPositionsValueChange / allPositionsValue) * 100
+        : null;
 
     return {
       accountValue,
       positions,
       allPositionsValue,
-      allPositionsPctChange: (allPositionsValue - allPositionsValue) / allPositionsValue,
-      allPositionsValueChange: (allPositionsValue - allPositionsValue),
+      allPositionsPctChange,
+      allPositionsValueChange,
       totalPnl,
       totalPnlPercent,
-    }
-  }, [clearinghouseState, mids])
+    };
+  }, [clearinghouseState, positions, startingEquity]);
 
 
   const accountValueHistoryLive = useMemo(() => {
@@ -208,7 +257,7 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
         return acc;
       }
 
-      const pnl = liveAccountValue - summary.first - startingEquity;
+      const pnl = liveAccountValue - summary.first;
       const pnlPct = summary.first !== 0 ? (pnl / summary.first) * 100 : null;
 
       acc[timeframe] = {
@@ -224,15 +273,14 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
 
 
   const openPositions = useMemo(() => {
-    if (!clearinghouseState) return [];
+    if (!positions.length) return [];
 
-    return clearinghouseState.assetPositions.map(ap => {
+    return positions.map((ap) => {
       const p = ap.position;
-
       return {
         coin: p.coin,
-        size: Number(p.szi),
-        entryPrice: Number(p.entryPx),
+        size: Number(p.size),
+        entryPrice: Number(p.entryPrice),
         positionValue: Number(p.positionValue),
         unrealizedPnl: Number(p.unrealizedPnl),
         liquidationPx: Number(p.liquidationPx),
@@ -242,22 +290,30 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
         type: ap.type,
       };
     });
-  }, [clearinghouseState]);
+  }, [positions]);
 
   return {
     // history / PnL
     accountValueHistory: accountValueHistoryLive,
 
-    leverageRatio: null,
+    leverageRatio:
+      liveData &&
+      Number.isFinite(liveData.allPositionsValue) &&
+      Number.isFinite(liveData.accountValue) &&
+      liveData.accountValue !== 0
+        ? liveData.allPositionsValue / liveData.accountValue
+        : null,
 
     // raw HL state (if you need more fields)
     clearinghouseState,
 
     // convenient derived values
-    equity: clearinghouseState?.marginSummary.accountValue,
+    equity: liveData?.accountValue,
     positionValue: liveData?.allPositionsValue,
-    marginUsed: clearinghouseState?.marginSummary.accountValue,
-    openPnl: liveData?.allPositionsValueChange || 0,
+    marginUsed: clearinghouseState
+      ? Number(clearinghouseState.marginSummary.totalMarginUsed)
+      : null,
+    openPnl: liveData?.allPositionsValueChange ?? 0,
     openPnlPct: liveData?.allPositionsPctChange,
     totalPnl: liveData?.totalPnl,
     totalPnlPercent: liveData?.totalPnlPercent,

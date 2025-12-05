@@ -29,8 +29,8 @@ export async function callOpenAIAPI(
         { role: 'system', content: prompt.systemInstruction },
         { role: 'user', content: prompt.userQuery },
       ],
-      temperature: 0.7,
-      top_p: 0.95,
+      // temperature: 0.7,
+      // top_p: 0.95,
     }),
   }, async (res) => ({
     name: 'openai',
