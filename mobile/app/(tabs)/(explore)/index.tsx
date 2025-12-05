@@ -115,6 +115,7 @@ export default function ExploreScreen() {
         </View>
         <AgentList
           queryKey={["explore-agents"]}
+          isActive
           scrollY={scrollY}
         />
       </AnimatedScrollView>

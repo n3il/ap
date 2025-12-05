@@ -4,7 +4,6 @@ import { router } from "expo-router";
 import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ContainerView, { PaddedView } from "@/components/ContainerView";
-import { LLM_PROVIDERS } from "@/components/CreateAgentModal";
 import SectionTitle from "@/components/SectionTitle";
 import {
   GlassButton,
@@ -18,6 +17,25 @@ import {
 import { agentService } from "@/services/agentService";
 import { useColors, withOpacity } from "@/theme";
 
+export const LLM_PROVIDERS = [
+  {
+    id: "google",
+    name: "Google",
+    models: ["gemini-2.5-flash-preview-09-2025", "gemini-1.5-pro"],
+  },
+  {
+    id: "openai",
+    name: "OpenAI",
+    models: ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
+  },
+  {
+    id: "anthropic",
+    name: "Anthropic",
+    models: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
+  },
+  { id: "deepseek", name: "DeepSeek", models: ["deepseek-chat"] },
+];
+
 export default function ModalCreateAgent() {
   const insets = useSafeAreaInsets();
   const { colors: palette } = useColors();
@@ -26,13 +44,12 @@ export default function ModalCreateAgent() {
     name: "",
     llm_provider: "google",
     model_name: "gemini-2.5-flash-preview-09-2025",
-    initial_capital: "",
   });
 
   const createAgentMutation = useMutation({
     mutationFn: (agentData) => agentService.createAgent(agentData),
     onSuccess: (newAgent) => {
-      router.push(`/(tabs)/(agents)/${newAgent.id}`);
+      router.push(`/(agent)/[${newAgent.id}]`);
     },
     onError: (_error) => {
       alert(`Failed to create agent. ${_error.message}`);
@@ -185,32 +202,6 @@ export default function ModalCreateAgent() {
                 ))}
               </View>
             </View>
-
-            {/* <View style={{ marginBottom: 6 }}>
-              <Text variant="sm" tone="muted" style={{ marginBottom: 2 }}>
-                Initial Capital (USD) *
-              </Text>
-              <TextInput
-                style={{
-                  backgroundColor: withOpacity(palette.foreground, 0.05),
-                  color: "textPrimary",
-                  paddingHorizontal: 4,
-                  paddingVertical: 3,
-                  borderRadius: "xl",
-                  borderWidth: 1,
-                  borderColor: withOpacity(palette.foreground, 0.1),
-                }}
-                placeholder="10000"
-                placeholderTextColor={
-                  palette.secondary500 ?? palette.textSecondary
-                }
-                keyboardType="numeric"
-                value={formData.initial_capital}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, initial_capital: text })
-                }
-              />
-            </View> */}
           </ScrollView>
 
           <GlassButton

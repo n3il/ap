@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+
+      #container {
+        width: 100%;
+        height: 100%;
+      }
+    </style>
+
+    <!-- If local -->
+    <script src="tv.js"></script>
+    <!-- If CDN -->
+    <!-- <script src="https://s3.tradingview.com/tv.js"></script> -->
+  </head>
+
+  <body>
+    <div id="container"></div>
+
+    <script>
+      let widget;
+
+      function initWidget(symbol, theme) {
+        if (widget) widget.remove();
+
+        widget = new TradingView.widget({
+          autosize: true,               // 🔥 important
+          symbol,
+          interval: "15",
+          container_id: "container",
+          theme,
+          locale: "en",
+        });
+      }
+
+      // Initialize on load
+      initWidget("BINANCE:BTCUSDT", "dark");
+
+      // React Native WebView → HTML messaging
+      document.addEventListener("message", (e) => {
+        const msg = JSON.parse(e.data);
+
+        if (msg.type === "updateSymbol") {
+          widget?.chart().setSymbol(msg.symbol);
+        }
+
+        if (msg.type === "updateTheme") {
+          widget?.changeTheme(msg.theme);
+        }
+      });
+    </script>
+  </body>
+</html>

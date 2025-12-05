@@ -1,5 +1,6 @@
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import Constants from "expo-constants";
 import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import SectionTitle from "@/components/SectionTitle";
@@ -184,53 +185,6 @@ export default function ProfileScreen() {
             </AnimatedBox>
           ))}
         </View>
-
-        <AnimatedBox
-          entering={FadeInDown.delay(600).springify()}
-          key={`${animKey}-version`}
-          sx={{ paddingHorizontal: 6, marginBottom: 6 }}
-        >
-          <View
-            sx={{
-              borderRadius: "lg",
-              padding: 4,
-            }}
-          >
-            <View
-              sx={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Text sx={{ fontSize: 14, color: "textSecondary" }}>
-                App Version
-              </Text>
-              <Text
-                sx={{ fontSize: 14, color: "textSecondary", fontWeight: "500" }}
-              >
-                1.0.0
-              </Text>
-            </View>
-            <View
-              sx={{ height: 1, backgroundColor: "border", marginVertical: 2 }}
-            />
-            <View
-              sx={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-between",
-              }}
-            >
-              <Text sx={{ fontSize: 14, color: "textSecondary" }}>Build</Text>
-              <Text
-                sx={{ fontSize: 14, color: "textSecondary", fontWeight: "500" }}
-              >
-                2025.01.001
-              </Text>
-            </View>
-          </View>
-        </AnimatedBox>
 
         <AnimatedBox
           entering={FadeInDown.delay(700).springify()}

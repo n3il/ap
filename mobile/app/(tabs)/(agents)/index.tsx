@@ -25,8 +25,8 @@ export default function AgentsScreen() {
   // Define tabs with their content
   const tabs = [
     {
-      key: "Active",
-      title: "Active",
+      key: "All",
+      title: "All",
       content: (
         <ScrollView
           showsVerticalScrollIndicator={false}
@@ -37,19 +37,9 @@ export default function AgentsScreen() {
       ),
     },
     {
-      key: "overview",
-      title: "Overview",
-      content: <Text>Overview</Text>,
-    },
-    {
-      key: "bookmarked",
-      title: "Bookmarked",
+      key: "Watching",
+      title: "Watching",
       content: <Text>Bookmarked</Text>,
-    },
-    {
-      key: "all",
-      title: "All",
-      content: <Text>All</Text>,
     },
   ];
 
@@ -63,7 +53,7 @@ export default function AgentsScreen() {
           paddingHorizontal: 4,
         }}
       >
-        <SectionTitle title="Agent Dashboards" sx={{ fontSize: 16 }} />
+        <SectionTitle title="" sx={{ fontSize: 16 }} />
         <GlassButton
           onPress={handleCreateAgent}
           style={{
