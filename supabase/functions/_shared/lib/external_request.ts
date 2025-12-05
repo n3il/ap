@@ -14,7 +14,11 @@ export interface ExternalRequestContext {
 }
 
 export function recordExternalRequest(context: ExternalRequestContext) {
-  Sentry.setContext('external_request', context);
+  Sentry.addBreadcrumb({
+    category: "external_request",
+    level: "info",
+    data: context,
+  });
 }
 
 export async function externalFetch(

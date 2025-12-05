@@ -1,6 +1,8 @@
 import { LLMTradeAction } from "../llm/types.ts";
 import { HyperliquidOrderBody, HyperliquidOrder } from "./types.ts";
-import { formatPrice, formatSize } from "@nktkas/hyperliquid/utils";
+import { formatPrice, formatSize, SymbolConverter } from "@nktkas/hyperliquid/utils";
+import { HttpTransport } from "@nktkas/hyperliquid";
+import { SymbolConverter } from "@nktkas/hyperliquid/utils";
 
 // Using the provided type definitions
 type AssetType = {
@@ -23,7 +25,7 @@ type AssetType = {
 type TifType = "Alo" | "Ioc" | "Gtc";
 
 export function toHyperliquidOrder(
-  asset: AssetType,
+  asset: AssetType = {},
   trade: LLMTradeAction,
   opts?: {
     cloid?: string;
@@ -33,6 +35,13 @@ export function toHyperliquidOrder(
     nonce?: number;
   } = {}
 ): HyperliquidOrderBody {
+  if (asset["Asset-Id"] == null) {
+    const transport = new HttpTransport();
+    const converter = await SymbolConverter.create({ transport });
+    asset["Asset-Id"] = converter.getAssetId(trade.symbol);
+    asset["Sz-Decimals"] = converter.getSzDecimals(trade.symbol);
+  }
+
   const now = Date.now();
   const defaultTif = opts.tif ?? "Gtc";
   const { vaultAddress, expiresAfter, nonce } = opts;

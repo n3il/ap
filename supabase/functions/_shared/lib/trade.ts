@@ -7,7 +7,7 @@ import initSentry from "../../_shared/sentry.ts";
 const Sentry = initSentry();
 
 export async function executeTrade(
-  asset: number,
+  asset: AssetType,
   tradeAction: LLMTradeAction,
   agent: Agent,
   tradingAccount: TradingAccount,
@@ -16,10 +16,14 @@ export async function executeTrade(
     throw new Error('Trading account is missing Hyperliquid wallet credentials');
   }
   const hyperliquidOrder = toHyperliquidOrder(asset, tradeAction);
-  Sentry.setContext("trade", {
-    asset: JSON.stringify(asset),
-    trade_action: JSON.stringify(tradeAction),
-    hyperliquid_order: JSON.stringify(hyperliquidOrder),
+  Sentry.addBreadcrumb({
+    category: "trade_order",
+    level: "info",
+    data: {
+      asset: JSON.stringify(asset),
+      trade_action: JSON.stringify(tradeAction),
+      hyperliquid_order: JSON.stringify(hyperliquidOrder),
+    }
   });
 
   // Execute trade on Hyperliquid (only for real trades)
