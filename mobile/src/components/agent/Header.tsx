@@ -187,30 +187,28 @@ export default function AgentHeader({
 
   return (
     <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 1}}>
-      <GlassButton
-        onPress={() => router.back()}
-        style={{
-          flex: 0,
-          flexGrow: 0,
-          marginRight: 'auto',
-        }}
-      >
-        <MaterialCommunityIcons name="chevron-left" size={24} color="white" />
-      </GlassButton>
-      <Text style={{
-        flex: 1,
-        marginLeft: 8,
-        fontFamily: "monospace",
-        textTransform: "uppercase",
-        fontWeight: "500",
-        letterSpacing: 2,
-        color: palette.glassTint,
-        fontSize: 18,
-        textShadowColor: palette.foreground,
-        textShadowOffset: { width: 0, height: 0 },
-        textShadowRadius: 20,
-      }}>{agentName}</Text>
-      <View style={[{ flexDirection: "row" }, style]}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <GlassButton
+          onPress={() => router.back()}
+          style={{
+            flex: 0,
+            flexGrow: 0,
+            alignSelf: 'flex-start',
+          }}
+        >
+          <MaterialCommunityIcons name="chevron-left" size={24} color="white" />
+        </GlassButton>
+        <Text sx={{
+          fontFamily: "monospace",
+          fontWeight: "500",
+          color: palette?.foreground,
+          letterSpacing: 3,
+          fontSize: 18,
+        }}>
+          {agentName}
+        </Text>
+      </View>
+      <View style={[{ flexDirection: "row", alignSelf: 'flex-end' }, style]}>
         <GlassButton
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}

@@ -1,11 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
-import { ScrollView } from "react-native";
+import { Pressable, ScrollView } from "react-native";
 import Animated, {
-  Extrapolation,
-  interpolate,
   useAnimatedScrollHandler,
-  useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -49,10 +46,12 @@ export default function ExploreScreen() {
       style={{
         flex: 1,
         paddingTop: safeAreaInsets.top,
+        backgroundColor: palette?.backgroundSecondary,
       }}
     >
       <PaddedView>
         <ExploreHeader />
+
       </PaddedView>
       <AnimatedScrollView
         showsVerticalScrollIndicator={false}

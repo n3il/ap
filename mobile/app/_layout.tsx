@@ -101,7 +101,7 @@ function AuthNavigator() {
         />
         <Stack.Screen name="(tabs)" />
 
-        <Stack.Screen name="(agent)" />
+        <Stack.Screen name="(agent)/[id]" />
 
         <Stack.Screen
           name="modal_create_agent"
