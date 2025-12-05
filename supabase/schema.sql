@@ -411,29 +411,6 @@ COMMENT ON FUNCTION "public"."trigger_agent_scheduler"() IS 'Triggers the agent_
 
 
 
-CREATE OR REPLACE FUNCTION "public"."validate_agent_prompt_references"() RETURNS "trigger"
-    LANGUAGE "plpgsql"
-    AS $$
-BEGIN
-  IF NEW.prompt_id IS NOT NULL THEN
-    IF NOT EXISTS (
-      SELECT 1
-      FROM public.prompts p
-      WHERE p.id = NEW.prompt_id
-        AND (p.user_id IS NULL OR p.user_id = NEW.user_id)
-        AND p.is_active = true
-    ) THEN
-      RAISE EXCEPTION 'Invalid prompt reference for agent %', NEW.id;
-    END IF;
-  END IF;
-
-  RETURN NEW;
-END;
-$$;
-
-
-ALTER FUNCTION "public"."validate_agent_prompt_references"() OWNER TO "postgres";
-
 SET default_tablespace = '';
 
 SET default_table_access_method = "heap";
@@ -470,7 +447,6 @@ CREATE TABLE IF NOT EXISTS "public"."agents" (
     "created_at" timestamp with time zone DEFAULT "now"(),
     "published_at" timestamp with time zone,
     "is_active" timestamp with time zone,
-    "prompt_id" "uuid",
     "simulate" boolean DEFAULT true
 );
 
@@ -795,8 +771,6 @@ CREATE INDEX "idx_agents_is_active" ON "public"."agents" USING "btree" ("is_acti
 
 
 
-CREATE INDEX "idx_agents_prompt" ON "public"."agents" USING "btree" ("prompt_id");
-
 
 
 CREATE INDEX "idx_agents_published_at" ON "public"."agents" USING "btree" ("published_at" DESC);
@@ -943,8 +917,6 @@ CREATE OR REPLACE TRIGGER "update_trading_orders_updated_at" BEFORE UPDATE ON "p
 
 
 
-CREATE OR REPLACE TRIGGER "validate_agent_prompts" BEFORE INSERT OR UPDATE ON "public"."agents" FOR EACH ROW EXECUTE FUNCTION "public"."validate_agent_prompt_references"();
-
 
 
 ALTER TABLE ONLY "public"."agent_pnl_snapshots"
@@ -956,9 +928,6 @@ ALTER TABLE ONLY "public"."agent_pnl_snapshots"
     ADD CONSTRAINT "agent_pnl_snapshots_assessment_id_fkey" FOREIGN KEY ("assessment_id") REFERENCES "public"."assessments"("id") ON DELETE SET NULL;
 
 
-
-ALTER TABLE ONLY "public"."agents"
-    ADD CONSTRAINT "agents_prompt_id_fkey" FOREIGN KEY ("prompt_id") REFERENCES "public"."prompts"("id") ON DELETE SET NULL;
 
 
 
@@ -1560,10 +1529,6 @@ GRANT ALL ON FUNCTION "public"."trigger_agent_scheduler"() TO "service_role";
 
 
 
-GRANT ALL ON FUNCTION "public"."validate_agent_prompt_references"() TO "anon";
-GRANT ALL ON FUNCTION "public"."validate_agent_prompt_references"() TO "authenticated";
-GRANT ALL ON FUNCTION "public"."validate_agent_prompt_references"() TO "service_role";
-
 
 
 
@@ -1696,12 +1661,6 @@ ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TAB
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "anon";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "authenticated";
 ALTER DEFAULT PRIVILEGES FOR ROLE "postgres" IN SCHEMA "public" GRANT ALL ON TABLES TO "service_role";
-
-
-
-
-
-
 
 
 

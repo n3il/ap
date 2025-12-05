@@ -10,7 +10,6 @@ export interface Agent {
   initial_capital: string | number;
   llm_provider: string;
   model_name: string;
-  prompt_id: string;
   simulate: boolean;
   published_at: string;
 }

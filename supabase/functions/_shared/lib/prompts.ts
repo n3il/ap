@@ -18,30 +18,14 @@ export interface PromptRecord {
 }
 
 /**
- * Fetches prompt from database for an agent
- * Priority: agent's custom prompt -> user's default -> global default
+ * Fetches the best available prompt for an agent's owner.
+ * Priority: user's default/most recent prompt -> global default prompt.
  */
 export async function fetchPrompt(
   supabase: any,
   agent: Agent
 ): Promise<PromptRecord> {
-  const selectedPromptId = agent.prompt_id;
-
-  // Try agent's specific prompt first
-  if (selectedPromptId) {
-    const { data, error } = await supabase
-      .from('prompts')
-      .select('*')
-      .eq('id', selectedPromptId)
-      .eq('is_active', true)
-      .single();
-
-    if (!error && data) {
-      return data as PromptRecord;
-    }
-  }
-
-  // Fallback to best matching prompt (user's or global default)
+  // Fetch the best matching prompt (user's or global default)
   const { data, error } = await supabase
     .from('prompts')
     .select('*')
