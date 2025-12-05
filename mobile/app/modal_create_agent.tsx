@@ -26,7 +26,7 @@ export const LLM_PROVIDERS = [
   {
     id: "openai",
     name: "OpenAI",
-    models: ["gpt-4o", "gpt-4-turbo", "gpt-3.5-turbo"],
+    models: ["gpt-5-mini-2025-08-07"],
   },
   {
     id: "anthropic",

@@ -97,27 +97,28 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
 
     async function loadInitial() {
       try {
-        const [historyResp, chResp] = await Promise.all([
-          sendRequest({
+        const historyResp = await sendRequest({
             type: "info",
             payload: {
               type: "portfolio",
               user: userId,
             },
-          }),
-          sendRequest({
+          })
+
+        if (!cancelled && historyResp?.payload?.data) {
+          setAccountValueHistory(
+            calcPnLByTimeframe(historyResp?.payload?.data)
+          );
+        }
+
+        const chResp = await sendRequest({
             type: "info",
             payload: {
               type: "clearinghouseState",
               user: userId,
             },
           })
-        ])
-        if (!cancelled && historyResp?.payload?.data) {
-          setAccountValueHistory(
-            calcPnLByTimeframe(historyResp?.payload?.data)
-          );
-        }
+
         if (!cancelled && chResp?.payload?.data) {
           setClearinghouseState(chResp.payload.data as ClearinghouseState);
         }
