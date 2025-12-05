@@ -97,18 +97,4 @@ export const promptService = {
     return data;
   },
 
-  /**
-   * Assign a prompt to an agent.
-   */
-  async assignPromptToAgent(agentId, promptId) {
-    const { data, error } = await supabase
-      .from("agents")
-      .update({ prompt_id: promptId ?? null })
-      .eq("id", agentId)
-      .select()
-      .single();
-
-    if (error) throw error;
-    return data;
-  },
 };

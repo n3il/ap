@@ -19,7 +19,7 @@ import { agentService } from "@/services/agentService";
 import { useColors, withOpacity } from "@/theme";
 
 export default function ModalCreateAgent() {
-  const _insets = useSafeAreaInsets();
+  const insets = useSafeAreaInsets();
   const { colors: palette } = useColors();
   const isPresented = router.canGoBack();
   const [formData, setFormData] = useState({
@@ -47,6 +47,7 @@ export default function ModalCreateAgent() {
     <ContainerView>
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={insets.top}
         style={{ flex: 1 }}
       >
         <PaddedView
@@ -57,7 +58,6 @@ export default function ModalCreateAgent() {
         >
           <View
             style={{
-              paddingVertical: 6,
               marginBottom: 4,
               borderBottomWidth: 1,
               borderBottomColor: withOpacity(palette.foreground, 0.1),
@@ -75,6 +75,9 @@ export default function ModalCreateAgent() {
                 <GlassButton
                   onPress={() => router.push("../")}
                   tintColor={palette.glassTint}
+                  style={{
+                    flexGrow: 0,
+                  }}
                 >
                   <MaterialCommunityIcons
                     name="close"
@@ -119,6 +122,7 @@ export default function ModalCreateAgent() {
                 onChangeText={(text) =>
                   setFormData({ ...formData, name: text })
                 }
+                autoFocus
               />
             </View>
             <View style={{ marginBottom: 4, gap: 12 }}>

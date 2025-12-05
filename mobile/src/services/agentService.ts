@@ -214,7 +214,6 @@ export const agentService = {
           user_id: user.id,
           is_active: null,
           published_at: null,
-          prompt_id: sourceAgent.prompt_id ?? null,
         },
       ])
       .select()

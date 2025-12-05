@@ -1,11 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import ContainerView from "@/components/ContainerView";
-import {
-  PromptAssignmentsCard,
-  PromptModals,
-} from "@/components/ManagePrompts";
 import {
   ActivityIndicator,
   Alert,
@@ -17,7 +13,6 @@ import {
 } from "@/components/ui";
 import { useAuth } from "@/contexts/AuthContext";
 import { agentService } from "@/services/agentService";
-import { promptService } from "@/services/promptService";
 import { useColors } from "@/theme";
 
 const AgentManageScreen = () => {
@@ -42,50 +37,6 @@ const AgentManageScreen = () => {
     if (!agent || !user) return false;
     return agent.user_id === user.id;
   }, [agent, user]);
-
-  const {
-    data: prompts = [],
-    isFetching: promptsFetching,
-    refetch: refetchPrompts,
-  } = useQuery({
-    queryKey: ["prompts"],
-    queryFn: () => promptService.listPrompts(),
-    enabled: !!agentId && isOwnAgent,
-  });
-
-  const defaultPrompt = useMemo(() => {
-    return prompts.find((prompt) => prompt.is_default) || prompts[0] || null;
-  }, [prompts]);
-
-  const selectedPrompt = useMemo(() => {
-    if (!agent) return defaultPrompt;
-    if (!agent.prompt_id) {
-      return defaultPrompt;
-    }
-    return (
-      prompts.find((prompt) => prompt.id === agent.prompt_id) || defaultPrompt
-    );
-  }, [agent, prompts, defaultPrompt]);
-
-  const [promptPickerVisible, setPromptPickerVisible] = useState(false);
-  const [promptManagerVisible, setPromptManagerVisible] = useState(false);
-  const [resumePromptPicker, setResumePromptPicker] = useState(false);
-
-  const assignPromptMutation = useMutation({
-    mutationFn: (promptId) =>
-      promptService.assignPromptToAgent(agentId, promptId),
-    onSuccess: () => {
-      queryClient.invalidateQueries(["agent", agentId]);
-      refetchPrompts();
-      Alert.alert(
-        "Prompt Updated",
-        "This agent will use the new prompt on the next run.",
-      );
-    },
-    onError: (error) => {
-      Alert.alert("Error", `Failed to update prompt: ${error.message}`);
-    },
-  });
 
   const deleteAgentMutation = useMutation({
     mutationFn: () => agentService.deleteAgent(agentId),
@@ -121,40 +72,6 @@ const AgentManageScreen = () => {
       Alert.alert("Error", `Failed to make agent private: ${error.message}`);
     },
   });
-
-  const handlePromptSelect = () => {
-    setResumePromptPicker(false);
-    setPromptPickerVisible(true);
-  };
-
-  const handlePromptPicked = (prompt) => {
-    const currentId = selectedPrompt?.id ?? null;
-    const nextId = prompt?.id ?? null;
-    if (currentId === nextId) {
-      setPromptPickerVisible(false);
-      setResumePromptPicker(false);
-      return;
-    }
-    assignPromptMutation.mutate(prompt?.id ?? null);
-    setPromptPickerVisible(false);
-    setResumePromptPicker(false);
-  };
-
-  const handleOpenPromptManager = (shouldResumePicker = false) => {
-    setResumePromptPicker(shouldResumePicker);
-    if (shouldResumePicker) {
-      setPromptPickerVisible(false);
-    }
-    setPromptManagerVisible(true);
-  };
-
-  const handleClosePromptManager = () => {
-    setPromptManagerVisible(false);
-    if (resumePromptPicker) {
-      setPromptPickerVisible(true);
-    }
-    setResumePromptPicker(false);
-  };
 
   const handlePublishToggle = () => {
     if (!agent) return;
@@ -253,7 +170,7 @@ const AgentManageScreen = () => {
           }}
         >
           <Text tone="muted" sx={{ textAlign: "center", marginBottom: 4 }}>
-            Only the agent owner can edit publishing and prompt settings.
+            Only the agent owner can edit publishing settings.
           </Text>
           <TouchableOpacity
             onPress={handleGoBack}
@@ -312,16 +229,6 @@ const AgentManageScreen = () => {
               </StatusBadge>
             </View>
           </View>
-        </View>
-
-        <View sx={{ marginBottom: 6, paddingHorizontal: 0 }}>
-          <PromptAssignmentsCard
-            selectedPrompt={selectedPrompt}
-            onSelectPrompt={handlePromptSelect}
-            onOpenLibrary={() => handleOpenPromptManager(false)}
-            isFetching={promptsFetching}
-            isMutating={assignPromptMutation.isLoading}
-          />
         </View>
 
         <View sx={{ paddingHorizontal: 6, marginBottom: 6, marginTop: 4 }}>
@@ -388,24 +295,6 @@ const AgentManageScreen = () => {
           </View>
         </View>
       </ScrollView>
-
-      <PromptModals
-        pickerVisible={promptPickerVisible}
-        prompts={prompts}
-        selectedPrompt={selectedPrompt}
-        onSelectPrompt={handlePromptPicked}
-        onClosePicker={() => {
-          setPromptPickerVisible(false);
-          setResumePromptPicker(false);
-        }}
-        onOpenManagerFromPicker={() => handleOpenPromptManager(true)}
-        managerVisible={promptManagerVisible}
-        onCloseManager={handleClosePromptManager}
-        onPromptCreated={() => {
-          refetchPrompts();
-          queryClient.invalidateQueries(["prompts"]);
-        }}
-      />
     </ContainerView>
   );
 };

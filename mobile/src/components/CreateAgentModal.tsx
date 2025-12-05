@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import {
   Button,
@@ -13,7 +13,6 @@ import {
 } from "@/components/ui";
 import { useColors } from "@/theme";
 import { PaddedView } from "./ContainerView";
-import PromptPickerModal from "./PromptPickerModal";
 import SectionTitle from "./SectionTitle";
 
 export const LLM_PROVIDERS = [
@@ -35,13 +34,7 @@ export const LLM_PROVIDERS = [
   { id: "deepseek", name: "DeepSeek", models: ["deepseek-chat"] },
 ];
 
-export default function CreateAgentModal({
-  visible,
-  onClose,
-  onSubmit,
-  promptOptions = [],
-  onManagePrompts,
-}) {
+export default function CreateAgentModal({ visible, onClose, onSubmit }) {
   const insets = useSafeAreaInsets();
   const { colors: palette, info, withOpacity } = useColors();
   const [formData, setFormData] = useState({
@@ -50,24 +43,6 @@ export default function CreateAgentModal({
     model_name: "gemini-2.5-flash-preview-09-2025",
     initial_capital: "",
   });
-  const [promptPickerVisible, setPromptPickerVisible] = useState(false);
-
-  const promptLibrary = useMemo(() => promptOptions, [promptOptions]);
-
-  useEffect(() => {
-    if (!visible) return;
-
-    const defaultPrompt =
-      promptLibrary.find((prompt) => prompt.is_default) ||
-      promptLibrary[0] ||
-      null;
-
-    setFormData((prev) => ({
-      ...prev,
-      prompt_id: defaultPrompt?.id ?? null,
-    }));
-  }, [visible, promptLibrary]);
-
   const handleSubmit = () => {
     if (!formData.name || !formData.initial_capital) {
       alert("Please fill in all required fields");
@@ -85,17 +60,12 @@ export default function CreateAgentModal({
       llm_provider: "google",
       model_name: "gemini-2.5-flash-preview-09-2025",
       initial_capital: "",
-      prompt_id: promptLibrary.find((prompt) => prompt.is_default)?.id || null,
     });
   };
 
   const selectedProvider = LLM_PROVIDERS.find(
     (p) => p.id === formData.llm_provider,
   );
-  const _selectedPrompt = promptLibrary.find(
-    (prompt) => prompt.id === formData.prompt_id,
-  );
-
   return (
     <Modal
       visible={visible}
@@ -298,19 +268,6 @@ export default function CreateAgentModal({
           </ScrollView>
         </PaddedView>
       </KeyboardAvoidingView>
-
-      <PromptPickerModal
-        visible={promptPickerVisible}
-        prompts={promptLibrary}
-        selectedPromptId={formData.prompt_id}
-        onSelect={(prompt) =>
-          setFormData((prev) => ({ ...prev, prompt_id: prompt.id ?? null }))
-        }
-        onClose={() => setPromptPickerVisible(false)}
-        title="Select Prompt"
-        emptyMessage="Create a prompt from the prompt library."
-        onCreateNew={onManagePrompts}
-      />
     </Modal>
   );
 }

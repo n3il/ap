@@ -65,7 +65,6 @@ export interface AgentType {
   is_active: boolean | string; // adjust based on actual meaning
   latest_assessment: AssessmentRecordType;
   parsed_llm_response: AssessmentType | null; // refine if known
-  prompt_id: string | null;
   timestamp: string;
   trade_action_taken: string;
   llm_provider: string;
