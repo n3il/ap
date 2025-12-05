@@ -85,7 +85,7 @@ export default function BalanceOverview({
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Account Value"
-            value={accountData?.accountValueHistory}
+            value={accountData?.equity}
             formatter={v => v}
           />
         </View>

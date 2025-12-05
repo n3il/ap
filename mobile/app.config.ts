@@ -41,6 +41,7 @@ export default {
       bundler: "metro"
     },
     plugins: [
+      "expo-system-ui",
       "expo-router",
       "expo-dev-client",
       [
