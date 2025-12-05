@@ -25,7 +25,6 @@ export default function BalanceOverview({
   const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
   const { setTimeframe } = useTimeframeStore();
 
-  console.log({ accountData })
   return (
     <View sx={{
       gap: 4,

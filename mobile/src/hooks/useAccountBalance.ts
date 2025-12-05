@@ -179,7 +179,6 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
       }
     })
 
-    console.log(JSON.stringify(clearinghouseState))
     const accountValue = Number(clearinghouseState.marginSummary.accountValue) + Number(allPositionsValue);
     const totalPnl = Number(accountValue) - Number(startingEquity);
     const totalPnlPercent = totalPnl / Number(accountValue)

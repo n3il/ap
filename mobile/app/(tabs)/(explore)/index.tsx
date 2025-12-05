@@ -49,7 +49,6 @@ export default function ExploreScreen() {
       style={{
         flex: 1,
         paddingTop: safeAreaInsets.top,
-        backgroundColor: palette.backgroundSecondary,
       }}
     >
       <PaddedView>

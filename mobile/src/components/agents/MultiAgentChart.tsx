@@ -53,7 +53,6 @@ export default function MultiAgentChart({
     return agents
       .map((agent) => {
         const agentHistory = accountHistories[agent.id];
-        console.log(agent.name, { agentHistory })
         const timeframeHistory = agentHistory?.histories?.[timeframeKey];
         if (!timeframeHistory || timeframeHistory.length < 2) return null;
 
