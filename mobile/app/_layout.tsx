@@ -1,3 +1,6 @@
+import "fast-text-encoding";
+import "event-target-polyfill";
+import "@/polyfills/domException";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
 import * as ExpoSplashScreen from "expo-splash-screen";
@@ -11,8 +14,6 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 import * as Sentry from '@sentry/react-native';
-import "fast-text-encoding";
-import "event-target-polyfill";
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,

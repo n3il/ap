@@ -1,7 +1,9 @@
-
+import "event-target-polyfill";
+import "fast-text-encoding";
 import * as hl from "@nktkas/hyperliquid";
 import { create } from "zustand";
 import { useEffect } from "react";
+import { useShallow } from "zustand/react/shallow";
 
 type HLClientInstance = InstanceType<typeof hl.SubscriptionClient>;
 
@@ -19,6 +21,7 @@ type HLSubscriptionHandler = (data: any) => void;
 interface HLStoreState {
   client: HLClientInstance;
   registry: Map<string, Set<HLSubscriptionHandler>>;
+  subscriptions: Map<string, { unsubscribe: () => Promise<void> }>;
   pendingPosts: Map<number, (res: any) => void>;
   sendPost: (req: any, id?: number) => Promise<any>;
   connectionState: "connecting" | "connected" | "disconnected";
@@ -32,6 +35,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   });
 
   const registry = new Map<string, Set<HLSubscriptionHandler>>();
+  const subscriptions = new Map<string, { unsubscribe: () => Promise<void> }>();
   const pendingPosts = new Map<number, (res: any) => void>();
 
   set({ connectionState: "connecting", latencyMs: null });
@@ -42,10 +46,15 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
 
   transport.socket.addEventListener("close", () => {
     set({ connectionState: "disconnected" });
+    // drop registry/subscriptions so downstream hooks can resubscribe cleanly
+    registry.clear();
+    subscriptions.clear();
   });
 
   transport.socket.addEventListener("error", () => {
     set({ connectionState: "disconnected" });
+    registry.clear();
+    subscriptions.clear();
   });
 
   transport.socket.addEventListener("message", (event) => {
@@ -93,6 +102,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   return {
     client,
     registry,
+    subscriptions,
     pendingPosts,
     connectionState: "connecting",
     latencyMs: null,
@@ -106,41 +116,85 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   };
 });
 
+const buildSubKey = (method: string, params: any) =>
+  `${method}:${JSON.stringify(params ?? {})}`;
+
 export function useHLSubscription(
   method: HLMethodName,
   params: any,
   handler: (data: any) => void,
   enabled = true
 ) {
-  const { client, registry } = useHyperliquidStore.getState();
-  const key = method;
+  const { client, registry, subscriptions, connectionState } =
+    useHyperliquidStore(
+      useShallow((s) => ({
+        client: s.client,
+        registry: s.registry,
+        subscriptions: s.subscriptions,
+        connectionState: s.connectionState,
+      })),
+    );
 
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || connectionState !== "connected") return;
 
-    const entry = registry.get(key);
+    const paramList = Array.isArray(params) ? params : [params];
+    if (!paramList.length) return;
 
-    if (!entry) {
-      const set = new Set<HLSubscriptionHandler>();
-      set.add(handler);
-      registry.set(key, set);
+    const keys: string[] = [];
 
-      client[method](params, (data: any) => {
-        const handlers = registry.get(key);
-        if (!handlers) return;
-        handlers.forEach((h) => h(data));
-      });
-    } else {
-      entry.add(handler);
-    }
+    paramList.forEach((param) => {
+      const key = buildSubKey(method as string, param);
+      keys.push(key);
+
+      const entry = registry.get(key);
+
+      if (!entry) {
+        const set = new Set<HLSubscriptionHandler>();
+        set.add(handler);
+        registry.set(key, set);
+
+        // @ts-expect-error
+        client[method](param, (data: any) => {
+          const handlers = registry.get(key);
+          if (!handlers) return;
+          handlers.forEach((h) => h(data));
+        })
+          .then((sub: { unsubscribe: () => Promise<void> }) => {
+            if (sub?.unsubscribe) {
+              subscriptions.set(key, sub);
+            }
+          })
+          .catch((err: unknown) => {
+            console.error(`Hyperliquid subscription failed for ${key}`, err);
+            registry.delete(key);
+          });
+      } else {
+        entry.add(handler);
+      }
+    });
 
     return () => {
-      const entry = registry.get(key);
-      if (!entry) return;
-      entry.delete(handler);
-      if (entry.size === 0) registry.delete(key);
+      keys.forEach((key) => {
+        const entry = registry.get(key);
+        if (entry) {
+          entry.delete(handler);
+            if (entry.size === 0) {
+              registry.delete(key);
+              const sub = subscriptions.get(key);
+              if (sub?.unsubscribe) {
+                sub
+                .unsubscribe()
+                .catch((err: unknown) =>
+                  console.warn(`Failed to unsubscribe ${key}`, err)
+                );
+            }
+            subscriptions.delete(key);
+          }
+        }
+      });
     };
-  }, [enabled, key, handler]);
+  }, [enabled, method, handler, JSON.stringify(params), connectionState]);
 }
 
 export function useHyperliquidRequests() {

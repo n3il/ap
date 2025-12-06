@@ -95,6 +95,10 @@ export default function AgentCard({
   const tradingAccountType = agent.simulate ? "paper" : "real";
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
   const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
+  const surfaceColor =
+    typeof palette.surface === "string" ? palette.surface : undefined;
+  const borderColor =
+    typeof palette.border === "string" ? palette.border : undefined;
 
   // Animation values
   const scale = useSharedValue(1);
@@ -112,9 +116,11 @@ export default function AgentCard({
         {
           paddingVertical: 18,
           paddingHorizontal: 18,
-          backgroundColor: palette.surface,
+          backgroundColor: surfaceColor ?? "#ffffff",
           borderRadius: 12,
           marginHorizontal: 10,
+          borderWidth: 1,
+          borderColor: borderColor ?? "#171717ff",
         },
         animatedStyle,
       ]}

@@ -94,7 +94,6 @@ export default function AgentHeader({
         return runAgentAssessment(agentId);
       },
 
-      // ⭐️ Optimistically add pending assessment
       onMutate: async () => {
         // Cancel queries so we don’t overwrite optimistic update
         await queryClient.cancelQueries({
@@ -196,7 +195,7 @@ export default function AgentHeader({
             alignSelf: 'flex-start',
           }}
         >
-          <MaterialCommunityIcons name="chevron-left" size={24} color="white" />
+          <MaterialCommunityIcons name="chevron-left" size={24} color={palette?.foreground} />
         </GlassButton>
         <Text sx={{
           fontFamily: "monospace",

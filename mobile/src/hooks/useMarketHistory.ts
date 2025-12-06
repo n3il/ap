@@ -1,20 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 import { marketHistoryService } from "@/services/marketHistoryService";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
 
 export function useMarketHistory(timeframe) {
-  const { tickers } = useMarketPrices()
-  const tickerSymbols = tickers.map(t => t.symbol);
+  const { tickers } = useMarketPrices();
+  const tickerSymbols = useMemo(
+    () => tickers.map((t) => t.symbol).filter(Boolean),
+    [tickers],
+  );
 
-  const queryResult = useQuery({
-    queryKey: ["market-history", timeframe, tickerSymbols.join(",")],
-    queryFn: () =>
-      marketHistoryService.fetchHistory(tickerSymbols, timeframe),
-    staleTime: 60 * 1000,
-    gcTime: 5 * 60 * 1000,
-  });
-
-  return {
-    ...queryResult,
-  };
+  return marketHistoryService.useCandleHistory(tickerSymbols, timeframe);
 }

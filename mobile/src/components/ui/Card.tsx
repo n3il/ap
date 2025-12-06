@@ -26,6 +26,7 @@ const Card: React.FC<CardProps> = ({
   glassIntensity = 20,
   glassTintColor,
   isInteractive,
+  glassStyle = {},
 }) => {
   const { theme } = useDripsyTheme();
 
@@ -69,11 +70,11 @@ const Card: React.FC<CardProps> = ({
         tintColor={defaultTintColor}
         glassEffectStyle={glassEffectStyle}
         isInteractive={isInteractive}
-        style={{
+        style={[{
           borderRadius,
           paddingHorizontal: 6,
           paddingVertical: 8,
-        }}
+        }, glassStyle]}
       >
         <View
           sx={{

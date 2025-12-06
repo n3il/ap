@@ -1,6 +1,20 @@
-const API_URL = "https://api.hyperliquid.xyz/info";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useHLSubscription, useHyperliquidRequests } from "@/hooks/useHyperliquid";
 
-const TIMEFRAME_CONFIG = {
+type CandlePoint = {
+  timestamp: number;
+  open: number;
+  close: number;
+  high: number;
+  low: number;
+  volume?: number;
+  trades?: number;
+};
+
+const TIMEFRAME_CONFIG: Record<
+  string,
+  { durationMs: number; interval: "1m" | "3m" | "5m" | "15m" | "30m" | "1h" | "2h" | "4h" | "8h" | "12h" | "1d" | "3d" | "1w" | "1M" }
+> = {
   "1h": { durationMs: 60 * 60 * 1000, interval: "1m" },
   "24h": { durationMs: 24 * 60 * 60 * 1000, interval: "5m" },
   "7d": { durationMs: 7 * 24 * 60 * 60 * 1000, interval: "1h" },
@@ -8,78 +22,181 @@ const TIMEFRAME_CONFIG = {
   "1Y": { durationMs: 365 * 24 * 60 * 60 * 1000, interval: "1d" },
 };
 
-const cache = new Map();
+const normalizeCandlePoint = (point: any): CandlePoint | null => {
+  const timestamp = Number(point?.t ?? point?.timestamp);
+  const open = Number(point?.o ?? point?.open);
+  const close = Number(point?.c ?? point?.close);
+  const high = Number(point?.h ?? point?.high);
+  const low = Number(point?.l ?? point?.low);
 
-const cacheKey = (coin, timeframe) => `${coin}:${timeframe}`;
+  if (
+    !Number.isFinite(timestamp) ||
+    !Number.isFinite(open) ||
+    !Number.isFinite(close) ||
+    !Number.isFinite(high) ||
+    !Number.isFinite(low)
+  ) {
+    return null;
+  }
 
-async function fetchCoinHistory(coin, timeframe) {
+  const volume = Number(point?.v ?? point?.volume);
+  const trades = Number(point?.n ?? point?.trades);
+
+  return {
+    timestamp,
+    open,
+    close,
+    high,
+    low,
+    volume: Number.isFinite(volume) ? volume : undefined,
+    trades: Number.isFinite(trades) ? trades : undefined,
+  };
+};
+
+const clampToWindow = (
+  candles: CandlePoint[],
+  durationMs: number,
+  referenceTime = Date.now(),
+) => {
+  const minTimestamp = referenceTime - durationMs;
+  return candles.filter((c) => c.timestamp >= minTimestamp);
+};
+
+export function useCandleHistory(
+  tickers: string[] | string,
+  timeframe: string,
+) {
+  const coins = useMemo(
+    () =>
+      (Array.isArray(tickers) ? tickers : [tickers])
+        .filter(Boolean)
+        .map((c) => c.toUpperCase()),
+    [tickers],
+  );
+
   const config = TIMEFRAME_CONFIG[timeframe];
-  if (!config) {
-    throw new Error(`Unsupported timeframe: ${timeframe}`);
-  }
+  const { sendRequest } = useHyperliquidRequests();
 
-  const endTime = Date.now();
-  const startTime = endTime - config.durationMs;
+  const [data, setData] = useState<Record<string, CandlePoint[]>>({});
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
-  const response = await fetch(API_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      type: "candleSnapshot",
-      req: {
-        coin,
-        interval: config.interval,
-        startTime,
-        endTime,
-      },
-    }),
-  });
+  // Fetch an initial historical window via HL post request
+  useEffect(() => {
+    let cancelled = false;
+    if (!coins.length || !config) {
+      setData({});
+      setIsLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
 
-  if (!response.ok) {
-    const text = await response.text();
-    throw new Error(
-      `Hyperliquid candleSnapshot failed: ${response.status} ${text}`,
-    );
-  }
+    (async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        setData({});
 
-  const data = await response.json();
-  if (!Array.isArray(data)) {
-    throw new Error("Unexpected candleSnapshot response");
-  }
+        const endTime = Date.now();
+        const startTime = endTime - config.durationMs;
 
-  return data.map((point) => ({
-    timestamp: point.t,
-    open: parseFloat(point.o),
-    close: parseFloat(point.c),
-    high: parseFloat(point.h),
-    low: parseFloat(point.l),
-  }));
+        const results: Record<string, CandlePoint[]> = {};
+
+        await Promise.all(
+          coins.map(async (coin) => {
+            const resp = await sendRequest({
+              type: "info",
+              payload: {
+                type: "candleSnapshot",
+                req: {
+                  coin,
+                  interval: config.interval,
+                  startTime,
+                  endTime,
+                },
+              },
+            });
+
+            const rawCandles: any[] = resp?.payload?.data ?? [];
+            const normalized = rawCandles
+              .map(normalizeCandlePoint)
+              .filter((c): c is CandlePoint => c !== null);
+
+            results[coin] = clampToWindow(
+              normalized.sort((a, b) => a.timestamp - b.timestamp),
+              config.durationMs,
+              endTime,
+            );
+          }),
+        );
+
+        if (!cancelled) {
+          setData(results);
+        }
+      } catch (err: unknown) {
+        if (!cancelled) {
+          setError(err as Error);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [coins, config, timeframe, sendRequest]);
+
+  const handleCandle = useCallback(
+    (evt: any) => {
+      const coin = (evt?.s ?? evt?.coin)?.toUpperCase?.();
+      if (!coin || !config) return;
+
+      const normalized = normalizeCandlePoint(evt);
+      if (!normalized) return;
+
+      setData((prev) => {
+        const current = prev[coin] ?? [];
+        const withoutDuplicate = current.filter(
+          (c) => c.timestamp !== normalized.timestamp,
+        );
+        const merged = [...withoutDuplicate, normalized].sort(
+          (a, b) => a.timestamp - b.timestamp,
+        );
+
+        return {
+          ...prev,
+          [coin]: clampToWindow(merged, config.durationMs),
+        };
+      });
+    },
+    [config],
+  );
+
+  useHLSubscription(
+    "candle",
+    coins.map((coin) => ({
+      coin,
+      interval: config?.interval,
+    })),
+    handleCandle,
+    Boolean(config && coins.length),
+  );
+
+  return {
+    data,
+    error,
+    isLoading,
+    isFetching: isLoading,
+  };
 }
 
 export const marketHistoryService = {
-  async fetchHistory(tickers, timeframe) {
-    const coins = Array.isArray(tickers) ? tickers : [tickers];
-    const results = {};
-
-    await Promise.all(
-      coins.map(async (coin) => {
-        const key = cacheKey(coin, timeframe);
-        const cached = cache.get(key);
-        if (cached && Date.now() - cached.timestamp < 60 * 1000) {
-          results[coin] = cached.data;
-          return;
-        }
-
-        const history = await fetchCoinHistory(coin, timeframe);
-        cache.set(key, { timestamp: Date.now(), data: history });
-        results[coin] = history;
-      }),
-    );
-
-    return results;
-  },
-
-  getTimeframeConfig(timeframe) {
+  useCandleHistory,
+  getTimeframeConfig(timeframe: string) {
     return TIMEFRAME_CONFIG[timeframe];
   },
 };

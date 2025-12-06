@@ -5,9 +5,6 @@ import { toHyperliquidOrder, AssetType } from "../hyperliquid/mapping.ts";
 import { Position } from "../hyperliquid/types.ts";
 import initSentry from "../../_shared/sentry.ts";
 
-
-import * as hl from '@nktkas/hyperliquid';
-
 const Sentry = initSentry();
 
 export async function executeTrade(
@@ -31,12 +28,17 @@ export async function executeTrade(
     }
   });
 
-  // Execute trade on Hyperliquid (only for real trades)
-  const tradeResult = await executeHyperliquidTrade(
-    hyperliquidOrder,
-    agent.simulate,
-    tradingAccount.hyperliquid_wallet_private_key,
-  );
+  let tradeResult;
+  try {
+    // Execute trade on Hyperliquid (only for real trades)
+    tradeResult = await executeHyperliquidTrade(
+      hyperliquidOrder,
+      agent.simulate,
+      tradingAccount.hyperliquid_wallet_private_key,
+    );
+  } catch (e) {
+    Sentry.captureException(e);
+  }
 
   // // Record in ledger (to-do, offload to background job)
   // const ledgerRecords = await recordLedgerExecution({
