@@ -9,69 +9,77 @@ import { blendColors, hexToRgba, withOpacity } from "./utils";
  */
 export const useColors = () => {
   const { theme } = useDripsyTheme<AppTheme>();
-  const fallbackColors = darkTheme.colors;
+  const fallback = darkTheme.colors;
+
+  const deepMerge = (base: any, override: any) => {
+    if (override == null) return base;
+    if (typeof base !== "object" || typeof override !== "object") {
+      return override ?? base;
+    }
+    const merged: Record<string, any> = { ...(base || {}) };
+    Object.entries(override).forEach(([key, value]) => {
+      merged[key] =
+        value && typeof value === "object" && !Array.isArray(value)
+          ? deepMerge(base?.[key], value)
+          : value ?? base?.[key];
+    });
+    return merged;
+  };
+
+  const resolvedColors = useMemo(
+    () => deepMerge(fallback, theme.colors ?? {}),
+    [theme.colors, fallback],
+  );
+
+  const resolveColorValue = (value: any, fallbackValue?: string) => {
+    if (typeof value === "string") return value;
+    if (value && typeof value === "object") {
+      if (typeof value.DEFAULT === "string") return value.DEFAULT;
+      const firstString = Object.values(value).find(
+        (v) => typeof v === "string",
+      );
+      if (typeof firstString === "string") return firstString;
+    }
+    return fallbackValue;
+  };
+
+  const colorGetters = useMemo(() => {
+    const get = (key: keyof typeof resolvedColors) =>
+      resolveColorValue(resolvedColors[key], resolveColorValue(fallback[key]));
+
+    return {
+      primary: get("primary"),
+      secondary: get("secondary"),
+      accent: get("accent"),
+      success: get("success") ?? get("long"),
+      error: get("error") ?? get("short"),
+      warning: get("warning"),
+      info: get("info") ?? get("brand"),
+      background: get("background"),
+      surface: get("surface"),
+      border: get("border"),
+      textPrimary:
+        resolvedColors.text?.primary ?? fallback.text?.primary ?? undefined,
+      textSecondary:
+        resolvedColors.text?.secondary ??
+        fallback.text?.secondary ??
+        undefined,
+      textTertiary:
+        resolvedColors.text?.tertiary ?? fallback.text?.tertiary ?? undefined,
+      providers: resolvedColors.providers ?? fallback.providers,
+    };
+  }, [resolvedColors]);
 
   return useMemo(
     () => ({
-      colors: theme.colors,
+      colors: resolvedColors,
       withOpacity: (color: string, alpha: number) => withOpacity(color, alpha),
       hexToRgba: (hex: string, alpha?: number) => hexToRgba(hex, alpha),
       blendColors: (base: string, overlay: string, alpha?: number) =>
         blendColors(base, overlay, alpha),
-      // Quick access to common colors
-      primary:
-        theme.colors?.primary ??
-        fallbackColors.primary?.DEFAULT ??
-        fallbackColors.primary,
-      secondary:
-        theme.colors?.secondary ??
-        fallbackColors.secondary?.DEFAULT ??
-        fallbackColors.secondary,
-      accent:
-        theme.colors?.accent ??
-        fallbackColors.accent ??
-        fallbackColors.accentPalette?.DEFAULT,
-      success:
-        theme.colors?.success ??
-        fallbackColors.success?.DEFAULT ??
-        fallbackColors.long?.DEFAULT,
-      error:
-        theme.colors?.error ??
-        fallbackColors.error?.DEFAULT ??
-        fallbackColors.short?.DEFAULT,
-      warning: theme.colors?.warning ?? fallbackColors.warning?.DEFAULT,
-      info:
-        theme.colors?.info ??
-        fallbackColors.info?.DEFAULT ??
-        fallbackColors.brand?.DEFAULT,
-      background: theme.colors?.background ?? fallbackColors.background,
-      surface: theme.colors?.surface ?? fallbackColors.surface,
-      border: theme.colors?.border ?? fallbackColors.border,
-      textPrimary: theme.colors?.textPrimary ?? fallbackColors.text.primary,
-      textSecondary:
-        theme.colors?.textSecondary ?? fallbackColors.text.secondary,
-      textTertiary: theme.colors?.textTertiary ?? fallbackColors.text.tertiary,
+      ...colorGetters,
     }),
-    [
-      theme.colors,
-      fallbackColors.accent,
-      fallbackColors.accentPalette?.DEFAULT,
-      fallbackColors.background,
-      fallbackColors.border,
-      fallbackColors.brand?.DEFAULT,
-      fallbackColors.error?.DEFAULT,
-      fallbackColors.info?.DEFAULT,
-      fallbackColors.long?.DEFAULT,
-      fallbackColors.primary,
-      fallbackColors.secondary,
-      fallbackColors.short?.DEFAULT,
-      fallbackColors.success?.DEFAULT,
-      fallbackColors.surface,
-      fallbackColors.text.primary,
-      fallbackColors.text.secondary,
-      fallbackColors.text.tertiary,
-      fallbackColors.warning?.DEFAULT,
-    ],
+    [resolvedColors, colorGetters],
   );
 };
 
@@ -80,20 +88,25 @@ export const useColors = () => {
  */
 export const useSpacing = () => {
   const { theme } = useDripsyTheme<AppTheme>();
+  const fallbackSpace = darkTheme.spacing ?? {};
 
   return useMemo(
     () => ({
-      space: theme.space,
+      space: theme.space ?? fallbackSpace,
       // Helper functions
       get: (key: string | number) =>
-        theme.space?.[key as keyof typeof theme.space] ?? Number(key),
+        theme.space?.[key as keyof typeof theme.space] ??
+        fallbackSpace?.[key as keyof typeof fallbackSpace] ??
+        Number(key),
       multiply: (key: string | number, multiplier: number) => {
         const value =
-          theme.space?.[key as keyof typeof theme.space] ?? Number(key);
+          theme.space?.[key as keyof typeof theme.space] ??
+          fallbackSpace?.[key as keyof typeof fallbackSpace] ??
+          Number(key);
         return value * multiplier;
       },
     }),
-    [theme.space],
+    [theme.space, fallbackSpace],
   );
 };
 
@@ -102,13 +115,17 @@ export const useSpacing = () => {
  */
 export const useRadius = () => {
   const { theme } = useDripsyTheme<AppTheme>();
+  const fallbackRadii = darkTheme.borderRadius ?? {};
 
   return useMemo(
     () => ({
-      radii: theme.radii,
-      get: (key: string) => theme.radii?.[key as keyof typeof theme.radii] ?? 0,
+      radii: theme.radii ?? fallbackRadii,
+      get: (key: string) =>
+        theme.radii?.[key as keyof typeof theme.radii] ??
+        fallbackRadii?.[key as keyof typeof fallbackRadii] ??
+        0,
     }),
-    [theme.radii],
+    [theme.radii, fallbackRadii],
   );
 };
 
@@ -126,7 +143,7 @@ export const useGlassEffect = () => {
       intensity: 20,
       tintColor: theme.glass?.tintColor ?? darkTheme.glass.tintColor,
       effectStyle: "clear" as const,
-      borderRadius: theme.radii?.xl ?? 16,
+      borderRadius: theme.radii?.xl ?? darkTheme.glass.borderRadius ?? 16,
     };
   }, [theme.radii, theme.glass?.tintColor]);
 
@@ -138,13 +155,15 @@ export const useGlassEffect = () => {
  */
 export const useTypography = () => {
   const { theme } = useDripsyTheme<AppTheme>();
+  const fallbackText = darkTheme.fontSize;
+  const fallbackFonts = darkTheme.fontFamily;
 
   return useMemo(
     () => ({
       variants: theme.text,
-      fonts: theme.fonts,
+      fonts: theme.fonts ?? fallbackFonts,
     }),
-    [theme.text, theme.fonts],
+    [theme.text, theme.fonts, fallbackFonts],
   );
 };
 

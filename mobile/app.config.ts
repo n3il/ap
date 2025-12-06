@@ -40,12 +40,12 @@ export default {
       [
         "expo-splash-screen", {
           backgroundColor: "#378593",
-          image: "./assets/puppet-bare-icon.png",
+          image: "./assets/puppet-bare-icon-w.png",
           dark: {
             image: "./assets/puppet-bare-icon.png",
             backgroundColor: "#010101"
           },
-          imageWidth: 10
+          imageWidth: 230
         }
       ],
       "expo-router",

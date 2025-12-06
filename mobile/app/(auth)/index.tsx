@@ -218,11 +218,11 @@ export default function Auth() {
             sx={{
               flexDirection: "row",
               justifyContent: "space-between",
-              gap: 3,
               marginBottom: 3,
             }}
           >
             <GlassButton
+              style={{ flex: 1 }}
               onPress={toggleAuthMode}
               disabled={loading}
               styleVariant="paddedFull"

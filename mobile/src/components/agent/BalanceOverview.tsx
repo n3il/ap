@@ -131,11 +131,17 @@ export default function BalanceOverview({
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Active Positions"
-            value={accountData.openPositions.length}
+            label="Positions (#)"
+            value={accountData.positionValue}
             alignRight
             formatter={o => o}
-          />
+          >
+            <Text
+              variant="sm"
+            >
+              {`(${accountData.openPositions.length})`}
+            </Text>
+          </LabelValue>
         </View>
       </View>
     </View>

@@ -8,7 +8,7 @@ const lightTheme = {
     ...base.colors,
     background: "#d9d9d9ff",
     backgroundSecondary: "#f8fafc",
-    surface: "#ffffff",
+    surface: "#181818ff",
     foreground: "#0f172a",
     text: {
       primary: "#0f172a",
@@ -30,7 +30,7 @@ const lightTheme = {
     border: "#171717ff",
     input: "#cbd5f5",
 
-    glassTint: "rgba(255, 255, 255, 0.1)",
+    glassTint: "rgba(194, 34, 34, 0.95)",
 
     tabBackground: "#fff",
     tabIcon: "#111",

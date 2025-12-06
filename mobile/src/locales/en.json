@@ -5,7 +5,7 @@
     "phoneNumber": "Phone Number",
     "phonePlaceholder": "+1 (000) 000-0000",
     "sendCode": "Send Code",
-    "smsLegal": "You will receive a text with a verification code. Message and data rates may apply.",
+    "smsLegal": "*Message and data rates may apply.",
     "verificationCode": "Verification Code",
     "codePlaceholder": "Enter 6-digit code",
     "verify": "Verify & Sign In",

@@ -18,12 +18,20 @@ import LockScreen from "@/components/ui/LockScreen";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAnimationKey } from "@/hooks/useAnimationKey";
 import { useColors } from "@/theme";
+import { useEffect } from "react";
+import { ROUTES } from "@/config/routes";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
   const { user, signOut, loading } = useAuth();
   const router = useRouter();
   const { colors: palette, withOpacity } = useColors();
+
+  useEffect(() => {
+    if (!user) {
+      router.push(ROUTES.AUTH_INDEX.path)
+    }
+  }, [user]);
 
   const handleLogout = async () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [

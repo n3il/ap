@@ -17,7 +17,7 @@ export default function PhoneInputAutoDetect({
 }) {
   const { colors: palette } = useColors();
   const [countryCodeValue, setCountryCodeValue] = useState(
-    `+${getCountryCallingCode(DEFAULT_COUNTRY)}`,
+    `${getCountryCallingCode(DEFAULT_COUNTRY)}`,
   );
   const [displayValue, setDisplayValue] = useState('');
 
@@ -77,30 +77,49 @@ export default function PhoneInputAutoDetect({
         borderRadius: 8,
       }}
     >
-
       <TextInput
         style={{
-          fontSize: 18,
+          fontSize: 24,
           height: 40,
-          paddingHorizontal: 8,
-          color: "#fff",
+          color: palette.foreground,
           letterSpacing: 2,
+          fontStyle: 'italic',
+        }}
+        selectionColor={palette.foreground}
+        value={"+"}
+        keyboardType="phone-pad"
+        textContentType="telephoneNumber"
+        editable={false}
+      />
+      <TextInput
+        style={{
+          fontSize: 24,
+          height: 40,
+          color: palette.foreground,
+          letterSpacing: 2,
+          fontStyle: 'italic',
+          marginLeft: 4,
         }}
         selectionColor={palette.foreground}
         value={countryCodeValue}
-        placeholder="+1"
+        placeholder="1"
         keyboardType="phone-pad"
         textContentType="telephoneNumber"
         onChangeText={setCountryCodeValue}
+        onBlur={() => {
+          if (!countryCodeValue) {
+            setCountryCodeValue('1')
+          }
+        }}
       />
       <TextInput
         style={{
           flex: 1,
-          fontSize: 18,
+          fontSize: 24,
           height: 40,
-          paddingHorizontal: 8,
-          color: "#fff",
+          color: palette.foreground,
           letterSpacing: 2,
+          marginLeft: 12,
         }}
         selectionColor={palette.foreground}
         value={displayValue}

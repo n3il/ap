@@ -23,7 +23,7 @@ Sentry.init({
 });
 
 ExpoSplashScreen.setOptions({
-  duration: 10000,
+  duration: 230,
   fade: true,
 });
 
