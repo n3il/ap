@@ -1,5 +1,4 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -89,21 +88,6 @@ export default function GetStartedScreen() {
         player={player}
         nativeControls={false}
         contentFit="cover"
-      />
-
-      <LinearGradient
-        colors={gradient}
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          opacity: 0.95,
-          zIndex: 1,
-        }}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
       />
 
       <Animated.View

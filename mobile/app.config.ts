@@ -6,13 +6,7 @@ export default {
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
-    userInterfaceStyle: "dark",
     backgroundColor: "#000000",
-    splash: {
-      image: "./assets/icons/Icon-App-iTunes.png",
-      resizeMode: "contain",
-      backgroundColor: "#232323"
-    },
     ios: {
       usesAppleSignIn: true,
       bundleIdentifier: "com.puppetai.app",
@@ -42,6 +36,18 @@ export default {
     },
     plugins: [
       "expo-system-ui",
+      "expo-font",
+      [
+        "expo-splash-screen", {
+          backgroundColor: "#378593",
+          image: "./assets/puppet-bare-icon.png",
+          dark: {
+            image: "./assets/puppet-bare-icon.png",
+            backgroundColor: "#010101"
+          },
+          imageWidth: 10
+        }
+      ],
       "expo-router",
       "expo-dev-client",
       [

@@ -8,6 +8,7 @@ export default function AuthLayout() {
         gestureEnabled: true,
         animation: "slide_from_bottom",
         presentation: "transparentModal",
+        sheetGrabberVisible: true,
       }}
     >
       <Stack.Screen name="index" backdropColor="rgba(0,0,0,0)" />

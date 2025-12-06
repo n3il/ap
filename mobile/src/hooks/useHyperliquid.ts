@@ -1,7 +1,6 @@
-import { create } from "zustand";
-import "fast-text-encoding";
-import "event-target-polyfill";
+
 import * as hl from "@nktkas/hyperliquid";
+import { create } from "zustand";
 import { useEffect } from "react";
 
 type HLClientInstance = InstanceType<typeof hl.SubscriptionClient>;
@@ -27,8 +26,9 @@ interface HLStoreState {
 }
 
 export const useHyperliquidStore = create<HLStoreState>((set, get) => {
+  const transport = new hl.WebSocketTransport({ isTestnet: true });
   const client = new hl.SubscriptionClient({
-    transport: new hl.WebSocketTransport({ isTestnet: true }),
+    transport,
   });
 
   const registry = new Map<string, Set<HLSubscriptionHandler>>();
@@ -36,19 +36,19 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
 
   set({ connectionState: "connecting", latencyMs: null });
 
-  client.transport.socket.addEventListener("open", () => {
+  transport.socket.addEventListener("open", () => {
     set({ connectionState: "connected" });
   });
 
-  client.transport.socket.addEventListener("close", () => {
+  transport.socket.addEventListener("close", () => {
     set({ connectionState: "disconnected" });
   });
 
-  client.transport.socket.addEventListener("error", () => {
+  transport.socket.addEventListener("error", () => {
     set({ connectionState: "disconnected" });
   });
 
-  client.transport.socket.addEventListener("message", (event) => {
+  transport.socket.addEventListener("message", (event) => {
     const msg = JSON.parse(event.data);
     if (msg.channel === "post") {
       const resolver = pendingPosts.get(msg.data.id);
@@ -73,7 +73,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
       pendingPosts.set(id, resolve);
     });
 
-    client.transport.socket.send(
+    transport.socket.send(
       JSON.stringify({
         method: "post",
         id,
@@ -99,7 +99,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
     sendPost: (req, id = Date.now()) =>
       new Promise((resolve) => {
         pendingPosts.set(id, resolve);
-        client.transport.socket.send(
+        transport.socket.send(
           JSON.stringify({ method: "post", id, request: req })
         );
       }),

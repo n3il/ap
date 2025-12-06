@@ -112,7 +112,7 @@ export default function AgentCard({
         {
           paddingVertical: 18,
           paddingHorizontal: 18,
-          backgroundColor: transparent ? "transparent" : "#0f1522ff",
+          backgroundColor: palette.surface,
           borderRadius: 12,
           marginHorizontal: 10,
         },

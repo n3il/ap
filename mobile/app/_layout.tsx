@@ -11,12 +11,19 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 import * as Sentry from '@sentry/react-native';
+import "fast-text-encoding";
+import "event-target-polyfill";
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
   sendDefaultPii: true,
   enableLogs: false,
   spotlight: __DEV__,
+});
+
+ExpoSplashScreen.setOptions({
+  duration: 10000,
+  fade: true,
 });
 
 // Prevent native splash screen from auto-hiding
@@ -91,7 +98,11 @@ function AuthNavigator() {
           },
         }}
       >
-        <Stack.Screen name="index" />
+        <Stack.Screen name="index"
+          options={{
+            animation: "fade",
+          }}
+        />
         <Stack.Screen
           name="(auth)"
           options={{
