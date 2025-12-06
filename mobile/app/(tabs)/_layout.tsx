@@ -7,29 +7,37 @@ export default function TabsLayout() {
 
   return (
     <NativeTabs
-      initialRouteName="(explore)"
+      disableTransparentOnScrollEdge
       minimizeBehavior="onScrollUp"
-      backgroundColor={theme.colors.tabBackground}
-      badgeBackgroundColor={theme.colors.info.DEFAULT}
-      labelStyle={{
-        default: { color: theme.colors.tabLabel },
-        selected: { color: theme.colors.tabLabelSelected },
-      }}
-      iconColor={{
-        default: theme.colors.tabIcon,
-        selected: theme.colors.tabIconSelected,
-      }}
-      blurEffect="systemMaterialDark"
-      tintColor={DynamicColorIOS({
-        dark: "#000000",
-        light: "#000000",
-      })}
+      backgroundColor="black"
+      // backgroundColor={theme.colors.tabBackground}
+      // badgeBackgroundColor={theme.colors.info.DEFAULT}
+      // labelStyle={{
+      //   default: { color: theme.colors.tabLabel },
+      //   selected: { color: theme.colors.tabLabelSelected },
+      // }}
+      // iconColor={{
+      //   default: theme.colors.tabIcon,
+      //   selected: theme.colors.tabIconSelected,
+      // }}
+      blurEffect="none"
+      // tintColor={DynamicColorIOS({
+      //   dark: "#000000",
+      //   light: "#000000",
+      // })}
     >
       <NativeTabs.Trigger name="(explore)">
+      <NativeTabs.Trigger.TabBar
+          backgroundColor="pink"
+        />
+
         <Label>Explore</Label>
         <Icon sf="globe.desk" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(agents)">
+              <NativeTabs.Trigger.TabBar
+          backgroundColor="pink"
+        />
         <Label>Agents</Label>
         <Icon sf="sparkles" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>

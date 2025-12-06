@@ -106,9 +106,11 @@ export default function AgentCard({
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
-    // borderWidth: transparent ? 0 : .1,
+    borderWidth: transparent ? 0 : .1,
     borderColor: `rgba(124, 255, 170, ${borderOpacity.value})`,
   }));
+
+  console.log(accountData.openPositions.length, hideOpenPositions)
 
   return (
     <Animated.View
@@ -119,7 +121,6 @@ export default function AgentCard({
           backgroundColor: surfaceColor ?? "#ffffff",
           borderRadius: 12,
           marginHorizontal: 10,
-          borderWidth: 1,
           borderColor: borderColor ?? "#171717ff",
         },
         animatedStyle,

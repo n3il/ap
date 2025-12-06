@@ -1,3 +1,4 @@
+import ExploreHeader from "@/components/explore/Header";
 import { Stack } from "expo-router";
 
 export default function Layout() {

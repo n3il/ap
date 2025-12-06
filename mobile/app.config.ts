@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Puppet",
     slug: "puppet-ai",
-    scheme: ["com.puppetai"],
+    scheme: "com.puppetai",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
@@ -49,7 +49,6 @@ export default {
         }
       ],
       "expo-router",
-      "expo-dev-client",
       [
         "expo-video",
         {
@@ -63,6 +62,12 @@ export default {
       "expo-apple-authentication",
       "expo-notifications",
       "@sentry/react-native/expo",
+      [
+        "expo-dev-client",
+        {
+          "launchMode": "most-recent"
+        }
+      ],
     ],
     updates: {
       enabled: true,

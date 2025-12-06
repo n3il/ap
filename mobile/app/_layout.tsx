@@ -14,6 +14,7 @@ import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 import * as Sentry from '@sentry/react-native';
+import ExploreHeader from "@/components/explore/Header";
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -69,7 +70,7 @@ function AuthNavigator() {
     async function prepare() {
       try {
         // Keep splash visible for minimum duration for smooth UX
-        await new Promise((resolve) => setTimeout(resolve, 300));
+        await new Promise((resolve) => setTimeout(resolve, 3000));
       } catch (_e) {
         //
       } finally {
@@ -89,42 +90,35 @@ function AuthNavigator() {
 
 
   return (
-    <>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          presentation: "card",
-          contentStyle: {
-            backgroundColor: rootBg,
-          },
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        presentation: "card",
+        contentStyle: {
+          backgroundColor: rootBg,
+        },
+        animation: "none",
+      }}
+    >
+      <Stack.Screen name="index" />
+      <Stack.Screen
+        name="(auth)"
+        options={{
+          animation: "slide_from_bottom",
+          presentation: "modal",
         }}
-      >
-        <Stack.Screen name="index"
-          options={{
-            animation: "fade",
-          }}
-        />
-        <Stack.Screen
-          name="(auth)"
-          options={{
-            animation: "slide_from_bottom",
-            presentation: "modal",
-          }}
-        />
-        <Stack.Screen name="(tabs)" />
+      />
 
-        <Stack.Screen name="(agent)/[id]" />
-
-        <Stack.Screen
-          name="modal_create_agent"
-          options={{
-            animation: "slide_from_bottom",
-            presentation: "modal",
-          }}
-        />
-      </Stack>
-      {false && <DebugOverlay />}
-    </>
+      <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="(agent)/[id]" />
+      <Stack.Screen
+        name="modal_create_agent"
+        options={{
+          animation: "slide_from_bottom",
+          presentation: "modal",
+        }}
+      />
+    </Stack>
   );
 }
 

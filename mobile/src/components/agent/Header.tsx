@@ -9,6 +9,7 @@ import { agentWatchlistService } from "@/services/agentWatchlistService";
 import { useColors } from "@/theme";
 import { RadarSpinner } from "@/components/ui/SpinningIcon";
 import { useRouter } from "expo-router";
+import { useHyperliquidStore } from "@/hooks/useHyperliquid";
 
 type Props = {
   agentId?: string;
@@ -183,11 +184,19 @@ export default function AgentHeader({
   const watchlistButtonDisabled = !agentId || isUpdatingWatchlist;
   const showWatchlistSpinner = isWatchlistLoading || isUpdatingWatchlist;
   const _watchlistIcon = isWatchlisted ? "binoculars" : "binoculars-outline";
+  const { connectionState, reconnect } = useHyperliquidStore();
+
+  const handleReconnect = useCallback(() => {
+    if (connectionState === "disconnected") {
+      reconnect();
+    }
+  }, [connectionState, reconnect]);
 
   return (
     <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 1}}>
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <GlassButton
+          enabled={false}
           onPress={() => router.back()}
           style={{
             flex: 0,

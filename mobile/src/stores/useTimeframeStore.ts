@@ -17,14 +17,24 @@ export const TIMEFRAME_OPTIONS: TimeFrameOption[] = [
   { id: 'All', label: 'All' },
 ];
 
-/**
- * Store for managing the selected timeframe across the app
- * This allows different components to access and update the timeframe
- */
-export const useTimeframeStore = create((set) => ({
-  // The currently selected timeframe (default: 1h)
-  timeframe: "1h" as AvailableTimeframesEnum,
+export const TIMEFRAME_CONFIG: Record<
+  string,
+  { durationMs: number; interval: "1m" | "3m" | "5m" | "15m" | "30m" | "1h" | "2h" | "4h" | "8h" | "12h" | "1d" | "3d" | "1w" | "1M" }
+> = {
+  "1h": { durationMs: 60 * 60 * 1000, interval: "1m" },
+  "24h": { durationMs: 24 * 60 * 60 * 1000, interval: "5m" },
+  "7d": { durationMs: 7 * 24 * 60 * 60 * 1000, interval: "1h" },
+  "1M": { durationMs: 30 * 24 * 60 * 60 * 1000, interval: "4h" },
+  "1Y": { durationMs: 365 * 24 * 60 * 60 * 1000, interval: "1d" },
+};
 
-  // Set the timeframe
+
+interface TimeFrameState {
+  timeframe: AvailableTimeframesEnum;
+  setTimeFrame: (timeframe: AvailableTimeframesEnum) => void;
+}
+
+export const useTimeframeStore = create<TimeFrameState>((set) => ({
+  timeframe: "1M" as AvailableTimeframesEnum,
   setTimeframe: (timeframe) => set({ timeframe }),
 }));

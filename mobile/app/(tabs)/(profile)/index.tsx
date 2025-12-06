@@ -20,6 +20,7 @@ import { useAnimationKey } from "@/hooks/useAnimationKey";
 import { useColors } from "@/theme";
 import { useEffect } from "react";
 import { ROUTES } from "@/config/routes";
+import DebugOverlay from "@/components/DebugOverlay";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
@@ -239,6 +240,7 @@ export default function ProfileScreen() {
           </TouchableOpacity>
         </AnimatedBox>
       </ScrollView>
+      {false && <DebugOverlay />}
     </ContainerView>
   );
 }

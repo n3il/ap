@@ -108,16 +108,6 @@ export function useMarketPrices() {
     load();
   }, []);
 
-  useHLSubscription(
-    "allMids",
-    {},
-    (msg) => {
-      if (!msg.mids) return;
-      updateTickers(msg.mids, Date.now());
-    },
-    tickers.length > 0
-  );
-
   return {
     tickers: tickers,
     assets: tickers || {},

@@ -273,9 +273,9 @@ export default function PositionList({
   top = 3,
   sx = {},
 }: PositionListProps) {
-  const safeEnrichedPositions = Array.isArray(positions) ? positions : [];
-  const topPositions = safeEnrichedPositions
-    .sort((a, b) => b.size - a.size)
+  console.log('positions list', positions.length)
+  const topPositions = [...positions]
+    .sort((a, b) => Math.abs(b.size) - Math.abs(a.size))
     .slice(0, top);
   return (
     <View sx={sx}>

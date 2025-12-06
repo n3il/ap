@@ -80,7 +80,6 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
 
   const { mids } = useMarketPricesStore();
 
-
   const [accountValueHistory, setAccountValueHistory] =
     useState<PnLByTimeframe>({});
   const [clearinghouseState, setClearinghouseState] =

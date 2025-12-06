@@ -28,6 +28,7 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
   const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+  const redirectUrl = makeRedirectUri({ scheme: process.env.EXPO_PUBLIC_REDIRECT_URL });
 
   const checkOnboardingStatus = useCallback(async (userId) => {
     const { data, error } = await supabase
@@ -157,8 +158,6 @@ export const AuthProvider = ({ children }) => {
 
   const signInWithGoogle = async () => {
     try {
-      const redirectUrl = makeRedirectUri({ scheme: "ap" });
-
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
         options: {

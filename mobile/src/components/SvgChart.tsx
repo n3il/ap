@@ -856,8 +856,8 @@ const SvgChart = ({
           bottom: 0,
         }}
       >
-        {timeLabels.map(({label, id}) => (
-          <Text key={id} sx={{ fontSize: 10, color: "secondary300" }}>
+        {timeLabels.map(({label, id}, idx) => (
+          <Text key={`${id}-${idx}`} sx={{ fontSize: 10, color: "secondary300" }}>
             {label}
           </Text>
         ))}

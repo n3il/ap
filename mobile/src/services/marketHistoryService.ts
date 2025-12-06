@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHLSubscription, useHyperliquidRequests } from "@/hooks/useHyperliquid";
+import { TIMEFRAME_CONFIG } from "@/stores/useTimeframeStore";
 
 type CandlePoint = {
   timestamp: number;
@@ -11,23 +12,17 @@ type CandlePoint = {
   trades?: number;
 };
 
-const TIMEFRAME_CONFIG: Record<
-  string,
-  { durationMs: number; interval: "1m" | "3m" | "5m" | "15m" | "30m" | "1h" | "2h" | "4h" | "8h" | "12h" | "1d" | "3d" | "1w" | "1M" }
-> = {
-  "1h": { durationMs: 60 * 60 * 1000, interval: "1m" },
-  "24h": { durationMs: 24 * 60 * 60 * 1000, interval: "5m" },
-  "7d": { durationMs: 7 * 24 * 60 * 60 * 1000, interval: "1h" },
-  "1M": { durationMs: 30 * 24 * 60 * 60 * 1000, interval: "4h" },
-  "1Y": { durationMs: 365 * 24 * 60 * 60 * 1000, interval: "1d" },
-};
-
 const normalizeCandlePoint = (point: any): CandlePoint | null => {
-  const timestamp = Number(point?.t ?? point?.timestamp);
+  const rawTimestamp = Number(point?.t ?? point?.timestamp);
   const open = Number(point?.o ?? point?.open);
   const close = Number(point?.c ?? point?.close);
   const high = Number(point?.h ?? point?.high);
   const low = Number(point?.l ?? point?.low);
+
+  const timestamp =
+    Number.isFinite(rawTimestamp) && rawTimestamp < 1e12
+      ? rawTimestamp * 1000
+      : rawTimestamp; // HL returns seconds; convert to ms for window comparisons
 
   if (
     !Number.isFinite(timestamp) ||
@@ -98,13 +93,15 @@ export function useCandleHistory(
         setError(null);
         setData({});
 
-        const endTime = Date.now();
-        const startTime = endTime - config.durationMs;
+        const endTimeMs = Date.now();
+        const startTimeMs = endTimeMs - config.durationMs;
+        const endTimeSec = Math.floor(endTimeMs / 1000);
+        const startTimeSec = Math.floor(startTimeMs / 1000);
 
         const results: Record<string, CandlePoint[]> = {};
 
         await Promise.all(
-          coins.map(async (coin) => {
+          coins.slice(0, 2).map(async (coin) => {
             const resp = await sendRequest({
               type: "info",
               payload: {
@@ -112,8 +109,8 @@ export function useCandleHistory(
                 req: {
                   coin,
                   interval: config.interval,
-                  startTime,
-                  endTime,
+                  startTime: startTimeSec,
+                  endTime: endTimeSec,
                 },
               },
             });
@@ -126,7 +123,7 @@ export function useCandleHistory(
             results[coin] = clampToWindow(
               normalized.sort((a, b) => a.timestamp - b.timestamp),
               config.durationMs,
-              endTime,
+              endTimeMs,
             );
           }),
         );
@@ -150,6 +147,7 @@ export function useCandleHistory(
     };
   }, [coins, config, timeframe, sendRequest]);
 
+  console.log({ data })
   const handleCandle = useCallback(
     (evt: any) => {
       const coin = (evt?.s ?? evt?.coin)?.toUpperCase?.();
@@ -176,15 +174,17 @@ export function useCandleHistory(
     [config],
   );
 
-  useHLSubscription(
-    "candle",
-    coins.map((coin) => ({
-      coin,
-      interval: config?.interval,
-    })),
-    handleCandle,
-    Boolean(config && coins.length),
-  );
+  // useHLSubscription(
+  //   "candle",
+  //   coins.map((coin) => ({
+  //     coin,
+  //     interval: config?.interval,
+  //   })),
+  //   handleCandle,
+  //   Boolean(config && coins.length),
+  // );
+
+  console.log({ data })
 
   return {
     data,

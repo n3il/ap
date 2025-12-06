@@ -161,7 +161,7 @@ const darkTheme = {
       DEFAULT: PROVIDER_COLORS.default,
     },
 
-    glassTint: "rgba(0, 0, 0, 0.9)",
+    glassTint: "rgba(255, 255, 255, 0.1)",
   },
   fontFamily: {
     sans: ["System"],

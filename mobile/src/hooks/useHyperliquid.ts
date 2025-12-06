@@ -20,12 +20,14 @@ type HLSubscriptionHandler = (data: any) => void;
 
 interface HLStoreState {
   client: HLClientInstance;
+  transport: hl.WebSocketTransport;
   registry: Map<string, Set<HLSubscriptionHandler>>;
   subscriptions: Map<string, { unsubscribe: () => Promise<void> }>;
   pendingPosts: Map<number, (res: any) => void>;
   sendPost: (req: any, id?: number) => Promise<any>;
   connectionState: "connecting" | "connected" | "disconnected";
   latencyMs: number | null;
+  reconnect: () => void;
 }
 
 export const useHyperliquidStore = create<HLStoreState>((set, get) => {
@@ -97,10 +99,11 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
     }
   };
 
-  setInterval(ping, 10000);
+  setInterval(ping, __DEV__ ? 1200 : 10000);
 
   return {
     client,
+    transport,
     registry,
     subscriptions,
     pendingPosts,
@@ -113,6 +116,18 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
           JSON.stringify({ method: "post", id, request: req })
         );
       }),
+    reconnect: () => {
+      if (connectionState === "disconnected") {
+        try {
+          set({ connectionState: "connecting" });
+          // Close without terminating so the ReconnectingWebSocket can reopen
+          // @ts-expect-error third arg is supported by rews implementation
+          transport.socket?.close?.(4000, "manual reconnect", false);
+        } catch (err) {
+          console.warn("Failed to trigger HL reconnect", err);
+        }
+      }
+    },
   };
 });
 
