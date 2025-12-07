@@ -51,7 +51,7 @@ export default function BalanceOverview({
           />
         </View>
 
-        <View sx={{ flex: 1, flexDirection: "row", gap: 2, justifyContent: "space-evenly", marginLeft: 'auto' }}>
+        <View sx={{ flexShrink: 1, flexDirection: "row", gap: 8, justifyContent: "space-evenly", marginLeft: 'auto' }}>
           {Object.keys(accountData.accountValueHistory).filter(tf => tf.includes('perp')).map((timeframe) => {
             const { pnlPct } = accountData.accountValueHistory[timeframe];
             const timeframeOpt = accountBalanceTimeframes[

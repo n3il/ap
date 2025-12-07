@@ -22,6 +22,7 @@ export const FormattedValueLabel = ({
   alignRight,
   valueTextVariant = "body",
   formatter = formatAmount,
+  darkText = false,
   sx = {}
 }: {
   value: number;
@@ -30,6 +31,7 @@ export const FormattedValueLabel = ({
   alignRight?: boolean;
   formatter?: (value: number, options?: { showSign?: boolean }) => string;
   valueTextVariant?: string;
+  darkText?: boolean;
   sx?: SxProp;
 }) => {
   const formattedValue = !value ? "-" : formatter(value, { showSign });
@@ -40,7 +42,7 @@ export const FormattedValueLabel = ({
         fontWeight: "300",
         fontFamily: "monospace",
         alignSelf: alignRight ? "flex-end" : "flex-start",
-        color: "surfaceForeground",
+        color: darkText ? "foreground" : "surfaceForeground",
 
         ...(colorize
           ? {
@@ -66,6 +68,7 @@ const LabelValue: React.FC<LabelValueProps> = ({
   colorize,
   alignRight,
   valueTextVariant = "body",
+  darkText = false,
   formatter = formatAmount,
 
   children,
@@ -75,6 +78,7 @@ const LabelValue: React.FC<LabelValueProps> = ({
   alignRight?: boolean;
   valueTextVariant?: string;
   formatter?: (value: number, options?: { showSign?: boolean }) => string;
+  darkText?: boolean;
 }) => {
   return (
     <View
@@ -92,7 +96,7 @@ const LabelValue: React.FC<LabelValueProps> = ({
         sx={{
           fontFamily: "monospace",
           alignSelf: alignRight ? "flex-end" : "flex-start",
-          color: "surfaceForeground",
+          color: darkText ? "foreground" : "surfaceForeground",
           opacity: .7
         }}
       >
@@ -116,6 +120,7 @@ const LabelValue: React.FC<LabelValueProps> = ({
             showSign={showSign}
             alignRight={alignRight}
             valueTextVariant={valueTextVariant}
+            darkText={darkText}
           />}
           {children}
         </View>

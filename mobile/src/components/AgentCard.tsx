@@ -39,7 +39,7 @@ export function AssessmentPreview({
               assessmentData.parsed_llm_response?.headline?.sentiment_score,
             ),
             fontStyle: "italic",
-            fontWeight: "300",
+            fontWeight: "700",
             marginBottom: 2,
           }}
         >

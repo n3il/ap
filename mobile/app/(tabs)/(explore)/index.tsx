@@ -43,6 +43,11 @@ export default function ExploreScreen() {
     },
   });
 
+  const [widgetExpanded, setWidgetExpanded] = useState(false)
+  const handleAssetPressCallback = useCallback(() => {
+    setWidgetExpanded(!widgetExpanded)
+  }, [widgetExpanded])
+
   return (
     <View
       style={{
@@ -74,19 +79,18 @@ export default function ExploreScreen() {
             style={{
               flex: 1,
               paddingBottom: 4,
+              backgroundColor: palette.backgroundSecondary,
             }}
           >
             <MarketPricesWidget
-              scrollY={10000}
+              scrollY={{ value: 10000 }}
               style={{
                 marginVertical: 3,
               }}
+              onPress={handleAssetPressCallback}
             />
             <MultiAgentChart
               scrollY={scrollY}
-              style={{
-
-              }}
             />
 
             <PaddedView

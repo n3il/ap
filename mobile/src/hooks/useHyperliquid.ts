@@ -150,6 +150,8 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
 
   set({ connectionState: "connecting", latencyMs: null });
 
+  let pingInterval: NodeJS.Timeout | null = null;
+
   // Setup connection state handlers
   transport.socket.addEventListener("open", () => {
     set({ connectionState: "connected" });
@@ -158,11 +160,19 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   transport.socket.addEventListener("close", () => {
     set({ connectionState: "disconnected" });
     clearPendingState(registry, subscriptions, pendingPosts, "socket_closed_before_response");
+    if (pingInterval) {
+      clearInterval(pingInterval);
+      pingInterval = null;
+    }
   });
 
   transport.socket.addEventListener("error", () => {
     set({ connectionState: "disconnected" });
     clearPendingState(registry, subscriptions, pendingPosts, "socket_error_before_response");
+    if (pingInterval) {
+      clearInterval(pingInterval);
+      pingInterval = null;
+    }
   });
 
   // Setup message handler
@@ -173,7 +183,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
 
   // Setup ping interval
   const waitForOpen = createWaitForOpen(transport.socket);
-  createPingManager(transport.socket, pendingPosts, (ms) =>
+  pingInterval = createPingManager(transport.socket, pendingPosts, (ms) =>
     set({ latencyMs: ms })
   );
 
@@ -307,7 +317,7 @@ export function useHLSubscription(
         cleanupSubscription(key, handler, registry, subscriptions)
       );
     };
-  }, [enabled, method, handler, JSON.stringify(params), connectionState]);
+  }, [enabled, method, handler, params, connectionState]);
 }
 
 export function useHyperliquidRequests() {

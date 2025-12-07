@@ -34,7 +34,7 @@ export default function TimeFrameSelector({
             key={option.id}
             enabled={true}
             // glassEffectStyle={isSelected ? "clear" : "regular"}
-            tintColor={isSelected ? palette.primary : palette.surface}
+            tintColor={isSelected ? palette.surface : palette.surface}
             onPress={() => setTimeframe(option.id)}
             styleVariant="minimal"
           >
@@ -44,7 +44,7 @@ export default function TimeFrameSelector({
                 fontWeight: "600",
                 textTransform: "uppercase",
                 letterSpacing: 1.1,
-                color: isSelected ? palette.surfaceForeground : palette.surfaceForeground,
+                color: isSelected ? palette.accent : palette.surfaceForeground,
               }}
             >
               {option.label}

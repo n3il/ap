@@ -28,6 +28,7 @@ export default function AccountStats({
         colorize
         formatter={formatPercent}
         alignRight
+        darkText
       >
       </LabelValue>
       <LabelValue
@@ -38,6 +39,7 @@ export default function AccountStats({
         colorize
         formatter={formatPercent}
         alignRight
+        darkText
       >
       </LabelValue>
     </View>

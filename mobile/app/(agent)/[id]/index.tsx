@@ -70,7 +70,7 @@ export default function AgentIndex() {
       {
         key: "Trades",
         title: "Trades",
-        content: () => <TradesTab />,
+        content: () => <TradesTab agent={agent} />,
       },
       {
         key: "Funding",
@@ -78,7 +78,7 @@ export default function AgentIndex() {
         content: null,
       },
     ],
-    [agentId, isRefetching, refetch, scrollY, headerHeight],
+    [agentId, agent, isRefetching, refetch, scrollY, headerHeight],
   );
 
   return (

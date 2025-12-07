@@ -132,12 +132,14 @@ export default function GlassSelector({ style, ...props }: GlassSelectorProps) {
       <GlassButton
         glassEffectStyle="regular"
         onPress={handleToggle}
+        tintColor={colors.surface}
         style={{
           flexDirection: "row",
           alignItems: "center",
           gap: 4,
           borderRadius: 999,
           paddingVertical: 2,
+          paddingHorizontal: 10,
         }}
       >
         <View
@@ -150,12 +152,14 @@ export default function GlassSelector({ style, ...props }: GlassSelectorProps) {
           <Ionicons
             name="chevron-down-outline"
             size={14}
-            color={colors.foreground}
+            color={colors.surfaceForeground}
           />
           <Text
             sx={{
               fontFamily: "monospace",
+              fontWeight: "500",
               fontSize: 12,
+              color: colors.surfaceForeground
             }}
           >
             {activeSelection.label}

@@ -6,13 +6,15 @@ import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import { LineChart } from "react-native-gifted-charts"
-import { Text, View } from "@/components/ui";
+import { Dimensions, Text, View } from "@/components/ui";
 import { ruleTypes } from 'gifted-charts-core';
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
   style?: ComponentProps<typeof SvgChart>["style"];
 };
+
+const { width } = Dimensions.get("window");
 
 // --- UTILITY ---
 
@@ -61,127 +63,121 @@ export default function MultiAgentChart({
     };
   }, [scrollY]);
 
-  const lineChartProps = useMemo(() => {
-    if (!agents.length) return {};
+  // Pre-calculate label format function
+  const getLabelFormatter = (timeframeKey: string) => {
+    if (timeframeKey === "day") {
+      return (date: Date) => date.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+    } else if (timeframeKey === "week") {
+      return (date: Date) => date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+    return (date: Date) => date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  };
 
-    const timeframeKey =
-      TIMEFRAME_KEY_MAP[timeframe] ?? TIMEFRAME_KEY_MAP["24h"];
+  // Calculate label indices once
+  const getLabelIndices = (dataLength: number, maxLabels = 4): Set<number> => {
+    const indices = new Set<number>();
+    if (dataLength <= maxLabels) {
+      for (let i = 0; i < dataLength; i++) indices.add(i);
+    } else {
+      const step = (dataLength - 1) / (maxLabels - 1);
+      for (let i = 0; i < maxLabels; i++) {
+        indices.add(Math.round(i * step));
+      }
+    }
+    return indices;
+  };
 
-    const processed = agents
-      .map((agent) => {
-        const agentHistory = accountHistories[agent.id];
-        const timeframeHistory = agentHistory?.histories?.[timeframeKey];
+  const { chartProps: lineChartProps, minValue } = useMemo(() => {
+    if (!agents.length) return { chartProps: {}, minValue: 0 };
 
-        if (!timeframeHistory || timeframeHistory.length < 2) return null;
-
-        // 1. Find baseline
-        const firstValidPoint = timeframeHistory.find((p) =>
-          Number.isFinite(Number(p?.value))
-        );
-        const baseline = Number(firstValidPoint?.value);
-        if (!Number.isFinite(baseline)) return null;
-
-        // 2. Convert to percent-change & flatten format to what LineChart expects
-        const data = timeframeHistory
-          .map((point) => {
-            const timestamp = new Date(point.timestamp).getTime();
-            const value = Number(point.value);
-            if (!Number.isFinite(timestamp) || !Number.isFinite(value)) {
-              return null;
-            }
-            const percentChange =
-              baseline !== 0 ? ((value - baseline) / baseline) * 100 : 0;
-
-            return {
-              value: percentChange,
-              dataPointText: percentChange.toFixed(2) + "%",
-              timestamp: point.timestamp,
-            };
-          })
-          .filter(Boolean);
-
-        if (data.length < 2) return null;
-
-        // Add labels to max 4 evenly spaced points (TradingView style)
-        const labelIndices = new Set<number>();
-        const maxLabels = 4;
-        if (data.length <= maxLabels) {
-          // Show all if we have 4 or fewer points
-          for (let i = 0; i < data.length; i++) {
-            labelIndices.add(i);
-          }
-        } else {
-          // Distribute labels evenly
-          const step = (data.length - 1) / (maxLabels - 1);
-          for (let i = 0; i < maxLabels; i++) {
-            labelIndices.add(Math.round(i * step));
-          }
-        }
-
-        // Apply labels
-        data.forEach((point, index) => {
-          if (labelIndices.has(index)) {
-            const date = new Date(point.timestamp);
-            // Format based on timeframe
-            let label = "";
-            if (timeframeKey === "day") {
-              // For 1h/24h: show time
-              label = date.toLocaleTimeString("en-US", {
-                hour: "numeric",
-                minute: "2-digit",
-              });
-            } else if (timeframeKey === "week") {
-              // For 7d: show day
-              label = date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              });
-            } else {
-              // For month/all: show date
-              label = date.toLocaleDateString("en-US", {
-                month: "short",
-                day: "numeric",
-              });
-            }
-            point.label = label;
-          }
-        });
-
-        const color = colors.providers?.[agent.llm_provider] || colors.surfaceForeground;
-        return {
-          id: agent.id,
-          name: agent.name,
-          color,
-          startFillColor: withOpacity(color, .00001),
-          endFillColor: withOpacity(color, .00001),
-          data,
-        };
-      })
-      .filter(Boolean);
-
-    // Now assemble into spreadable props:
+    const timeframeKey = TIMEFRAME_KEY_MAP[timeframe] ?? TIMEFRAME_KEY_MAP["24h"];
+    const formatLabel = getLabelFormatter(timeframeKey);
     const output: Record<string, any> = {};
+    let globalMin = Infinity;
 
-    processed.forEach((line, index) => {
-      const i = index + 1;
+    // Single pass through agents
+    let lineIndex = 0;
+    for (const agent of agents) {
+      const agentHistory = accountHistories[agent.id];
+      const timeframeHistory = agentHistory?.histories?.[timeframeKey];
 
-      output[`data${i === 1 ? "" : i}`] = line.data;
-      output[`color${i}`] = line.color;
-      output[`startFillColor${i}`] = withOpacity(line.color, .00001);
-      output[`endFillColor${i}`] = withOpacity(line.color, .00001);
-      output[`name${i}`] = line.name;
-    });
+      if (!timeframeHistory || timeframeHistory.length < 2) continue;
 
-    return output;
-  }, [agents, accountHistories, colors, timeframe]);
+      // Find baseline
+      const firstValidPoint = timeframeHistory.find((p) =>
+        Number.isFinite(Number(p?.value))
+      );
+      const baseline = Number(firstValidPoint?.value);
+      if (!Number.isFinite(baseline)) continue;
 
+      // Single pass: transform data, track min, and assign labels
+      const data: Array<{ value: number; dataPointText: string; timestamp: string; label?: string }> = [];
+      let localMin = Infinity;
+
+      for (let i = 0; i < timeframeHistory.length; i++) {
+        const point = timeframeHistory[i];
+        const timestamp = new Date(point.timestamp).getTime();
+        const value = Number(point.value);
+
+        if (!Number.isFinite(timestamp) || !Number.isFinite(value)) continue;
+
+        const percentChange = baseline !== 0 ? ((value - baseline) / baseline) * 100 : 0;
+
+        // Track minimum
+        if (percentChange < localMin) localMin = percentChange;
+
+        data.push({
+          value: percentChange,
+          dataPointText: percentChange.toFixed(2) + "%",
+          timestamp: point.timestamp,
+        });
+      }
+
+      if (data.length < 2) continue;
+
+      // Update global min
+      if (localMin < globalMin) globalMin = localMin;
+
+      // Apply labels in a separate minimal pass
+      const labelIndices = getLabelIndices(data.length);
+      for (const idx of labelIndices) {
+        data[idx].label = formatLabel(new Date(data[idx].timestamp));
+      }
+
+      // Build output directly
+      const i = lineIndex + 1;
+      const color = colors.providers?.[agent.llm_provider] || colors.surfaceForeground;
+
+      output[`data${i === 1 ? "" : i}`] = data;
+      output[`color${i}`] = color;
+      output[`startFillColor${i}`] = withOpacity(color, .00001);
+      output[`endFillColor${i}`] = withOpacity(color, .00001);
+      output[`name${i}`] = agent.name;
+
+      lineIndex++;
+    }
+
+    return {
+      chartProps: output,
+      minValue: Number.isFinite(globalMin) ? Math.floor(globalMin) : 0,
+    };
+  }, [agents, accountHistories, colors, timeframe, withOpacity]);
+
+  // Calculate dynamic y-axis offset based on actual data range
+  const yOffset = Math.abs(minValue);
+
+  const textColor = colors.surfaceForeground;
+  const backgroundColor = colors.surface;
+
+  console.log(lineChartProps)
+  const spacing = (width / lineChartProps?.data?.length) || 4;
 
   return (
     <Animated.View
       style={[
         {
           padding: 0,
-          // backgroundColor: colors.surface,
+          backgroundColor,
           overflow: 'hidden',
           borderWidth: 2,
           borderColor: colors.border,
@@ -193,35 +189,31 @@ export default function MultiAgentChart({
     >
       <LineChart
         {...lineChartProps}
-        // animationDuration={800}
-        // areaChart
-        // isAnimated
-        // maxValue={600}
-        // spacing={1}
+        maxValue={100}
+        mostNegativeValue={minValue < 0 ? minValue : -100}
         height={180}
         adjustToWidth
         animateOnDataChange
         hideDataPoints
         initialSpacing={0}
-        endOpacity1={1}
-        noOfSections={2}
-        xAxisType={ruleTypes.DOTTED}
+        noOfSections={4}
+        xAxisType={ruleTypes.DASHED}
         noOfSectionsBelowXAxis={1}
         showValuesAsDataPointsText
-        yAxisExtraHeight={10}
-        yAxisOffset={-40}
-        yAxisTextNumberOfLines={3}
+        yAxisExtraHeight={-10}
+        yAxisOffset={yOffset}
+        yAxisTextNumberOfLines={1}
         yAxisLabelSuffix="%"
         yAxisThickness={0}
         yAxisLabelContainerStyle={{
           // fontSize: 12,
         }}
 
-        // Zero-line (dashed)
+        // Zero-line (dashed) - positioned at 0% on the chart
         showReferenceLine1
-        referenceLine1Position={0}
+        referenceLine1Position={yOffset}
         referenceLine1Config={{
-          color: withOpacity(colors.surfaceForeground, 0.4),
+          color: withOpacity(colors.accent, 1),
           thickness: 1,
           dashWidth: 4,
           dashGap: 4,
@@ -230,16 +222,20 @@ export default function MultiAgentChart({
 
         // X-axis labels
         xAxisLabelTextStyle={{
-          color: colors.foreground,
-          fontSize: 10,
+          color: textColor,
+          fontSize: 12,
+          width: 100,
+          top: 8
         }}
+        xAxisThickness={3}
 
         rulesType={ruleTypes.DASHED}
-        rulesColor={colors.foreground}
-        xAxisColor={colors.foreground}
+        rulesColor={withOpacity(textColor, .3)}
+        xAxisColor={withOpacity(textColor, .3)}
         yAxisTextStyle={{
-          color: colors.foreground,
+          color: textColor,
           flexDirection: "column",
+          fontSize: 12
         }}
 
         pointerConfig={{
@@ -252,7 +248,7 @@ export default function MultiAgentChart({
           pointerLabelHeight: 90,
           activatePointersOnLongPress: true,
           autoAdjustPointerLabelPosition: false,
-          pointerLabelComponent: items => {
+          pointerLabelComponent: (items: any) => {
             return (
               <View
                 style={{

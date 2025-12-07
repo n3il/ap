@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Dimensions, ViewProps } from "react-native";
+import { Dimensions, ViewProps, ViewStyle } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -334,7 +334,6 @@ export default function MarketPricesWidget({ style, scrollY }: {style: ViewStyle
     isFetching: historyFetching,
     error: historyError,
   } = useMarketHistory(timeframe);
-  console.log({ historyData })
 
   useEffect(() => {
     if (!historyError) return;
@@ -344,12 +343,18 @@ export default function MarketPricesWidget({ style, scrollY }: {style: ViewStyle
     );
   }, [historyError]);
 
+  useEffect(() => {
+    if (historyData && Object.keys(historyData).length > 0) {
+      console.log('[MarketPricesWidget] History data loaded:', Object.keys(historyData));
+    }
+  }, [historyData]);
+
   return (
     <Animated.View style={style}>
       <ScrollView
         horizontal
         scrollEventThrottle={16}
-        contentContainerStyle={[{ gap: 0, paddingRight: 0 }]}
+        contentContainerStyle={[{ gap: 0, paddingRight: 0, marginLeft: 6 }]}
         showsHorizontalScrollIndicator={false}
       >
         {tickers.length ? (

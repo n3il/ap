@@ -76,7 +76,7 @@ export function useCandleHistory(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  // Fetch an initial historical window via HL post request
+  // Fetch initial historical window
   useEffect(() => {
     let cancelled = false;
     if (!coins.length || !config) {
@@ -87,7 +87,7 @@ export function useCandleHistory(
       };
     }
 
-    (async () => {
+    const fetchCandles = async () => {
       try {
         setIsLoading(true);
         setError(null);
@@ -99,11 +99,13 @@ export function useCandleHistory(
         const startTimeSec = Math.floor(startTimeMs / 1000);
 
         const results: Record<string, CandlePoint[]> = {};
-        const coinsToFetch = coins.slice(0, 2);
 
-        const perCoinResults = await Promise.all(
-          coinsToFetch.map((coin) =>
-            sendRequest({
+        // Fetch coins sequentially to avoid React Native Promise.all issues
+        for (const coin of coins) {
+          if (cancelled) break;
+
+          try {
+            const resp = await sendRequest({
               type: "info",
               payload: {
                 type: "candleSnapshot",
@@ -112,56 +114,25 @@ export function useCandleHistory(
                 startTime: startTimeSec,
                 endTime: endTimeSec,
               },
-            })
-              .then((resp) => {
-                const rawCandles: any[] = resp?.payload?.data ?? [];
-                const normalized = rawCandles
-                  .map(normalizeCandlePoint)
-                  .filter((c): c is CandlePoint => c !== null);
+            });
 
-                console.log('asdf', config.interval, resp)
-                return {
-                  coin,
-                  candles: clampToWindow(
-                    normalized.sort((a, b) => a.timestamp - b.timestamp),
-                    config.durationMs,
-                    endTimeMs,
-                  ),
-                  error: null as Error | null,
-                };
-              })
-              .catch((coinErr) => {
-                console.error(`Failed to fetch candles for ${coin}`, coinErr);
-                return {
-                  coin,
-                  candles: [] as CandlePoint[],
-                  error:
-                    coinErr instanceof Error
-                      ? coinErr
-                      : new Error(String(coinErr)),
-                };
-              }),
-          ),
-        );
+            const rawCandles: any[] = resp?.payload?.data ?? [];
+            const normalized = rawCandles
+              .map(normalizeCandlePoint)
+              .filter((c): c is CandlePoint => c !== null);
 
-        let firstError: Error | null = null;
-        let successfulFetches = 0;
-
-        perCoinResults.forEach(({ coin, candles, error }) => {
-          if (!error) {
-            results[coin] = candles;
-            successfulFetches += 1;
-            return;
+            results[coin] = clampToWindow(
+              normalized.sort((a, b) => a.timestamp - b.timestamp),
+              config.durationMs,
+              endTimeMs,
+            );
+          } catch (coinErr) {
+            console.error(`Failed to fetch candles for ${coin}`, coinErr);
           }
-
-          if (!firstError) {
-            firstError = error;
-          }
-        });
+        }
 
         if (!cancelled) {
           setData(results);
-          setError(successfulFetches === 0 ? firstError : null);
         }
       } catch (err: unknown) {
         if (!cancelled) {
@@ -172,14 +143,15 @@ export function useCandleHistory(
           setIsLoading(false);
         }
       }
-    })();
+    };
+
+    fetchCandles();
 
     return () => {
       cancelled = true;
     };
   }, [coins, config, timeframe, sendRequest]);
 
-  console.log({ data })
   const handleCandle = useCallback(
     (evt: any) => {
       const coin = (evt?.s ?? evt?.coin)?.toUpperCase?.();
@@ -206,17 +178,15 @@ export function useCandleHistory(
     [config],
   );
 
-  // useHLSubscription(
-  //   "candle",
-  //   coins.map((coin) => ({
-  //     coin,
-  //     interval: config?.interval,
-  //   })),
-  //   handleCandle,
-  //   Boolean(config && coins.length),
-  // );
-
-  console.log({ data })
+  useHLSubscription(
+    "candle",
+    coins.map((coin) => ({
+      coin,
+      interval: config?.interval,
+    })),
+    handleCandle,
+    Boolean(config && coins.length),
+  );
 
   return {
     data,
