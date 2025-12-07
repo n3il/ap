@@ -267,6 +267,72 @@ const SvgChart = ({
   const sectionsAbove = bounds.max > 0 ? 4 : 0;
   const sectionsBelow = bounds.min < 0 ? 4 : 0;
 
+  const chartElement =
+    normalizedLines.length === 1 && useBicolor ? (
+      <LineChartBicolor
+        data={primaryData}
+        color={normalizedLines[0].color}
+        colorNegative={negativeColor}
+        height={resolvedHeight}
+        width={resolvedWidth}
+        parentWidth={resolvedWidth}
+        spacing={spacing}
+        initialSpacing={0}
+        hideDataPoints
+        hideRules
+        curved
+        maxValue={bounds.max}
+        mostNegativeValue={bounds.min}
+        noOfSections={sectionsAbove}
+        noOfSectionsBelowXAxis={sectionsBelow}
+        yAxisThickness={0}
+        xAxisThickness={0}
+        yAxisTextStyle={styles.transparentText}
+        xAxisLabelTextStyle={{
+          color: paletteSecondary,
+          fontSize: 10,
+        }}
+        adjustToWidth
+        focusEnabled={false}
+        showDataPointOnFocus={false}
+        showStripOnFocus={false}
+        showTextOnFocus={false}
+        pointerConfig={null}
+      />
+    ) : (
+      <LineChart
+        data={primaryData}
+        dataSet={dataSet}
+        color={dataSet[0]?.color}
+        thickness={dataSet[0]?.thickness}
+        height={resolvedHeight}
+        width={resolvedWidth}
+        parentWidth={resolvedWidth}
+        spacing={spacing}
+        initialSpacing={0}
+        hideDataPoints
+        hideRules
+        curved
+        maxValue={bounds.max}
+        mostNegativeValue={bounds.min}
+        noOfSections={sectionsAbove}
+        noOfSectionsBelowXAxis={sectionsBelow}
+        yAxisThickness={0}
+        xAxisThickness={0}
+        yAxisTextStyle={styles.transparentText}
+        xAxisLabelTextStyle={{
+          color: paletteSecondary,
+          fontSize: 10,
+        }}
+        adjustToWidth
+        focusEnabled={false}
+        showDataPointOnFocus={false}
+        showStripOnFocus={false}
+        showTextOnFocus={false}
+        pointerConfig={null}
+      />
+    );
+
   return (
     <View
       style={[styles.container, { height: resolvedHeight }, style]}
@@ -277,6 +343,10 @@ const SvgChart = ({
       <View
         style={[
           styles.chartFrame,
+          {
+            backgroundColor: colors.surface ?? colors.background,
+            borderColor: colors.border,
+          },
         ]}
       >
         {!hasData ? (
@@ -285,59 +355,10 @@ const SvgChart = ({
               No chart data yet
             </Text>
           </View>
-        ) : normalizedLines.length === 1 && useBicolor ? (
-          <LineChartBicolor
-            data={primaryData}
-            color={normalizedLines[0].color}
-            colorNegative={negativeColor}
-            height={resolvedHeight}
-            width={resolvedWidth}
-            parentWidth={resolvedWidth}
-            spacing={spacing}
-            initialSpacing={0}
-            hideDataPoints
-            hideRules
-            curved
-            maxValue={bounds.max}
-            mostNegativeValue={bounds.min}
-            noOfSections={sectionsAbove}
-            noOfSectionsBelowXAxis={sectionsBelow}
-            yAxisThickness={0}
-            xAxisThickness={0}
-            yAxisTextStyle={styles.transparentText}
-            xAxisLabelTextStyle={{
-              color: paletteSecondary,
-              fontSize: 10,
-            }}
-            adjustToWidth
-          />
         ) : (
-          <LineChart
-            data={primaryData}
-            dataSet={dataSet}
-            color={dataSet[0]?.color}
-            thickness={dataSet[0]?.thickness}
-            height={resolvedHeight}
-            width={resolvedWidth}
-            parentWidth={resolvedWidth}
-            spacing={spacing}
-            initialSpacing={0}
-            hideDataPoints
-            hideRules
-            curved
-            maxValue={bounds.max}
-            mostNegativeValue={bounds.min}
-            noOfSections={sectionsAbove}
-            noOfSectionsBelowXAxis={sectionsBelow}
-            yAxisThickness={0}
-            xAxisThickness={0}
-            yAxisTextStyle={styles.transparentText}
-            xAxisLabelTextStyle={{
-              color: paletteSecondary,
-              fontSize: 10,
-            }}
-            adjustToWidth
-          />
+          <View style={styles.chartContent} pointerEvents="none">
+            {chartElement}
+          </View>
         )}
       </View>
 
@@ -356,6 +377,12 @@ const styles = StyleSheet.create({
     minHeight: MIN_HEIGHT,
   },
   chartFrame: {
+    flex: 1,
+    borderRadius: 12,
+    overflow: "hidden",
+    borderWidth: 1,
+  },
+  chartContent: {
     flex: 1,
   },
   emptyState: {

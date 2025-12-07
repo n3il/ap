@@ -5,7 +5,8 @@ import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import { LineChart } from "react-native-gifted-charts"
-import { View } from "@/components/ui";
+import { Text, View } from "@/components/ui";
+import { ruleTypes } from 'gifted-charts-core';
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
@@ -35,7 +36,7 @@ export default function MultiAgentChart({
   scrollY,
   style,
 }: MultiAgentChartProps) {
-  const { colors } = useColors();
+  const { colors, withOpacity } = useColors();
   const { timeframe } = useTimeframeStore();
   const agents = useExploreAgentsStore((state) => state.agents);
   const { histories: accountHistories, isLoading } =
@@ -88,10 +89,13 @@ export default function MultiAgentChart({
 
         if (data.length < 2) return null;
 
+        const color = colors.providers[agent.llm_provider] || colors.primary;
         return {
           id: agent.id,
           name: agent.name,
-          color: colors.providers[agent.llm_provider] || colors.primary,
+          color,
+          startFillColor: withOpacity(color, .00001),
+          endFillColor: withOpacity(color, .00001),
           data,
         };
       })
@@ -105,6 +109,8 @@ export default function MultiAgentChart({
 
       output[`data${i === 1 ? "" : i}`] = line.data;
       output[`color${i}`] = line.color;
+      output[`startFillColor${i}`] = withOpacity(line.color, .00001);
+      output[`endFillColor${i}`] = withOpacity(line.color, .00001);
       output[`name${i}`] = line.name;
     });
 
@@ -115,20 +121,90 @@ export default function MultiAgentChart({
   return (
     <View
       style={{
-        width: "100%",
-        aspectRatio: 2,
-        maxHeight: 250,
-        paddingBottom: 300
+        maxHeight: 200,
+        paddingBottom: 300,
+        paddingRight: 10
       }}
     >
       <LineChart
         {...lineChartProps}
-        showVerticalLines
         textColor1="green"
-        dataPointsHeight={6}
-        dataPointsWidth={6}
+        trimYAxisAtTop
+        xAxisTextNumberOfLines={1}
         yAxisOffset={-10}
         showXAxisIndices
+        adjustToWidth
+        animateOnDataChange
+        noOfSectionsBelowXAxis={1}
+        xAxisLabelsVerticalShift={10}
+        yAxisExtraHeight={0}
+
+        // areaChart
+        hideDataPoints
+        // spacing={1}
+        thickness={2}
+        startOpacity={0.9}
+        endOpacity={0.2}
+        // isAnimated
+        // animationDuration={800}
+        initialSpacing={0}
+        noOfSections={2}
+        // maxValue={600}
+        yAxisColor="white"
+        yAxisThickness={0}
+        rulesType={ruleTypes.SOLID}
+        rulesColor={colors.border}
+        yAxisTextStyle={{
+          color: 'gray'
+        }}
+        yAxisTextNumberOfLines={3}
+        xAxisColor={colors.foreground}
+
+        pointerConfig={{
+          pointerStripHeight: 160,
+          pointerStripColor: 'lightgray',
+          pointerStripWidth: 2,
+          pointerColor: 'lightgray',
+          radius: 6,
+          pointerLabelWidth: 100,
+          pointerLabelHeight: 90,
+          // activatePointersOnLongPress: true,
+          autoAdjustPointerLabelPosition: false,
+          pointerLabelComponent: items => {
+            return (
+              <View
+                style={{
+                  height: 90,
+                  width: 100,
+                  justifyContent: 'center',
+                  // marginTop: -30,
+                  // marginLeft: -40,
+                }}>
+                <Text
+                  style={{
+                    color: 'white',
+                    fontSize: 14,
+                    marginBottom: 6,
+                    textAlign: 'center',
+                  }}>
+                  {items[0].date}
+                </Text>
+
+                <View
+                  style={{
+                    paddingHorizontal: 14,
+                    paddingVertical: 6,
+                    borderRadius: 16,
+                    backgroundColor: 'white',
+                  }}>
+                  <Text style={{fontWeight: 'bold', textAlign: 'center'}}>
+                    {'$' + items[0].value + '.0'}
+                  </Text>
+                </View>
+              </View>
+            );
+          },
+        }}
       />
     </View>
 

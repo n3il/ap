@@ -89,10 +89,6 @@ const PriceColumn = ({
   const router = useRouter();
   const { colors: palette } = useColors();
 
-  const onPress = () => {
-    router.push(ROUTES.TABS_MARKETS_TRADE.path);
-  };
-
   const _hasChange = Number.isFinite(rangePercent);
 
   // Price flash effect
@@ -241,7 +237,6 @@ const PriceColumn = ({
         flexDirection: "column",
       }}
       glassEffectStyle="regular"
-      onPress={onPress}
       isInteractive
       enabled={false}
     >

@@ -107,12 +107,10 @@ export function useCandleHistory(
               type: "info",
               payload: {
                 type: "candleSnapshot",
-                req: {
-                  coin,
-                  interval: config.interval,
-                  startTime: startTimeSec,
-                  endTime: endTimeSec,
-                },
+                coin,
+                interval: config.interval,
+                startTime: startTimeSec,
+                endTime: endTimeSec,
               },
             })
               .then((resp) => {

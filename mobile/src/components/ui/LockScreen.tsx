@@ -13,7 +13,11 @@ export default function LockScreen() {
     <ContainerView>
       <View sx={{ justifyContent: "center", alignItems: "center", flex: 1 }}>
         <Pressable onPress={() => router.push(ROUTES.AUTH_INDEX.path)}>
-          <MaterialIcons name="lock" size={64} color={palette.muted} />
+          <MaterialIcons
+            name="lock"
+            size={64}
+            color={palette.muted?.DEFAULT ?? palette.muted}
+          />
         </Pressable>
       </View>
     </ContainerView>

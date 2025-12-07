@@ -6,12 +6,13 @@ const lightTheme = {
   isDark: false,
   colors: {
     ...base.colors,
-    background: "#d9d9d9ff",
-    backgroundSecondary: "#f8fafc",
-    backgroundSplash: "#378593",
-    surface: "#232323ff",
-    surfaceForeground: "#e7e7e7ff",
-    surfaceLight: "#141414ff",
+    background: "#f8fafc",
+    backgroundSecondary: "#e2e8f0",
+    backgroundSplash: "#e0f2fe",
+    surface: "#ffffff",
+    surfaceForeground: "#0f172a",
+    surfaceLight: "#f1f5f9",
+    surfaceDark: "#e2e8f0",
     foreground: "#0f172a",
     text: {
       primary: "#0f172a",
@@ -30,8 +31,8 @@ const lightTheme = {
       DEFAULT: "#e2e8f0",
       foreground: "#64748b",
     },
-    border: "#171717ff",
-    input: "#cbd5f5",
+    border: "#e2e8f0",
+    input: "#e2e8f0",
 
     glassTint: "rgba(194, 34, 34, 0.95)",
 
