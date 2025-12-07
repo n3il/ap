@@ -30,6 +30,13 @@ interface HLStoreState {
   reconnect: () => void;
 }
 
+let postCounter = 0;
+const nextPostId = () => {
+  postCounter = (postCounter + 1) % Number.MAX_SAFE_INTEGER;
+  if (postCounter === 0) postCounter = 1;
+  return postCounter;
+};
+
 export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   const transport = new hl.WebSocketTransport({ isTestnet: true });
   const client = new hl.SubscriptionClient({
@@ -117,7 +124,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   });
 
   const ping = async () => {
-    const id = Date.now();
+    const id = nextPostId();
     const start = performance.now();
 
     const p = new Promise((resolve) => {
@@ -149,12 +156,13 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
     pendingPosts,
     connectionState: "connecting",
     latencyMs: null,
-    sendPost: async (req, id = Date.now()) => {
+    sendPost: async (req, id?: number) => {
+      const requestId = typeof id === "number" ? id : nextPostId();
       await waitForOpen();
       return new Promise((resolve) => {
-        pendingPosts.set(id, resolve);
+        pendingPosts.set(requestId, resolve);
         transport.socket.send(
-          JSON.stringify({ method: "post", id, request: req })
+          JSON.stringify({ method: "post", id: requestId, request: req })
         );
       });
     },

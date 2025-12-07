@@ -6,12 +6,13 @@ import Text from "./Text";
 
 export interface LabelValueProps {
   label: string;
-  value: number;
+  value: number | null | undefined;
   orientation?: "vertical" | "horizontal";
   sx?: SxProp;
   textStyle?: SxProp;
   colorize?: boolean;
   children?: React.ReactNode;
+  textVariant?: string;
   formatter?: (value: number, options?: { showSign?: boolean }) => string;
 }
 export const FormattedValueLabel = ({

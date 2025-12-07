@@ -65,7 +65,7 @@ export function AssessmentPreview({
         variant="sm"
         sx={{ fontWeight: "300", fontSize: 12, fontFamily: "monospace" }}
       >
-        {assessmentData.parsed_llm_response?.headline?.thesis}
+        {assessmentData.parsed_llm_response?.headline?.short_summary}
       </Text>
     </View>
   );
@@ -105,8 +105,6 @@ export default function AgentCard({
     // borderWidth: transparent ? 0 : .1,
     // borderColor: `rgba(124, 255, 170, ${borderOpacity.value})`,
   }));
-
-  console.log({ agent: agent?.name, accountData})
 
   return (
     <Animated.View

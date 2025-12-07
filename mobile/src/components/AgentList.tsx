@@ -41,7 +41,7 @@ export default function AgentList({
   isBookmarked = false,
   hideOpenPositions = false,
   scrollY = null, // Animated scroll position
-  style = {}
+  style = {},
 }: AgentListProps) {
   const router = useRouter();
   const setAgents = useExploreAgentsStore((state) => state.setAgents);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useHyperliquidRequests, useHyperliquidStore } from "@/hooks/useHyperliquid";
 import { useMarketPricesStore } from "@/hooks/useMarketPrices";
 import { AgentType } from "@/types/agent";
@@ -69,6 +69,31 @@ type TimeframePnl = {
 
 type PnLByTimeframe = Record<string, TimeframePnl>;
 
+type AccountBalanceStoreEntry = {
+  accountValueHistory: PnLByTimeframe;
+  clearinghouseState: ClearinghouseState | null;
+  isLoading: boolean;
+};
+
+type Updater<T> = T | ((prev: T) => T);
+
+const accountBalanceStore: Record<string, AccountBalanceStoreEntry> = {};
+
+const ensureStoreEntry = (key: string): AccountBalanceStoreEntry => {
+  if (!accountBalanceStore[key]) {
+    accountBalanceStore[key] = {
+      accountValueHistory: {},
+      clearinghouseState: null,
+      isLoading: true,
+    };
+  }
+
+  return accountBalanceStore[key];
+};
+
+const resolveStateUpdate = <T,>(value: Updater<T>, prev: T): T =>
+  typeof value === "function" ? (value as (last: T) => T)(prev) : value;
+
 export function calcPnLByTimeframe(data: any) {
   if (!data) return {};
 
@@ -99,19 +124,69 @@ export function useAccountBalance({ agent }: { agent: AgentType }) {
   const { mids } = useMarketPricesStore();
   const { connectionState } = useHyperliquidStore();
 
-  const [accountValueHistory, setAccountValueHistory] =
-    useState<PnLByTimeframe>({});
-  const [clearinghouseState, setClearinghouseState] =
-    useState<ClearinghouseState | null>(null);
+  const storeKey = agent?.id ?? userId ?? null;
+  const storeEntry = storeKey ? ensureStoreEntry(storeKey) : null;
 
-  const [isLoading, setIsLoading] = useState(true);
+  const [accountValueHistory, setAccountValueHistoryState] =
+    useState<PnLByTimeframe>(storeEntry?.accountValueHistory ?? {});
+  const [clearinghouseState, setClearinghouseStateState] =
+    useState<ClearinghouseState | null>(storeEntry?.clearinghouseState ?? null);
+  const [isLoading, setIsLoadingState] = useState(storeEntry?.isLoading ?? true);
+
+  useEffect(() => {
+    if (!storeKey) return;
+    const entry = ensureStoreEntry(storeKey);
+    setAccountValueHistoryState(entry.accountValueHistory);
+    setClearinghouseStateState(entry.clearinghouseState);
+    setIsLoadingState(entry.isLoading);
+  }, [storeKey]);
+
+  const setAccountValueHistory = useCallback(
+    (value: Updater<PnLByTimeframe>) => {
+      setAccountValueHistoryState((prev) => {
+        const next = resolveStateUpdate(value, prev);
+        if (storeKey) {
+          ensureStoreEntry(storeKey).accountValueHistory = next;
+        }
+        return next;
+      });
+    },
+    [storeKey],
+  );
+
+  const setClearinghouseState = useCallback(
+    (value: Updater<ClearinghouseState | null>) => {
+      setClearinghouseStateState((prev) => {
+        const next = resolveStateUpdate(value, prev);
+        if (storeKey) {
+          ensureStoreEntry(storeKey).clearinghouseState = next;
+        }
+        return next;
+      });
+    },
+    [storeKey],
+  );
+
+  const setIsLoading = useCallback(
+    (value: Updater<boolean>) => {
+      setIsLoadingState((prev) => {
+        const next = resolveStateUpdate(value, prev);
+        if (storeKey) {
+          ensureStoreEntry(storeKey).isLoading = next;
+        }
+        return next;
+      });
+    },
+    [storeKey],
+  );
 
   // ── Initial load ────────────────────────────────────────────────
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !storeKey) return;
     if (connectionState !== "connected") return;
 
     let cancelled = false;
+    setIsLoading(true);
 
     async function loadInitial() {
       try {
@@ -152,7 +227,7 @@ export function useAccountBalance({ agent }: { agent: AgentType }) {
     return () => {
       cancelled = true;
     };
-  }, [userId, sendRequest, connectionState]);
+  }, [userId, storeKey, sendRequest, connectionState]);
 
   const startingEquity = useMemo(() => {
     const entries = Object.entries(accountValueHistory) as Array<

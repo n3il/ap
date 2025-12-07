@@ -1,5 +1,11 @@
 import { GlassContainer } from "expo-glass-effect";
-import { type ReactNode, useCallback, useRef, useState } from "react";
+import {
+  type ReactNode,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import {
   Animated,
   Dimensions,
@@ -21,10 +27,13 @@ import { useTheme } from "@/contexts/ThemeContext";
 const { width } = Dimensions.get("window");
 const SCREEN_WIDTH = width;
 
+type TabContentRenderer = () => ReactNode;
+type TabContent = ReactNode | TabContentRenderer;
+
 export interface SwipeableTab {
   key: string;
   title: string;
-  content: ReactNode;
+  content: TabContent;
 }
 
 interface SwipeableTabsProps {
@@ -77,14 +86,36 @@ export default function SwipeableTabs({
   const [tabLayouts, setTabLayouts] = useState<
     Record<string, { x: number; width: number }>
   >({});
+  const [loadedTabs, setLoadedTabs] = useState<Set<number>>(
+    () => new Set([initialIndex]),
+  );
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(
     new Animated.Value(initialIndex * SCREEN_WIDTH),
   ).current;
 
-  const handleTabPress = useCallback((index: number) => {
-    flatListRef.current?.scrollToIndex({ index, animated: true });
+  useEffect(() => {
+    setLoadedTabs((prev) => {
+      if (prev.has(initialIndex)) return prev;
+      const next = new Set(prev);
+      next.add(initialIndex);
+      return next;
+    });
+  }, [initialIndex]);
+
+  const markTabLoaded = useCallback((index: number) => {
+    setLoadedTabs((prev) => {
+      if (prev.has(index)) return prev;
+      const next = new Set(prev);
+      next.add(index);
+      return next;
+    });
   }, []);
+
+  const handleTabPress = useCallback((index: number) => {
+    markTabLoaded(index);
+    flatListRef.current?.scrollToIndex({ index, animated: true });
+  }, [markTabLoaded]);
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -100,8 +131,9 @@ export default function SwipeableTabs({
         setCurrentIndex(newIndex);
         onTabChange?.(newIndex);
       }
+      markTabLoaded(newIndex);
     },
-    [currentIndex, onTabChange],
+    [currentIndex, onTabChange, markTabLoaded],
   );
 
   const tabWidth = SCREEN_WIDTH / tabs.length;
@@ -154,17 +186,35 @@ export default function SwipeableTabs({
   });
 
   const renderItem = useCallback(
-    ({ item }: ListRenderItemInfo<SwipeableTab>) => (
-      <View
-        style={[
-          { flex: 1, paddingTop: 8, paddingHorizontal: 0, width: SCREEN_WIDTH },
-          contentStyle,
-        ]}
-      >
-        {item.content}
-      </View>
-    ),
-    [contentStyle],
+    ({ item, index }: ListRenderItemInfo<SwipeableTab>) => {
+      const isLoaded = loadedTabs.has(index);
+      let content: ReactNode = null;
+
+      if (isLoaded) {
+        const maybeRenderer = item.content;
+        content =
+          typeof maybeRenderer === "function"
+            ? (maybeRenderer as TabContentRenderer)()
+            : maybeRenderer;
+      }
+
+      return (
+        <View
+          style={[
+            {
+              flex: 1,
+              paddingTop: 8,
+              paddingHorizontal: 0,
+              width: SCREEN_WIDTH,
+            },
+            contentStyle,
+          ]}
+        >
+          {content}
+        </View>
+      );
+    },
+    [contentStyle, loadedTabs],
   );
 
   const getItemLayout = useCallback(
@@ -279,6 +329,7 @@ export default function SwipeableTabs({
         decelerationRate="fast"
         refreshing={refreshing}
         onRefresh={onRefresh}
+        extraData={loadedTabs}
         style={[{ flex: 1, paddingVertical: 2 }, contentContainerStyle]}
       />
     </>

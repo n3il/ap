@@ -89,6 +89,7 @@ export default function MultiAgentChart({
 
   return (
     <SvgChart
+      key={timeframe}
       lines={lines}
       scrollY={scrollY}
       isLoading={isLoading}

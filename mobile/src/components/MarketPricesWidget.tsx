@@ -345,6 +345,7 @@ export default function MarketPricesWidget({ sx: customSx, scrollY }) {
     isFetching: historyFetching,
     error: historyError,
   } = useMarketHistory(timeframe);
+  console.log({ historyData })
 
   useEffect(() => {
     if (!historyError) return;

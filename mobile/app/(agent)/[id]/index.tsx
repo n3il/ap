@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
-import { useRef } from "react";
+import { useMemo, useRef } from "react";
 import { StyleSheet } from "react-native";
 import BalanceOverview from "@/components/agent/BalanceOverview";
 import AgentHeader from "@/components/agent/Header";
@@ -14,8 +14,10 @@ import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ROUTES } from "@/config/routes";
+import { TradeHistory } from "@/components/trading";
+import TradesTab from "@/components/agents/TradesTab";
 
-const HEADER_HEIGHT = 200 + 60;
+const HEADER_HEIGHT = 220;
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
@@ -41,44 +43,58 @@ export default function AgentIndex() {
     <Redirect href={ROUTES.TABS_AGENTS.path} />
   }
 
-  const tabs = [
-    {
-      key: "All",
-      title: "All",
-      content: (
-        <ThoughtsTab
-          agentId={agentId}
-          onRefresh={() => refetch()}
-          refreshing={isRefetching}
-          listProps={{
-            contentContainerStyle: {
-              paddingTop: HEADER_HEIGHT,
-              paddingHorizontal: GLOBAL_PADDING,
-              paddingBottom: '60%',
-              gap: 12,
-            },
-            scrollEventThrottle: 16,
-            onScroll: Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: true },
-            ),
-          }}
-        />
-      ),
-    },
-    {
-      key: "Watchlist",
-      title: "Watchlist",
-      content: null
-    },
-  ];
+  const tabs = useMemo(
+    () => [
+      {
+        key: "Timeline",
+        title: "Timeline",
+        content: () => (
+          <ThoughtsTab
+            agentId={agentId}
+            onRefresh={() => refetch()}
+            refreshing={isRefetching}
+            listProps={{
+              contentContainerStyle: {
+                paddingTop: HEADER_HEIGHT,
+                paddingHorizontal: GLOBAL_PADDING,
+                paddingBottom: "60%",
+                gap: 12,
+              },
+              scrollEventThrottle: 16,
+              onScroll: Animated.event(
+                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                { useNativeDriver: true },
+              ),
+            }}
+          />
+        ),
+      },
+      {
+        key: "Trades",
+        title: "Trades",
+        content: () => <TradesTab />,
+      },
+      {
+        key: "Funding",
+        title: "Funding",
+        content: null,
+      },
+    ],
+    [agentId, isRefetching, refetch, scrollY],
+  );
 
   return (
     <ContainerView noSafeArea style={{ paddingTop: insets.top, flex: 1 }}>
       <AgentHeader agentId={agent?.id} agentName={agent?.name} />
       <Animated.View
         style={[
-          styles.headerImage,
+          {
+            position: "absolute",
+            width: "100%",
+            height: HEADER_HEIGHT,
+            top: 160,
+            left: 0,
+          },
           {
             transform: [{ scale: imageScale }, { translateY: imageTranslateY }],
           },
@@ -104,14 +120,3 @@ export default function AgentIndex() {
     </ContainerView>
   );
 }
-
-const styles = StyleSheet.create({
-  headerImage: {
-    position: "absolute",
-    width: "100%",
-    height: HEADER_HEIGHT,
-    top: 50 + 80,
-    left: 0,
-  },
-
-});

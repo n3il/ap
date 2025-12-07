@@ -13,7 +13,6 @@ export default function AccountStats({
   style?: ViewStyle;
 }) {
   const accountData = useAccountBalance({ agent });
-
   return (
     <View style={[
       {
@@ -33,7 +32,7 @@ export default function AccountStats({
       </LabelValue>
       <LabelValue
         label="All P&L"
-        value={(accountData.totalPnlPercent)}
+        value={accountData.totalPnlPercent}
         textVariant="xs"
         valueTextVariant="xs"
         colorize

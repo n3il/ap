@@ -35,6 +35,6 @@ interface TimeFrameState {
 }
 
 export const useTimeframeStore = create<TimeFrameState>((set) => ({
-  timeframe: "1M" as AvailableTimeframesEnum,
+  timeframe: "24h" as AvailableTimeframesEnum,
   setTimeframe: (timeframe) => set({ timeframe }),
 }));

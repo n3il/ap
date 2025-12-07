@@ -51,7 +51,6 @@ export default function ExploreScreen() {
     >
       <PaddedView>
         <ExploreHeader />
-
       </PaddedView>
       <AnimatedScrollView
         showsVerticalScrollIndicator={false}
@@ -62,7 +61,6 @@ export default function ExploreScreen() {
             refreshing={isFetching}
             onRefresh={handleRefresh}
             tintColor={palette.foreground}
-            size="small"
           />
         }
         scrollEventThrottle={16}
@@ -78,7 +76,6 @@ export default function ExploreScreen() {
             }}
           >
             <MarketPricesWidget
-              timeframe={timeframe}
               scrollY={10000}
               sx={{
                 borderBottomWidth: 1,
@@ -86,7 +83,6 @@ export default function ExploreScreen() {
               }}
             />
             <MultiAgentChart
-              timeframe={timeframe}
               scrollY={scrollY}
               style={{
                 elevation: 10,
@@ -113,11 +109,20 @@ export default function ExploreScreen() {
             </PaddedView>
           </View>
         </View>
-        <AgentList
-          queryKey={["explore-agents"]}
-          isActive
-          scrollY={scrollY}
-        />
+        <View
+          style={{
+            marginTop: 18,
+            gap: 18,
+            flexDirection: "column"
+          }}
+        >
+          <AgentList
+            queryKey={["explore-agents"]}
+            isActive
+            scrollY={scrollY}
+          />
+        </View>
+
       </AnimatedScrollView>
     </View>
   );
