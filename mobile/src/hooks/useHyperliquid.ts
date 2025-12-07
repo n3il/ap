@@ -51,13 +51,53 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
     // drop registry/subscriptions so downstream hooks can resubscribe cleanly
     registry.clear();
     subscriptions.clear();
+    pendingPosts.forEach((resolver) =>
+      resolver({ error: "socket_closed_before_response" })
+    );
+    pendingPosts.clear();
   });
 
   transport.socket.addEventListener("error", () => {
     set({ connectionState: "disconnected" });
     registry.clear();
     subscriptions.clear();
+    pendingPosts.forEach((resolver) =>
+      resolver({ error: "socket_error_before_response" })
+    );
+    pendingPosts.clear();
   });
+
+  const waitForOpen = () =>
+    new Promise<void>((resolve, reject) => {
+      if (transport.socket.readyState === WebSocket.OPEN) {
+        resolve();
+        return;
+      }
+
+      const handleOpen = () => {
+        cleanup();
+        resolve();
+      };
+
+      const handleClose = () => {
+        cleanup();
+        reject(new Error("Hyperliquid socket closed before open"));
+      };
+
+      const timeout = setTimeout(() => {
+        cleanup();
+        reject(new Error("Hyperliquid socket open timeout"));
+      }, 5000);
+
+      const cleanup = () => {
+        clearTimeout(timeout);
+        transport.socket.removeEventListener("open", handleOpen);
+        transport.socket.removeEventListener("close", handleClose);
+      };
+
+      transport.socket.addEventListener("open", handleOpen);
+      transport.socket.addEventListener("close", handleClose);
+    });
 
   transport.socket.addEventListener("message", (event) => {
     const msg = JSON.parse(event.data);
@@ -109,13 +149,15 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
     pendingPosts,
     connectionState: "connecting",
     latencyMs: null,
-    sendPost: (req, id = Date.now()) =>
-      new Promise((resolve) => {
+    sendPost: async (req, id = Date.now()) => {
+      await waitForOpen();
+      return new Promise((resolve) => {
         pendingPosts.set(id, resolve);
         transport.socket.send(
           JSON.stringify({ method: "post", id, request: req })
         );
-      }),
+      });
+    },
     reconnect: () => {
       if (connectionState === "disconnected") {
         try {

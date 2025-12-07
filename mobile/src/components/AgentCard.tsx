@@ -1,9 +1,9 @@
-import { Pressable } from "react-native";
+import { Pressable, ViewStyle } from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
 } from "react-native-reanimated";
-import { StatsAbbreviated } from "@/components/agent/AccountStats";
+import AccountStats from "@/components/agent/AccountStats";
 import { Avatar, Text, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import type { AgentType, AssessmentRecordType } from "@/types/agent";
@@ -75,26 +75,22 @@ export default function AgentCard({
   agent,
   isOwnAgent = false,
   onPress,
-  hideOpenPositions = false,
   showPositions = true,
   transparent = false,
   isActive = false,
-  asListItem = false,
+  style = {},
   ...props
 }: {
   agent: AgentType;
   isOwnAgent?: boolean;
   onPress?: () => void;
-  hideOpenPositions?: boolean;
   showPositions?: boolean;
   transparent?: boolean;
   isActive?: boolean;
-  asListItem?: boolean;
+  style: ViewStyle,
 }) {
   const { colors: palette } = useColors();
-  const tradingAccountType = agent.simulate ? "paper" : "real";
-  const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
-  const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
+  const accountData = useAccountBalance({ agent });
   const surfaceColor =
     typeof palette.surface === "string" ? palette.surface : undefined;
   const borderColor =
@@ -105,12 +101,12 @@ export default function AgentCard({
   const borderOpacity = useSharedValue(0);
 
   const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-    borderWidth: transparent ? 0 : .1,
-    borderColor: `rgba(124, 255, 170, ${borderOpacity.value})`,
+    // transform: [{ scale: scale.value }],
+    // borderWidth: transparent ? 0 : .1,
+    // borderColor: `rgba(124, 255, 170, ${borderOpacity.value})`,
   }));
 
-  console.log(accountData.openPositions.length, hideOpenPositions)
+  console.log({ agent: agent?.name, accountData})
 
   return (
     <Animated.View
@@ -118,12 +114,14 @@ export default function AgentCard({
         {
           paddingVertical: 18,
           paddingHorizontal: 18,
-          backgroundColor: surfaceColor ?? "#ffffff",
           borderRadius: 12,
           marginHorizontal: 10,
+          backgroundColor: surfaceColor ?? "#ffffff",
           borderColor: borderColor ?? "#171717ff",
+          borderWidth: 1,
         },
         animatedStyle,
+        style,
       ]}
       {...props}
     >
@@ -142,7 +140,7 @@ export default function AgentCard({
             name={agent.name.slice(0, 70)}
             backgroundColor={palette.providers[agent.llm_provider]}
           />
-          <StatsAbbreviated
+          <AccountStats
             agent={agent}
             style={{
               flexDirection: "column",
@@ -168,7 +166,7 @@ export default function AgentCard({
         )} */}
       </Pressable>
 
-      {!hideOpenPositions && accountData.openPositions.length > 0 ? (
+      {showPositions && accountData.openPositions.length > 0 ? (
         <View sx={{
           marginTop: 2,
         }}>

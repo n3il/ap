@@ -20,9 +20,7 @@ export default function BalanceOverview({
   agent: AgentType;
 }) {
   const { colors: palette } = useColors();
-  const tradingAccountType = agent?.simulate ? "paper" : "real";
-  const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
-  const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
+  const accountData = useAccountBalance({ agent });
   const { setTimeframe } = useTimeframeStore();
 
   return (
@@ -83,7 +81,7 @@ export default function BalanceOverview({
       >
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Account Value"
+            label="Balance"
             value={accountData?.equity}
             formatter={v => v}
           />
@@ -138,8 +136,9 @@ export default function BalanceOverview({
           >
             <Text
               variant="sm"
+              style={{ marginLeft: "auto" }}
             >
-              {`(${accountData.openPositions.length})`}
+              {`(${accountData.openPositions?.length || '-'})`}
             </Text>
           </LabelValue>
         </View>

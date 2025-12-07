@@ -114,6 +114,7 @@ export function useCandleHistory(
                 },
               },
             });
+            console.log(resp.payload.data)
 
             const rawCandles: any[] = resp?.payload?.data ?? [];
             const normalized = rawCandles

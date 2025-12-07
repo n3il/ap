@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
-import { useHyperliquidRequests } from "@/hooks/useHyperliquid";
+import { useHyperliquidRequests, useHyperliquidStore } from "@/hooks/useHyperliquid";
 import { useMarketPricesStore } from "@/hooks/useMarketPrices";
+import { AgentType } from "@/types/agent";
 
 type MarginSummary = {
   accountValue: string;      // total account value in USD
@@ -45,6 +46,20 @@ type ClearinghouseState = {
   withdrawable: string;
 };
 
+type NormalizedPosition = {
+  coin: string;
+  type: string;
+  size: number;
+  entryPrice: number;
+  positionValue: number;
+  marginUsed: number;
+  unrealizedPnl: number;
+  liquidationPx: number;
+  leverage: number | null;
+  roe: number | null;
+  livePnlPct: number | null;
+};
+
 type TimeframePnl = {
   first: number | null;
   last: number | null;
@@ -75,10 +90,14 @@ export function calcPnLByTimeframe(data: any) {
   );
 }
 
-export function useAccountBalance({ userId }: { userId: string | null }) {
-  const { sendRequest } = useHyperliquidRequests();
+export function useAccountBalance({ agent }: { agent: AgentType }) {
+  const tradingAccountType = !agent?.simulate ? "real" : "paper";
+  const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
+  const userId = tradingAccount?.hyperliquid_address;
 
+  const { sendRequest } = useHyperliquidRequests();
   const { mids } = useMarketPricesStore();
+  const { connectionState } = useHyperliquidStore();
 
   const [accountValueHistory, setAccountValueHistory] =
     useState<PnLByTimeframe>({});
@@ -90,6 +109,7 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
   // ── Initial load ────────────────────────────────────────────────
   useEffect(() => {
     if (!userId) return;
+    if (connectionState !== "connected") return;
 
     let cancelled = false;
 
@@ -132,7 +152,7 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
     return () => {
       cancelled = true;
     };
-  }, [userId, sendRequest]);
+  }, [userId, sendRequest, connectionState]);
 
   const startingEquity = useMemo(() => {
     const entries = Object.entries(accountValueHistory) as Array<
@@ -159,7 +179,7 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
     return null;
   }, [accountValueHistory]);
 
-  const positions = useMemo(() => {
+  const positions = useMemo<NormalizedPosition[]>(() => {
     if (!clearinghouseState) return [];
 
     const safeNumber = (val: unknown, fallback = 0) => {
@@ -172,13 +192,13 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
       const size = safeNumber(p.szi);
       const entryPrice = safeNumber(p.entryPx);
       const markPriceFromMids = mids?.[p.coin];
-      const positionValue = safeNumber(p.positionValue);
+      const positionValueFromState = safeNumber(p.positionValue);
       const marginUsed = safeNumber(p.marginUsed);
 
       const markPrice = Number.isFinite(markPriceFromMids)
         ? markPriceFromMids
         : Math.abs(size) > 0
-          ? positionValue / Math.abs(size)
+          ? positionValueFromState / Math.abs(size)
           : entryPrice;
 
       const unrealizedFromState = Number(p.unrealizedPnl);
@@ -191,18 +211,20 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
         ? (unrealizedPnl / (Math.abs(size) * entryPrice)) * 100
         : null;
 
+      const roeValue = Number(p.returnOnEquity);
+
       return {
-        ...assetPosition,
-        position: {
-          ...p,
-          size,
-          entryPrice,
-          markPrice,
-          positionValue: notional,
-          marginUsed,
-          unrealizedPnl,
-          livePnlPct: pnlPct,
-        },
+        coin: p.coin,
+        type: assetPosition.type,
+        size,
+        entryPrice,
+        positionValue: notional,
+        marginUsed,
+        unrealizedPnl,
+        liquidationPx: safeNumber(p.liquidationPx),
+        leverage: p.leverage?.value ?? null,
+        roe: Number.isFinite(roeValue) ? roeValue : null,
+        livePnlPct: pnlPct,
       };
     });
   }, [clearinghouseState, mids]);
@@ -212,11 +234,11 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
 
     const accountValue = Number(clearinghouseState.marginSummary.accountValue);
     const allPositionsValue = positions.reduce(
-      (sum, ap) => sum + Number(ap.position.positionValue ?? 0),
+      (sum, position) => sum + Number(position.positionValue ?? 0),
       0,
     );
     const allPositionsValueChange = positions.reduce(
-      (sum, ap) => sum + Number(ap.position.unrealizedPnl ?? 0),
+      (sum, position) => sum + Number(position.unrealizedPnl ?? 0),
       0,
     );
 
@@ -271,25 +293,7 @@ export function useAccountBalance({ userId }: { userId: string | null }) {
   }, [accountValueHistory, liveData, startingEquity])
 
 
-  const openPositions = useMemo(() => {
-    if (!positions.length) return [];
-
-    return positions.map((ap) => {
-      const p = ap.position;
-      return {
-        coin: p.coin,
-        size: Number(p.size),
-        entryPrice: Number(p.entryPrice),
-        positionValue: Number(p.positionValue),
-        unrealizedPnl: Number(p.unrealizedPnl),
-        liquidationPx: Number(p.liquidationPx),
-        marginUsed: Number(p.marginUsed),
-        leverage: p.leverage?.value ?? null,
-        roe: Number(p.returnOnEquity),
-        type: ap.type,
-      };
-    });
-  }, [positions]);
+  const openPositions = positions;
 
   return {
     // history / PnL

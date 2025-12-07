@@ -80,8 +80,8 @@ export function toHyperliquidOrder(
     return make({
       a: asset["Asset-Id"],
       b: isBuy,
-      p: lp ? px(lp) : "0",
-      s: "0",
+      p: lp ? px(lp) : px(asset["Mid-Px"]),
+      s: position.szi,
       r: true,
       t: { limit: { tif: lp ? limTif : mkTif } },
       ...(opts.cloid && { c: opts.cloid })

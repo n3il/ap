@@ -128,8 +128,9 @@ export default function GlassSelector({ style, ...props }: GlassSelectorProps) {
   };
 
   return (
-    <GlassContainer style={style} spacing={100}>
+    <GlassContainer style={style} spacing={2}>
       <GlassButton
+        glassEffectStyle="regular"
         onPress={handleToggle}
         style={{
           flexDirection: "row",

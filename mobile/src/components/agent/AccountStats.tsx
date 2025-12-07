@@ -5,17 +5,14 @@ import { AgentType } from "@/types/agent";
 import { formatPercent } from "@/utils/currency";
 import { ViewStyle } from "react-native";
 
-export function StatsAbbreviated({
+export default function AccountStats({
   agent,
   style = {},
 }: {
   agent: AgentType;
   style?: ViewStyle;
-
 }) {
-  const tradingAccountType = agent.simulate ? "paper" : "real";
-  const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
-  const accountData = useAccountBalance({userId: tradingAccount?.hyperliquid_address || ""});
+  const accountData = useAccountBalance({ agent });
 
   return (
     <View style={[
@@ -36,7 +33,7 @@ export function StatsAbbreviated({
       </LabelValue>
       <LabelValue
         label="All P&L"
-        value={(accountData.openPnlPct)}
+        value={(accountData.totalPnlPercent)}
         textVariant="xs"
         valueTextVariant="xs"
         colorize

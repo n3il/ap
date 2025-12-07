@@ -23,8 +23,8 @@ export default function SplashScreen() {
       <Image
         source={require("@assets/puppet-bare-icon-w-s.svg")}
         style={{
-          width: 300,
-          height: 300,
+          width: 200,
+          height: 200,
           opacity: 0.2,
         }}
         contentFit="contain"

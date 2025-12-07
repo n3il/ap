@@ -31,7 +31,7 @@ export const TIMEFRAME_CONFIG: Record<
 
 interface TimeFrameState {
   timeframe: AvailableTimeframesEnum;
-  setTimeFrame: (timeframe: AvailableTimeframesEnum) => void;
+  setTimeframe: (timeframe: AvailableTimeframesEnum) => void;
 }
 
 export const useTimeframeStore = create<TimeFrameState>((set) => ({

@@ -2,9 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useState } from "react";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
-import { formatAmount, formatCompact, formatPercent } from "@/utils/currency";
-import { formatRelativeDate } from "@/utils/date";
-import { useMarketPricesStore } from "@/hooks/useMarketPrices";
+import { formatAmount, formatPercent } from "@/utils/currency";
 import { SxProp } from "dripsy";
 
 type PositionDetailRowProps = {
@@ -13,22 +11,17 @@ type PositionDetailRowProps = {
   valueStyle?: Record<string, unknown>;
 };
 
-export type EnrichedPosition = {
-  id?: string;
-  agent_id?: string;
-  asset?: string;
-  symbol?: string;
-  coin?: string;
-  side?: "LONG" | "SHORT" | string;
+export type PositionListItem = {
+  coin: string;
+  type: string;
   size: number;
-  szi?: number;
-  entry_price?: number | string;
-  currentPrice?: number | string;
-  unrealizedPnl?: number;
-  pnlPercent?: number;
-  leverage?: number;
-  positionValue?: number;
-  entry_timestamp?: string;
+  entryPrice: number;
+  positionValue: number;
+  unrealizedPnl: number;
+  leverage: number | null;
+  livePnlPct: number | null;
+  marginUsed: number;
+  liquidationPx: number;
 };
 
 function PositionDetailRow({
@@ -72,89 +65,42 @@ function PositionDetailRow({
 //   unrealizedPnl: number;
 // };
 
-export type OpenPosition = {
-  coin: string;
-  entryPrice: number;
-  leverage: number;
-  liquidationPx: number;
-  marginUsed: number;
-  positionValue: number;
-  roe: number;
-  size: number;
-  type: "oneWay" | "hedged" | string; // adjust if you want stricter
-  unrealizedPnl: number;
-};
-
-export const mapOpenPositionToUI = (p: OpenPosition) => {
-  return {
-    asset: p.coin,
-    symbol: p.coin,
-    coin: p.coin,
-    side: p.size >= 0 ? "long" : "short",
-    size: p.size,
-    szi: p.size, // alias for size
-    entry_price: p.entryPrice,
-    unrealizedPnl: p.unrealizedPnl,
-    pnlPercent: p.roe * 100,
-    leverage: p.leverage,
-    positionValue: p.positionValue,
-    liquidationPrice: p.liquidationPx,
-    entry_timestamp: undefined, // HL does not supply this in your structure
-  };
-};
-
-export function PositionRow({ position }: {position: OpenPosition}) {
+export function PositionRow({ position }: { position: PositionListItem }) {
   const [expanded, setExpanded] = useState(false);
   const { colors: palette } = useColors();
 
-  const uiPosition = mapOpenPositionToUI(position);
-
   const {
-    asset = "",
-    symbol = "",
-    coin = "",
-    side = "",
+    coin,
     size,
-    szi,
-    entry_price,
-    // currentPrice,
-    unrealizedPnl,
-    pnlPercent,
-    leverage,
+    entryPrice,
     positionValue,
-    entry_timestamp,
-  } = uiPosition;
+    unrealizedPnl,
+    leverage,
+    livePnlPct,
+    liquidationPx,
+  } = position;
 
-  const currentPriceValue = 0 // Number(mids[symbol]) || 0;
-
-  // ---- Labels ----
-  const assetLabel = (asset || symbol || coin || "").replace("-PERP", "/USDC");
-  const sizeLabel = size || szi || "N/A";
-
-  const entryPriceValue = entry_price ? Number(entry_price) : null;
-
+  const symbol = coin?.replace("-PERP", "/USDC") ?? "";
+  const side = size >= 0 ? "long" : "short";
+  const absSize = Math.abs(size);
+  const entryPriceValue = Number(entryPrice) || 0;
+  const currentPriceValue = absSize > 0 ? positionValue / absSize : 0;
   const unrealizedPnlValue = Number(unrealizedPnl) || 0;
-  const pnlPercentValue = pnlPercent != null ? Number(pnlPercent) : null;
-
-  // ---- Labels formatted ----
-  const positionValueLabel =
-    positionValue != null
-      ? `$${formatCompact(positionValue)}`
-      : (size) * currentPriceValue + unrealizedPnlValue;
+  const pnlPercentValue = livePnlPct != null ? Number(livePnlPct) : null;
+  const totalPositionValue = positionValue + unrealizedPnlValue;
 
   const entryPriceLabel = entryPriceValue
-    ? `$${formatCompact(entryPriceValue)}`
+    ? formatAmount(entryPriceValue, { precision: 4 })
     : "-";
-
   const currentPriceLabel = currentPriceValue
-    ? `$${formatCompact(currentPriceValue)}`
-    : "";
-
-  const unrealizedPnlLabel =
-    unrealizedPnlValue !== 0 ? `${formatCompact(unrealizedPnlValue)}` : "$0.00";
-
+    ? formatAmount(currentPriceValue, { precision: 4 })
+    : "-";
+  const sizeLabel = absSize || "N/A";
+  const unrealizedPnlLabel = formatAmount(unrealizedPnlValue, {
+    showSign: true,
+  });
   const pnlPercentLabel =
-    pnlPercentValue != null ? `${Math.abs(pnlPercentValue)}%` : "";
+    pnlPercentValue != null ? formatPercent(pnlPercentValue) : "";
 
   // ---- Colors ----
   const longColor = palette.long;
@@ -188,9 +134,6 @@ export function PositionRow({ position }: {position: OpenPosition}) {
               <Text variant="sm" sx={{ fontSize: 12 }}>
                 {symbol}
               </Text>
-             {entry_timestamp ? <Text sx={{ fontSize: 9 }}>
-                {formatRelativeDate(entry_timestamp)}
-              </Text> : null}
 
               <MaterialCommunityIcons
                 name={sideIcon}
@@ -211,15 +154,13 @@ export function PositionRow({ position }: {position: OpenPosition}) {
           {/* ---- Right Column ---- */}
           <View sx={{ alignItems: "center" }}>
             <View sx={{ flexDirection: "column", alignItems: "flex-end" }}>
-              <Text variant="xs">
-                {formatAmount(positionValue + unrealizedPnl)}
-              </Text>
+              <Text variant="xs">{formatAmount(totalPositionValue)}</Text>
               <Text
                 variant="xs"
                 sx={{ fontWeight: "500", color: positionPnlColor }}
               >
                 {formatAmount(unrealizedPnlValue, { showSign: true })} (
-                {formatPercent(pnlPercentValue)})
+                {pnlPercentValue != null ? formatPercent(pnlPercentValue) : "--"})
               </Text>
             </View>
           </View>
@@ -239,9 +180,14 @@ export function PositionRow({ position }: {position: OpenPosition}) {
         >
           <PositionDetailRow label="Size" value={sizeLabel} />
 
-          <PositionDetailRow label="Entry" value={entry_price} />
-          <PositionDetailRow label="Current" value={currentPriceValue} />
-          <PositionDetailRow label="Liq. Price" value={uiPosition.liquidationPrice} />
+          <PositionDetailRow label="Entry" value={entryPriceLabel} />
+          <PositionDetailRow label="Current" value={currentPriceLabel} />
+          <PositionDetailRow
+            label="Liq. Price"
+            value={
+              liquidationPx ? formatAmount(liquidationPx, { precision: 4 }) : "-"
+            }
+          />
 
           <PositionDetailRow
             label="Unrealized PnL"
@@ -252,7 +198,7 @@ export function PositionRow({ position }: {position: OpenPosition}) {
           {pnlPercentLabel && (
             <PositionDetailRow
               label="PnL %"
-              value={formatPercent(pnlPercentValue)}
+              value={pnlPercentLabel}
               valueStyle={{ color: positionPnlColor }}
             />
           )}
@@ -263,7 +209,7 @@ export function PositionRow({ position }: {position: OpenPosition}) {
 }
 
 type PositionListProps = {
-  positions?: EnrichedPosition[];
+  positions?: PositionListItem[];
   top?: number;
   sx?: SxProp;
 };
@@ -273,7 +219,6 @@ export default function PositionList({
   top = 3,
   sx = {},
 }: PositionListProps) {
-  console.log('positions list', positions.length)
   const topPositions = [...positions]
     .sort((a, b) => Math.abs(b.size) - Math.abs(a.size))
     .slice(0, top);

@@ -1,57 +1,52 @@
 import { useQuery } from "@tanstack/react-query";
 import { ActivityIndicator } from "dripsy";
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { useAnimatedReaction } from "react-native-reanimated";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { Text, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { agentService } from "@/services/agentService";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import AgentCard from "./AgentCard";
+import { LayoutChangeEvent, ViewStyle } from "react-native";
 
 const ANIM_COMPLETE_SCROLL_Y = 200;
 
+interface AgentListProps {
+  emptyState?: React.ReactNode;
+  userId?: string | null;
+  published?: boolean;
+  includeLatestAssessment?: boolean;
+  isActive?: boolean | null;
+  isBookmarked?: boolean;
+  hideOpenPositions?: boolean;
+  scrollY?: SharedValue<number> | null;
+  style?: ViewStyle;
+}
+
+interface ItemLayouts {
+  [key: string]: {
+    y: number;
+    height: number;
+  };
+}
+
 export default function AgentList({
-  queryKey,
   emptyState,
   userId = undefined,
   published = true,
   includeLatestAssessment = true,
   isActive = null,
+  isBookmarked = false,
   hideOpenPositions = false,
   scrollY = null, // Animated scroll position
-}) {
+  style = {}
+}: AgentListProps) {
   const router = useRouter();
   const setAgents = useExploreAgentsStore((state) => state.setAgents);
-  const setActiveAgentForQueryKey = useExploreAgentsStore(
-    (state) => state.setActiveAgentForQueryKey,
-  );
-  const clearActiveAgentForQueryKey = useExploreAgentsStore(
-    (state) => state.clearActiveAgentForQueryKey,
-  );
-  const itemLayoutsRef = useRef({});
-  const queryKeyIdentifier = useMemo(() => {
-    return JSON.stringify(Array.isArray(queryKey) ? queryKey : [queryKey]);
-  }, [queryKey]);
-  const activeAgentId = useExploreAgentsStore(
-    useCallback(
-      (state) => state.activeAgentsByQueryKey[queryKeyIdentifier] ?? null,
-      [queryKeyIdentifier],
-    ),
-  );
-  const setActiveAgentId = useCallback(
-    (agentId) => {
-      setActiveAgentForQueryKey(queryKeyIdentifier, agentId);
-    },
-    [queryKeyIdentifier, setActiveAgentForQueryKey],
-  );
-
-  useEffect(() => {
-    return () => {
-      clearActiveAgentForQueryKey(queryKeyIdentifier);
-    };
-  }, [clearActiveAgentForQueryKey, queryKeyIdentifier]);
+  const itemLayoutsRef = useRef<ItemLayouts>({});
+  const [activeAgentId, setActiveAgentId] = useState();
 
   const {
     data: agents = [],
@@ -64,9 +59,16 @@ export default function AgentList({
       published,
       includeLatestAssessment,
       isActive,
+      isBookmarked,
     ],
     queryFn: () =>
-      agentService.getAgents({ published, includeLatestAssessment, isActive }),
+      agentService.getAgents({
+        published,
+        includeLatestAssessment,
+        isActive,
+        isBookmarked,
+        userId,
+      }),
   });
 
   useEffect(() => {
@@ -76,18 +78,18 @@ export default function AgentList({
   }, [agents, setAgents]);
 
   const onAgentPress = useCallback(
-    (agent) => {
+    (agent: Agent) => {
       router.push({
         pathname: ROUTES.AGENT_ID.path,
         params: { id: agent.id, name: agent.name },
-      });
+      } as any);
     },
     [router],
   );
 
   // Calculate which agent is active based on scroll position
   const calculateActiveAgent = useCallback(
-    (scrollPosition) => {
+    (scrollPosition: number) => {
       let closestAgent = null;
       let smallestDistance = Infinity;
 
@@ -114,7 +116,7 @@ export default function AgentList({
   // Track scroll position changes with Reanimated
   useAnimatedReaction(
     () => {
-      return scrollY ? scrollY.value : 0;
+      return scrollY && 'value' in scrollY ? scrollY.value : 0;
     },
     (currentScroll, previous) => {
       if (scrollY && currentScroll !== previous) {
@@ -124,7 +126,7 @@ export default function AgentList({
   );
 
   // Handle item layout
-  const handleItemLayout = useCallback((agentId, event) => {
+  const handleItemLayout = useCallback((agentId: string, event: LayoutChangeEvent) => {
     const { y, height } = event.nativeEvent.layout;
     itemLayoutsRef.current[agentId] = { y, height };
   }, []);
@@ -154,7 +156,7 @@ export default function AgentList({
           }}
         >
           <Text
-            variant="sm"
+            variant="md"
             tone="muted"
             sx={{ marginBottom: 2, fontWeight: "600" }}
           >
@@ -168,22 +170,15 @@ export default function AgentList({
     );
   }
 
-  return (
-    <View style={{ flex: 1, gap: 8, marginTop: 8 }}>
-      {agents.map((agent) => (
-        <View
-          key={agent.id}
-          onLayout={(event) => handleItemLayout(agent.id, event)}
-        >
-          <AgentCard
-            agent={agent}
-            hideOpenPositions={hideOpenPositions}
-            onPress={() => onAgentPress?.(agent)}
-            isActive={activeAgentId === agent.id}
-            asListItem
-          />
-        </View>
-      ))}
-    </View>
-  );
+  return agents.map((agent) => (
+    <AgentCard
+      key={agent.id}
+      agent={agent}
+      showPositionsList
+      onPress={() => onAgentPress?.(agent)}
+      isActive={activeAgentId === agent.id}
+      style={style}
+      onLayout={(event) => handleItemLayout(agent.id, event)}
+    />
+  ));
 }

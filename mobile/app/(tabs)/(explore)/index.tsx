@@ -79,7 +79,7 @@ export default function ExploreScreen() {
           >
             <MarketPricesWidget
               timeframe={timeframe}
-              scrollY={scrollY}
+              scrollY={10000}
               sx={{
                 borderBottomWidth: 1,
                 borderBottomColor: palette.border,

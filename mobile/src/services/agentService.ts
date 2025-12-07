@@ -31,6 +31,16 @@ const normalizeAgent = (agent, includeLatestAssessment) => {
   };
 };
 
+const getBookmarkedAgentIds = async (userId: string) => {
+  const { data, error } = await supabase
+    .from("agent_bookmarks")
+    .select("agent_id")
+    .eq("user_id", userId);
+
+  if (error) throw error;
+  return data?.map((row) => row.agent_id).filter(Boolean) ?? [];
+};
+
 export const agentService = {
   // Fetch agents with optional filters
   async getAgents({
@@ -39,9 +49,10 @@ export const agentService = {
     isActive = null,
     includeLatestAssessment = false,
     includeTradingAccounts = true,
+    isBookmarked = false,
   } = {}) {
     let resolvedUserId = userId;
-    if (!resolvedUserId && !published) {
+    if (!resolvedUserId && (!published || isBookmarked)) {
       const {
         data: { user },
       } = await supabase.auth.getUser();
@@ -65,6 +76,14 @@ export const agentService = {
       query = query.not("published_at", "is", null);
     } else if (published === false) {
       query = query.is("published_at", null);
+    }
+
+    if (isBookmarked) {
+      const bookmarkedIds = await getBookmarkedAgentIds(resolvedUserId!);
+      if (!bookmarkedIds.length) {
+        return [];
+      }
+      query = query.in("id", bookmarkedIds);
     }
 
     const { data, error } = await query.order(

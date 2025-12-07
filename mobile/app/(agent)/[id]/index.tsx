@@ -9,7 +9,7 @@ import ContainerView, {
   GLOBAL_PADDING,
   PaddedView,
 } from "@/components/ContainerView";
-import { Animated, Stack } from "@/components/ui";
+import { Animated, Stack, SwipeableTabs } from "@/components/ui";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -41,6 +41,38 @@ export default function AgentIndex() {
     <Redirect href={ROUTES.TABS_AGENTS.path} />
   }
 
+  const tabs = [
+    {
+      key: "All",
+      title: "All",
+      content: (
+        <ThoughtsTab
+          agentId={agentId}
+          onRefresh={() => refetch()}
+          refreshing={isRefetching}
+          listProps={{
+            contentContainerStyle: {
+              paddingTop: HEADER_HEIGHT,
+              paddingHorizontal: GLOBAL_PADDING,
+              paddingBottom: '60%',
+              gap: 12,
+            },
+            scrollEventThrottle: 16,
+            onScroll: Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: true },
+            ),
+          }}
+        />
+      ),
+    },
+    {
+      key: "Watchlist",
+      title: "Watchlist",
+      content: null
+    },
+  ];
+
   return (
     <ContainerView noSafeArea style={{ paddingTop: insets.top, flex: 1 }}>
       <AgentHeader agentId={agent?.id} agentName={agent?.name} />
@@ -62,23 +94,12 @@ export default function AgentIndex() {
           }}
         /> */}
       </Animated.View>
-      <ThoughtsTab
-        agentId={agentId}
-        onRefresh={() => refetch()}
-        refreshing={isRefetching}
-        listProps={{
-          contentContainerStyle: {
-            paddingTop: HEADER_HEIGHT,
-            paddingHorizontal: GLOBAL_PADDING,
-            paddingBottom: '60%',
-            gap: 12,
-          },
-          scrollEventThrottle: 16,
-          onScroll: Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true },
-          ),
-        }}
+      <SwipeableTabs
+        tabs={tabs}
+        initialIndex={0}
+        tabTextStyle={{ color: palette.text.secondary }}
+        activeTabTextStyle={{ color: palette.accent }}
+        indicatorColor={palette.accent}
       />
     </ContainerView>
   );

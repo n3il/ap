@@ -32,14 +32,14 @@ export default function AgentsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: "70%" }}
         >
-          <AgentList isActive={true} emptyState={<View />} />
+          <AgentList isActive emptyState={<View />} />
         </ScrollView>
       ),
     },
     {
-      key: "Watching",
-      title: "Watching",
-      content: <Text>Bookmarked</Text>,
+      key: "Watchlist",
+      title: "Watchlist",
+      content: <AgentList isBookmarked emptyState={<View />} />,
     },
   ];
 
