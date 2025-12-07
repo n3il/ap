@@ -9,9 +9,9 @@ const lightTheme = {
     background: "#f8fafc",
     backgroundSecondary: "#e2e8f0",
     backgroundSplash: "#e0f2fe",
-    surface: "#ffffff",
-    surfaceForeground: "#0f172a",
-    surfaceLight: "#f1f5f9",
+    surface: "#0f172a",
+    surfaceForeground: "#ffffff",
+    surfaceLight: "#242c35ff",
     surfaceDark: "#e2e8f0",
     foreground: "#0f172a",
     text: {
@@ -31,7 +31,7 @@ const lightTheme = {
       DEFAULT: "#e2e8f0",
       foreground: "#64748b",
     },
-    border: "#e2e8f0",
+    border: "#505255ff",
     input: "#e2e8f0",
 
     glassTint: "rgba(194, 34, 34, 0.95)",

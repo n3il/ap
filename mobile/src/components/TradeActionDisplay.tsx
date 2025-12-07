@@ -99,7 +99,7 @@ export default function TradeActionDisplay({
               textTransform: 'capitalize'
             }}
           >
-              {`${actionData.type}ed ${actionData.direction || 'short'}` || '-'}
+              {`${actionData.type} ${actionData.direction || 'short'}` || '-'}
           </Text>
 
           <Text variant="xs" sx={{ fontSize: 12, fontWeight: "400" }}>

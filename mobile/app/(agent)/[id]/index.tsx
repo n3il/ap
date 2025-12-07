@@ -1,5 +1,5 @@
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { StyleSheet } from "react-native";
 import BalanceOverview from "@/components/agent/BalanceOverview";
 import AgentHeader from "@/components/agent/Header";
@@ -16,8 +16,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ROUTES } from "@/config/routes";
 import TradesTab from "@/components/agents/TradesTab";
 
-const HEADER_HEIGHT = 220;
-
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
   const { colors: palette } = useColors();
@@ -25,6 +23,7 @@ export default function AgentIndex() {
   const { data: agent, refetch, isRefetching } = useAgent(agentId);
   const router = useRouter();
   const scrollY = useRef(new Animated.Value(0)).current;
+  const [headerHeight, setHeaderHeight] = useState(220); // Default fallback
 
   const imageScale = scrollY.interpolate({
     inputRange: [-200, 0, 200],
@@ -54,7 +53,7 @@ export default function AgentIndex() {
             refreshing={isRefetching}
             listProps={{
               contentContainerStyle: {
-                paddingTop: HEADER_HEIGHT,
+                paddingTop: headerHeight,
                 paddingHorizontal: GLOBAL_PADDING,
                 paddingBottom: "60%",
                 gap: 12,
@@ -79,7 +78,7 @@ export default function AgentIndex() {
         content: null,
       },
     ],
-    [agentId, isRefetching, refetch, scrollY],
+    [agentId, isRefetching, refetch, scrollY, headerHeight],
   );
 
   return (
@@ -90,7 +89,6 @@ export default function AgentIndex() {
           {
             position: "absolute",
             width: "100%",
-            height: HEADER_HEIGHT,
             top: 160,
             left: 0,
           },
@@ -98,6 +96,10 @@ export default function AgentIndex() {
             transform: [{ scale: imageScale }, { translateY: imageTranslateY }],
           },
         ]}
+        onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          setHeaderHeight(height);
+        }}
       >
         <PaddedView style={{ gap: 12, paddingHorizontal: 8 }}>
           <BalanceOverview agent={agent} />

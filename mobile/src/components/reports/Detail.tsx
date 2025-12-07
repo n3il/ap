@@ -7,6 +7,7 @@ import { useColors } from "@/theme";
 import type { AssessmentRecordType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
 import useMarkdownStyles from "@/hooks/useMarkdownStyles";
+import SectionTitle from "../SectionTitle";
 
 const hasContent = (value: string | null | undefined) =>
   typeof value === "string" && value.trim().length > 0;
@@ -146,6 +147,28 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
         </StatusBadge>
       ) : null}
 
+      <SectionTitle title="Trades" />
+
+      {tradeActions.length > 0 && (
+        <View
+          sx={{
+            marginTop: 3,
+            borderColor: palette.border,
+            borderTopWidth: 1,
+          }}
+        >
+          {tradeActions.map((action, index) => (
+            <TradeActionDisplay
+              key={`${action.asset ?? "action"}-${index}`}
+              actionData={action}
+              showReason={expanded}
+            />
+          ))}
+        </View>
+      )}
+
+      <SectionTitle title="Extended" />
+
       {shortSummary && (
         <Text
           variant="md"
@@ -199,24 +222,6 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
           </Text>
         )}
       </View>
-
-      {tradeActions.length > 0 && (
-        <View
-          sx={{
-            marginTop: 3,
-            borderColor: palette.border,
-            borderTopWidth: 1,
-          }}
-        >
-          {tradeActions.map((action, index) => (
-            <TradeActionDisplay
-              key={`${action.asset ?? "action"}-${index}`}
-              actionData={action}
-              showReason={expanded}
-            />
-          ))}
-        </View>
-      )}
     </ScrollView>
   );
 }

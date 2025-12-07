@@ -30,7 +30,10 @@ export default function AgentsScreen() {
       content: (
         <ScrollView
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{ paddingBottom: "70%" }}
+          contentContainerStyle={{
+            paddingBottom: "70%",
+            gap: 12,
+          }}
         >
           <AgentList isActive emptyState={<View />} />
         </ScrollView>
@@ -69,9 +72,6 @@ export default function AgentsScreen() {
       <SwipeableTabs
         tabs={tabs}
         initialIndex={0}
-        tabTextStyle={{ color: theme.colors.text.secondary }}
-        activeTabTextStyle={{ color: theme.colors.accent }}
-        indicatorColor={theme.colors.accent}
       />
     </ContainerView>
   );

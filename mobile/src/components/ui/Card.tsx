@@ -5,6 +5,8 @@ import type React from "react";
 import type { StyleProp, ViewStyle } from "react-native";
 import { withOpacity } from "@/theme/utils";
 import View from "./View";
+import { useColors } from "@/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 
 export interface CardProps {
   children: React.ReactNode;
@@ -28,7 +30,8 @@ const Card: React.FC<CardProps> = ({
   isInteractive,
   glassStyle = {},
 }) => {
-  const { theme } = useDripsyTheme();
+  const { theme } = useTheme()
+  const { colors: palette } = useColors();
 
   const baseStyles: SxProp = {
     backgroundColor: "surface",
@@ -39,7 +42,7 @@ const Card: React.FC<CardProps> = ({
   const variantStyles: Record<string, SxProp> = {
     default: {},
     elevated: {
-      shadowColor: theme.colors?.background ?? theme.colors?.surface,
+      shadowColor: palette.background ?? palette.surface,
       shadowOffset: { width: 0, height: 2 },
       shadowOpacity: 0.1,
       shadowRadius: 8,
@@ -56,14 +59,14 @@ const Card: React.FC<CardProps> = ({
   if (variant === "glass") {
     const borderRadius = theme.radii?.xl ?? 16;
     const baseTint =
-      theme.colors?.background ??
-      theme.colors?.surface ??
-      theme.colors?.backgroundSecondary;
+      palette.background ??
+      palette.surface ??
+      palette.backgroundSecondary;
     const normalizedIntensity =
       Math.min(Math.max(glassIntensity, 0), 100) / 100;
     const tintOpacity = Math.max(0.05, normalizedIntensity || 0.2);
     const defaultTintColor =
-      glassTintColor ?? withOpacity(baseTint, tintOpacity);
+      glassTintColor ?? palette.glassTint;
 
     return (
       <GlassView

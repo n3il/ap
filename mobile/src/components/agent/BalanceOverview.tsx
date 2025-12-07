@@ -29,19 +29,24 @@ export default function BalanceOverview({
       backgroundColor: palette.surfaceLight,
       padding: 3,
       borderWidth: 1.5,
-      borderRadius: 4
+      borderRadius: 12
       }}>
       <View sx={{ flexDirection: "row", gap: 2, justifyContent: "space-between" }}>
         <View sx={{ flexDirection: "column", gap: 2, marginRight: 4 }}>
           <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-            <Text variant="xs" tone="muted" sx={{}}>
+            <Text variant="xs" tone="muted" sx={{
+              color: "surfaceForeground",
+              opacity: .7
+            }}>
               Open P&L
             </Text>
           </View>
           <FormattedValueLabel
             value={accountData.openPnl}
             valueTextVariant="xl"
-            sx={{ fontWeight: "600", fontFamily: "monospace" }}
+            sx={{
+              fontWeight: "600", fontFamily: "monospace"
+            }}
             showSign
           />
         </View>
@@ -109,7 +114,7 @@ export default function BalanceOverview({
                     ? "success"
                     : accountData.openPnl < 0
                       ? "error"
-                      : "foreground",
+                      : "surfaceForeground",
               }}
             >
               {`(${accountData.openPnlPct ? formatPercent(accountData.openPnlPct) : "-"})`}

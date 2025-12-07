@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-type AvailableTimeframesEnum = "1h" | "24h" | "7d" | "1M" | "All";
+type AvailableTimeframesEnum = "1h" | "24h" | "7d" | "1M" | "Alltime";
 
 type TimeFrameOption = {
   id: AvailableTimeframesEnum;
@@ -14,7 +14,7 @@ export const TIMEFRAME_OPTIONS: TimeFrameOption[] = [
   { id: "24h", label: "24H" },
   { id: "7d", label: "7D" },
   { id: '1M', label: '1M' },
-  { id: 'All', label: 'All' },
+  { id: 'Alltime', label: 'All' },
 ];
 
 export const TIMEFRAME_CONFIG: Record<

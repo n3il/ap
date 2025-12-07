@@ -101,6 +101,7 @@ export default function AgentCard({
           marginHorizontal: 10,
           borderColor: palette.border,
           borderWidth: 1,
+          // backgroundColor: palette.surfaceLight
         },
         style,
       ]}

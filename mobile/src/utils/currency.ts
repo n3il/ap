@@ -30,13 +30,13 @@ export function formatCompact(
   }).format(num);
 }
 
-export function formatAmount(num, { showSign = false, precision = 2 } = {}) {
+export function formatAmount(num, { showSign = false, ...props } = {}) {
   let signSymbol = "";
   if (showSign) {
     signSymbol = num > 0 ? "+" : num < 0 ? "-" : "";
     num = num.toString().replace(/-|\+/, '');
   }
-  return `${signSymbol}${currencySymbol}${formatCompact(num, { precision })}`;
+  return `${signSymbol}${currencySymbol}${formatCompact(num, { ...props })}`;
 }
 
 export function formatPercent(num, { showSign = false, precision = 2 } = {}) {

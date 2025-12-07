@@ -1,12 +1,19 @@
-import { GlassView } from "expo-glass-effect";
+import { GlassView, GlassViewProps } from "expo-glass-effect";
 import { Pressable, View, ViewProps } from "react-native";
 import Text from "@/components/ui/Text";
 import { useColors } from "@/theme";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const styleVariants = {
   default: {
     paddingHorizontal: 8,
     paddingVertical: 8,
+  },
+  minimal: {
+    paddingHorizontal: 12,
+    paddingVertical: 0,
+    justifyContent: "center",
+    alignContent: "center",
   },
   paddedFull: {
     paddingHorizontal: 8,
@@ -27,6 +34,7 @@ export default function GlassButton({
   style = {},
   styleVariant = "default",
   buttonProps = {},
+  tintColor,
   ...props // glassProps
 }: {
   children: React.ReactNode;
@@ -36,8 +44,10 @@ export default function GlassButton({
   style?: ViewProps["style"];
   styleVariant?: keyof typeof styleVariants;
   buttonProps?: ViewProps;
+  tintColor?: string;
 }) {
   const { colors } = useColors();
+  const { theme } = useTheme()
   const pressableStyle = styleVariants[styleVariant as keyof typeof styleVariants] || styleVariants.default;
 
   const PressableComponent = (
@@ -48,7 +58,10 @@ export default function GlassButton({
       {...buttonProps}
     >
       {typeof children === "string" ? (
-        <Text style={{ fontWeight: "600", textAlign: "center" }}>
+        <Text style={{
+          fontWeight: "600",
+          textAlign: "center"
+        }}>
           {children}
         </Text>
       ) : (
@@ -66,6 +79,7 @@ export default function GlassButton({
             marginHorizontal: 4,
           },
         ]}
+        {...props}
       >
         {PressableComponent}
       </View>
@@ -78,10 +92,14 @@ export default function GlassButton({
         {
           borderRadius: 32,
           marginHorizontal: 4,
+          backgroundColor: colors.glassTint,
+        },
+        theme.isDark && {
+
         },
         style,
       ]}
-      tintColor={colors.glassTint}
+      tintColor={tintColor ?? colors.glassTint}
       isInteractive
       {...props}
     >

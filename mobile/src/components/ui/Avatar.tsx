@@ -95,7 +95,7 @@ export default function Avatar({
     <View
       sx={{
         flexDirection: "row",
-        alignItems: "flex-start",
+        alignItems: "center",
         justifyContent: "space-between",
         marginRight: "auto",
       }}
@@ -110,7 +110,7 @@ export default function Avatar({
           backgroundColor: withOpacity(resolvedBackground, 0.7),
           borderWidth: 0,
           borderColor: resolvedBackground,
-          alignSelf: "flex-start",
+          alignSelf:"flex-start",
         }}
       >
         {imgSrc ? (
@@ -126,7 +126,7 @@ export default function Avatar({
           <Text
             style={{
               fontSize,
-              color: "foreground",
+              color: "white",
               lineHeight,
               ...FONT_STYLES.default,
             }}

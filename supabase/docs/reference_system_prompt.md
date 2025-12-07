@@ -91,7 +91,7 @@ interface CloseTrade {
   type: "CLOSE";
   asset: string;
 
-  exit_limit_price?: number;       // optional planned exit price. if not provided a market order will be used
+  exit_limit_price?: number;       // optional planned exit price (market order if not provided)
 
   reason: string;                  // one short sentence
   confidenceScore: number;         // float 0–1

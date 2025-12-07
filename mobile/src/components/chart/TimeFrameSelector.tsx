@@ -1,90 +1,57 @@
-import { GlassView } from "expo-glass-effect";
-import { StyleSheet } from "react-native";
-import { ScrollView, Text, TouchableOpacity } from "@/components/ui";
+import { GlassButton, View, Text } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
 import { TIMEFRAME_OPTIONS, useTimeframeStore } from "@/stores/useTimeframeStore";
+import { useColors } from "@/theme";
 
-export default function TimeFrameSelector() {
+export default function TimeFrameSelector({
+  visibleTimeFrames = ["24h", "7d", "1M"]
+}) {
   const { theme } = useTheme();
+  const { colors: palette } = useColors()
   const { timeframe, setTimeframe } = useTimeframeStore();
+
+  if (!timeframe) return null;
+
   return (
-    <ScrollView
-      contentContainerStyle={{
+    <View
+      style={{
         flexDirection: "row",
         alignItems: "center",
         marginBottom: 0,
+        overflow: "visible",
+        marginVertical: 2,
+        alignSelf: "flex-end"
       }}
-      horizontal
-      showsHorizontalScrollIndicator={false}
     >
       {TIMEFRAME_OPTIONS.map((option) => {
+        if (!visibleTimeFrames.includes(option.id)) {
+          return null;
+        }
         const isSelected = timeframe === option.id;
+        console.log({ timeframe, isSelected })
         return (
-          <GlassView
+          <GlassButton
             key={option.id}
-            glassEffectStyle={isSelected ? "clear" : "regular"}
-            style={[
-              {
-                borderRadius: 32,
-                paddingHorizontal: 8,
-                paddingVertical: 2,
-                marginHorizontal: 4,
-                marginVertical: 6,
-              },
-            ]}
-            isInteractive
-            tintColor={isSelected ? theme.colors.primary : theme.colors.surface}
+            enabled={true}
+            // glassEffectStyle={isSelected ? "clear" : "regular"}
+            tintColor={isSelected ? palette.primary : palette.surface}
+            onPress={() => setTimeframe(option.id)}
+            styleVariant="minimal"
           >
-            <TouchableOpacity
-              key={option.id}
-              onPress={() => setTimeframe(option.id)}
+            <Text
               style={{
-                paddingHorizontal: 2,
+                fontSize: 10,
+                fontWeight: "600",
+                textTransform: "uppercase",
+                letterSpacing: 1.1,
+                color: isSelected ? palette.surfaceForeground : palette.surfaceForeground,
               }}
-              activeOpacity={0.8}
             >
-              <Text
-                style={[
-                  styles.tabText,
-                  {
-                    color: isSelected
-                      ? theme.colors.accent
-                      : theme.colors.foreground,
-                  },
-                ]}
-              >
-                {option.label}
-              </Text>
-            </TouchableOpacity>
-          </GlassView>
+              {option.label}
+            </Text>
+          </GlassButton>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  tabBar: {
-    flexDirection: "row",
-    borderBottomWidth: 1,
-    borderBottomColor: "rgba(255, 255, 255, 0.1)",
-    position: "relative",
-  },
-  tabBarContent: {
-    flex: 1,
-    alignItems: "flex-start",
-    gap: 8,
-  },
-
-  tabText: {
-    fontSize: 10,
-    fontWeight: "600",
-    textTransform: "uppercase",
-    letterSpacing: 1.1,
-  },
-  indicator: {
-    position: "absolute",
-    bottom: 0,
-    height: 2,
-  },
-});

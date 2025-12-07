@@ -174,7 +174,6 @@ export default function AgentList({
     <AgentCard
       key={agent.id}
       agent={agent}
-      showPositionsList
       onPress={() => onAgentPress?.(agent)}
       isActive={activeAgentId === agent.id}
       style={style}

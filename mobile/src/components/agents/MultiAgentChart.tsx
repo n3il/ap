@@ -1,5 +1,6 @@
 import { type ComponentProps, useMemo } from "react";
 import type { SharedValue } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, interpolate, Extrapolation } from "react-native-reanimated";
 import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
@@ -42,6 +43,24 @@ export default function MultiAgentChart({
   const { histories: accountHistories, isLoading } =
     useAgentAccountValueHistories();
 
+  // Animate height based on scroll
+  const animatedStyle = useAnimatedStyle(() => {
+    if (!scrollY) {
+      return { height: 200 };
+    }
+
+    const height = interpolate(
+      scrollY.value,
+      [0, 100],
+      [200, 100],
+      Extrapolation.CLAMP
+    );
+
+    return {
+      height,
+    };
+  }, [scrollY]);
+
   const lineChartProps = useMemo(() => {
     if (!agents.length) return {};
 
@@ -73,23 +92,62 @@ export default function MultiAgentChart({
             const percentChange =
               baseline !== 0 ? ((value - baseline) / baseline) * 100 : 0;
 
-            const dateLabel = new Date(point.timestamp).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              hour: "numeric"
-            });
-
             return {
               value: percentChange,
               dataPointText: percentChange.toFixed(2) + "%",
-              label: dateLabel,
+              timestamp: point.timestamp,
             };
           })
           .filter(Boolean);
 
         if (data.length < 2) return null;
 
-        const color = colors.providers[agent.llm_provider] || colors.primary;
+        // Add labels to max 4 evenly spaced points (TradingView style)
+        const labelIndices = new Set<number>();
+        const maxLabels = 4;
+        if (data.length <= maxLabels) {
+          // Show all if we have 4 or fewer points
+          for (let i = 0; i < data.length; i++) {
+            labelIndices.add(i);
+          }
+        } else {
+          // Distribute labels evenly
+          const step = (data.length - 1) / (maxLabels - 1);
+          for (let i = 0; i < maxLabels; i++) {
+            labelIndices.add(Math.round(i * step));
+          }
+        }
+
+        // Apply labels
+        data.forEach((point, index) => {
+          if (labelIndices.has(index)) {
+            const date = new Date(point.timestamp);
+            // Format based on timeframe
+            let label = "";
+            if (timeframeKey === "day") {
+              // For 1h/24h: show time
+              label = date.toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              });
+            } else if (timeframeKey === "week") {
+              // For 7d: show day
+              label = date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              });
+            } else {
+              // For month/all: show date
+              label = date.toLocaleDateString("en-US", {
+                month: "short",
+                day: "numeric",
+              });
+            }
+            point.label = label;
+          }
+        });
+
+        const color = colors.providers?.[agent.llm_provider] || colors.surfaceForeground;
         return {
           id: agent.id,
           name: agent.name,
@@ -119,46 +177,70 @@ export default function MultiAgentChart({
 
 
   return (
-    <View
-      style={{
-        maxHeight: 200,
-        paddingBottom: 300,
-        paddingRight: 10
-      }}
+    <Animated.View
+      style={[
+        {
+          padding: 0,
+          // backgroundColor: colors.surface,
+          overflow: 'hidden',
+          borderWidth: 2,
+          borderColor: colors.border,
+          margin: 10,
+          borderRadius: 12
+        },
+        animatedStyle,
+      ]}
     >
       <LineChart
         {...lineChartProps}
-        textColor1="green"
-        trimYAxisAtTop
-        xAxisTextNumberOfLines={1}
-        yAxisOffset={-10}
-        showXAxisIndices
+        // animationDuration={800}
+        // areaChart
+        // isAnimated
+        // maxValue={600}
+        // spacing={1}
+        height={180}
         adjustToWidth
         animateOnDataChange
-        noOfSectionsBelowXAxis={1}
-        xAxisLabelsVerticalShift={10}
-        yAxisExtraHeight={0}
-
-        // areaChart
         hideDataPoints
-        // spacing={1}
-        thickness={2}
-        startOpacity={0.9}
-        endOpacity={0.2}
-        // isAnimated
-        // animationDuration={800}
         initialSpacing={0}
+        endOpacity1={1}
         noOfSections={2}
-        // maxValue={600}
-        yAxisColor="white"
-        yAxisThickness={0}
-        rulesType={ruleTypes.SOLID}
-        rulesColor={colors.border}
-        yAxisTextStyle={{
-          color: 'gray'
-        }}
+        xAxisType={ruleTypes.DOTTED}
+        noOfSectionsBelowXAxis={1}
+        showValuesAsDataPointsText
+        yAxisExtraHeight={10}
+        yAxisOffset={-40}
         yAxisTextNumberOfLines={3}
+        yAxisLabelSuffix="%"
+        yAxisThickness={0}
+        yAxisLabelContainerStyle={{
+          // fontSize: 12,
+        }}
+
+        // Zero-line (dashed)
+        showReferenceLine1
+        referenceLine1Position={0}
+        referenceLine1Config={{
+          color: withOpacity(colors.surfaceForeground, 0.4),
+          thickness: 1,
+          dashWidth: 4,
+          dashGap: 4,
+          labelText: '',
+        }}
+
+        // X-axis labels
+        xAxisLabelTextStyle={{
+          color: colors.foreground,
+          fontSize: 10,
+        }}
+
+        rulesType={ruleTypes.DASHED}
+        rulesColor={colors.foreground}
         xAxisColor={colors.foreground}
+        yAxisTextStyle={{
+          color: colors.foreground,
+          flexDirection: "column",
+        }}
 
         pointerConfig={{
           pointerStripHeight: 160,
@@ -168,7 +250,7 @@ export default function MultiAgentChart({
           radius: 6,
           pointerLabelWidth: 100,
           pointerLabelHeight: 90,
-          // activatePointersOnLongPress: true,
+          activatePointersOnLongPress: true,
           autoAdjustPointerLabelPosition: false,
           pointerLabelComponent: items => {
             return (
@@ -206,7 +288,7 @@ export default function MultiAgentChart({
           },
         }}
       />
-    </View>
+    </Animated.View>
 
   );
 }

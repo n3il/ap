@@ -7,6 +7,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AgentList from "@/components/AgentList";
+import AgentTable from "@/components/AgentTable";
 import MultiAgentChart from "@/components/agents/MultiAgentChart";
 import { PaddedView } from "@/components/ContainerView";
 import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
@@ -16,15 +17,16 @@ import { RefreshControl, View } from "@/components/ui";
 import GlassSelector from "@/components/ui/GlassSelector";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
+import { Ionicons } from "@expo/vector-icons";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ExploreScreen() {
   const [isFetching, setIsFetching] = useState(false);
+  const [viewMode, setViewMode] = useState<"list" | "table">("list");
   const queryClient = useQueryClient();
   const colors = useColors();
   const palette = colors.colors;
-  const { timeframe } = useTimeframeStore();
   const safeAreaInsets = useSafeAreaInsets();
 
   const handleRefresh = useCallback(async () => {
@@ -71,15 +73,13 @@ export default function ExploreScreen() {
           <View
             style={{
               flex: 1,
-              backgroundColor: palette.backgroundSecondary,
               paddingBottom: 4,
             }}
           >
             <MarketPricesWidget
               scrollY={10000}
-              sx={{
-                borderBottomWidth: 1,
-                borderBottomColor: palette.border,
+              style={{
+                marginVertical: 3,
               }}
             />
             <MultiAgentChart
@@ -93,15 +93,41 @@ export default function ExploreScreen() {
               sx={{
                 alignItems: "center",
                 flexDirection: "row",
+                justifyContent: "space-between",
                 gap: 2,
-                paddingTop: 2,
+                // paddingTop: 2,
                 paddingBottom: 1,
                 borderBottomWidth: 0.5,
                 borderBottomColor: palette.border,
               }}
             >
-              <GlassSelector />
+                <GlassSelector />
+
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
+              >
               <TimeFrameSelector />
+                <Pressable
+                  onPress={() =>
+                    setViewMode((prev) => (prev === "list" ? "table" : "list"))
+                  }
+                  style={{
+                    padding: 8,
+                    borderRadius: 8,
+                    borderColor: palette.border,
+                  }}
+                >
+                  <Ionicons
+                    name={viewMode === "list" ? "grid-outline" : "list-outline"}
+                    size={18}
+                    color={palette.foreground}
+                  />
+                </Pressable>
+              </View>
+
             </PaddedView>
           </View>
         </View>
@@ -112,11 +138,19 @@ export default function ExploreScreen() {
             flexDirection: "column"
           }}
         >
-          <AgentList
-            queryKey={["explore-agents"]}
-            isActive
-            scrollY={scrollY}
-          />
+          {viewMode === "list" ? (
+            <AgentList
+              queryKey={["explore-agents"]}
+              isActive
+              scrollY={scrollY}
+            />
+          ) : (
+            <AgentTable
+              published={true}
+              includeLatestAssessment={true}
+              isActive={true}
+            />
+          )}
         </View>
 
       </AnimatedScrollView>

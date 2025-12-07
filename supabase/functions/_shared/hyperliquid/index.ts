@@ -137,7 +137,7 @@ export async function getAccountSummary(userId: string, isTestnet: boolean): Pro
 }
 
 export async function executeHyperliquidTrade(
-  orderPayload: HyperliquidOrderBody,
+  orderPayload: hl.OrderRequest,
   isTestnet: boolean,
   wallet: string
 ): Promise<{ success: boolean, orderId: string | null, message: string }> {

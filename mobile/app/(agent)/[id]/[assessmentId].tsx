@@ -24,7 +24,7 @@ export default function AgentReportScreen() {
   });
 
   return (
-    <ContainerView style={{ flex: 1, padding: 16 }}>
+    <View style={{ flex: 1, padding: 16, paddingTop: 140 }}>
       {!normalizedId ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text>Missing assessment ID.</Text>
@@ -40,6 +40,6 @@ export default function AgentReportScreen() {
       ) : (
         <ReportDetail assessment={assessment} />
       )}
-    </ContainerView>
+    </View>
   );
 }

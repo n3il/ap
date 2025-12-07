@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Dimensions } from "react-native";
+import { Dimensions, ViewProps } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -17,7 +17,6 @@ import {
   Text,
   View,
 } from "@/components/ui";
-import { ROUTES } from "@/config/routes";
 import { useMarketHistory } from "@/hooks/useMarketHistory";
 import { NormalizedAsset, useMarketPrices } from "@/hooks/useMarketPrices";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
@@ -228,16 +227,11 @@ const PriceColumn = ({
   return (
     <GlassButton
       style={{
-        flex: 1,
-        padding: 10,
-        paddingVertical: 8,
         borderRadius: 12,
         width: width / 3,
-        marginLeft: GLOBAL_PADDING,
         flexDirection: "column",
+        borderWidth: 1,
       }}
-      glassEffectStyle="regular"
-      isInteractive
       enabled={false}
     >
       <View style={{ flexDirection: "row" }}>
@@ -331,7 +325,7 @@ const PriceColumn = ({
   );
 };
 
-export default function MarketPricesWidget({ sx: customSx, scrollY }) {
+export default function MarketPricesWidget({ style, scrollY }: {style: ViewStyle, scrollY: number}) {
   const { colors: palette } = useColors();
   const { timeframe } = useTimeframeStore();
   const { tickers, isLoading } = useMarketPrices();
@@ -351,11 +345,11 @@ export default function MarketPricesWidget({ sx: customSx, scrollY }) {
   }, [historyError]);
 
   return (
-    <Animated.View style={[customSx]}>
+    <Animated.View style={style}>
       <ScrollView
         horizontal
         scrollEventThrottle={16}
-        contentContainerStyle={[{ gap: 0, paddingRight: GLOBAL_PADDING }]}
+        contentContainerStyle={[{ gap: 0, paddingRight: 0 }]}
         showsHorizontalScrollIndicator={false}
       >
         {tickers.length ? (

@@ -9,11 +9,13 @@ import type { AssessmentType } from "@/types/agent";
 import TradeActionDisplay, { TradeSummary } from "./TradeActionDisplay";
 import PendingAssessmentCard from "@/components/PendingAssessmentCard";
 import useMarkdownStyles from "@/hooks/useMarkdownStyles";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;
 
 function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
+  const { isDark } = useTheme()
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const { colors: palette, withOpacity } = useColors();
@@ -83,9 +85,8 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
   return (
     <Card
       isInteractive
-      glassEffectStyle="clear"
+      glassEffectStyle={isDark ? "clear" : "regular"}
       variant="glass"
-      glassTintColor={withOpacity("#000", 0.9)}
     >
       <TouchableOpacity
         onPress={() => {

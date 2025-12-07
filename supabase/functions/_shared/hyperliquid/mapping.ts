@@ -1,6 +1,6 @@
 import { OrderRequest } from "@nktkas/hyperliquid";
 import { LLMTradeAction } from "../llm/types.ts";
-import { HyperliquidOrder, Position } from "./types.ts";
+import { AssetPosition, HyperliquidOrder } from "./types.ts";
 import { formatPrice, formatSize } from "@nktkas/hyperliquid/utils";
 
 export type AssetType = {
@@ -24,7 +24,7 @@ type TifType = "Alo" | "Ioc" | "Gtc";
 export function toHyperliquidOrder(
   asset: AssetType,
   trade: LLMTradeAction,
-  position: Position,
+  position: AssetPosition,
   opts: {
     cloid?: string;
     tif?: TifType;
@@ -75,15 +75,15 @@ export function toHyperliquidOrder(
   }
 
   if (trade.type === "CLOSE") {
-    const isBuy = Number(position.szi) < 0;
+    const isBuy = Number(position.position.szi) < 0;
     const lp = trade.exit_limit_price;
     return make({
       a: asset["Asset-Id"],
       b: isBuy,
       p: lp ? px(lp) : px(asset["Mid-Px"]),
-      s: position.szi,
+      s: position.position.szi,
       r: true,
-      t: { limit: { tif: lp ? limTif : mkTif } },
+      t: { limit: { tif: "Gtc" } }, // Always use GTC for CLOSE to ensure position gets closed
       ...(opts.cloid && { c: opts.cloid })
     });
   }

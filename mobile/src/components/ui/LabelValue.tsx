@@ -40,6 +40,7 @@ export const FormattedValueLabel = ({
         fontWeight: "300",
         fontFamily: "monospace",
         alignSelf: alignRight ? "flex-end" : "flex-start",
+        color: "surfaceForeground",
 
         ...(colorize
           ? {
@@ -91,7 +92,8 @@ const LabelValue: React.FC<LabelValueProps> = ({
         sx={{
           fontFamily: "monospace",
           alignSelf: alignRight ? "flex-end" : "flex-start",
-          color: "surfaceForeground"
+          color: "surfaceForeground",
+          opacity: .7
         }}
       >
         {label}

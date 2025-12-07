@@ -65,14 +65,9 @@ export default function SwipeableTabs({
   tabs,
   initialIndex = 0,
   onTabChange,
-  tabStyle,
-  activeTabStyle,
-  tabTextStyle,
-  activeTabTextStyle,
   indicatorColor = "#007AFF",
   contentStyle,
   renderTab,
-  tabWrapperStyle,
   tabContainerStyle,
   headerContent,
   onRefresh,
@@ -244,7 +239,8 @@ export default function SwipeableTabs({
               {
                 flexDirection: "row",
                 gap: 2,
-                paddingVertical: 12,
+                paddingVertical: 4,
+                marginTop: 8,
                 paddingHorizontal: GLOBAL_PADDING,
               },
               tabContainerStyle,
@@ -256,13 +252,11 @@ export default function SwipeableTabs({
               ) : (
                 <Pressable
                   key={tab.key}
-                  glassEffectStyle="clear"
                   style={{
                     alignSelf: "flex-start",
                     borderRadius: 16,
                     paddingHorizontal: 8,
                   }}
-                  tintColor={theme.colors.surface}
                   onPress={() => handleTabPress(index)}
                   onLayout={(event) => handleTabLayout(tab.key, event)}
                 >
@@ -273,11 +267,15 @@ export default function SwipeableTabs({
                         fontWeight: "600",
                         textTransform: "uppercase",
                         letterSpacing: 1.1,
+                        color: theme.colors.foreground,
+                        opacity: .3,
                       },
-                      tabTextStyle,
                       currentIndex === index && [
-                        { color: "rgba(255, 255, 255, 1)", fontWeight: "600" },
-                        activeTabTextStyle,
+                        {
+                          color: theme.colors.foreground,
+                          fontWeight: "600",
+                          opacity: 1,
+                        },
                       ],
                     ]}
                   >
