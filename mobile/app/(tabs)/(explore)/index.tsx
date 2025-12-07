@@ -85,11 +85,7 @@ export default function ExploreScreen() {
             <MultiAgentChart
               scrollY={scrollY}
               style={{
-                elevation: 10,
-                shadowColor: palette.shadow,
-                shadowOffset: { width: 0, height: 10 },
-                shadowOpacity: 0.9,
-                shadowRadius: 3.84,
+
               }}
             />
 

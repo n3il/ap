@@ -1,30 +1,26 @@
 import { type ComponentProps, useMemo } from "react";
 import type { SharedValue } from "react-native-reanimated";
-import SvgChart from "@/components/SvgChart";
 import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
+import { LineChart } from "react-native-gifted-charts"
+import { View } from "@/components/ui";
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
   style?: ComponentProps<typeof SvgChart>["style"];
 };
 
+// --- UTILITY ---
+
 const formatPercentValue = (value: number) => {
   if (!Number.isFinite(value)) return "0.00%";
-  const sign = value > 0 ? "+" : "";
+  const sign = value >= 0 ? "+" : "";
   return `${sign}${value.toFixed(2)}%`;
 };
 
-// const TIMEFRAME_KEY_MAP: Record<string, string> = {
-//   "1h": "perp1h",
-//   "24h": "perp24h",
-//   "7d": "perp7d",
-//   "30d": "perp30d",
-//   "All": "perpAlltime",
-// };
-
+// Map UI timeframe keys to backend history keys
 const TIMEFRAME_KEY_MAP: Record<string, string> = {
   "1h": "day",
   "24h": "day",
@@ -32,7 +28,8 @@ const TIMEFRAME_KEY_MAP: Record<string, string> = {
   "1M": "month",
   "All": "perpAlltime",
 };
-// "1h" | "24h" | "7d" | "1M" | "All";
+
+// --- COMPONENT ---
 
 export default function MultiAgentChart({
   scrollY,
@@ -44,62 +41,96 @@ export default function MultiAgentChart({
   const { histories: accountHistories, isLoading } =
     useAgentAccountValueHistories();
 
-  const lines = useMemo(() => {
-    if (!agents.length) return [];
+  const lineChartProps = useMemo(() => {
+    if (!agents.length) return {};
 
     const timeframeKey =
       TIMEFRAME_KEY_MAP[timeframe] ?? TIMEFRAME_KEY_MAP["24h"];
 
-    return agents
+    const processed = agents
       .map((agent) => {
         const agentHistory = accountHistories[agent.id];
         const timeframeHistory = agentHistory?.histories?.[timeframeKey];
+
         if (!timeframeHistory || timeframeHistory.length < 2) return null;
 
-        const startTimestamp = timeframeHistory[0]?.timestamp ?? 0;
-        const endTimestamp =
-          timeframeHistory[timeframeHistory.length - 1]?.timestamp ?? 0;
-        const timeRange = Math.max(endTimestamp - startTimestamp, 1);
-        const baseValue = timeframeHistory[0]?.value ?? 0;
+        // 1. Find baseline
+        const firstValidPoint = timeframeHistory.find((p) =>
+          Number.isFinite(Number(p?.value))
+        );
+        const baseline = Number(firstValidPoint?.value);
+        if (!Number.isFinite(baseline)) return null;
 
-        const normalizedData = timeframeHistory.map((point) => {
-          const normalizedTime =
-            timeRange === 0 ? 0 : (point.timestamp - startTimestamp) / timeRange;
-          const percentChange =
-            baseValue === 0 ? 0 : ((point.value - baseValue) / baseValue) * 100;
+        // 2. Convert to percent-change & flatten format to what LineChart expects
+        const data = timeframeHistory
+          .map((point) => {
+            const timestamp = new Date(point.timestamp).getTime();
+            const value = Number(point.value);
+            if (!Number.isFinite(timestamp) || !Number.isFinite(value)) {
+              return null;
+            }
+            const percentChange =
+              baseline !== 0 ? ((value - baseline) / baseline) * 100 : 0;
 
-          return {
-            time: normalizedTime,
-            value: percentChange,
-          };
-        });
+            const dateLabel = new Date(point.timestamp).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "numeric"
+            });
+
+            return {
+              value: percentChange,
+              dataPointText: percentChange.toFixed(2) + "%",
+              label: dateLabel,
+            };
+          })
+          .filter(Boolean);
+
+        if (data.length < 2) return null;
 
         return {
           id: agent.id,
           name: agent.name,
-          axisGroup: "right" as const,
           color: colors.providers[agent.llm_provider] || colors.primary,
-          formatValue: formatPercentValue,
-          data: normalizedData,
+          data,
         };
       })
-      .filter((line): line is NonNullable<typeof line> => line !== null);
+      .filter(Boolean);
+
+    // Now assemble into spreadable props:
+    const output: Record<string, any> = {};
+
+    processed.forEach((line, index) => {
+      const i = index + 1;
+
+      output[`data${i === 1 ? "" : i}`] = line.data;
+      output[`color${i}`] = line.color;
+      output[`name${i}`] = line.name;
+    });
+
+    return output;
   }, [agents, accountHistories, colors, timeframe]);
 
 
   return (
-    <SvgChart
-      key={timeframe}
-      lines={lines}
-      scrollY={scrollY}
-      isLoading={isLoading}
-      style={style}
-      chartPadding={{
-        top: 15,
-        right: 0,
-        bottom: 0,
-        left: 0,
+    <View
+      style={{
+        width: "100%",
+        aspectRatio: 2,
+        maxHeight: 250,
+        paddingBottom: 300
       }}
-    />
+    >
+      <LineChart
+        {...lineChartProps}
+        showVerticalLines
+        textColor1="green"
+        dataPointsHeight={6}
+        dataPointsWidth={6}
+        yAxisOffset={-10}
+        showXAxisIndices
+      />
+    </View>
+
   );
 }

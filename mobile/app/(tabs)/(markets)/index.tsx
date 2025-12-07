@@ -1,5 +1,5 @@
 import ContainerView from "@/components/ContainerView";
-import { TradingViewChart } from "@/components/trading";
+import TradingViewChart from "@/components/trading/TradingViewChart";
 import { Dimensions, View } from "@/components/ui";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 

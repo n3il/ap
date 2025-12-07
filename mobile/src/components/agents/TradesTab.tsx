@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   View,
 } from "@/components/ui";
-import { formatPriceDisplay, formatTradeSize } from "@/components/markets/utils";
 import {
   useHyperliquidRequests,
   useHyperliquidStore,
@@ -175,10 +174,10 @@ export default function TradesTab() {
                 fontWeight: "600",
               }}
             >
-              {formatPriceDisplay(item.px)}
+              {item.px}
             </Text>
             <Text sx={{ color: "mutedForeground", fontSize: 11 }}>
-              {formatTradeSize(item.sz, item.coin)}
+              {item.sz}
             </Text>
           </View>
 

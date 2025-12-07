@@ -28,8 +28,8 @@ export const ConnectionIndicator = () => {
       style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
       disabled={connectionState !== "disconnected"}
     >
-      <Text style={{color:"#fff"}}>
-        {connectionState} {latencyMs?.toFixed()}
+      <Text style={{color: palette.muted }}>
+        {latencyMs?.toFixed()}
       </Text>
       {connectionState === "connecting" ? (
         <ActivityIndicator size="small" color={palette.mutedForeground} />

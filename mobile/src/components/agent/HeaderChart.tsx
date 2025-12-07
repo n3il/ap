@@ -21,7 +21,7 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
   const { data: agent } = useAgent(agentId);
 
   // Fetch sentiment scores using performant JSON column selection
-  const { data: sentimentScores = [], error: errorr } = useQuery({
+  const { data: sentimentScores = [] } = useQuery({
     queryKey: ["sentimentScores", agentId, timeframe],
     queryFn: () =>
       assessmentService.getSentimentScores(agentId, {
@@ -107,6 +107,7 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
   const lines = useMemo(() => {
     const combined = [];
     if (sentimentLine) combined.push(sentimentLine);
+    if (equityLines?.length) combined.push(...equityLines);
     return combined;
   }, [sentimentLine, equityLines]);
 

@@ -89,6 +89,7 @@ const buildColors = (legacy: LegacyTheme["colors"]) => {
     background: legacy.background,
     backgroundSecondary: legacy.backgroundSecondary ?? legacy.surface,
     surface: legacy.surface,
+    surfaceLight: legacy.surfaceLight ?? legacy.surface,
     surfaceSecondary: legacy.backgroundSecondary ?? legacy.surface,
     foreground: legacy.foreground,
     textPrimary: legacy.text.primary,

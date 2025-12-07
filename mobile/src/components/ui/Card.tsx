@@ -74,18 +74,10 @@ const Card: React.FC<CardProps> = ({
           borderRadius,
           paddingHorizontal: 6,
           paddingVertical: 8,
+          padding: 4,
         }, glassStyle]}
       >
-        <View
-          sx={{
-            padding: 4,
-            borderRadius: "xl",
-            ...sx,
-          }}
-          style={[{ borderRadius }, style]}
-        >
-          {children}
-        </View>
+        {children}
       </GlassView>
     );
   }

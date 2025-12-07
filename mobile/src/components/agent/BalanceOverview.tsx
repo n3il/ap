@@ -26,7 +26,7 @@ export default function BalanceOverview({
   return (
     <View sx={{
       gap: 4,
-      backgroundColor: palette.surface,
+      backgroundColor: palette.surfaceLight,
       padding: 3,
       borderWidth: 1.5,
       borderRadius: 4

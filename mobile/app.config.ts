@@ -39,7 +39,7 @@ export default {
       "expo-font",
       [
         "expo-splash-screen", {
-          backgroundColor: "#101a2c",
+          backgroundColor: "#378593",
           image: "./assets/puppet-bare-icon-w.png",
           dark: {
             image: "./assets/puppet-bare-icon.png",

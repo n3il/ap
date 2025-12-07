@@ -1,25 +1,16 @@
-import { LinearGradient } from "expo-linear-gradient";
-import { Image } from "@/components/ui";
-import theme from "@/theme/base";
+import { Image, View } from "@/components/ui";
+import { useColors } from "@/theme";
 
 export default function SplashScreen() {
+  const { colors: palette, withOpacity } = useColors()
   return (
-    <LinearGradient
-      colors={[
-        theme.colors.background,
-        theme.colors.background,
-        theme.colors.backgroundSecondary ?? theme.colors.surface,
-      ]}
-      locations={[0, 0.78, 1]}
-      style={{
-        flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        position: "relative",
-      }}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 0, y: 1 }}
-    >
+    <View style={{
+      backgroundColor: withOpacity(palette.backgroundSplash, .8),
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      position: "relative",
+    }}>
       <Image
         source={require("@assets/puppet-bare-icon-w-s.svg")}
         style={{
@@ -29,6 +20,6 @@ export default function SplashScreen() {
         }}
         contentFit="contain"
       />
-    </LinearGradient>
+    </View>
   );
 }

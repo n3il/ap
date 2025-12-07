@@ -91,6 +91,7 @@ const LabelValue: React.FC<LabelValueProps> = ({
         sx={{
           fontFamily: "monospace",
           alignSelf: alignRight ? "flex-end" : "flex-start",
+          color: "surfaceForeground"
         }}
       >
         {label}

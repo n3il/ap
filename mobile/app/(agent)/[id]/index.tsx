@@ -14,7 +14,6 @@ import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ROUTES } from "@/config/routes";
-import { TradeHistory } from "@/components/trading";
 import TradesTab from "@/components/agents/TradesTab";
 
 const HEADER_HEIGHT = 220;

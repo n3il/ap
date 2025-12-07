@@ -91,21 +91,6 @@ export default function AgentCard({
 }) {
   const { colors: palette } = useColors();
   const accountData = useAccountBalance({ agent });
-  const surfaceColor =
-    typeof palette.surface === "string" ? palette.surface : undefined;
-  const borderColor =
-    typeof palette.border === "string" ? palette.border : undefined;
-
-  // Animation values
-  const scale = useSharedValue(1);
-  const borderOpacity = useSharedValue(0);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    // transform: [{ scale: scale.value }],
-    // borderWidth: transparent ? 0 : .1,
-    // borderColor: `rgba(124, 255, 170, ${borderOpacity.value})`,
-  }));
-
   return (
     <Animated.View
       style={[
@@ -114,11 +99,9 @@ export default function AgentCard({
           paddingHorizontal: 18,
           borderRadius: 12,
           marginHorizontal: 10,
-          backgroundColor: surfaceColor ?? "#ffffff",
-          borderColor: borderColor ?? "#171717ff",
+          borderColor: palette.border,
           borderWidth: 1,
         },
-        animatedStyle,
         style,
       ]}
       {...props}

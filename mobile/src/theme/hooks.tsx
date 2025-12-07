@@ -56,7 +56,9 @@ export const useColors = () => {
       warning: get("warning"),
       info: get("info") ?? get("brand"),
       background: get("background"),
+      backgroundSplash: get("backgroundSplash"),
       surface: get("surface"),
+      surfaceLight: get("surfaceLight"),
       border: get("border"),
       textPrimary:
         resolvedColors.text?.primary ?? fallback.text?.primary ?? undefined,

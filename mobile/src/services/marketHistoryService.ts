@@ -99,10 +99,11 @@ export function useCandleHistory(
         const startTimeSec = Math.floor(startTimeMs / 1000);
 
         const results: Record<string, CandlePoint[]> = {};
+        const coinsToFetch = coins.slice(0, 2);
 
-        await Promise.all(
-          coins.slice(0, 2).map(async (coin) => {
-            const resp = await sendRequest({
+        const perCoinResults = await Promise.all(
+          coinsToFetch.map((coin) =>
+            sendRequest({
               type: "info",
               payload: {
                 type: "candleSnapshot",
@@ -113,24 +114,56 @@ export function useCandleHistory(
                   endTime: endTimeSec,
                 },
               },
-            });
-            console.log(resp.payload?.data)
+            })
+              .then((resp) => {
+                const rawCandles: any[] = resp?.payload?.data ?? [];
+                const normalized = rawCandles
+                  .map(normalizeCandlePoint)
+                  .filter((c): c is CandlePoint => c !== null);
 
-            const rawCandles: any[] = resp?.payload?.data ?? [];
-            const normalized = rawCandles
-              .map(normalizeCandlePoint)
-              .filter((c): c is CandlePoint => c !== null);
-
-            results[coin] = clampToWindow(
-              normalized.sort((a, b) => a.timestamp - b.timestamp),
-              config.durationMs,
-              endTimeMs,
-            );
-          }),
+                console.log('asdf', config.interval, resp)
+                return {
+                  coin,
+                  candles: clampToWindow(
+                    normalized.sort((a, b) => a.timestamp - b.timestamp),
+                    config.durationMs,
+                    endTimeMs,
+                  ),
+                  error: null as Error | null,
+                };
+              })
+              .catch((coinErr) => {
+                console.error(`Failed to fetch candles for ${coin}`, coinErr);
+                return {
+                  coin,
+                  candles: [] as CandlePoint[],
+                  error:
+                    coinErr instanceof Error
+                      ? coinErr
+                      : new Error(String(coinErr)),
+                };
+              }),
+          ),
         );
+
+        let firstError: Error | null = null;
+        let successfulFetches = 0;
+
+        perCoinResults.forEach(({ coin, candles, error }) => {
+          if (!error) {
+            results[coin] = candles;
+            successfulFetches += 1;
+            return;
+          }
+
+          if (!firstError) {
+            firstError = error;
+          }
+        });
 
         if (!cancelled) {
           setData(results);
+          setError(successfulFetches === 0 ? firstError : null);
         }
       } catch (err: unknown) {
         if (!cancelled) {

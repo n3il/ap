@@ -90,7 +90,10 @@ const darkTheme = {
     // Semantic colors for dark mode
     background: "#1f2436ff",
     backgroundSecondary: "#101a2c",
+    backgroundSplash: "#101a2c",
     surface: "#0f172a",
+    surfaceForeground: "#f8fafc",
+    surfaceLight: "#0f172a",
     surfaceBorder: "#323e59ff",
     surfaceDark: "#232323",
     shadow: "rgba(0, 0, 0, .2)",
