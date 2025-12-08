@@ -91,7 +91,6 @@ const PriceColumn = ({
   const { colors: palette } = useColors();
 
   const _hasChange = Number.isFinite(rangePercent);
-  console.log(displayAsset)
 
   // Price flash effect
   const priceOpacity = useSharedValue(1);
@@ -250,7 +249,7 @@ const PriceColumn = ({
               {
                 textTransform: "uppercase",
                 letterSpacing: 1.2,
-                color: palette.mutedForeground,
+                color: palette.textSecondary,
               },
               symbolStyle,
             ]}

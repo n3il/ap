@@ -14,7 +14,7 @@ const purplePalette = {
 
 const accentPalette = {
   DEFAULT: "#7CFFAA",
-  foreground: "#002b1a",
+  foreground: "#ffffffff",
   50: "#f0fff7",
   100: "#d9ffe9",
   200: "#b3ffd3",

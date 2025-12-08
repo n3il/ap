@@ -131,6 +131,7 @@ export default function MultiAgentChart({
           value: percentChange,
           dataPointText: percentChange.toFixed(2) + "%",
           timestamp: point.timestamp,
+          hideDataPoint: i !== timeframeHistory.length - 1
         });
       }
 
@@ -222,8 +223,6 @@ export default function MultiAgentChart({
         // yAxisColor={withOpacity(textColor, .1)}
         // yAxisThickness={0.5}
         yAxisThickness={0}
-
-        // horizSections={}
         dataSet={dataSet}
         disableScroll
         thickness={2}
@@ -233,17 +232,17 @@ export default function MultiAgentChart({
         height={180}
         adjustToWidth
         animateOnDataChange
-        hideDataPoints
-        // hideOrigin
+        // hideDataPoints
+        hideOrigin
         initialSpacing={0}
         endSpacing={30}
-        noOfSections={4}
         xAxisType={ruleTypes.DASHED}
-        noOfSectionsBelowXAxis={1}
+        textShiftX={-100}
+        // noOfSectionsBelowXAxis={1}
         showValuesAsDataPointsText
         yAxisExtraHeight={-10}
         yAxisOffset={-yOffset}
-        yAxisTextNumberOfLines={0}
+        yAxisTextNumberOfLines={9}
         yAxisLabelSuffix="%"
         // yAxisLabelWidth={0}
         showDataPointOnFocus
@@ -252,9 +251,11 @@ export default function MultiAgentChart({
           left: 30
         }}
 
+        stepChart
+
         // Zero-line (dashed) - positioned at 0% on the chart
         showReferenceLine1
-        referenceLine1Position={yOffset + 3.6}
+        referenceLine1Position={0.0}
         referenceLine1Config={{
           color: withOpacity(textColor, .4),
           thickness: 1,
@@ -280,21 +281,29 @@ export default function MultiAgentChart({
         }}
         xAxisThickness={1}
 
+        horizontalRulesStyle={{
+          color: "#000"
+        }}
         rulesThickness={.5}
         rulesType={ruleTypes.SOLID}
-        rulesColor={withOpacity(textColor, .3)}
-        xAxisColor={withOpacity(textColor, .3)}
+        rulesColor={withOpacity(textColor, .7)}
+        xAxisColor={withOpacity(textColor, .7)}
         yAxisTextStyle={{
           color: textColor,
           flexDirection: "column",
           fontSize: 10
         }}
 
+        curved
+        scrollToEnd
+        showTextOnFocus
+        showStripOnFocus
+
         pointerConfig={{
-          pointerStripHeight: 160,
+          // pointerStripHeight: 160,
           pointerStripColor: 'lightgray',
           pointerStripWidth: 2,
-          pointerColor: 'lightgray',
+          pointerColor: '#333',
           radius: 2,
           pointerLabelWidth: 100,
           pointerLabelHeight: 90,

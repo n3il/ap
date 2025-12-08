@@ -343,7 +343,6 @@ export default function MarketPricesWidget({ sx: customSx, scrollY }) {
   const { data: historyData, isFetching: historyFetching } = useMarketHistory(
     timeframe,
   );
-  console.log({ historyData })
 
   return (
     <Animated.View style={[customSx]}>

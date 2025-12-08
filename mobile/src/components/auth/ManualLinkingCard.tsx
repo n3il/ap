@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "@/components/ui";
+import { useTheme } from "@/contexts/ThemeContext";
 
 type Identity = {
   identity_id: string;
@@ -52,6 +53,7 @@ function extractCodeFromUrl(url: string) {
 
 export default function ManualLinkingCard() {
   const colors = useColors();
+  const { isDark } = useTheme()
   const palette = colors.colors;
   const [identities, setIdentities] = useState<Identity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -117,7 +119,7 @@ export default function ManualLinkingCard() {
     setStatusMessage(null);
     setLinkingProvider(provider);
     try {
-      const redirectTo = makeRedirectUri({ scheme: "ap" });
+      const redirectTo = makeRedirectUri({ scheme: process.env.EXPO_PUBLIC_REDIRECT_URL });
       const { data, error } = await supabase.auth.linkIdentity({
         provider,
         options: {
@@ -201,14 +203,17 @@ export default function ManualLinkingCard() {
 
   return (
     <GlassView
-      glassEffectStyle="clear"
-      tintColor={colors.withOpacity(palette.foreground, 0.9)}
-      style={{
-        borderRadius: 24,
-        padding: 20,
-        gap: 16,
-      }}
-    >
+        glassEffectStyle="clear"
+        tintColor={
+          isDark
+            ? colors.withOpacity(palette.background, 0.9)
+            : colors.withOpacity(palette.foreground, 0.9)
+        }
+        style={{
+          borderRadius: 24,
+          padding: 20,
+        }}
+      >
       <View>
         <Text variant="lg" sx={{ fontWeight: "700", color: "textPrimary" }}>
           Manual identity linking
@@ -359,7 +364,7 @@ export default function ManualLinkingCard() {
                   ) : (
                     <Text
                       sx={{
-                        color: "accentForeground",
+                        color: "foreground",
                         fontWeight: "600",
                       }}
                     >

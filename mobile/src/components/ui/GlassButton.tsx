@@ -9,6 +9,10 @@ const styleVariants = {
     paddingHorizontal: 8,
     paddingVertical: 8,
   },
+  square: {
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
   minimal: {
     paddingHorizontal: 12,
     paddingVertical: 0,
@@ -60,7 +64,8 @@ export default function GlassButton({
       {typeof children === "string" ? (
         <Text style={{
           fontWeight: "600",
-          textAlign: "center"
+          textAlign: "center",
+          color: colors.surfaceForeground
         }}>
           {children}
         </Text>

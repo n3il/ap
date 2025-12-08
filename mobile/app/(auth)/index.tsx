@@ -222,7 +222,7 @@ export default function Auth() {
             }}
           >
             <GlassButton
-              style={{ flex: 1 }}
+              style={{ flex: 5 }}
               onPress={toggleAuthMode}
               disabled={loading}
               styleVariant="paddedFull"
@@ -298,6 +298,7 @@ export default function Auth() {
               styleVariant="paddedFull"
               onPress={handleGoogleSignIn}
               disabled={loading}
+              style={{ flex: 1 }}
             >
               <AntDesign name="google" size={22} color={colors.error} />
             </GlassButton>
@@ -306,6 +307,7 @@ export default function Auth() {
               styleVariant="paddedFull"
               onPress={handleAppleSignIn}
               disabled={loading}
+              style={{ flex: 1 }}
             >
               <AntDesign name="apple" size={22} color={palette.foreground} />
             </GlassButton>
@@ -341,7 +343,6 @@ export default function Auth() {
                 disabled={loading}
                 styleVariant="paddedFull"
                 tintColor={palette.surface}
-                glassEffectStyle="regular"
               >
                 {loading ? (
                   <ActivityIndicator color={palette.foreground} />

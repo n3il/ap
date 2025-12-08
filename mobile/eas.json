@@ -9,6 +9,9 @@
       "distribution": "internal",
       "ios": {
         "simulator": false
+      },
+      "env": {
+        "APP_VARIANT_EXT": ".development"
       }
     },
     "preview": {
@@ -16,6 +19,9 @@
       "distribution": "internal",
       "ios": {
         "simulator": false
+      },
+      "env": {
+        "APP_VARIANT_EXT": ".preview"
       }
     },
     "production": {

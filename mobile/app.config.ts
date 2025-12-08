@@ -1,16 +1,15 @@
 import { ExpoConfig, ConfigContext } from '@expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const variant = process.env.APP_VARIANT;
-  const isTest = process.env.APP_VARIANT !== "production";
-  const variantId = isTest ? variant : '';
+  const appIdentifier = `com.puppetai.app${process.env.APP_VARIANT_EXT}`;
 
   return {
+    ...config,
     name: "Puppet",
     slug: "puppet-ai",
     scheme: [
-      "com.puppetai",
-      `com.puppetai.app${variantId}`,
+      "puppetai",
+      appIdentifier,
     ],
     version: "0.1.0",
     orientation: "portrait",
@@ -18,8 +17,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     backgroundColor: "#000000",
     ios: {
       usesAppleSignIn: true,
-      bundleIdentifier: `com.puppetai.app${variantId}`,
-      deploymentTarget: "16.0",
+      bundleIdentifier: appIdentifier,
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
         NSUserNotificationsUsageDescription:
@@ -36,8 +34,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      package: `com.puppetai.app${variantId}`,
-      usesCleartextTraffic: false
+      package: appIdentifier,
     },
     web: {
       favicon: "./assets/favicon.png",
@@ -52,7 +49,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
           image: "./assets/puppet-bare-icon-w.png",
           dark: {
             image: "./assets/puppet-bare-icon.png",
-            backgroundColor: "#101a2c"
+            backgroundColor: "#378593"
           },
           imageWidth: 230
         }
@@ -71,7 +68,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-apple-authentication",
       "expo-notifications",
       "@sentry/react-native/expo",
-      isTest && [
+      [
         "expo-dev-client",
         {
           "launchMode": "most-recent"

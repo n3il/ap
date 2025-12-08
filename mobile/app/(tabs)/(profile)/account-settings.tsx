@@ -110,7 +110,7 @@ export default function AccountSettingsScreen() {
   };
 
   return (
-    <ContainerView style={{ flex: 1, paddingBottom: 120 }}>
+    <ContainerView style={{ flex: 1 }}>
       <KeyboardAvoidingView style={{ flex: 1 }}>
         <View
           sx={{
@@ -199,10 +199,13 @@ export default function AccountSettingsScreen() {
           )}
         </View>
 
-        <ScrollView sx={{ flex: 1 }} showsVerticalScrollIndicator={false}>
+        <ScrollView
+          style={{ flex: 1, gap: 8, }} showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ gap: 18, paddingBottom: "60%" }}
+        >
           <AnimatedBox
             entering={FadeInDown.delay(100).springify()}
-            sx={{ paddingHorizontal: 6, marginBottom: 6, flex: 1 }}
+            style={{ paddingHorizontal: 6, marginBottom: 6, flex: 1 }}
           >
             <GlassView
               glassEffectStyle="clear"
@@ -365,7 +368,7 @@ export default function AccountSettingsScreen() {
               </Text>
 
               <View sx={{ paddingVertical: 3 }}>
-                <View sx={{ flexDirection: "row", alignItems: "center" }}>
+                <View sx={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
                   <View
                     sx={{
                       width: 40,
@@ -436,7 +439,6 @@ export default function AccountSettingsScreen() {
                           variant="sm"
                           sx={{
                             fontWeight: "600",
-                            marginLeft: 2,
                             color: selected
                               ? "accentForeground"
                               : "textPrimary",
