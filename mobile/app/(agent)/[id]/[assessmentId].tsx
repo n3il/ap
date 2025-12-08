@@ -4,8 +4,11 @@ import ContainerView from "@/components/ContainerView";
 import ReportDetail from "@/components/reports/Detail";
 import { ActivityIndicator, Text, View } from "@/components/ui";
 import { assessmentService } from "@/services/assessmentService";
+import { useColors } from "@/theme";
 
 export default function AgentReportScreen() {
+  const { colors: palette } = useColors();
+
   const { assessmentId } = useLocalSearchParams();
   const normalizedId =
     typeof assessmentId === "string" && assessmentId.length > 0
@@ -24,7 +27,7 @@ export default function AgentReportScreen() {
   });
 
   return (
-    <View style={{ flex: 1, padding: 16, paddingTop: 140 }}>
+    <View style={{ flex: 1, padding: 16, paddingTop: 140, backgroundColor: palette.background }}>
       {!normalizedId ? (
         <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
           <Text>Missing assessment ID.</Text>

@@ -58,10 +58,6 @@ const Card: React.FC<CardProps> = ({
   // Glass variant uses expo-glass-effect
   if (variant === "glass") {
     const borderRadius = theme.radii?.xl ?? 16;
-    const baseTint =
-      palette.background ??
-      palette.surface ??
-      palette.backgroundSecondary;
     const normalizedIntensity =
       Math.min(Math.max(glassIntensity, 0), 100) / 100;
     const tintOpacity = Math.max(0.05, normalizedIntensity || 0.2);
@@ -77,8 +73,7 @@ const Card: React.FC<CardProps> = ({
           borderRadius,
           paddingHorizontal: 6,
           paddingVertical: 8,
-          padding: 4,
-        }, glassStyle]}
+        }, glassStyle, style]}
       >
         {children}
       </GlassView>

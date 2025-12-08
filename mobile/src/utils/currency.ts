@@ -1,3 +1,5 @@
+import { withOpacity } from "@/theme";
+
 const currencySymbol = "$";
 
 export function formatCompact(
@@ -58,12 +60,11 @@ export function numberToColor(num) {
   }
 }
 
-export function sentimentToColor(sentimentScore) {
+export function sentimentToColor(sentimentScore: number) {
   if (sentimentScore === 0) {
     return "mutedForeground";
   }
 
-  const color = sentimentScore > 0 ? "success" : "error";
-  const modifier = Math.abs(sentimentScore) > 0.7 ? "" : "Light";
-  return `${color}${modifier}`;
+  const color = sentimentScore > 0 ? "long" : "short";
+  return withOpacity(color, Math.max(0.3, Math.abs(sentimentScore)))
 }

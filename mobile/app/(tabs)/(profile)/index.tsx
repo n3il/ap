@@ -21,6 +21,7 @@ import { useColors } from "@/theme";
 import { useEffect } from "react";
 import { ROUTES } from "@/config/routes";
 import DebugOverlay from "@/components/DebugOverlay";
+import { colors } from "react-native-keyboard-controller/lib/typescript/components/KeyboardToolbar/colors";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
@@ -119,11 +120,15 @@ export default function ProfileScreen() {
           <Card
             sx={{
               borderRadius: 24,
+              backgroundColor: "transparent",
+              borderWidth: 1,
+              borderColor: palette.border
             }}
           >
             <Avatar
               name={user.user_metadata?.full_name}
               email={user.email}
+              phoneNumber={user.phone}
               size="md"
             />
           </Card>

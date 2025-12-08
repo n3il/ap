@@ -65,8 +65,16 @@ function PositionDetailRow({
 //   unrealizedPnl: number;
 // };
 
-export function PositionRow({ position }: { position: PositionListItem }) {
-  const [expanded, setExpanded] = useState(false);
+export function PositionRow({
+  position,
+  defaultExpanded = false,
+  style = {},
+}: {
+  position: PositionListItem,
+  defaultExpanded?: boolean,
+  style?: ViewStyle
+}) {
+  const [expanded, setExpanded] = useState(defaultExpanded);
   const { colors: palette } = useColors();
 
   const {
@@ -116,7 +124,7 @@ export function PositionRow({ position }: { position: PositionListItem }) {
         : (palette.secondary ?? palette.textTertiary);
 
   return (
-    <View sx={{ paddingBottom: 3 }}>
+    <View sx={{ paddingBottom: 3 }} style={style}>
       <TouchableOpacity
         onPress={() => setExpanded(!expanded)}
         activeOpacity={0.7}

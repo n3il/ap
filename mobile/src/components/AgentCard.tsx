@@ -1,16 +1,13 @@
 import { Pressable, ViewStyle } from "react-native";
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-} from "react-native-reanimated";
+import Animated from "react-native-reanimated";
 import AccountStats from "@/components/agent/AccountStats";
 import { Avatar, Text, View } from "@/components/ui";
-import { useColors } from "@/theme";
+import { useColors, withOpacity } from "@/theme";
 import type { AgentType, AssessmentRecordType } from "@/types/agent";
-import { sentimentToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import PositionList from "./PositionList";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
+import SentimentBadge from "./agent/SentimentBadge";
 
 type AssessmentPreviewProps = {
   assessmentData: AssessmentRecordType;
@@ -20,37 +17,32 @@ type AssessmentPreviewProps = {
 export function AssessmentPreview({
   assessmentData,
   style = {},
-}: AssessmentPreviewProps) {
+  innerStyle = {},
+}: {
+  assessmentData: AssessmentRecordType;
+  style?: ViewStyle;
+  innerStyle?: ViewStyle;
+}) {
   return (
     <View style={style}>
       <View
-        sx={{
-          flexDirection: "row",
+        style={[{
+          flexDirection: "column",
           // justifyContent: "space-between",
           justifyContent: "flex-start",
           alignItems: "flex-start",
           gap: 2,
-        }}
-      >
-        <Text
-          variant="xs"
-          sx={{
-            color: sentimentToColor(
-              assessmentData.parsed_llm_response?.headline?.sentiment_score,
-            ),
-            fontStyle: "italic",
-            fontWeight: "700",
-            marginBottom: 2,
-          }}
-        >
-          feeling {assessmentData.parsed_llm_response?.headline?.sentiment_word?.toLowerCase()}{" "}
-          {`(${assessmentData.parsed_llm_response?.headline?.sentiment_score})`}
-        </Text>
 
+        }, innerStyle]}
+      >
+        <SentimentBadge
+          sentimentScore={assessmentData.parsed_llm_response?.headline?.sentiment_score}
+          sentimentWord={assessmentData.parsed_llm_response?.headline?.sentiment_word}
+        />
         <Text
           variant="xs"
           sx={{
-            fontWeight: "100",
+            fontWeight: "300",
             fontStyle: "italic",
             textAlign: "right",
           }}
@@ -59,6 +51,7 @@ export function AssessmentPreview({
             ? `${formatRelativeDate(assessmentData.timestamp)}`
             : "-"}
         </Text>
+
       </View>
 
       <Text
@@ -99,7 +92,7 @@ export default function AgentCard({
           paddingHorizontal: 18,
           borderRadius: 12,
           marginHorizontal: 10,
-          borderColor: palette.border,
+          borderColor: withOpacity(palette.border, .6),
           borderWidth: 1,
           // backgroundColor: palette.surfaceLight
         },
@@ -137,32 +130,19 @@ export default function AgentCard({
             assessmentData={agent.latest_assessment}
           />
         ) : null}
-
-        {/* {agent.latest_assessment?.parsed_llm_response?.tradeActions?.length >
-          0 && (
-          <TradeSummary
-            tradeActions={
-              agent.latest_assessment?.parsed_llm_response?.tradeActions
-            }
-          />
-        )} */}
       </Pressable>
 
       {showPositions && accountData.openPositions.length > 0 ? (
         <View sx={{
           marginTop: 2,
+          borderTopColor: withOpacity(palette.border, .4),
+          borderTopWidth: .5,
+          paddingTop: 4,
+          marginTop: 4,
         }}>
           <PositionList positions={accountData.openPositions} top={3} />
         </View>
       ) : null}
-
-      {/* {parsedAssessment.tradeActions?.map((action, index) => (
-      <TradeActionDisplay
-        key={`${action.asset ?? 'action'}-${index}`}
-        actionData={action}
-        showReason={true}
-      />
-    ))} */}
     </Animated.View>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { calcPnLByTimeframe } from "@/hooks/useAccountBalance";
-import { useHyperliquidRequests } from "@/hooks/useHyperliquid";
+import { useHyperliquidInfo } from "@/hooks/useHyperliquid";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 
 type HistoryPoint = {
@@ -78,7 +78,7 @@ const deriveTotals = (histories: HistorySeriesMap) => {
 
 export function useAgentAccountValueHistories() {
   const agents = useExploreAgentsStore((state) => state.agents);
-  const { sendRequest } = useHyperliquidRequests();
+  const infoClient = useHyperliquidInfo();
   const [histories, setHistories] = useState<Record<string, AgentHistoryState>>(
     {},
   );
@@ -144,14 +144,12 @@ export function useAgentAccountValueHistories() {
 
       (async () => {
         try {
-          const response = await sendRequest({
-            type: "info",
-            payload: { type: "portfolio", user: address },
+          const data = await infoClient.portfolio({
+            user: address,
           });
           if (isCancelled) return;
 
-          const payloadData: Array<[string, any]> =
-            response?.payload?.data ?? [];
+          const payloadData: Array<[string, any]> = data ?? [];
           const accountValueHistory = calcPnLByTimeframe(payloadData);
           const seriesMap: HistorySeriesMap = payloadData.reduce(
             (acc, [timeframeKey, summary]) => {
@@ -195,7 +193,7 @@ export function useAgentAccountValueHistories() {
     return () => {
       isCancelled = true;
     };
-  }, [addressToAgents, sendRequest]);
+  }, [addressToAgents, infoClient]);
 
   const isLoading = useMemo(() => {
     return Object.keys(agentAddresses).some((agentId) => {

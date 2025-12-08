@@ -1,29 +1,28 @@
-import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams } from "expo-router";
 import { useMemo, useRef, useState } from "react";
-import { StyleSheet } from "react-native";
 import BalanceOverview from "@/components/agent/BalanceOverview";
 import AgentHeader from "@/components/agent/Header";
-import HeaderChart from "@/components/agent/HeaderChart";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
 import ContainerView, {
   GLOBAL_PADDING,
   PaddedView,
 } from "@/components/ContainerView";
-import { Animated, Stack, SwipeableTabs } from "@/components/ui";
+import { Animated, SwipeableTabs, View } from "@/components/ui";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ROUTES } from "@/config/routes";
 import TradesTab from "@/components/agents/TradesTab";
+import PositionsTab from "@/components/agents/PositionsTab";
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
   const { colors: palette } = useColors();
   const { id: agentId } = useLocalSearchParams();
   const { data: agent, refetch, isRefetching } = useAgent(agentId);
-  const router = useRouter();
   const scrollY = useRef(new Animated.Value(0)).current;
-  const [headerHeight, setHeaderHeight] = useState(220); // Default fallback
+  const [headerHeight, setHeaderHeight] = useState(100); // Default fallback
+  const [overviewHeight, setOverviewHeight] = useState(220); // Default fallback
 
   const imageScale = scrollY.interpolate({
     inputRange: [-200, 0, 200],
@@ -41,6 +40,8 @@ export default function AgentIndex() {
     <Redirect href={ROUTES.TABS_AGENTS.path} />
   }
 
+  const startContentAtHeight = headerHeight + overviewHeight;
+
   const tabs = useMemo(
     () => [
       {
@@ -53,9 +54,8 @@ export default function AgentIndex() {
             refreshing={isRefetching}
             listProps={{
               contentContainerStyle: {
-                paddingTop: headerHeight,
+                paddingTop: startContentAtHeight,
                 paddingHorizontal: GLOBAL_PADDING,
-                paddingBottom: "60%",
                 gap: 12,
               },
               scrollEventThrottle: 16,
@@ -70,12 +70,20 @@ export default function AgentIndex() {
       {
         key: "Trades",
         title: "Trades",
-        content: () => <TradesTab agent={agent} />,
+        content: () => (
+          <View style={{flex: 1, paddingTop: startContentAtHeight}}>
+            <TradesTab  agent={agent} />
+          </View>
+        )
       },
       {
-        key: "Funding",
-        title: "Funding",
-        content: null,
+        key: "Positions",
+        title: "Positions",
+        content: () => (
+          <View style={{flex: 1, paddingTop: startContentAtHeight}}>
+            <PositionsTab agent={agent} />
+          </View>
+        )
       },
     ],
     [agentId, agent, isRefetching, refetch, scrollY, headerHeight],
@@ -83,14 +91,22 @@ export default function AgentIndex() {
 
   return (
     <ContainerView noSafeArea style={{ paddingTop: insets.top, flex: 1 }}>
-      <AgentHeader agentId={agent?.id} agentName={agent?.name} />
+      <AgentHeader
+        agentId={agent?.id} agentName={agent?.name}
+        onLayout={(event) => {
+          const { height } = event.nativeEvent.layout;
+          setHeaderHeight(height);
+        }}
+      />
+
       <Animated.View
         style={[
           {
             position: "absolute",
             width: "100%",
-            top: 160,
+            top: insets.top + 100,
             left: 0,
+            zIndex: 0
           },
           {
             transform: [{ scale: imageScale }, { translateY: imageTranslateY }],
@@ -98,7 +114,7 @@ export default function AgentIndex() {
         ]}
         onLayout={(event) => {
           const { height } = event.nativeEvent.layout;
-          setHeaderHeight(height);
+          setOverviewHeight(height);
         }}
       >
         <PaddedView style={{ gap: 12, paddingHorizontal: 8 }}>
@@ -111,12 +127,13 @@ export default function AgentIndex() {
           }}
         /> */}
       </Animated.View>
+
       <SwipeableTabs
         tabs={tabs}
         initialIndex={0}
         tabTextStyle={{ color: palette.text.secondary }}
         activeTabTextStyle={{ color: palette.accent }}
-        indicatorColor={palette.accent}
+        indicatorColor={palette.foreground}
       />
     </ContainerView>
   );

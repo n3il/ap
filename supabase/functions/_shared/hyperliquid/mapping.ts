@@ -75,13 +75,14 @@ export function toHyperliquidOrder(
   }
 
   if (trade.type === "CLOSE") {
-    const isBuy = Number(position.position.szi) < 0;
+    const szi = Number(position.position.szi);
+    const isBuy = szi < 0;
     const lp = trade.exit_limit_price;
     return make({
       a: asset["Asset-Id"],
       b: isBuy,
       p: lp ? px(lp) : px(asset["Mid-Px"]),
-      s: position.position.szi,
+      s: Math.abs(szi),
       r: true,
       t: { limit: { tif: "Gtc" } }, // Always use GTC for CLOSE to ensure position gets closed
       ...(opts.cloid && { c: opts.cloid })

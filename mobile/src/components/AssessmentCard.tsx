@@ -87,6 +87,11 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       isInteractive
       glassEffectStyle={isDark ? "clear" : "regular"}
       variant="glass"
+      style={{
+        paddingVertical: 18,
+        paddingHorizontal: 18,
+        borderRadius: 24
+      }}
     >
       <TouchableOpacity
         onPress={() => {
@@ -97,7 +102,10 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         }}
         activeOpacity={0.7}
       >
-        <AssessmentPreview assessmentData={assessment} />
+        <AssessmentPreview
+          assessmentData={assessment}
+          innerStyle={{  gap: 8, flexDirection: "column-reverse", justifyContent: "space-between" }}
+        />
         {expanded ? (
           <View
             sx={{

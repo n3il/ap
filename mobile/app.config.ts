@@ -2,7 +2,7 @@ export default {
   expo: {
     name: "Puppet",
     slug: "puppet-ai",
-    scheme: "com.puppetai",
+    scheme: ["com.puppetai", "com.puppetai.app"],
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",

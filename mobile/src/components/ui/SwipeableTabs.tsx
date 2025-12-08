@@ -51,9 +51,7 @@ interface SwipeableTabsProps {
     index: number,
     isActive: boolean,
   ) => ReactNode;
-  tabWrapperStyle?: ViewStyle;
   tabContainerStyle?: ViewStyle;
-  headerContent?: ReactNode;
   onRefresh?: () => void;
   refreshing?: boolean;
   hideTabBar?: boolean;
@@ -69,7 +67,6 @@ export default function SwipeableTabs({
   contentStyle,
   renderTab,
   tabContainerStyle,
-  headerContent,
   onRefresh,
   refreshing = false,
   hideTabBar = false,
@@ -301,14 +298,8 @@ export default function SwipeableTabs({
   );
 
   return (
-    <>
-      {headerContent ? (
-        <View style={{ paddingHorizontal: GLOBAL_PADDING }}>
-          {headerContent}
-        </View>
-      ) : null}
+    <View style={{ flex: 1 }}>
       {tabBarContent}
-
       <FlatList
         ref={flatListRef}
         data={tabs}
@@ -328,8 +319,7 @@ export default function SwipeableTabs({
         refreshing={refreshing}
         onRefresh={onRefresh}
         extraData={loadedTabs}
-        style={[{ flex: 1, paddingVertical: 2 }, contentContainerStyle]}
       />
-    </>
+    </View>
   );
 }

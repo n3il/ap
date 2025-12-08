@@ -88,7 +88,6 @@ export default function BalanceOverview({
           <LabelValue
             label="Balance"
             value={accountData?.equity}
-            formatter={v => v}
           />
         </View>
 
@@ -128,22 +127,29 @@ export default function BalanceOverview({
       >
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Mkt. Value"
+            label="Positions Value"
             value={accountData.positionValue}
           />
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
-            label="Positions (#)"
-            value={accountData.positionValue}
+            label="All P&L"
+            value={accountData.totalPnl}
+            colorize
             alignRight
-            formatter={o => o}
           >
             <Text
               variant="sm"
-              style={{ marginLeft: "auto" }}
+              sx={{
+                color:
+                  accountData.totalPnl > 0
+                    ? "success"
+                    : accountData.totalPnl < 0
+                      ? "error"
+                      : "surfaceForeground",
+              }}
             >
-              {`(${accountData.openPositions?.length || '-'})`}
+              {`(${accountData.totalPnlPercent ? formatPercent(accountData.totalPnlPercent) : "-"})`}
             </Text>
           </LabelValue>
         </View>

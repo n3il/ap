@@ -1,3 +1,5 @@
+import { Heap } from "heap-js";
+
 // ---------------------------------------------
 // Types
 // ---------------------------------------------
@@ -41,53 +43,55 @@ interface HeapItem {
   assetId: number;
   dayNtlVlmNum: number;
   fundingNum: number;
-  percentChange: number;
+  openInterestNum: number;
+  markPxNum: number;
 }
+
+// Valid keys that can be used for sorting
+export type SortKey = "dayNtlVlm" | "funding" | "openInterest" | "markPx";
 
 // ---------------------------------------------
 // Config
 // ---------------------------------------------
 const K = 10;
 
+// Map sort key to HeapItem property
+const KEY_MAP: Record<SortKey, keyof HeapItem> = {
+  dayNtlVlm: "dayNtlVlmNum",
+  funding: "fundingNum",
+  openInterest: "openInterestNum",
+  markPx: "markPxNum",
+};
+
 // ---------------------------------------------
 // Main function
 // ---------------------------------------------
 export function getTopKAssets(
   universe: AssetData[],
-  assetContexts: AssetContext[]
+  assetContexts: AssetContext[],
+  sortKey: SortKey = "dayNtlVlm",
+  k: number = K
 ): TopKOutput[] {
-  const heap: HeapItem[] = [];
+  const heapKey = KEY_MAP[sortKey];
 
-  const push = (item: HeapItem) => {
-    heap.push(item);
-    siftUp(heap, heap.length - 1);
-  };
+  // Min-heap comparator: smallest value at top
+  const comparator = (a: HeapItem, b: HeapItem) =>
+    (a[heapKey] as number) - (b[heapKey] as number);
 
-  const pop = () => {
-    const top = heap[0];
-    const last = heap.pop()!;
-    if (heap.length > 0) {
-      heap[0] = last;
-      siftDown(heap, 0);
-    }
-    return top;
-  };
+  // Create min-heap with heap-js
+  const heap = new Heap<HeapItem>(comparator);
 
-  const peek = () => heap[0];
-
-  const compare = (a: HeapItem, b: HeapItem) =>
-    a.dayNtlVlmNum - b.dayNtlVlmNum;
-
-  // ---------------------------------------------
   // Streaming top-K logic
-  // ---------------------------------------------
   for (let i = 0; i < universe.length; i++) {
     const assetData = universe[i];
     const ctx = assetContexts[i];
 
     const dayNtlVlmNum = Number(ctx.dayNtlVlm);
     const fundingNum = Number(ctx.funding);
+    const openInterestNum = Number(ctx.openInterest);
+    const markPxNum = Number(ctx.markPx);
 
+    // Skip invalid entries
     if (dayNtlVlmNum <= 0 && fundingNum <= 0) continue;
 
     const item: HeapItem = {
@@ -96,20 +100,27 @@ export function getTopKAssets(
       assetId: i,
       dayNtlVlmNum,
       fundingNum,
+      openInterestNum,
+      markPxNum,
     };
 
-    if (heap.length < K) {
-      push(item);
-    } else if (compare(item, peek()) > 0) {
-      pop();
-      push(item);
+    if (heap.length < k) {
+      heap.push(item);
+    } else {
+      const smallest = heap.peek();
+      if (smallest && (item[heapKey] as number) > (smallest[heapKey] as number)) {
+        heap.pop();
+        heap.push(item);
+      }
     }
   }
 
-  // Sort the resulting heap
-  const result = heap.sort(compare);
+  // Extract and sort results (largest first)
+  const result = heap.toArray().sort((a, b) =>
+    (b[heapKey] as number) - (a[heapKey] as number)
+  );
 
-  // Final formatted output
+  // Format output
   return result.map(({ assetData, ctx, assetId }) => ({
     Ticker: assetData.name,
     "Sz-Decimals": assetData.szDecimals,
@@ -125,41 +136,4 @@ export function getTopKAssets(
     "Prev-Day-Px": ctx.prevDayPx,
     "Asset-Id": assetId,
   }));
-}
-
-// ---------------------------------------------
-// Heap Helpers
-// ---------------------------------------------
-function siftUp(heap: HeapItem[], idx: number) {
-  while (idx > 0) {
-    const p = (idx - 1) >> 1;
-    if (heap[idx].dayNtlVlmNum >= heap[p].dayNtlVlmNum) break;
-    swap(heap, idx, p);
-    idx = p;
-  }
-}
-
-function siftDown(heap: HeapItem[], idx: number) {
-  const n = heap.length;
-  while (true) {
-    const l = idx * 2 + 1;
-    const r = l + 1;
-    let smallest = idx;
-
-    if (l < n && heap[l].dayNtlVlmNum < heap[smallest].dayNtlVlmNum)
-      smallest = l;
-    if (r < n && heap[r].dayNtlVlmNum < heap[smallest].dayNtlVlmNum)
-      smallest = r;
-
-    if (smallest === idx) break;
-
-    swap(heap, idx, smallest);
-    idx = smallest;
-  }
-}
-
-function swap(arr: HeapItem[], i: number, j: number) {
-  const tmp = arr[i];
-  arr[i] = arr[j];
-  arr[j] = tmp;
 }

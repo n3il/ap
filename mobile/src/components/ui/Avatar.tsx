@@ -47,6 +47,7 @@ export default function Avatar({
   backgroundColor,
   name,
   email,
+  phoneNumber,
   size = "lg",
   showDetails = true,
 }: {
@@ -54,6 +55,7 @@ export default function Avatar({
   backgroundColor?: string;
   name?: string;
   email?: string;
+  phoneNumber?: string;
   size?: keyof typeof AVATAR_SIZES;
   showDetails?: boolean;
 }) {
@@ -89,7 +91,7 @@ export default function Avatar({
     return "U";
   };
 
-  const shouldShowDetails = showDetails && (name || email);
+  const shouldShowDetails = showDetails && (name || email || phoneNumber);
 
   return (
     <View
@@ -110,7 +112,7 @@ export default function Avatar({
           backgroundColor: withOpacity(resolvedBackground, 0.7),
           borderWidth: 0,
           borderColor: resolvedBackground,
-          alignSelf:"flex-start",
+          alignSelf: email ? "flex-start" : "center",
         }}
       >
         {imgSrc ? (
@@ -165,6 +167,18 @@ export default function Avatar({
               }}
             >
               {email}
+            </Text>
+          )}
+          {phoneNumber && (
+            <Text
+              sx={{
+                fontSize: emailSize,
+                color: "textSecondary",
+                marginTop: 0.5,
+                ...FONT_STYLES.default,
+              }}
+            >
+              {phoneNumber}
             </Text>
           )}
         </View>

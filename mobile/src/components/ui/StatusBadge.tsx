@@ -66,7 +66,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
         paddingHorizontal: sizeStyle.paddingHorizontal,
         paddingVertical: sizeStyle.paddingVertical,
         borderRadius: 3,
-        // backgroundColor: withOpacity(styles.bg, 0.3),
+        backgroundColor: styles.bg,
         borderColor: styles?.bg,
         borderWidth: 0.5,
         alignSelf: "flex-start",
@@ -75,7 +75,7 @@ const StatusBadge: React.FC<StatusBadgeProps> = ({
     >
       <Text
         variant={sizeStyle.textVariant}
-        sx={{ color: styles.bg, fontWeight, ...textSx }}
+        sx={{ color: "white", fontWeight, ...textSx }}
       >
         {children}
       </Text>

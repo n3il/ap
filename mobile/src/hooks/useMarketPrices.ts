@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { create } from "zustand";
 
-import { useHLSubscription, useHyperliquidRequests } from "@/hooks/useHyperliquid";
+import { useHLSubscription, useHyperliquidInfo } from "@/hooks/useHyperliquid";
 import { getTopKAssets } from "@/data/utils";
 
 export interface NormalizedAsset {
@@ -57,6 +57,7 @@ export function normalizeHLAsset(raw: any): NormalizedAsset {
 export const useMarketPricesStore = create((set, get) => ({
   tickers: [] as NormalizedAsset[],
   mids: {} as Record<string, string>,
+  setMids: (mids) => set({ mids }),
 
   setTickers: (tickers: NormalizedAsset[]) => set({ tickers }),
 
@@ -82,23 +83,19 @@ export function useMarketPrices() {
     tickers,
     setTickers,
     mids,
+    setMids,
     updateTickers,
     setLoading,
     isLoading,
   } = useMarketPricesStore();
 
-  const { sendRequest } = useHyperliquidRequests()
+  const infoClient = useHyperliquidInfo();
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const data = await sendRequest({
-        type: "info",
-        payload: {
-          type: "metaAndAssetCtxs",
-        },
-      });
-      if (data.payload.data) {
-        const [{universe}, assetContexts] = data.payload.data;
+      const data = await infoClient.metaAndAssetCtxs();
+      if (data) {
+        const [{universe}, assetContexts] = data;
         const topK = getTopKAssets(universe, assetContexts, "percentChange");
         const tickerData = topK.map(normalizeHLAsset).reverse();
         setTickers(tickerData);
@@ -106,7 +103,38 @@ export function useMarketPrices() {
       setLoading(false);
     }
     load();
-  }, []);
+  }, [infoClient]);
+
+  useHLSubscription(
+      "allMids",
+      { },
+      (msg: any) => {
+        if (msg?.isSnapshot) return;
+
+        const mids = msg.data?.mids;
+        if (!mids) return;
+
+        setMids(mids)
+        const timestamp = Date.now();
+
+        const assets = tickers
+          .map((symbol) => {
+            const price = mids[symbol];
+            if (!price) return null;
+            return {
+              symbol,
+              id: symbol,
+              name: symbol,
+              price,
+            };
+          })
+          .filter(Boolean);
+
+        updateTickers(assets, timestamp);
+      },
+      Boolean(tickers.length)
+    );
+
 
   return {
     tickers: tickers,

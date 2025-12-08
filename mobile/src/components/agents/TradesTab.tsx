@@ -1,20 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { FlatList, ListRenderItem } from "react-native";
 
 import {
   ActivityIndicator,
-  Animated,
   RefreshControl,
   Text,
   View,
 } from "@/components/ui";
 import {
-  useHyperliquidRequests,
+  useHyperliquidInfo,
   useHyperliquidStore,
 } from "@/hooks/useHyperliquid";
 import { useColors } from "@/theme";
 import { formatCurrency } from "@/utils/marketFormatting";
 import { numberToColor } from "@/utils/currency";
 import { AgentType } from "@/types/agent";
+import { formatRelativeDate } from "@/utils/date";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 type UserFill = {
   coin: string;
@@ -53,7 +55,7 @@ const formatTradeTimestamp = (timestamp?: number) => {
 
 export default function TradesTab({ agent }: { agent: AgentType }) {
   const { colors: palette, success, error, withOpacity } = useColors();
-  const { sendRequest } = useHyperliquidRequests();
+  const infoClient = useHyperliquidInfo();
   const { connectionState } = useHyperliquidStore();
 
   const tradingAccountType = !agent?.simulate ? "real" : "paper";
@@ -64,9 +66,6 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const [lastUpdated, setLastUpdated] = useState<number | null>(null);
-
-  const scrollY = useRef(new Animated.Value(0)).current;
   const isMounted = useRef(true);
 
   useEffect(
@@ -83,29 +82,17 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
       refresh ? setIsRefreshing(true) : setIsLoading(true);
 
       try {
-        const response = await sendRequest({
-          type: "info",
-          payload: {
-            type: "userFills",
-            user: userAddress,
-            aggregateByTime: false,
-          },
+        const data = await infoClient.userFills({
+          user: userAddress,
+          aggregateByTime: false,
         });
 
         if (!isMounted.current) return;
 
-        const payload = response?.payload?.data;
-        if (Array.isArray(payload)) {
-          setFills(payload as UserFill[]);
-          const newest = payload.reduce(
-            (acc: number, fill: UserFill) =>
-              Math.max(acc, Number(fill?.time) || 0),
-            0,
-          );
-          setLastUpdated(newest || Date.now());
+        if (Array.isArray(data)) {
+          setFills(data as UserFill[]);
         } else {
           setFills([]);
-          setLastUpdated(Date.now());
         }
       } catch (err) {
         console.error("Failed to load user fills", err);
@@ -117,7 +104,7 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
         refresh ? setIsRefreshing(false) : setIsLoading(false);
       }
     },
-    [connectionState, sendRequest, userAddress],
+    [connectionState, infoClient, userAddress],
   );
 
   useEffect(() => {
@@ -129,13 +116,9 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
     loadFills({ refresh: true });
   }, [loadFills]);
 
-  const lastUpdatedLabel = useMemo(() => {
-    if (!lastUpdated) return null;
-    return formatTradeTimestamp(lastUpdated);
-  }, [lastUpdated]);
-
-  const renderFill = useCallback(
-    (fill: UserFill) => {
+  const renderFill: ListRenderItem<UserFill> = useCallback(
+    ({ item: fill }) => {
+      console.log(Object.keys(fill))
       const isBuy = fill.side === "B";
       const pnl = Number(fill.closedPnl);
       const fee = Number(fill.fee);
@@ -144,7 +127,6 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
 
       return (
         <View
-          key={fill.hash ?? `${fill.coin}-${fill.tid}`}
           sx={{
             flexDirection: "row",
             alignItems: "center",
@@ -158,56 +140,34 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
           <View
             sx={{
               paddingX: 3,
-              paddingY: 1.5,
+              paddingY: 1,
               borderRadius: "full",
               backgroundColor: withOpacity(palette.surface, 0.8),
-              minWidth: 64,
+              minWidth: 80,
+              alignItems: "center",
+              justifyContent: "center",
             }}
           >
-            <Text
-              sx={{
-                color: "textPrimary",
-                fontSize: 12,
-                fontWeight: "700",
-              }}
-            >
+            <Text sx={{ color: "surfaceForeground", fontSize: 14, fontWeight: "700" }}>
               {fill.coin}
-            </Text>
-            <Text
-              sx={{
-                color: isBuy ? "success" : "error",
-                fontSize: 11,
-                fontWeight: "500",
-              }}
-            >
-              {isBuy ? "Buy" : "Sell"}
             </Text>
           </View>
 
           <View sx={{ flex: 1 }}>
-            <Text
-              sx={{
-                color: isBuy ? success : error,
-                fontSize: 14,
-                fontWeight: "600",
-              }}
-            >
+            <Text sx={{ color: isBuy ? success : error, fontSize: 14, fontWeight: "600" }}>
               {formatCurrency(Number(fill.px))}
             </Text>
-            <Text sx={{ color: "mutedForeground", fontSize: 11 }}>
-              Size: {fill.sz}
-            </Text>
+            <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+              <Text sx={{ color: isBuy ? "success" : "error", fontSize: 11, fontWeight: "500" }}>
+                {isBuy ? "Buy" : "Sell"}
+              </Text>
+              <Text sx={{ color: "mutedForeground", fontSize: 11 }}>Size: {fill.sz}</Text>
+            </View>
           </View>
 
           <View sx={{ alignItems: "flex-end", minWidth: 100 }}>
             {hasPnl && (
-              <Text
-                sx={{
-                  color: pnlColor,
-                  fontSize: 13,
-                  fontWeight: "600",
-                }}
-              >
+              <Text sx={{ color: pnlColor, fontSize: 13, fontWeight: "600" }}>
                 {formatCurrency(pnl)}
               </Text>
             )}
@@ -216,20 +176,19 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
                 Fee: {formatCurrency(fee)}
               </Text>
             )}
-            <Text
-              sx={{
-                color: "textSecondary",
-                fontSize: 10,
-                marginTop: 1,
-              }}
-            >
-              {formatTradeTimestamp(fill.time)}
+            <Text sx={{ color: "textSecondary", fontSize: 10, marginTop: 1 }}>
+              {formatRelativeDate(fill.time)}
             </Text>
           </View>
         </View>
       );
     },
     [error, palette.border, palette.surface, success, withOpacity],
+  );
+
+  const keyExtractor = useCallback(
+    (item: UserFill) => item.hash ?? `${item.coin}-${item.tid}`,
+    [],
   );
 
   if (!userAddress) {
@@ -264,15 +223,10 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
           </Text>
           <Text sx={{ color: "textSecondary", fontSize: 12 }}>
             {connectionState === "connected"
-              ? `Your recent fills`
+              ? "Your recent fills"
               : "Connecting to Hyperliquid..."}
           </Text>
         </View>
-        {lastUpdatedLabel && connectionState === "connected" && (
-          <Text sx={{ color: "textTertiary", fontSize: 11, textAlign: "right" }}>
-            {lastUpdatedLabel}
-          </Text>
-        )}
       </View>
 
       {errorMessage && (
@@ -289,70 +243,49 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
         </View>
       )}
 
-      {isLoading && !isRefreshing ? (
-        <View
-          sx={{
-            flex: 1,
-            alignItems: "center",
-            justifyContent: "center",
-            padding: 6,
-          }}
-        >
-          <ActivityIndicator color={palette.foreground} size="large" />
-        </View>
-      ) : (
-        <Animated.ScrollView
-          style={{ flex: 1 }}
-          showsVerticalScrollIndicator={false}
-          refreshControl={
-            <RefreshControl
-              refreshing={isRefreshing}
-              onRefresh={handleRefresh}
-              tintColor={palette.foreground}
-            />
-          }
-          onScroll={Animated.event(
-            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-            { useNativeDriver: true },
-          )}
-          scrollEventThrottle={16}
-        >
-          {fills.length > 0 ? (
-            <View sx={{ paddingBottom: 6 }}>
-              {fills.map((fill) => renderFill(fill))}
+      <FlatList
+        data={fills}
+        renderItem={renderFill}
+        keyExtractor={keyExtractor}
+        contentContainerStyle={{ flexGrow: 1, paddingBottom: 6 }}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
+            tintColor={palette.foreground}
+          />
+        }
+        ListEmptyComponent={
+          isLoading ? (
+            <View
+              sx={{
+                flex: 1,
+                alignItems: "center",
+                justifyContent: "center",
+                padding: 6,
+              }}
+            >
+              <ActivityIndicator color={palette.foreground} size="large" />
             </View>
           ) : (
             <View
               sx={{
+                flex: 1,
                 alignItems: "center",
                 justifyContent: "center",
                 padding: 8,
-                marginTop: 12,
               }}
             >
-              <Text
-                sx={{
-                  color: "mutedForeground",
-                  fontSize: 16,
-                  textAlign: "center",
-                }}
-              >
-                No fills yet
-              </Text>
-              <Text
-                sx={{
-                  color: "textSecondary",
-                  fontSize: 12,
-                  textAlign: "center",
-                  marginTop: 1,
-                }}
-              >
-                Your trading fills will appear here
-              </Text>
+              <MaterialCommunityIcons
+                name={"binoculars"}
+                size={24}
+                color={palette.muted}
+              />
             </View>
-          )}
-        </Animated.ScrollView>
-      )}
+          )
+        }
+      />
     </View>
   );
 }

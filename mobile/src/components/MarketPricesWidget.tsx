@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef } from "react";
-import { Dimensions, ViewProps, ViewStyle } from "react-native";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ViewProps, ViewStyle } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -77,6 +77,7 @@ const PriceColumn = ({
   rangePercent,
   isHistoryLoading,
   scrollY,
+  onPress,
 }: {
   tickerData: NormalizedAsset;
   sparklineData: number[];
@@ -84,11 +85,13 @@ const PriceColumn = ({
   rangePercent: number;
   isHistoryLoading: boolean;
   scrollY: number;
+  onPress?: any
 }) => {
   const router = useRouter();
   const { colors: palette } = useColors();
 
   const _hasChange = Number.isFinite(rangePercent);
+  console.log(displayAsset)
 
   // Price flash effect
   const priceOpacity = useSharedValue(1);
@@ -224,6 +227,10 @@ const PriceColumn = ({
   const color =
     palette?.[numberToColor(rangePercent)] || palette.mutedForeground;
 
+  const handleOnPress = () => {
+    onPress?.()
+  }
+
   return (
     <GlassButton
       style={{
@@ -233,6 +240,7 @@ const PriceColumn = ({
         borderWidth: 1,
       }}
       enabled={false}
+      onPress={handleOnPress}
     >
       <View style={{ flexDirection: "row" }}>
         <View>
@@ -325,15 +333,72 @@ const PriceColumn = ({
   );
 };
 
-export default function MarketPricesWidget({ style, scrollY }: {style: ViewStyle, scrollY: number}) {
+const ITEM_WIDTH = width / 3;
+const VISIBLE_ITEM_COUNT = 3; // Number of items visible at once
+const PREFETCH_BUFFER = 1; // Prefetch 1 item ahead and behind
+
+export default function MarketPricesWidget({ style, scrollY, onPress }: {style: ViewStyle, scrollY: number}) {
   const { colors: palette } = useColors();
   const { timeframe } = useTimeframeStore();
   const { tickers, isLoading } = useMarketPrices();
+  const [visibleIndices, setVisibleIndices] = useState<Set<number>>(() => {
+    // Initialize with first few items
+    const initialIndices = new Set<number>();
+    for (let i = 0; i < VISIBLE_ITEM_COUNT + (PREFETCH_BUFFER * 2); i++) {
+      initialIndices.add(i);
+    }
+    return initialIndices;
+  });
+  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Calculate visible symbols based on scroll position
+  const visibleSymbols = useMemo(() => {
+    const symbols: string[] = [];
+    visibleIndices.forEach(index => {
+      if (tickers[index]?.symbol) {
+        symbols.push(tickers[index].symbol);
+      }
+    });
+    return symbols;
+  }, [visibleIndices, tickers]);
+
   const {
     data: historyData,
     isFetching: historyFetching,
     error: historyError,
-  } = useMarketHistory(timeframe);
+  } = useMarketHistory(timeframe, visibleSymbols);
+
+  // Handle scroll to update visible items with debouncing
+  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+
+    scrollTimeoutRef.current = setTimeout(() => {
+      const offsetX = event.nativeEvent.contentOffset.x;
+      const startIndex = Math.max(0, Math.floor(offsetX / ITEM_WIDTH) - PREFETCH_BUFFER);
+      const endIndex = Math.min(
+        tickers.length - 1,
+        startIndex + VISIBLE_ITEM_COUNT + (PREFETCH_BUFFER * 2)
+      );
+
+      const newVisibleIndices = new Set<number>();
+      for (let i = startIndex; i <= endIndex; i++) {
+        newVisibleIndices.add(i);
+      }
+
+      setVisibleIndices(newVisibleIndices);
+    }, 150); // Debounce for 150ms
+  }, [tickers.length]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (!historyError) return;
@@ -345,9 +410,14 @@ export default function MarketPricesWidget({ style, scrollY }: {style: ViewStyle
 
   useEffect(() => {
     if (historyData && Object.keys(historyData).length > 0) {
-      console.log('[MarketPricesWidget] History data loaded:', Object.keys(historyData));
+      console.log('[MarketPricesWidget] History data loaded for symbols:', Object.keys(historyData));
     }
   }, [historyData]);
+
+  // Log visible symbols for debugging
+  useEffect(() => {
+    console.log('[MarketPricesWidget] Fetching candles for visible symbols:', visibleSymbols);
+  }, [visibleSymbols]);
 
   return (
     <Animated.View style={style}>
@@ -356,6 +426,7 @@ export default function MarketPricesWidget({ style, scrollY }: {style: ViewStyle
         scrollEventThrottle={16}
         contentContainerStyle={[{ gap: 0, paddingRight: 0, marginLeft: 6 }]}
         showsHorizontalScrollIndicator={false}
+        onScroll={handleScroll}
       >
         {tickers.length ? (
           tickers.map((asset, index) => {
@@ -384,6 +455,7 @@ export default function MarketPricesWidget({ style, scrollY }: {style: ViewStyle
                 rangePercent={rangePercent}
                 isHistoryLoading={historyFetching && !history.length}
                 scrollY={scrollY}
+                onPress={onPress}
               />
             );
           })

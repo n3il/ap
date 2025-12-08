@@ -22,131 +22,64 @@ type HLMethodName = keyof {
 
 interface HLStoreState {
   client: HLClientInstance;
+  infoClient: hl.InfoClient;
   transport: hl.WebSocketTransport;
   registry: Map<string, Set<HLSubscriptionHandler>>;
   subscriptions: Map<string, { unsubscribe: () => Promise<void> }>;
-  pendingPosts: Map<number, (res: any) => void>;
-  sendPost: (req: any, id?: number) => Promise<any>;
   connectionState: "connecting" | "connected" | "disconnected";
   latencyMs: number | null;
   reconnect: () => void;
 }
 
-// Post ID counter for request tracking
-let postCounter = 0;
-const nextPostId = () => {
-  postCounter = (postCounter + 1) % Number.MAX_SAFE_INTEGER;
-  if (postCounter === 0) postCounter = 1;
-  return postCounter;
-};
-
 // Clears all pending state on disconnect
 const clearPendingState = (
   registry: Map<string, Set<HLSubscriptionHandler>>,
-  subscriptions: Map<string, { unsubscribe: () => Promise<void> }>,
-  pendingPosts: Map<number, (res: any) => void>,
-  errorMsg: string
+  subscriptions: Map<string, { unsubscribe: () => Promise<void> }>
 ) => {
   registry.clear();
   subscriptions.clear();
-  pendingPosts.forEach((resolver) => resolver({ error: errorMsg }));
-  pendingPosts.clear();
 };
 
-// Waits for WebSocket to be open with timeout
-const createWaitForOpen = (socket: WebSocket) => () =>
-  new Promise<void>((resolve, reject) => {
-    if (socket.readyState === WebSocket.OPEN) {
-      resolve();
-      return;
-    }
-
-    let timeout: NodeJS.Timeout;
-    const cleanup = () => {
-      clearTimeout(timeout);
-      socket.removeEventListener("open", handleOpen);
-      socket.removeEventListener("close", handleClose);
-    };
-
-    const handleOpen = () => {
-      cleanup();
-      resolve();
-    };
-
-    const handleClose = () => {
-      cleanup();
-      reject(new Error("Hyperliquid socket closed before open"));
-    };
-
-    timeout = setTimeout(() => {
-      cleanup();
-      reject(new Error("Hyperliquid socket open timeout"));
-    }, 5000);
-
-    socket.addEventListener("open", handleOpen);
-    socket.addEventListener("close", handleClose);
-  });
-
-// Handles incoming WebSocket messages
+// Handles incoming WebSocket messages for subscriptions
 const createMessageHandler = (
-  registry: Map<string, Set<HLSubscriptionHandler>>,
-  pendingPosts: Map<number, (res: any) => void>
+  registry: Map<string, Set<HLSubscriptionHandler>>
 ) => (event: MessageEvent) => {
   const msg = JSON.parse(event.data);
 
-  // Handle post responses
-  if (msg.channel === "post") {
-    const resolver = pendingPosts.get(msg.data.id);
-    if (resolver) {
-      resolver(msg.data.response);
-      pendingPosts.delete(msg.data.id);
+  // Handle subscription data (post responses are handled by InfoClient)
+  if (msg.channel !== "post") {
+    const handlers = registry.get(msg.channel);
+    if (handlers) {
+      handlers.forEach((h) => h(msg.data));
     }
-    return;
-  }
-
-  // Handle subscription data
-  const handlers = registry.get(msg.channel);
-  if (handlers) {
-    handlers.forEach((h) => h(msg.data));
   }
 };
 
 // Creates and manages ping interval for latency tracking
 const createPingManager = (
-  socket: WebSocket,
-  pendingPosts: Map<number, (res: any) => void>,
+  infoClient: hl.InfoClient,
   updateLatency: (ms: number) => void
 ) => {
   const ping = async () => {
-    const id = nextPostId();
-    const start = performance.now();
-
-    const response = await new Promise((resolve) => {
-      pendingPosts.set(id, resolve);
-      socket.send(
-        JSON.stringify({
-          method: "post",
-          id,
-          request: { type: "info", payload: { type: "exchangeStatus" } },
-        })
-      );
-    });
-
-    if (response) {
+    try {
+      const start = performance.now();
+      await infoClient.exchangeStatus();
       updateLatency(performance.now() - start);
+    } catch (err) {
+      console.warn("Ping failed:", err);
     }
   };
 
-  return setInterval(ping, __DEV__ ? 4200 : 10000);
+  return setInterval(ping, __DEV__ ? 10000 : 10000);
 };
 
 export const useHyperliquidStore = create<HLStoreState>((set, get) => {
-  const transport = new hl.WebSocketTransport({ isTestnet: true });
+  const transport = new hl.WebSocketTransport({ isTestnet: true, resubscribe: false });
   const client = new hl.SubscriptionClient({ transport });
+  const infoClient = new hl.InfoClient({ transport });
 
   const registry = new Map<string, Set<HLSubscriptionHandler>>();
   const subscriptions = new Map<string, { unsubscribe: () => Promise<void> }>();
-  const pendingPosts = new Map<number, (res: any) => void>();
 
   set({ connectionState: "connecting", latencyMs: null });
 
@@ -159,7 +92,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
 
   transport.socket.addEventListener("close", () => {
     set({ connectionState: "disconnected" });
-    clearPendingState(registry, subscriptions, pendingPosts, "socket_closed_before_response");
+    clearPendingState(registry, subscriptions);
     if (pingInterval) {
       clearInterval(pingInterval);
       pingInterval = null;
@@ -168,7 +101,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
 
   transport.socket.addEventListener("error", () => {
     set({ connectionState: "disconnected" });
-    clearPendingState(registry, subscriptions, pendingPosts, "socket_error_before_response");
+    clearPendingState(registry, subscriptions);
     if (pingInterval) {
       clearInterval(pingInterval);
       pingInterval = null;
@@ -178,33 +111,22 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   // Setup message handler
   transport.socket.addEventListener(
     "message",
-    createMessageHandler(registry, pendingPosts)
+    createMessageHandler(registry)
   );
 
   // Setup ping interval
-  const waitForOpen = createWaitForOpen(transport.socket);
-  pingInterval = createPingManager(transport.socket, pendingPosts, (ms) =>
+  pingInterval = createPingManager(infoClient, (ms) =>
     set({ latencyMs: ms })
   );
 
   return {
     client,
+    infoClient,
     transport,
     registry,
     subscriptions,
-    pendingPosts,
     connectionState: "connecting",
     latencyMs: null,
-    sendPost: async (req, id?: number) => {
-      const requestId = id ?? nextPostId();
-      await waitForOpen();
-      return new Promise((resolve) => {
-        pendingPosts.set(requestId, resolve);
-        transport.socket.send(
-          JSON.stringify({ method: "post", id: requestId, request: req })
-        );
-      });
-    },
     reconnect: () => {
       const { connectionState } = get();
       if (connectionState === "disconnected") {
@@ -320,7 +242,7 @@ export function useHLSubscription(
   }, [enabled, method, handler, params, connectionState]);
 }
 
-export function useHyperliquidRequests() {
-  const sendPost = useHyperliquidStore((s) => s.sendPost);
-  return { sendRequest: sendPost };
+export function useHyperliquidInfo() {
+  const infoClient = useHyperliquidStore((s) => s.infoClient);
+  return infoClient;
 }

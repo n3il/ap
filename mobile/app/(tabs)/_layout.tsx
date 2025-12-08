@@ -12,19 +12,19 @@ export default function TabsLayout() {
       backgroundColor="black"
       // backgroundColor={theme.colors.tabBackground}
       // badgeBackgroundColor={theme.colors.info.DEFAULT}
-      // labelStyle={{
-      //   default: { color: theme.colors.tabLabel },
-      //   selected: { color: theme.colors.tabLabelSelected },
-      // }}
-      // iconColor={{
-      //   default: theme.colors.tabIcon,
-      //   selected: theme.colors.tabIconSelected,
-      // }}
-      blurEffect="none"
-      // tintColor={DynamicColorIOS({
-      //   dark: "#000000",
-      //   light: "#000000",
-      // })}
+      labelStyle={{
+        default: { color: theme.colors.tabLabel },
+        selected: { color: theme.colors.tabLabelSelected },
+      }}
+      iconColor={{
+        default: theme.colors.tabIcon,
+        selected: theme.colors.tabIconSelected,
+      }}
+      blurEffect="light"
+      tintColor={DynamicColorIOS({
+        dark: "#000000",
+        light: "#000000",
+      })}
     >
       <NativeTabs.Trigger name="(explore)">
       <NativeTabs.Trigger.TabBar

@@ -49,6 +49,7 @@ export default function AgentHeader({
   onBookmarkPress,
   style,
   timeframe = "24h",
+  ...props
 }: Props) {
   const router = useRouter()
   const { colors: palette } = useColors();
@@ -193,7 +194,10 @@ export default function AgentHeader({
   }, [connectionState, reconnect]);
 
   return (
-    <View sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 1}}>
+    <View
+      sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 1}}
+      {...props}
+    >
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
         <GlassButton
           enabled={false}

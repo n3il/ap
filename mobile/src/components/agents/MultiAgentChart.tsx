@@ -8,6 +8,7 @@ import { useColors } from "@/theme";
 import { LineChart } from "react-native-gifted-charts"
 import { Dimensions, Text, View } from "@/components/ui";
 import { ruleTypes } from 'gifted-charts-core';
+import { GLOBAL_PADDING } from "../ContainerView";
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
@@ -169,9 +170,6 @@ export default function MultiAgentChart({
   const textColor = colors.surfaceForeground;
   const backgroundColor = colors.surface;
 
-  console.log(lineChartProps)
-  const spacing = (width / lineChartProps?.data?.length) || 4;
-
   return (
     <Animated.View
       style={[
@@ -189,6 +187,7 @@ export default function MultiAgentChart({
     >
       <LineChart
         {...lineChartProps}
+        width={width - GLOBAL_PADDING - 60}
         maxValue={100}
         mostNegativeValue={minValue < 0 ? minValue : -100}
         height={180}
@@ -201,12 +200,12 @@ export default function MultiAgentChart({
         noOfSectionsBelowXAxis={1}
         showValuesAsDataPointsText
         yAxisExtraHeight={-10}
-        yAxisOffset={yOffset}
+        yAxisOffset={-yOffset}
         yAxisTextNumberOfLines={1}
         yAxisLabelSuffix="%"
         yAxisThickness={0}
         yAxisLabelContainerStyle={{
-          // fontSize: 12,
+
         }}
 
         // Zero-line (dashed) - positioned at 0% on the chart
@@ -223,19 +222,20 @@ export default function MultiAgentChart({
         // X-axis labels
         xAxisLabelTextStyle={{
           color: textColor,
-          fontSize: 12,
+          fontSize: 11,
           width: 100,
           top: 8
         }}
-        xAxisThickness={3}
+        xAxisThickness={1}
 
+        rulesThickness={.5}
         rulesType={ruleTypes.DASHED}
         rulesColor={withOpacity(textColor, .3)}
         xAxisColor={withOpacity(textColor, .3)}
         yAxisTextStyle={{
           color: textColor,
           flexDirection: "column",
-          fontSize: 12
+          fontSize: 10
         }}
 
         pointerConfig={{

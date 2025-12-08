@@ -102,25 +102,23 @@ export default function ThoughtsTab({
   }
 
   return (
-    <View style={{ flex: 1 }}>
-      <Animated.FlatList
-        data={assessments}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        ListEmptyComponent={renderEmpty}
-        onEndReached={handleLoadMore}
-        onEndReachedThreshold={0.5}
-        refreshing={isRefetching || parentRefreshing}
-        onRefresh={handleRefresh}
-        contentContainerStyle={{ gap: 16, paddingBottom: "40%" }}
-        showsVerticalScrollIndicator={false}
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: true },
-        )}
-        scrollEventThrottle={16}
-        {...listProps}
-      />
-    </View>
+    <Animated.FlatList
+      data={assessments}
+      keyExtractor={keyExtractor}
+      renderItem={renderItem}
+      ListEmptyComponent={renderEmpty}
+      onEndReached={handleLoadMore}
+      onEndReachedThreshold={0.5}
+      refreshing={isRefetching || parentRefreshing}
+      onRefresh={handleRefresh}
+      contentContainerStyle={{ gap: 16, paddingBottom: "40%" }}
+      showsVerticalScrollIndicator={false}
+      onScroll={Animated.event(
+        [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+        { useNativeDriver: true },
+      )}
+      scrollEventThrottle={16}
+      {...listProps}
+    />
   );
 }

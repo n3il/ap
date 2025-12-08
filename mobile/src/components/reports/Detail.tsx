@@ -8,6 +8,8 @@ import type { AssessmentRecordType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
 import useMarkdownStyles from "@/hooks/useMarkdownStyles";
 import SectionTitle from "../SectionTitle";
+import SentimentBadge from "../agent/SentimentBadge";
+import { useAgent } from "@/hooks/useAgent";
 
 const hasContent = (value: string | null | undefined) =>
   typeof value === "string" && value.trim().length > 0;
@@ -18,8 +20,9 @@ type ReportDetailProps = {
 
 export default function ReportDetail({ assessment }: ReportDetailProps) {
   const [expanded, _setExpanded] = useState(false);
-  const { colors: palette } = useColors();
+  const { colors: palette, withOpacity } = useColors();
   const markdownStyles = useMarkdownStyles()
+  const { data: agent } = useAgent(assessment?.agent_id);
 
   const [parsedResponse, _] = useState(() => {
     try {
@@ -107,7 +110,8 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
   return (
     <ScrollView
       contentContainerStyle={{
-        paddingBottom: "30%"
+        paddingBottom: "30%",
+        gap: 6,
       }}
     >
       <View
@@ -115,46 +119,44 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
           flexDirection: "row",
           justifyContent: "space-between",
           alignItems: "flex-start",
+          borderBottomWidth: 1,
+          paddingBottom: 4,
+          marginBottom: 4,
+          borderBottomColor: withOpacity(palette.border, .3),
         }}
       >
         <Avatar
-          backgroundColor={palette.providers[assessment.agent?.llm_provider]}
-          name={assessment.agent?.name}
-          // email={assessment.agent?.model_name}
-          size="sm"
+          backgroundColor={palette.providers[agent?.llm_provider]}
+          name={agent?.name}
+          // email={agent?.model_name}
+          size="md"
         />
-        <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+        <View sx={{ flexDirection: "column", alignItems: "flex-end", justifyContent: 'flex-end', gap: 2 }}>
+        <Text variant="xs" tone="muted">
+            {new Date(assessment.timestamp).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            })}
+          </Text>
           <Text variant="xs" tone="muted">
-            {formatRelativeDate(assessment.timestamp) || ""}
+            ({formatRelativeDate(assessment.timestamp) || ""})
           </Text>
         </View>
       </View>
 
-      {sentimentLabel ? (
-        <StatusBadge
-          variant={sentimentVariant}
-          size="small"
-          sx={{
-            borderWidth: 0,
-            marginTop: 2,
-            paddingHorizontal: 0,
-          }}
-          textSx={{
-            fontStyle: "italic",
-          }}
-        >
-          {sentimentLabel}
-        </StatusBadge>
-      ) : null}
+      <SentimentBadge
+        sentimentScore={sentimentScore}
+        sentimentWord={sentimentLabel}
+      />
 
-      <SectionTitle title="Trades" />
+      <SectionTitle title="Moves" sx={{fontWeight: "900"}} />
 
       {tradeActions.length > 0 && (
         <View
           sx={{
-            marginTop: 3,
             borderColor: palette.border,
-            borderTopWidth: 1,
           }}
         >
           {tradeActions.map((action, index) => (
@@ -167,7 +169,7 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
         </View>
       )}
 
-      <SectionTitle title="Extended" />
+      <SectionTitle title="Extended" sx={{fontWeight: "900"}} />
 
       {shortSummary && (
         <Text

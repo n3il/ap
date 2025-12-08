@@ -110,7 +110,7 @@ export interface HyperliquidOrder {
   a: number | string;                    // asset
   b: boolean;                            // isBuy
   p: string;                             // price
-  s: string;                             // size
+  s: string | number;                     // size
   r: boolean;                             // reduceOnly
   t: any;                                 // order type object
   c?: string;                             // optional client order id

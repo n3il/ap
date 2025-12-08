@@ -88,8 +88,6 @@ export default function TradeActionDisplay({
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            borderTopWidth: .5,
-            borderTopColor: palette.border,
             paddingTop: 2
           }}
         >
@@ -103,7 +101,7 @@ export default function TradeActionDisplay({
           </Text>
 
           <Text variant="xs" sx={{ fontSize: 12, fontWeight: "400" }}>
-            {asset}/USDC
+            {asset}
           </Text>
 
           <Text variant="xs" sx={{ fontWeight: "500" }}>
@@ -117,13 +115,19 @@ export default function TradeActionDisplay({
       </TouchableOpacity>
 
       {reason ? (
-        <View sx={{ marginTop: 2, borderTopWidth: 1 }}>
+        <View sx={{ marginTop: 2  }}>
           <Text
             variant="xs"
 
             sx={{ fontFamily: "monospace", fontStyle: "italic", color: palette.mutedForeground }}
           >
             {reason}
+          </Text>
+          <Text
+            variant="xs"
+            sx={{ fontFamily: "monospace", fontStyle: "italic", color: palette.mutedForeground }}
+          >
+            (Confidence: {actionData.confidenceScore})
           </Text>
         </View>
       ) : null}

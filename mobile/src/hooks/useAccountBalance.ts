@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
-import { useHyperliquidRequests, useHyperliquidStore } from "@/hooks/useHyperliquid";
+import { useHyperliquidInfo, useHyperliquidStore } from "@/hooks/useHyperliquid";
 import { useMarketPricesStore } from "@/hooks/useMarketPrices";
 import { AgentType } from "@/types/agent";
 
@@ -120,7 +120,7 @@ export function useAccountBalance({ agent }: { agent: AgentType }) {
   const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
   const userId = tradingAccount?.hyperliquid_address;
 
-  const { sendRequest } = useHyperliquidRequests();
+  const infoClient = useHyperliquidInfo();
   const { mids } = useMarketPricesStore();
   const { connectionState } = useHyperliquidStore();
 
@@ -190,30 +190,22 @@ export function useAccountBalance({ agent }: { agent: AgentType }) {
 
     async function loadInitial() {
       try {
-        const historyResp = await sendRequest({
-            type: "info",
-            payload: {
-              type: "portfolio",
-              user: userId,
-            },
-          })
+        const historyData = await infoClient.portfolio({
+          user: userId,
+        });
 
-        if (!cancelled && historyResp?.payload?.data) {
+        if (!cancelled && historyData) {
           setAccountValueHistory(
-            calcPnLByTimeframe(historyResp?.payload?.data)
+            calcPnLByTimeframe(historyData)
           );
         }
 
-        const chResp = await sendRequest({
-            type: "info",
-            payload: {
-              type: "clearinghouseState",
-              user: userId,
-            },
-          })
+        const chData = await infoClient.clearinghouseState({
+          user: userId,
+        });
 
-        if (!cancelled && chResp?.payload?.data) {
-          setClearinghouseState(chResp.payload.data as ClearinghouseState);
+        if (!cancelled && chData) {
+          setClearinghouseState(chData as ClearinghouseState);
         }
       } catch (e) {
         console.error("Failed to load Hyperliquid account state", e);
@@ -227,7 +219,7 @@ export function useAccountBalance({ agent }: { agent: AgentType }) {
     return () => {
       cancelled = true;
     };
-  }, [userId, storeKey, sendRequest, connectionState]);
+  }, [userId, storeKey, infoClient, connectionState]);
 
   const startingEquity = useMemo(() => {
     const entries = Object.entries(accountValueHistory) as Array<
@@ -393,7 +385,7 @@ export function useAccountBalance({ agent }: { agent: AgentType }) {
       : null,
     openPnl: liveData?.allPositionsValueChange ?? 0,
     openPnlPct: liveData?.allPositionsPctChange,
-    totalPnl: liveData?.totalPnl,
+    totalPnl: liveData?.totalPnl ?? 0,
     totalPnlPercent: liveData?.totalPnlPercent,
 
     isLoading,

@@ -83,7 +83,7 @@ export default function ExploreScreen() {
             }}
           >
             <MarketPricesWidget
-              scrollY={{ value: 10000 }}
+              scrollY={widgetExpanded ? scrollY : { value: 9000 }}
               style={{
                 marginVertical: 3,
               }}
@@ -100,7 +100,7 @@ export default function ExploreScreen() {
                 justifyContent: "space-between",
                 gap: 2,
                 // paddingTop: 2,
-                paddingBottom: 1,
+                paddingBottom: 2,
                 borderBottomWidth: 0.5,
                 borderBottomColor: palette.border,
               }}

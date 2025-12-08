@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useHLSubscription, useHyperliquidRequests } from "@/hooks/useHyperliquid";
+import { useHLSubscription, useHyperliquidInfo } from "@/hooks/useHyperliquid";
 import { TIMEFRAME_CONFIG } from "@/stores/useTimeframeStore";
 
 type CandlePoint = {
@@ -70,11 +70,13 @@ export function useCandleHistory(
   );
 
   const config = TIMEFRAME_CONFIG[timeframe];
-  const { sendRequest } = useHyperliquidRequests();
+  const infoClient = useHyperliquidInfo();
 
   const [data, setData] = useState<Record<string, CandlePoint[]>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  console.log(data)
 
   // Fetch initial historical window
   useEffect(() => {
@@ -105,19 +107,15 @@ export function useCandleHistory(
           if (cancelled) break;
 
           try {
-            const resp = await sendRequest({
-              type: "info",
-              payload: {
-                type: "candleSnapshot",
-                coin,
-                interval: config.interval,
-                startTime: startTimeSec,
-                endTime: endTimeSec,
-              },
+            const rawCandles = await infoClient.candleSnapshot({
+              coin,
+              interval: config.interval,
+              startTime: startTimeSec,
+              endTime: endTimeSec,
             });
+            console.log({ rawCandles })
 
-            const rawCandles: any[] = resp?.payload?.data ?? [];
-            const normalized = rawCandles
+            const normalized = (rawCandles ?? [])
               .map(normalizeCandlePoint)
               .filter((c): c is CandlePoint => c !== null);
 
@@ -150,7 +148,7 @@ export function useCandleHistory(
     return () => {
       cancelled = true;
     };
-  }, [coins, config, timeframe, sendRequest]);
+  }, [coins, config, timeframe, infoClient]);
 
   const handleCandle = useCallback(
     (evt: any) => {

@@ -140,7 +140,7 @@ export default function AgentList({
           paddingVertical: 16,
         }}
       >
-        <ActivityIndicator size="small" color="#fff" />
+        <ActivityIndicator size="small" />
       </View>
     );
   }
