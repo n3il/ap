@@ -17,9 +17,8 @@ export default function TimeFrameSelector({
       style={{
         flexDirection: "row",
         alignItems: "center",
-        marginBottom: 0,
         overflow: "visible",
-        marginVertical: 2,
+        marginVertical: 3,
         alignSelf: "flex-end"
       }}
     >
@@ -28,7 +27,7 @@ export default function TimeFrameSelector({
           return null;
         }
         const isSelected = timeframe === option.id;
-        console.log({ timeframe, isSelected })
+
         return (
           <GlassButton
             key={option.id}

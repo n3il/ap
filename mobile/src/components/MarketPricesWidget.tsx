@@ -238,6 +238,7 @@ const PriceColumn = ({
         width: width / 3,
         flexDirection: "column",
         borderWidth: 1,
+        borderColor: withOpacity(palette.border, .7)
       }}
       enabled={false}
       onPress={handleOnPress}
@@ -370,12 +371,14 @@ export default function MarketPricesWidget({ style, scrollY, onPress }: {style: 
 
   // Handle scroll to update visible items with debouncing
   const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    // Extract the value immediately before the event is nullified
+    const offsetX = event.nativeEvent.contentOffset.x;
+
     if (scrollTimeoutRef.current) {
       clearTimeout(scrollTimeoutRef.current);
     }
 
     scrollTimeoutRef.current = setTimeout(() => {
-      const offsetX = event.nativeEvent.contentOffset.x;
       const startIndex = Math.max(0, Math.floor(offsetX / ITEM_WIDTH) - PREFETCH_BUFFER);
       const endIndex = Math.min(
         tickers.length - 1,

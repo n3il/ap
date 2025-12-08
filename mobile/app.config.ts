@@ -1,15 +1,24 @@
-export default {
-  expo: {
+import { ExpoConfig, ConfigContext } from '@expo/config';
+
+export default ({ config }: ConfigContext): ExpoConfig => {
+  const variant = process.env.APP_VARIANT;
+  const isTest = process.env.APP_VARIANT !== "production";
+  const variantId = isTest ? variant : '';
+
+  return {
     name: "Puppet",
     slug: "puppet-ai",
-    scheme: ["com.puppetai", "com.puppetai.app"],
-    version: "1.0.0",
+    scheme: [
+      "com.puppetai",
+      `com.puppetai.app${variantId}`,
+    ],
+    version: "0.1.0",
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",
     backgroundColor: "#000000",
     ios: {
       usesAppleSignIn: true,
-      bundleIdentifier: "com.puppetai.app",
+      bundleIdentifier: `com.puppetai.app${variantId}`,
       deploymentTarget: "16.0",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
@@ -27,7 +36,7 @@ export default {
         backgroundColor: "#ffffff"
       },
       edgeToEdgeEnabled: true,
-      package: "com.puppetai.app",
+      package: `com.puppetai.app${variantId}`,
       usesCleartextTraffic: false
     },
     web: {
@@ -62,7 +71,7 @@ export default {
       "expo-apple-authentication",
       "expo-notifications",
       "@sentry/react-native/expo",
-      [
+      isTest && [
         "expo-dev-client",
         {
           "launchMode": "most-recent"

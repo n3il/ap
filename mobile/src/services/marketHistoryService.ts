@@ -1,6 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useHLSubscription, useHyperliquidInfo } from "@/hooks/useHyperliquid";
 import { TIMEFRAME_CONFIG } from "@/stores/useTimeframeStore";
+import "event-target-polyfill";
+import "fast-text-encoding";
+import * as hl from "@nktkas/hyperliquid";
 
 type CandlePoint = {
   timestamp: number;
@@ -11,6 +14,9 @@ type CandlePoint = {
   volume?: number;
   trades?: number;
 };
+
+const transport = new hl.HttpTransport({ isTestnet: false });
+const mainnetCandleDataInfoClient = new hl.InfoClient({ transport });
 
 const normalizeCandlePoint = (point: any): CandlePoint | null => {
   const rawTimestamp = Number(point?.t ?? point?.timestamp);
@@ -61,6 +67,7 @@ export function useCandleHistory(
   tickers: string[] | string,
   timeframe: string,
 ) {
+  const infoClient = useHyperliquidInfo();
   const coins = useMemo(
     () =>
       (Array.isArray(tickers) ? tickers : [tickers])
@@ -70,7 +77,6 @@ export function useCandleHistory(
   );
 
   const config = TIMEFRAME_CONFIG[timeframe];
-  const infoClient = useHyperliquidInfo();
 
   const [data, setData] = useState<Record<string, CandlePoint[]>>({});
   const [isLoading, setIsLoading] = useState(false);
@@ -97,8 +103,6 @@ export function useCandleHistory(
 
         const endTimeMs = Date.now();
         const startTimeMs = endTimeMs - config.durationMs;
-        const endTimeSec = Math.floor(endTimeMs / 1000);
-        const startTimeSec = Math.floor(startTimeMs / 1000);
 
         const results: Record<string, CandlePoint[]> = {};
 
@@ -107,25 +111,28 @@ export function useCandleHistory(
           if (cancelled) break;
 
           try {
-            const rawCandles = await infoClient.candleSnapshot({
+            const rawCandles = await mainnetCandleDataInfoClient.candleSnapshot({
               coin,
               interval: config.interval,
-              startTime: startTimeSec,
-              endTime: endTimeSec,
+              startTime: startTimeMs,
+              endTime: endTimeMs,
             });
-            console.log({ rawCandles })
 
             const normalized = (rawCandles ?? [])
               .map(normalizeCandlePoint)
               .filter((c): c is CandlePoint => c !== null);
 
             results[coin] = clampToWindow(
-              normalized.sort((a, b) => a.timestamp - b.timestamp),
+              normalized,
               config.durationMs,
               endTimeMs,
             );
           } catch (coinErr) {
-            console.error(`Failed to fetch candles for ${coin}`, coinErr);
+            console.error(`[marketHistoryService] Failed to fetch candles for ${coin}:`, {
+              error: coinErr,
+              message: coinErr instanceof Error ? coinErr.message : String(coinErr),
+              stack: coinErr instanceof Error ? coinErr.stack : undefined,
+            });
           }
         }
 
@@ -148,7 +155,7 @@ export function useCandleHistory(
     return () => {
       cancelled = true;
     };
-  }, [coins, config, timeframe, infoClient]);
+  }, [coins, config, timeframe]);
 
   const handleCandle = useCallback(
     (evt: any) => {

@@ -105,15 +105,14 @@ export default function ExploreScreen() {
                 borderBottomColor: palette.border,
               }}
             >
-                <GlassSelector />
-
+              <GlassSelector />
               <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
                 }}
               >
-              <TimeFrameSelector />
+                <TimeFrameSelector />
                 <Pressable
                   onPress={() =>
                     setViewMode((prev) => (prev === "list" ? "table" : "list"))
@@ -131,7 +130,6 @@ export default function ExploreScreen() {
                   />
                 </Pressable>
               </View>
-
             </PaddedView>
           </View>
         </View>

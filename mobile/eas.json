@@ -8,33 +8,20 @@
       "developmentClient": true,
       "distribution": "internal",
       "ios": {
-        "simulator": false,
-        "buildConfiguration": "Debug",
-        "bundleIdentifier": "com.puppetai.app.dev"
-      },
-      "android": {
-        "package": "com.puppetai.app.dev"
+        "simulator": false
       }
     },
     "preview": {
       "channel": "preview",
       "distribution": "internal",
       "ios": {
-        "simulator": false,
-        "bundleIdentifier": "com.puppetai.app.preview"
-      },
-      "android": {
-        "package": "com.puppetai.app.preview"
+        "simulator": false
       }
     },
     "production": {
       "channel": "production",
       "ios": {
-        "simulator": false,
-        "bundleIdentifier": "com.puppetai.app"
-      },
-      "android": {
-        "package": "com.puppetai.app"
+        "simulator": false
       }
     }
   },

@@ -88,8 +88,8 @@ export default function MultiAgentChart({
     return indices;
   };
 
-  const { chartProps: lineChartProps, minValue } = useMemo(() => {
-    if (!agents.length) return { chartProps: {}, minValue: 0 };
+  const { dataSet, minValue } = useMemo(() => {
+    if (!agents.length) return { dataSet: [], minValue: 0 };
 
     const timeframeKey = TIMEFRAME_KEY_MAP[timeframe] ?? TIMEFRAME_KEY_MAP["24h"];
     const formatLabel = getLabelFormatter(timeframeKey);
@@ -98,18 +98,18 @@ export default function MultiAgentChart({
 
     // Single pass through agents
     let lineIndex = 0;
-    for (const agent of agents) {
+    const dataSet = agents.map(agent => {
       const agentHistory = accountHistories[agent.id];
       const timeframeHistory = agentHistory?.histories?.[timeframeKey];
 
-      if (!timeframeHistory || timeframeHistory.length < 2) continue;
+      if (!timeframeHistory || timeframeHistory.length < 2) return null;
 
       // Find baseline
       const firstValidPoint = timeframeHistory.find((p) =>
         Number.isFinite(Number(p?.value))
       );
       const baseline = Number(firstValidPoint?.value);
-      if (!Number.isFinite(baseline)) continue;
+      if (!Number.isFinite(baseline)) return null;
 
       // Single pass: transform data, track min, and assign labels
       const data: Array<{ value: number; dataPointText: string; timestamp: string; label?: string }> = [];
@@ -120,7 +120,7 @@ export default function MultiAgentChart({
         const timestamp = new Date(point.timestamp).getTime();
         const value = Number(point.value);
 
-        if (!Number.isFinite(timestamp) || !Number.isFinite(value)) continue;
+        if (!Number.isFinite(timestamp) || !Number.isFinite(value)) return null;
 
         const percentChange = baseline !== 0 ? ((value - baseline) / baseline) * 100 : 0;
 
@@ -134,7 +134,7 @@ export default function MultiAgentChart({
         });
       }
 
-      if (data.length < 2) continue;
+      if (data.length < 2) return null;
 
       // Update global min
       if (localMin < globalMin) globalMin = localMin;
@@ -145,21 +145,51 @@ export default function MultiAgentChart({
         data[idx].label = formatLabel(new Date(data[idx].timestamp));
       }
 
+      // Make the last point visible with its value using customDataPoint
+      if (data.length > 0) {
+        const lastPoint = data[data.length - 1];
+        const pointColor = colors.providers?.[agent.llm_provider] || colors.surfaceForeground;
+        lastPoint.customDataPoint = () => {
+          return (
+            <View style={{ alignItems: 'center', justifyContent: 'center' }}>
+              <View style={{
+                width: 8,
+                height: 8,
+                borderRadius: 4,
+                backgroundColor: pointColor,
+              }} />
+              <View style={{
+                position: 'absolute',
+                left: 12,
+                backgroundColor: pointColor,
+                paddingHorizontal: 6,
+                paddingVertical: 2,
+                borderRadius: 4,
+              }}>
+                <Text style={{ color: 'white', fontSize: 10, fontWeight: '600' }}>
+                  {lastPoint.dataPointText}
+                </Text>
+              </View>
+            </View>
+          );
+        };
+      }
+
       // Build output directly
       const i = lineIndex + 1;
       const color = colors.providers?.[agent.llm_provider] || colors.surfaceForeground;
 
-      output[`data${i === 1 ? "" : i}`] = data;
-      output[`color${i}`] = color;
-      output[`startFillColor${i}`] = withOpacity(color, .00001);
-      output[`endFillColor${i}`] = withOpacity(color, .00001);
-      output[`name${i}`] = agent.name;
-
-      lineIndex++;
-    }
+      return {
+        data,
+        color,
+        startFillColor: withOpacity(color, .00001),
+        endFillColor: withOpacity(color, .00001),
+        name: agent.name,
+      }
+    }).filter(Boolean)
 
     return {
-      chartProps: output,
+      dataSet,
       minValue: Number.isFinite(globalMin) ? Math.floor(globalMin) : 0,
     };
   }, [agents, accountHistories, colors, timeframe, withOpacity]);
@@ -167,8 +197,9 @@ export default function MultiAgentChart({
   // Calculate dynamic y-axis offset based on actual data range
   const yOffset = Math.abs(minValue);
 
-  const textColor = colors.surfaceForeground;
-  const backgroundColor = colors.surface;
+  const darkChart = false
+  const textColor = darkChart ? colors.surfaceForeground : colors.foreground;
+  const backgroundColor = darkChart ? colors.surface : "transparent"
 
   return (
     <Animated.View
@@ -177,46 +208,67 @@ export default function MultiAgentChart({
           padding: 0,
           backgroundColor,
           overflow: 'hidden',
-          borderWidth: 2,
           borderColor: colors.border,
           margin: 10,
-          borderRadius: 12
+          borderRadius: 12,
+          left: -30
         },
         animatedStyle,
       ]}
     >
       <LineChart
-        {...lineChartProps}
-        width={width - GLOBAL_PADDING - 60}
-        maxValue={100}
+        // showVerticalLines
+        // verticalLinesColor={withOpacity(textColor, .1)}
+        // yAxisColor={withOpacity(textColor, .1)}
+        // yAxisThickness={0.5}
+        yAxisThickness={0}
+
+        // horizSections={}
+        dataSet={dataSet}
+        disableScroll
+        thickness={2}
+        width={width}
+        // maxValue={100}
         mostNegativeValue={minValue < 0 ? minValue : -100}
         height={180}
         adjustToWidth
         animateOnDataChange
         hideDataPoints
+        // hideOrigin
         initialSpacing={0}
+        endSpacing={30}
         noOfSections={4}
         xAxisType={ruleTypes.DASHED}
         noOfSectionsBelowXAxis={1}
         showValuesAsDataPointsText
         yAxisExtraHeight={-10}
         yAxisOffset={-yOffset}
-        yAxisTextNumberOfLines={1}
+        yAxisTextNumberOfLines={0}
         yAxisLabelSuffix="%"
-        yAxisThickness={0}
+        // yAxisLabelWidth={0}
+        showDataPointOnFocus
+        showDataPointLabelOnFocus
         yAxisLabelContainerStyle={{
-
+          left: 30
         }}
 
         // Zero-line (dashed) - positioned at 0% on the chart
         showReferenceLine1
-        referenceLine1Position={yOffset}
+        referenceLine1Position={yOffset + 3.6}
         referenceLine1Config={{
-          color: withOpacity(colors.accent, 1),
+          color: withOpacity(textColor, .4),
           thickness: 1,
-          dashWidth: 4,
-          dashGap: 4,
-          labelText: '',
+          dashWidth: 1,
+          dashGap: 1,
+          // width: 0
+          // color: 0
+          // type: 0
+          // dashWidth: 0
+          // dashGap: 0
+          // labelText: 0
+          // labelTextStyle: 0
+          // zIndex: 0
+          // labelText: '0%',
         }}
 
         // X-axis labels
@@ -229,7 +281,7 @@ export default function MultiAgentChart({
         xAxisThickness={1}
 
         rulesThickness={.5}
-        rulesType={ruleTypes.DASHED}
+        rulesType={ruleTypes.SOLID}
         rulesColor={withOpacity(textColor, .3)}
         xAxisColor={withOpacity(textColor, .3)}
         yAxisTextStyle={{
@@ -243,11 +295,11 @@ export default function MultiAgentChart({
           pointerStripColor: 'lightgray',
           pointerStripWidth: 2,
           pointerColor: 'lightgray',
-          radius: 6,
+          radius: 2,
           pointerLabelWidth: 100,
           pointerLabelHeight: 90,
           activatePointersOnLongPress: true,
-          autoAdjustPointerLabelPosition: false,
+          autoAdjustPointerLabelPosition: true,
           pointerLabelComponent: (items: any) => {
             return (
               <View
@@ -258,25 +310,20 @@ export default function MultiAgentChart({
                   // marginTop: -30,
                   // marginLeft: -40,
                 }}>
-                <Text
-                  style={{
-                    color: 'white',
-                    fontSize: 14,
-                    marginBottom: 6,
-                    textAlign: 'center',
-                  }}>
-                  {items[0].date}
-                </Text>
-
                 <View
                   style={{
                     paddingHorizontal: 14,
                     paddingVertical: 6,
-                    borderRadius: 16,
-                    backgroundColor: 'white',
+                    borderRadius: 2,
+                    backgroundColor: colors.surface,
+                    borderColor: colors.surfaceForeground,
+                    borderWidth: 1,
                   }}>
-                  <Text style={{fontWeight: 'bold', textAlign: 'center'}}>
-                    {'$' + items[0].value + '.0'}
+                  <Text style={{
+                    fontWeight: 'bold', textAlign: 'center',
+                    color: colors.surfaceForeground
+                  }}>
+                    {`${items[0].dataPointText}`}
                   </Text>
                 </View>
               </View>

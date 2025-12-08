@@ -118,7 +118,6 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
 
   const renderFill: ListRenderItem<UserFill> = useCallback(
     ({ item: fill }) => {
-      console.log(Object.keys(fill))
       const isBuy = fill.side === "B";
       const pnl = Number(fill.closedPnl);
       const fee = Number(fill.fee);
