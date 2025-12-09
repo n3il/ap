@@ -3,6 +3,7 @@ import AnimatedPhraseSlider from "@/components/ui/AnimatedPhraseSlider";
 import { ActivityIndicator, Card, Skeleton, Text, View } from "@/components/ui";
 import { useColors, withOpacity } from "@/theme";
 import type { AssessmentType } from "@/types/agent";
+import { useTheme } from "@/contexts/ThemeContext";
 
 const LOADING_PHRASES = [
   "Calibrating signals...",
@@ -13,14 +14,18 @@ const LOADING_PHRASES = [
 
 function PendingAssessmentCard({ assessment }: { assessment: AssessmentType }) {
   const { colors } = useColors();
+  const { isDark } = useTheme()
 
   return (
     <Card
       isInteractive
-      glassEffectStyle="clear"
+      glassEffectStyle={isDark ? "clear" : "regular"}
       variant="glass"
-      sx={{ marginBottom: 3 }}
-      glassTintColor={withOpacity("#000", 0.9)}
+      style={{
+        paddingVertical: 18,
+        paddingHorizontal: 18,
+        borderRadius: 24
+      }}
     >
       <View sx={{ gap: 3 }}>
         <View

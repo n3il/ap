@@ -33,7 +33,7 @@ const normalizeAgent = (agent, includeLatestAssessment) => {
 
 const getBookmarkedAgentIds = async (userId: string) => {
   const { data, error } = await supabase
-    .from("agent_bookmarks")
+    .from("agents_watchlist")
     .select("agent_id")
     .eq("user_id", userId);
 

@@ -205,29 +205,6 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
 
   return (
     <View sx={{ flex: 1 }}>
-      <View
-        sx={{
-          paddingX: 6,
-          paddingY: 4,
-          flexDirection: "row",
-          alignItems: "center",
-          justifyContent: "space-between",
-          borderBottomWidth: 1,
-          borderBottomColor: withOpacity(palette.border, 0.3),
-        }}
-      >
-        <View>
-          <Text sx={{ fontSize: 18, fontWeight: "700", color: "textPrimary" }}>
-            Fills
-          </Text>
-          <Text sx={{ color: "textSecondary", fontSize: 12 }}>
-            {connectionState === "connected"
-              ? "Your recent fills"
-              : "Connecting to Hyperliquid..."}
-          </Text>
-        </View>
-      </View>
-
       {errorMessage && (
         <View
           sx={{

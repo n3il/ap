@@ -64,27 +64,21 @@ export default function ProfileScreen() {
       icon: "notifications-outline",
       title: "Notifications",
       subtitle: "Configure notification preferences",
-      onPress: () =>
-        Alert.alert(
-          "Coming Soon",
-          "Notification settings will be available soon",
-        ),
+      onPress: () => router.push("/(tabs)/(profile)/notifications"),
     },
     {
       id: "privacy",
       icon: "shield-checkmark-outline",
       title: "Privacy & Security",
       subtitle: "Manage your privacy settings",
-      onPress: () =>
-        Alert.alert("Coming Soon", "Privacy settings will be available soon"),
+      onPress: () => router.push("/(tabs)/(profile)/privacy-security"),
     },
     {
       id: "help",
       icon: "help-circle-outline",
       title: "Help & Support",
       subtitle: "Get help and contact support",
-      onPress: () =>
-        Alert.alert("Coming Soon", "Help center will be available soon"),
+      onPress: () => router.push("/(tabs)/(profile)/help-support"),
     },
   ];
 
@@ -200,50 +194,7 @@ export default function ProfileScreen() {
           ))}
         </View>
 
-        <AnimatedBox
-          entering={FadeInDown.delay(700).springify()}
-          key={`${animKey}-logout`}
-          sx={{ paddingHorizontal: 6, marginBottom: 12 }}
-        >
-          <TouchableOpacity
-            onPress={handleLogout}
-            activeOpacity={0.8}
-            sx={{
-              borderRadius: "xl",
-              overflow: "hidden",
-              marginBottom: 24,
-              backgroundColor: withOpacity(palette.error, 0.15),
-              borderWidth: 1,
-              borderColor: withOpacity(palette.error, 0.3),
-            }}
-          >
-            <View
-              sx={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                paddingVertical: 4,
-                paddingHorizontal: 6,
-              }}
-            >
-              <MaterialCommunityIcons
-                name="logout"
-                size={22}
-                color={palette.errorLight}
-              />
-              <Text
-                sx={{
-                  fontSize: 16,
-                  fontWeight: "600",
-                  color: palette.errorLight,
-                  marginLeft: 2,
-                }}
-              >
-                Sign Out
-              </Text>
-            </View>
-          </TouchableOpacity>
-        </AnimatedBox>
+
       </ScrollView>
       {false && <DebugOverlay />}
     </ContainerView>

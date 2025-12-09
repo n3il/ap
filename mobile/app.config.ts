@@ -35,6 +35,10 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       },
       edgeToEdgeEnabled: true,
       package: appIdentifier,
+      permissions: [
+        "android.permission.POST_NOTIFICATIONS",
+        "android.permission.VIBRATE"
+      ]
     },
     web: {
       favicon: "./assets/favicon.png",
@@ -82,7 +86,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       url: "https://u.expo.dev/5f885227-49e3-4a41-be3b-9571706c061e"
     },
     runtimeVersion: {
-      policy: "appVersion"
+      policy: "fingerprint"
     },
     extra: {
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,

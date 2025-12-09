@@ -28,6 +28,7 @@ interface HLStoreState {
   subscriptions: Map<string, { unsubscribe: () => Promise<void> }>;
   connectionState: "connecting" | "connected" | "disconnected";
   latencyMs: number | null;
+  error: string | null;
   reconnect: () => void;
 }
 
@@ -58,15 +59,19 @@ const createMessageHandler = (
 // Creates and manages ping interval for latency tracking
 const createPingManager = (
   infoClient: hl.InfoClient,
-  updateLatency: (ms: number) => void
+  updateLatency: (ms: number) => void,
+  updateError: (error: string | null) => void
 ) => {
   const ping = async () => {
     try {
       const start = performance.now();
       await infoClient.exchangeStatus();
       updateLatency(performance.now() - start);
+      updateError(null); // Clear error on successful ping
     } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : "Ping failed";
       console.warn("Ping failed:", err);
+      updateError(errorMsg);
     }
   };
 
@@ -81,17 +86,20 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   const registry = new Map<string, Set<HLSubscriptionHandler>>();
   const subscriptions = new Map<string, { unsubscribe: () => Promise<void> }>();
 
-  set({ connectionState: "connecting", latencyMs: null });
+  set({ connectionState: "connecting", latencyMs: null, error: null });
 
   let pingInterval: NodeJS.Timeout | null = null;
 
   // Setup connection state handlers
   transport.socket.addEventListener("open", () => {
-    set({ connectionState: "connected" });
+    set({ connectionState: "connected", error: null });
   });
 
-  transport.socket.addEventListener("close", () => {
-    set({ connectionState: "disconnected" });
+  transport.socket.addEventListener("close", (event) => {
+    const errorMsg = event.code !== 1000 && event.code !== 1005
+      ? `Connection closed (code: ${event.code}, reason: ${event.reason || 'unknown'})`
+      : null;
+    set({ connectionState: "disconnected", error: errorMsg });
     clearPendingState(registry, subscriptions);
     if (pingInterval) {
       clearInterval(pingInterval);
@@ -99,8 +107,11 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
     }
   });
 
-  transport.socket.addEventListener("error", () => {
-    set({ connectionState: "disconnected" });
+  transport.socket.addEventListener("error", (event) => {
+    const errorMsg = event instanceof ErrorEvent
+      ? event.message
+      : "WebSocket error occurred";
+    set({ connectionState: "disconnected", error: errorMsg });
     clearPendingState(registry, subscriptions);
     if (pingInterval) {
       clearInterval(pingInterval);
@@ -115,8 +126,10 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   );
 
   // Setup ping interval
-  pingInterval = createPingManager(infoClient, (ms) =>
-    set({ latencyMs: ms })
+  pingInterval = createPingManager(
+    infoClient,
+    (ms) => set({ latencyMs: ms }),
+    (error) => set({ error })
   );
 
   return {
@@ -127,15 +140,17 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
     subscriptions,
     connectionState: "connecting",
     latencyMs: null,
+    error: null,
     reconnect: () => {
       const { connectionState } = get();
       if (connectionState === "disconnected") {
         try {
-          set({ connectionState: "connecting" });
+          set({ connectionState: "connecting", error: null });
           // @ts-expect-error third arg is supported by rews implementation
           transport.socket?.close?.(4000, "manual reconnect", false);
         } catch (err) {
           console.warn("Failed to trigger HL reconnect", err);
+          set({ error: err instanceof Error ? err.message : "Failed to reconnect" });
         }
       }
     },
@@ -245,4 +260,15 @@ export function useHLSubscription(
 export function useHyperliquidInfo() {
   const infoClient = useHyperliquidStore((s) => s.infoClient);
   return infoClient;
+}
+
+export function useHyperliquidConnectionStatus() {
+  const { connectionState, error, latencyMs } = useHyperliquidStore(
+    useShallow((s) => ({
+      connectionState: s.connectionState,
+      error: s.error,
+      latencyMs: s.latencyMs,
+    }))
+  );
+  return { connectionState, error, latencyMs };
 }

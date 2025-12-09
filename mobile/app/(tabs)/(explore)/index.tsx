@@ -9,15 +9,15 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AgentList from "@/components/AgentList";
 import AgentTable from "@/components/AgentTable";
 import MultiAgentChart from "@/components/agents/MultiAgentChart";
-import { PaddedView } from "@/components/ContainerView";
+import { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
 import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
 import ExploreHeader from "@/components/explore/Header";
-import MarketPricesWidget from "@/components/MarketPricesWidget";
-import { RefreshControl, View } from "@/components/ui";
+import { GlassButton, RefreshControl, View } from "@/components/ui";
 import GlassSelector from "@/components/ui/GlassSelector";
-import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import { Ionicons } from "@expo/vector-icons";
+import MarketPricesWidget from "@/components/explore/MarketPricesWidget";
+import { GlassContainer } from "expo-glass-effect";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -105,38 +105,60 @@ export default function ExploreScreen() {
                 borderBottomColor: palette.border,
               }}
             >
-              <GlassSelector />
+              {/* <GlassSelector /> */}
               <View
                 style={{
                   flexDirection: "row",
                   alignItems: "center",
+                  justifyContent: "space-evenly",
+                  flex: 1,
                 }}
               >
                 <TimeFrameSelector />
-                <Pressable
+                <GlassContainer spacing={4} style={{
+                  flexDirection: "row",
+                }}>
+                <GlassButton
+                  styleVariant="minimal"
                   onPress={() =>
                     setViewMode((prev) => (prev === "list" ? "table" : "list"))
                   }
+                  tintColor={palette.surface}
                   style={{
-                    padding: 8,
                     borderRadius: 8,
-                    borderColor: palette.border,
                   }}
                 >
                   <Ionicons
-                    name={viewMode === "list" ? "grid-outline" : "list-outline"}
+                    name={"list-outline"}
                     size={18}
-                    color={palette.foreground}
+                    color={viewMode === "table" ? palette.accent : palette.foreground}
                   />
-                </Pressable>
+                </GlassButton>
+                <GlassButton
+                  styleVariant="minimal"
+                  onPress={() =>
+                    setViewMode((prev) => (prev === "list" ? "table" : "list"))
+                  }
+                  tintColor={palette.surface}
+                  style={{
+                    borderRadius: 8,
+                  }}
+                >
+                  <Ionicons
+                    name={"grid-outline"}
+                    size={14}
+                    color={viewMode === "list" ? palette.accent : palette.foreground}
+                  />
+                </GlassButton>
+                </GlassContainer>
               </View>
             </PaddedView>
           </View>
         </View>
         <View
           style={{
-            marginTop: 18,
-            gap: 18,
+            marginTop: GLOBAL_PADDING,
+            gap: GLOBAL_PADDING,
             flexDirection: "column"
           }}
         >

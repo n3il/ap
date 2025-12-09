@@ -1,7 +1,6 @@
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import Markdown from "react-native-markdown-display";
-import { AssessmentPreview } from "@/components/AgentCard";
 import { Card, Text, TouchableOpacity, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useColors } from "@/theme";
@@ -10,6 +9,7 @@ import TradeActionDisplay, { TradeSummary } from "./TradeActionDisplay";
 import PendingAssessmentCard from "@/components/PendingAssessmentCard";
 import useMarkdownStyles from "@/hooks/useMarkdownStyles";
 import { useTheme } from "@/contexts/ThemeContext";
+import ReportPreview from "./reports/Preview";
 
 const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;
@@ -102,7 +102,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
         }}
         activeOpacity={0.7}
       >
-        <AssessmentPreview
+        <ReportPreview
           assessmentData={assessment}
           innerStyle={{  gap: 8, flexDirection: "column-reverse", justifyContent: "space-between" }}
         />

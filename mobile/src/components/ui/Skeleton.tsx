@@ -9,7 +9,7 @@ import Animated, {
   withRepeat,
   withTiming,
 } from "react-native-reanimated";
-import { useColors } from "@/theme";
+import { useColors, withOpacity } from "@/theme";
 
 export interface SkeletonProps {
   width?: number | string;
@@ -35,7 +35,7 @@ const Skeleton: React.FC<SkeletonProps> = ({
   }, [shimmer]);
 
   const animatedStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(shimmer.value, [0, 0.5, 1], [0.3, 0.6, 0.3]);
+    const opacity = interpolate(shimmer.value, [0, 0.5, 1], [0.1, 0.3, 0.1]);
     return { opacity };
   });
 

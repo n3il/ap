@@ -1,4 +1,4 @@
-import { Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import { useState } from "react";
@@ -25,7 +25,7 @@ import SettingField from "@/components/auth/SettingFields";
 import parseNumber from "libphonenumber-js";
 
 export default function AccountSettingsScreen() {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { theme, isDark, colorScheme, themePreference, setThemePreference } =
     useTheme();
   const router = useRouter();
@@ -107,6 +107,22 @@ export default function AccountSettingsScreen() {
         },
       ],
     );
+  };
+
+  const handleLogout = async () => {
+    Alert.alert("Sign Out", "Are you sure you want to sign out?", [
+      { text: "Cancel", style: "cancel" },
+      {
+        text: "Sign Out",
+        style: "destructive",
+        onPress: async () => {
+          const { error } = await signOut();
+          if (error) {
+            Alert.alert("Error", error.message || String(error));
+          }
+        },
+      },
+    ]);
   };
 
   return (
@@ -605,6 +621,50 @@ export default function AccountSettingsScreen() {
                   }}
                 >
                   Delete Account
+                </Text>
+              </View>
+            </TouchableOpacity>
+          </AnimatedBox>
+
+          <AnimatedBox
+            entering={FadeInDown.delay(700).springify()}
+            sx={{ paddingHorizontal: 6, marginBottom: 12 }}
+          >
+            <TouchableOpacity
+              onPress={handleLogout}
+              activeOpacity={0.8}
+              sx={{
+                borderRadius: "xl",
+                overflow: "hidden",
+                marginBottom: 24,
+                backgroundColor: colors.withOpacity(palette.error, 0.15),
+                borderWidth: 1,
+                borderColor: colors.withOpacity(palette.error, 0.3),
+              }}
+            >
+              <View
+                sx={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 4,
+                  paddingHorizontal: 6,
+                }}
+              >
+                <MaterialCommunityIcons
+                  name="logout"
+                  size={22}
+                  color={palette.errorLight}
+                />
+                <Text
+                  sx={{
+                    fontSize: 16,
+                    fontWeight: "600",
+                    color: palette.errorLight,
+                    marginLeft: 2,
+                  }}
+                >
+                  Sign Out
                 </Text>
               </View>
             </TouchableOpacity>

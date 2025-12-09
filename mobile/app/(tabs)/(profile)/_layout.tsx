@@ -20,6 +20,34 @@ export default function ProfileLayout() {
           presentation: "card",
         }}
       />
+      <Stack.Screen
+        name="notifications"
+        options={{
+          title: "Notifications",
+          presentation: "card",
+        }}
+      />
+      <Stack.Screen
+        name="privacy-security"
+        options={{
+          title: "Privacy & Security",
+          presentation: "card",
+        }}
+      />
+      <Stack.Screen
+        name="help-support"
+        options={{
+          title: "Help & Support",
+          presentation: "card",
+        }}
+      />
+      <Stack.Screen
+        name="api-keys"
+        options={{
+          title: "API Keys",
+          presentation: "card",
+        }}
+      />
     </Stack>
   );
 }

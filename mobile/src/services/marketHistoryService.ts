@@ -82,8 +82,6 @@ export function useCandleHistory(
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
-  console.log(data)
-
   // Fetch initial historical window
   useEffect(() => {
     let cancelled = false;

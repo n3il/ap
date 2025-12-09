@@ -1,68 +1,13 @@
 import { Pressable, ViewStyle } from "react-native";
 import Animated from "react-native-reanimated";
 import AccountStats from "@/components/agent/AccountStats";
-import { Avatar, Text, View } from "@/components/ui";
+import { Avatar, View } from "@/components/ui";
 import { useColors, withOpacity } from "@/theme";
-import type { AgentType, AssessmentRecordType } from "@/types/agent";
-import { formatRelativeDate } from "@/utils/date";
-import PositionList from "./PositionList";
+import type { AgentType } from "@/types/agent";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
-import SentimentBadge from "./agent/SentimentBadge";
+import ReportPreview from "./reports/Preview";
+import PositionList from "./agents/PositionList";
 
-type AssessmentPreviewProps = {
-  assessmentData: AssessmentRecordType;
-  style?: Record<string, unknown>;
-};
-
-export function AssessmentPreview({
-  assessmentData,
-  style = {},
-  innerStyle = {},
-}: {
-  assessmentData: AssessmentRecordType;
-  style?: ViewStyle;
-  innerStyle?: ViewStyle;
-}) {
-  return (
-    <View style={style}>
-      <View
-        style={[{
-          flexDirection: "column",
-          // justifyContent: "space-between",
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
-          gap: 2,
-
-        }, innerStyle]}
-      >
-        <SentimentBadge
-          sentimentScore={assessmentData.parsed_llm_response?.headline?.sentiment_score}
-          sentimentWord={assessmentData.parsed_llm_response?.headline?.sentiment_word}
-        />
-        <Text
-          variant="xs"
-          sx={{
-            fontWeight: "300",
-            fontStyle: "italic",
-            textAlign: "right",
-          }}
-        >
-          {assessmentData.timestamp
-            ? `${formatRelativeDate(assessmentData.timestamp)}`
-            : "-"}
-        </Text>
-
-      </View>
-
-      <Text
-        variant="sm"
-        sx={{ fontWeight: "300", fontSize: 12, fontFamily: "monospace" }}
-      >
-        {assessmentData.parsed_llm_response?.headline?.short_summary}
-      </Text>
-    </View>
-  );
-}
 
 export default function AgentCard({
   agent,
@@ -125,7 +70,7 @@ export default function AgentCard({
         </View>
 
         {agent.latest_assessment?.parsed_llm_response ? (
-          <AssessmentPreview
+          <ReportPreview
             style={{ marginTop: 6 }}
             assessmentData={agent.latest_assessment}
           />
@@ -134,13 +79,18 @@ export default function AgentCard({
 
       {showPositions && accountData.openPositions.length > 0 ? (
         <View sx={{
-          marginTop: 2,
-          borderTopColor: withOpacity(palette.border, .4),
+          borderTopColor: withOpacity(palette.border, .8),
           borderTopWidth: .5,
           paddingTop: 4,
           marginTop: 4,
         }}>
-          <PositionList positions={accountData.openPositions} top={3} />
+          <PositionList
+            positions={accountData.openPositions}
+            top={3}
+            sx={{
+              paddingHorizontal: 2,
+            }}
+          />
         </View>
       ) : null}
     </Animated.View>

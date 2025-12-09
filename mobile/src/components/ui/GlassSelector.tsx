@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GlassContainer, GlassView } from "expo-glass-effect";
 import { type ComponentProps, useEffect, useRef, useState } from "react";
 import { Animated, Pressable, View } from "react-native";
@@ -10,14 +10,17 @@ const options = [
   {
     label: "Top Performing",
     value: "top",
+    iconName: "trending-up"
   },
   {
     label: "Top Popular",
     value: "popular",
+    iconName: "fire"
   },
   {
     label: "Top New",
     value: "new",
+    iconName: "sparkle"
   },
 ];
 
@@ -32,6 +35,7 @@ const AnimatedOption = ({
   onPress: () => void;
   isClosing: boolean;
 }) => {
+  const { colors } = useColors();
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(-10)).current;
 
@@ -86,11 +90,17 @@ const AnimatedOption = ({
           paddingHorizontal: 16,
         }}
       >
+        <MaterialCommunityIcons
+          name={option.iconName}
+          size={18}
+          color={colors.foreground}
+        />
         <Text
           sx={{
-            flex: 1,
-            whiteSpace: "pre",
+            fontFamily: "monospace",
+            fontWeight: "500",
             fontSize: 12,
+            color: colors.surfaceForeground
           }}
         >
           {option.label}

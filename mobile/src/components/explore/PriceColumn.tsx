@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Dimensions, NativeScrollEvent, NativeSyntheticEvent, ViewProps, ViewStyle } from "react-native";
+import { useEffect, useRef } from "react";
+import { Dimensions } from "react-native";
 import Animated, {
   Extrapolation,
   interpolate,
@@ -11,19 +11,16 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Polyline } from "react-native-svg";
 import {
-  ActivityIndicator,
   GlassButton,
-  ScrollView,
+  Skeleton,
   Text,
   View,
 } from "@/components/ui";
-import { useMarketHistory } from "@/hooks/useMarketHistory";
-import { NormalizedAsset, useMarketPrices } from "@/hooks/useMarketPrices";
-import { useTimeframeStore } from "@/stores/useTimeframeStore";
+import { NormalizedAsset } from "@/hooks/useMarketPrices";
 import { useColors, withOpacity } from "@/theme";
 import { numberToColor } from "@/utils/currency";
 import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
-import { GLOBAL_PADDING } from "./ContainerView";
+import { GLOBAL_PADDING } from "../ContainerView";
 
 const { width } = Dimensions.get("window");
 
@@ -70,23 +67,25 @@ const Sparkline = ({
   );
 };
 
-const PriceColumn = ({
+export default function PriceColumn({
   tickerData: displayAsset,
   sparklineData,
   rangeDelta,
   rangePercent,
   isHistoryLoading,
+  isLoading,
   scrollY,
   onPress,
-}: {
+} : {
   tickerData: NormalizedAsset;
   sparklineData: number[];
   rangeDelta: number;
   rangePercent: number;
   isHistoryLoading: boolean;
+  isLoading?: boolean;
   scrollY: number;
   onPress?: any
-}) => {
+}) {
   const router = useRouter();
   const { colors: palette } = useColors();
 
@@ -226,6 +225,39 @@ const PriceColumn = ({
   const color =
     palette?.[numberToColor(rangePercent)] || palette.mutedForeground;
 
+  // Show skeleton if loading
+  if (isLoading) {
+    return (
+      <GlassButton
+        style={{
+          borderRadius: 12,
+          width: width / 3,
+          flexDirection: "column",
+          borderWidth: 1,
+          borderColor: withOpacity(palette.border, .7),
+          padding: 12,
+          gap: 8,
+        }}
+        enabled={false}
+      >
+        {/* Symbol skeleton */}
+        <Skeleton width="60%" height={11} borderRadius={4} />
+
+        {/* Price skeleton */}
+        <Skeleton width="80%" height={16} borderRadius={4} sx={{ marginTop: 2 }} />
+
+        {/* Change skeleton */}
+        <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
+          <Skeleton width="40%" height={11} borderRadius={4} />
+          <Skeleton width="30%" height={10} borderRadius={4} />
+        </View>
+
+        {/* Sparkline skeleton */}
+        <Skeleton width="100%" height={SPARKLINE_HEIGHT} borderRadius={4} sx={{ marginTop: 8 }} />
+      </GlassButton>
+    );
+  }
+
   const handleOnPress = () => {
     onPress?.()
   }
@@ -332,147 +364,3 @@ const PriceColumn = ({
     </GlassButton>
   );
 };
-
-const ITEM_WIDTH = width / 3;
-const VISIBLE_ITEM_COUNT = 3; // Number of items visible at once
-const PREFETCH_BUFFER = 1; // Prefetch 1 item ahead and behind
-
-export default function MarketPricesWidget({ style, scrollY, onPress }: {style: ViewStyle, scrollY: number}) {
-  const { colors: palette } = useColors();
-  const { timeframe } = useTimeframeStore();
-  const { tickers, isLoading } = useMarketPrices();
-  const [visibleIndices, setVisibleIndices] = useState<Set<number>>(() => {
-    // Initialize with first few items
-    const initialIndices = new Set<number>();
-    for (let i = 0; i < VISIBLE_ITEM_COUNT + (PREFETCH_BUFFER * 2); i++) {
-      initialIndices.add(i);
-    }
-    return initialIndices;
-  });
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Calculate visible symbols based on scroll position
-  const visibleSymbols = useMemo(() => {
-    const symbols: string[] = [];
-    visibleIndices.forEach(index => {
-      if (tickers[index]?.symbol) {
-        symbols.push(tickers[index].symbol);
-      }
-    });
-    return symbols;
-  }, [visibleIndices, tickers]);
-
-  const {
-    data: historyData,
-    isFetching: historyFetching,
-    error: historyError,
-  } = useMarketHistory(timeframe, visibleSymbols);
-
-  // Handle scroll to update visible items with debouncing
-  const handleScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
-    // Extract the value immediately before the event is nullified
-    const offsetX = event.nativeEvent.contentOffset.x;
-
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
-    scrollTimeoutRef.current = setTimeout(() => {
-      const startIndex = Math.max(0, Math.floor(offsetX / ITEM_WIDTH) - PREFETCH_BUFFER);
-      const endIndex = Math.min(
-        tickers.length - 1,
-        startIndex + VISIBLE_ITEM_COUNT + (PREFETCH_BUFFER * 2)
-      );
-
-      const newVisibleIndices = new Set<number>();
-      for (let i = startIndex; i <= endIndex; i++) {
-        newVisibleIndices.add(i);
-      }
-
-      setVisibleIndices(newVisibleIndices);
-    }, 150); // Debounce for 150ms
-  }, [tickers.length]);
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (scrollTimeoutRef.current) {
-        clearTimeout(scrollTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!historyError) return;
-    console.error(
-      "MarketPricesWidget Hyperliquid candle stream failed",
-      historyError?.message ?? historyError,
-    );
-  }, [historyError]);
-
-  useEffect(() => {
-    if (historyData && Object.keys(historyData).length > 0) {
-      console.log('[MarketPricesWidget] History data loaded for symbols:', Object.keys(historyData));
-    }
-  }, [historyData]);
-
-  // Log visible symbols for debugging
-  useEffect(() => {
-    console.log('[MarketPricesWidget] Fetching candles for visible symbols:', visibleSymbols);
-  }, [visibleSymbols]);
-
-  return (
-    <Animated.View style={style}>
-      <ScrollView
-        horizontal
-        scrollEventThrottle={16}
-        contentContainerStyle={[{ gap: 0, paddingRight: 0, marginLeft: 6 }]}
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-      >
-        {tickers.length ? (
-          tickers.map((asset, index) => {
-            const symbol = asset?.symbol;
-            const history = historyData?.[symbol] ?? [];
-            const sparklinePoints = history.map((point) => point.close);
-            const baseline = history.length ? history[0].close : null;
-
-            const rangeDelta =
-              Number.isFinite(asset?.price) && Number.isFinite(baseline)
-                ? asset.price - baseline
-                : null;
-            const rangePercent =
-              Number.isFinite(rangeDelta) &&
-              Number.isFinite(baseline) &&
-              baseline !== 0
-                ? (rangeDelta / baseline) * 100
-                : null;
-
-            return (
-              <PriceColumn
-                key={symbol ?? index}
-                tickerData={asset}
-                sparklineData={sparklinePoints}
-                rangeDelta={rangeDelta}
-                rangePercent={rangePercent}
-                isHistoryLoading={historyFetching && !history.length}
-                scrollY={scrollY}
-                onPress={onPress}
-              />
-            );
-          })
-        ) : (
-          <View style={{ flex: 1, alignItems: "center", paddingVertical: 16 }}>
-            {isLoading ? (
-              <ActivityIndicator size="small" color={palette.foreground} />
-            ) : (
-              <Text sx={{ fontSize: 14, color: "mutedForeground" }}>
-                No market data
-              </Text>
-            )}
-          </View>
-        )}
-      </ScrollView>
-    </Animated.View>
-  );
-}

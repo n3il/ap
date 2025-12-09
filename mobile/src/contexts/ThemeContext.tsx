@@ -15,10 +15,7 @@ import { dripsyDarkTheme, dripsyLightTheme } from "@/theme/dripsy";
 import lightTheme from "@/theme/light";
 
 const STORAGE_KEY = "@themePreference";
-const getSystemScheme = () => Appearance.getColorScheme() ?? "light";
-const normalizeScheme = (value) => (value === "dark" ? "dark" : "light");
-const normalizePreference = (value) =>
-  value === "system" ? "system" : normalizeScheme(value);
+const normalize = (v) => (v === "dark" ? "dark" : "light");
 
 const ThemeContext = createContext({
   theme: lightTheme,
@@ -26,80 +23,40 @@ const ThemeContext = createContext({
   colorScheme: "light",
   themePreference: "system",
   isDark: false,
-  setTheme: () => {},
   setThemePreference: () => {},
   toggleTheme: () => {},
 });
 
-ThemeContext.displayName = "ThemeContext";
-
 export const ThemeProvider = ({ children }) => {
-  const [systemScheme, setSystemScheme] = useState(getSystemScheme);
-  const [preference, setPreference] = useState("system");
-  const [isHydrated, setIsHydrated] = useState(false);
+  const [themePreference, setThemePreference] = useState("system");
+  const [systemScheme, setSystemScheme] = useState(
+    normalize(Appearance.getColorScheme())
+  );
+  const [hydrated, setHydrated] = useState(false);
 
+  // Load saved preference
   useEffect(() => {
-    let isMounted = true;
-
-    const loadPreference = async () => {
-      try {
-        const stored = await AsyncStorage.getItem(STORAGE_KEY);
-        if (!isMounted || stored == null) return;
-        setPreference((prev) => {
-          const next = normalizePreference(stored);
-          return next === prev ? prev : next;
-        });
-      } catch (_error) {
-        // Non-fatal: fall back to system if storage fails.
-      } finally {
-        if (isMounted) {
-          setIsHydrated(true);
-        }
-      }
-    };
-
-    loadPreference();
-
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!isHydrated) return;
-
-    AsyncStorage.setItem(STORAGE_KEY, preference).catch(() => {
-      // Ignore write errors; preference will fall back to system next launch.
-    });
-  }, [isHydrated, preference]);
-
-  useEffect(() => {
-    const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      if (!colorScheme) return;
-      setSystemScheme((prev) => {
-        const next = normalizeScheme(colorScheme);
-        return next === prev ? prev : next;
-      });
-    });
-
-    return () => {
-      if (subscription?.remove) {
-        subscription.remove();
-      }
-    };
-  }, []);
-
-  const setThemePreference = useCallback((nextPreference) => {
-    setPreference((prev) => {
-      const resolved =
-        typeof nextPreference === "function"
-          ? nextPreference(prev)
-          : nextPreference;
-      const normalized = normalizePreference(resolved);
-      return normalized === prev ? prev : normalized;
+    AsyncStorage.getItem(STORAGE_KEY).then((stored) => {
+      if (stored) setThemePreference(stored);
+      setHydrated(true);
     });
   }, []);
 
+  // Persist preference
+  useEffect(() => {
+    if (hydrated) AsyncStorage.setItem(STORAGE_KEY, themePreference);
+  }, [hydrated, themePreference]);
+
+  // React to OS / Simulator theme changes
+  useEffect(() => {
+    const subscription = Appearance.addChangeListener(() => {
+      const updated = normalize(Appearance.getColorScheme());
+      setSystemScheme(updated);
+    });
+    return () => subscription?.remove?.();
+  }, []);
+
+  // Toggle theme
   const toggleTheme = useCallback(() => {
     setThemePreference((prev) => {
       if (prev === "system") {
@@ -107,9 +64,11 @@ export const ThemeProvider = ({ children }) => {
       }
       return prev === "dark" ? "light" : "dark";
     });
-  }, [setThemePreference, systemScheme]);
+  }, [systemScheme]);
 
-  const appliedScheme = preference === "system" ? systemScheme : preference;
+  const appliedScheme =
+    themePreference === "system" ? systemScheme : themePreference;
+
   const theme = appliedScheme === "dark" ? darkTheme : lightTheme;
   const dripsyTheme =
     appliedScheme === "dark" ? dripsyDarkTheme : dripsyLightTheme;
@@ -119,20 +78,12 @@ export const ThemeProvider = ({ children }) => {
       theme,
       dripsyTheme,
       colorScheme: appliedScheme,
-      themePreference: preference,
+      themePreference,
       isDark: appliedScheme === "dark",
-      setTheme: setThemePreference,
       setThemePreference,
       toggleTheme,
     }),
-    [
-      appliedScheme,
-      dripsyTheme,
-      preference,
-      setThemePreference,
-      theme,
-      toggleTheme,
-    ],
+    [theme, dripsyTheme, appliedScheme, themePreference, toggleTheme]
   );
 
   return (

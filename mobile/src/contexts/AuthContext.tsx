@@ -7,15 +7,62 @@ import {
   useContext,
   useEffect,
   useState,
+  ReactNode,
 } from "react";
+import type { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/config/supabase";
 
-// import useRouteAuth from '@/hooks/useRouteAuth';
-// import { useRouter } from 'expo-router';
+// Re-export commonly used types from Supabase
+export type { User, Session, AuthError } from "@supabase/supabase-js";
 
-const AuthContext = createContext({});
+// Type definitions
+export interface ProfileData {
+  id?: string;
+  full_name?: string;
+  phone?: string;
+  email?: string;
+  username?: string;
+  avatar_url?: string;
+  bio?: string;
+  [key: string]: any;
+}
 
-export const useAuth = () => {
+export interface AuthResponse<T = any> {
+  data: T | null;
+  error: AuthError | Error | null;
+}
+
+export interface OAuthSessionResponse {
+  data: { session: boolean } | null;
+  error: AuthError | Error | null;
+}
+
+export interface AuthContextType {
+  user: User | null;
+  session: Session | null;
+  loading: boolean;
+  hasCompletedOnboarding: boolean;
+  signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<AuthResponse>;
+  signIn: (email: string, password: string) => Promise<AuthResponse>;
+  signOut: () => Promise<{ error: AuthError | Error | null }>;
+  resetPassword: (email: string) => Promise<AuthResponse>;
+  signInWithGoogle: () => Promise<OAuthSessionResponse>;
+  signInWithApple: () => Promise<OAuthSessionResponse>;
+  signInWithAppleNative: () => Promise<AuthResponse>;
+  signInWithPhone: (phoneNumber: string) => Promise<AuthResponse>;
+  verifyPhoneCode: (phoneNumber: string, token: string) => Promise<AuthResponse>;
+  signInWithEmailOtp: (email: string) => Promise<AuthResponse>;
+  verifyEmailOtp: (email: string, token: string) => Promise<AuthResponse>;
+  completeOnboarding: (profileData: ProfileData) => Promise<{ error: AuthError | Error | null }>;
+}
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (!context) {
     throw new Error("useAuth must be used within an AuthProvider");
@@ -23,14 +70,14 @@ export const useAuth = () => {
   return context;
 };
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(false);
   const redirectUrl = makeRedirectUri({ scheme: process.env.EXPO_PUBLIC_REDIRECT_URL });
 
-  const checkOnboardingStatus = useCallback(async (userId) => {
+  const checkOnboardingStatus = useCallback(async (userId: string): Promise<void> => {
     const { data, error } = await supabase
       .from("profiles")
       .select("onboarding_completed")
@@ -102,7 +149,7 @@ export const AuthProvider = ({ children }) => {
     };
   }, [checkOnboardingStatus]);
 
-  const signUp = async (email, password, metadata = {}) => {
+  const signUp = async (email: string, password: string, metadata: Record<string, any> = {}): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -118,11 +165,11 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const signIn = async (email, password) => {
+  const signIn = async (email: string, password: string): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -132,31 +179,31 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const signOut = async () => {
+  const signOut = async (): Promise<{ error: AuthError | Error | null }> => {
     try {
       const { error } = await supabase.auth.signOut({ scope: 'local' });
       if (error) throw error;
       return { error: null };
     } catch (error) {
-      return { error };
+      return { error: error as AuthError | Error };
     }
   };
 
-  const resetPassword = async (email) => {
+  const resetPassword = async (email: string): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.resetPasswordForEmail(email);
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (): Promise<OAuthSessionResponse> => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "google",
@@ -209,11 +256,11 @@ export const AuthProvider = ({ children }) => {
 
       return { data: null, error: new Error("No OAuth URL generated") };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const signInWithApple = async () => {
+  const signInWithApple = async (): Promise<OAuthSessionResponse> => {
     try {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: "apple",
@@ -256,11 +303,11 @@ export const AuthProvider = ({ children }) => {
       if (sessionError) throw sessionError;
       return { data: { session: true }, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const signInWithAppleNative = async () => {
+  const signInWithAppleNative = async (): Promise<AuthResponse> => {
     try {
       const credential = await AppleAuthentication.signInAsync({
         requestedScopes: [
@@ -278,7 +325,7 @@ export const AuthProvider = ({ children }) => {
           // Apple only provides the user's full name on the first sign-in
           // Save it to user metadata if available
           if (credential.fullName) {
-            const nameParts = [];
+            const nameParts: string[] = [];
             if (credential.fullName.givenName)
               nameParts.push(credential.fullName.givenName);
             if (credential.fullName.middleName)
@@ -303,12 +350,12 @@ export const AuthProvider = ({ children }) => {
       // if (error.code === 'ERR_REQUEST_CANCELED') {
       // return { data: null, error };
       // } else {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
       // }
     }
   };
 
-  const signInWithPhone = async (phoneNumber) => {
+  const signInWithPhone = async (phoneNumber: string): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.signInWithOtp({
         phone: phoneNumber,
@@ -316,11 +363,11 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const verifyPhoneCode = async (phoneNumber, token) => {
+  const verifyPhoneCode = async (phoneNumber: string, token: string): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         phone: phoneNumber,
@@ -330,11 +377,11 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const signInWithEmailOtp = async (email) => {
+  const signInWithEmailOtp = async (email: string): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.signInWithOtp({
         email: email,
@@ -345,11 +392,11 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const verifyEmailOtp = async (email, token) => {
+  const verifyEmailOtp = async (email: string, token: string): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         email: email,
@@ -359,11 +406,11 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       return { data, error: null };
     } catch (error) {
-      return { data: null, error };
+      return { data: null, error: error as AuthError | Error };
     }
   };
 
-  const completeOnboarding = async (profileData) => {
+  const completeOnboarding = async (profileData: ProfileData): Promise<{ error: AuthError | Error | null }> => {
     try {
       if (!user) throw new Error("No user logged in");
 
@@ -387,11 +434,11 @@ export const AuthProvider = ({ children }) => {
       setHasCompletedOnboarding(true);
       return { error: null };
     } catch (error) {
-      return { error };
+      return { error: error as AuthError | Error };
     }
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     session,
     loading,

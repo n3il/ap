@@ -8,8 +8,8 @@ type TimeFrameOption = {
 };
 
 export const TIMEFRAME_OPTIONS: TimeFrameOption[] = [
-  // { id: "5m", label: "5m" },
-  // { id: "15m", label: "15m" },
+  { id: "5m", label: "5m" },
+  { id: "15m", label: "15m" },
   { id: "1h", label: "1H" },
   { id: "24h", label: "24H" },
   { id: "7d", label: "7D" },

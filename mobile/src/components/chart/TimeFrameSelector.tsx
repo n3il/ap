@@ -4,7 +4,11 @@ import { TIMEFRAME_OPTIONS, useTimeframeStore } from "@/stores/useTimeframeStore
 import { useColors } from "@/theme";
 
 export default function TimeFrameSelector({
-  visibleTimeFrames = ["24h", "7d", "1M"]
+  visibleTimeFrames, // ["24h", "7d", "1M"]
+  invisibleTimeFrames = ["15m", "1M"],
+} : {
+  visibleTimeFrames?: string[]
+  invisibleTimeFrames?: string[]
 }) {
   const { theme } = useTheme();
   const { colors: palette } = useColors()
@@ -23,7 +27,10 @@ export default function TimeFrameSelector({
       }}
     >
       {TIMEFRAME_OPTIONS.map((option) => {
-        if (!visibleTimeFrames.includes(option.id)) {
+        if (visibleTimeFrames && !visibleTimeFrames.includes(option.id)) {
+          return null;
+        }
+        if (invisibleTimeFrames && invisibleTimeFrames.includes(option.id)) {
           return null;
         }
         const isSelected = timeframe === option.id;
