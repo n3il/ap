@@ -3,13 +3,13 @@ import Markdown from "react-native-markdown-display";
 import TradeActionDisplay from "@/components/TradeActionDisplay";
 import { Avatar, ScrollView, StatusBadge, Text, View } from "@/components/ui";
 import LockScreen from "@/components/ui/LockScreen";
+import { useAgent } from "@/hooks/useAgent";
+import useMarkdownStyles from "@/hooks/useMarkdownStyles";
 import { useColors } from "@/theme";
 import type { AssessmentRecordType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
-import useMarkdownStyles from "@/hooks/useMarkdownStyles";
-import SectionTitle from "../SectionTitle";
 import SentimentBadge from "../agent/SentimentBadge";
-import { useAgent } from "@/hooks/useAgent";
+import SectionTitle from "../SectionTitle";
 
 const hasContent = (value: string | null | undefined) =>
   typeof value === "string" && value.trim().length > 0;
@@ -21,7 +21,7 @@ type ReportDetailProps = {
 export default function ReportDetail({ assessment }: ReportDetailProps) {
   const [expanded, _setExpanded] = useState(false);
   const { colors: palette, withOpacity } = useColors();
-  const markdownStyles = useMarkdownStyles()
+  const markdownStyles = useMarkdownStyles();
   const { data: agent } = useAgent(assessment?.agent_id);
 
   const [parsedResponse, _] = useState(() => {
@@ -122,7 +122,7 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
           borderBottomWidth: 1,
           paddingBottom: 4,
           marginBottom: 4,
-          borderBottomColor: withOpacity(palette.border, .3),
+          borderBottomColor: withOpacity(palette.border, 0.3),
         }}
       >
         <Avatar
@@ -131,8 +131,15 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
           // email={agent?.model_name}
           size="md"
         />
-        <View sx={{ flexDirection: "column", alignItems: "flex-end", justifyContent: 'flex-end', gap: 2 }}>
-        <Text variant="xs" tone="muted">
+        <View
+          sx={{
+            flexDirection: "column",
+            alignItems: "flex-end",
+            justifyContent: "flex-end",
+            gap: 2,
+          }}
+        >
+          <Text variant="xs" tone="muted">
             {new Date(assessment.timestamp).toLocaleDateString("en-US", {
               month: "short",
               day: "numeric",
@@ -151,7 +158,7 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
         sentimentWord={sentimentLabel}
       />
 
-      <SectionTitle title="Moves" sx={{fontWeight: "900"}} />
+      <SectionTitle title="Moves" sx={{ fontWeight: "900" }} />
 
       {tradeActions.length > 0 && (
         <View
@@ -169,7 +176,7 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
         </View>
       )}
 
-      <SectionTitle title="Extended" sx={{fontWeight: "900"}} />
+      <SectionTitle title="Extended" sx={{ fontWeight: "900" }} />
 
       {shortSummary && (
         <Text

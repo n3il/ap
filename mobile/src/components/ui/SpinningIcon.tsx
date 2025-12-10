@@ -26,7 +26,7 @@ export function RadarSpinner({ isTriggeringAssessment, palette }: Props) {
           duration: 4000,
           // easing: Easing.bezier(0.4, 0.0, 0.2, 1),
           useNativeDriver: true,
-        })
+        }),
       );
 
       // Pulsating color
@@ -44,7 +44,7 @@ export function RadarSpinner({ isTriggeringAssessment, palette }: Props) {
             // easing: Easing.inOut(Easing.quad),
             useNativeDriver: true,
           }),
-        ])
+        ]),
       );
 
       spinAnim.start();

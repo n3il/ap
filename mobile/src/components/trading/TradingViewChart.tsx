@@ -1,11 +1,11 @@
+import React, { useEffect, useRef } from "react";
 import { WebView } from "react-native-webview";
-import React, { useRef, useEffect } from "react";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 
 const TradingViewChart = ({ symbol = "BTC" }) => {
-  const { colorScheme } = useTheme()
-  const {colors: palette} = useColors()
+  const { colorScheme } = useTheme();
+  const { colors: palette } = useColors();
   const webViewRef = useRef(null);
 
   const sendMessage = (msg) => {

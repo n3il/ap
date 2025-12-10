@@ -1,6 +1,7 @@
 import "fast-text-encoding";
 import "event-target-polyfill";
 import "@/polyfills/domException";
+import * as Sentry from "@sentry/react-native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Stack, useRouter } from "expo-router";
 import * as ExpoSplashScreen from "expo-splash-screen";
@@ -8,13 +9,12 @@ import { useEffect, useMemo, useState } from "react";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import DebugOverlay from "@/components/DebugOverlay";
+import ExploreHeader from "@/components/explore/Header";
 import SplashScreen from "@/components/SplashScreen";
 import { ROUTES } from "@/config/routes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
-import * as Sentry from '@sentry/react-native';
-import ExploreHeader from "@/components/explore/Header";
 
 Sentry.init({
   dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
@@ -82,12 +82,14 @@ function AuthNavigator() {
     }
   }, [loading]);
 
-  const rootBg = useMemo(() => palette.backkgroundSecondary as string, [palette])
+  const rootBg = useMemo(
+    () => palette.backkgroundSecondary as string,
+    [palette],
+  );
 
   if (loading || !appIsReady) {
     return <SplashScreen />;
   }
-
 
   return (
     <Stack

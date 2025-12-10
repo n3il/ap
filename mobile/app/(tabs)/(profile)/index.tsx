@@ -1,8 +1,11 @@
 import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
 import Constants from "expo-constants";
+import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { colors } from "react-native-keyboard-controller/lib/typescript/components/KeyboardToolbar/colors";
 import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
+import DebugOverlay from "@/components/DebugOverlay";
 import SectionTitle from "@/components/SectionTitle";
 import {
   Alert,
@@ -15,13 +18,10 @@ import {
 } from "@/components/ui";
 import { AnimatedBox } from "@/components/ui/animated";
 import LockScreen from "@/components/ui/LockScreen";
+import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAnimationKey } from "@/hooks/useAnimationKey";
 import { useColors } from "@/theme";
-import { useEffect } from "react";
-import { ROUTES } from "@/config/routes";
-import DebugOverlay from "@/components/DebugOverlay";
-import { colors } from "react-native-keyboard-controller/lib/typescript/components/KeyboardToolbar/colors";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
@@ -31,7 +31,7 @@ export default function ProfileScreen() {
 
   useEffect(() => {
     if (!user) {
-      router.push(ROUTES.AUTH_INDEX.path)
+      router.push(ROUTES.AUTH_INDEX.path);
     }
   }, [user]);
 
@@ -116,7 +116,7 @@ export default function ProfileScreen() {
               borderRadius: 24,
               backgroundColor: "transparent",
               borderWidth: 1,
-              borderColor: palette.border
+              borderColor: palette.border,
             }}
           >
             <Avatar
@@ -193,8 +193,6 @@ export default function ProfileScreen() {
             </AnimatedBox>
           ))}
         </View>
-
-
       </ScrollView>
       {false && <DebugOverlay />}
     </ContainerView>

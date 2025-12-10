@@ -36,7 +36,7 @@ export function formatAmount(num, { showSign = false, ...props } = {}) {
   let signSymbol = "";
   if (showSign) {
     signSymbol = num > 0 ? "+" : num < 0 ? "-" : "";
-    num = num.toString().replace(/-|\+/, '');
+    num = num.toString().replace(/-|\+/, "");
   }
   return `${signSymbol}${currencySymbol}${formatCompact(num, { ...props })}`;
 }
@@ -66,5 +66,5 @@ export function sentimentToColor(sentimentScore: number) {
   }
 
   const color = sentimentScore > 0 ? "long" : "short";
-  return withOpacity(color, Math.max(0.3, Math.abs(sentimentScore)))
+  return withOpacity(color, Math.max(0.3, Math.abs(sentimentScore)));
 }

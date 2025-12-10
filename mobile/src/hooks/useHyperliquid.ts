@@ -1,8 +1,8 @@
 import "event-target-polyfill";
 import "fast-text-encoding";
 import * as hl from "@nktkas/hyperliquid";
-import { create } from "zustand";
 import { useEffect } from "react";
+import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
 
 // Type aliases for better readability
@@ -14,7 +14,7 @@ type HLSubscriptionHandler = (data: any) => void;
 type HLMethodName = keyof {
   [K in keyof HLClientInstance as HLClientInstance[K] extends (
     params: any,
-    listener: any
+    listener: any,
   ) => any
     ? K
     : never]: HLClientInstance[K];
@@ -35,32 +35,32 @@ interface HLStoreState {
 // Clears all pending state on disconnect
 const clearPendingState = (
   registry: Map<string, Set<HLSubscriptionHandler>>,
-  subscriptions: Map<string, { unsubscribe: () => Promise<void> }>
+  subscriptions: Map<string, { unsubscribe: () => Promise<void> }>,
 ) => {
   registry.clear();
   subscriptions.clear();
 };
 
 // Handles incoming WebSocket messages for subscriptions
-const createMessageHandler = (
-  registry: Map<string, Set<HLSubscriptionHandler>>
-) => (event: MessageEvent) => {
-  const msg = JSON.parse(event.data);
+const createMessageHandler =
+  (registry: Map<string, Set<HLSubscriptionHandler>>) =>
+  (event: MessageEvent) => {
+    const msg = JSON.parse(event.data);
 
-  // Handle subscription data (post responses are handled by InfoClient)
-  if (msg.channel !== "post") {
-    const handlers = registry.get(msg.channel);
-    if (handlers) {
-      handlers.forEach((h) => h(msg.data));
+    // Handle subscription data (post responses are handled by InfoClient)
+    if (msg.channel !== "post") {
+      const handlers = registry.get(msg.channel);
+      if (handlers) {
+        handlers.forEach((h) => h(msg.data));
+      }
     }
-  }
-};
+  };
 
 // Creates and manages ping interval for latency tracking
 const createPingManager = (
   infoClient: hl.InfoClient,
   updateLatency: (ms: number) => void,
-  updateError: (error: string | null) => void
+  updateError: (error: string | null) => void,
 ) => {
   const ping = async () => {
     try {
@@ -79,7 +79,10 @@ const createPingManager = (
 };
 
 export const useHyperliquidStore = create<HLStoreState>((set, get) => {
-  const transport = new hl.WebSocketTransport({ isTestnet: true, resubscribe: false });
+  const transport = new hl.WebSocketTransport({
+    isTestnet: true,
+    resubscribe: false,
+  });
   const client = new hl.SubscriptionClient({ transport });
   const infoClient = new hl.InfoClient({ transport });
 
@@ -96,9 +99,10 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   });
 
   transport.socket.addEventListener("close", (event) => {
-    const errorMsg = event.code !== 1000 && event.code !== 1005
-      ? `Connection closed (code: ${event.code}, reason: ${event.reason || 'unknown'})`
-      : null;
+    const errorMsg =
+      event.code !== 1000 && event.code !== 1005
+        ? `Connection closed (code: ${event.code}, reason: ${event.reason || "unknown"})`
+        : null;
     set({ connectionState: "disconnected", error: errorMsg });
     clearPendingState(registry, subscriptions);
     if (pingInterval) {
@@ -108,9 +112,8 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   });
 
   transport.socket.addEventListener("error", (event) => {
-    const errorMsg = event instanceof ErrorEvent
-      ? event.message
-      : "WebSocket error occurred";
+    const errorMsg =
+      event instanceof ErrorEvent ? event.message : "WebSocket error occurred";
     set({ connectionState: "disconnected", error: errorMsg });
     clearPendingState(registry, subscriptions);
     if (pingInterval) {
@@ -120,16 +123,13 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   });
 
   // Setup message handler
-  transport.socket.addEventListener(
-    "message",
-    createMessageHandler(registry)
-  );
+  transport.socket.addEventListener("message", createMessageHandler(registry));
 
   // Setup ping interval
   pingInterval = createPingManager(
     infoClient,
     (ms) => set({ latencyMs: ms }),
-    (error) => set({ error })
+    (error) => set({ error }),
   );
 
   return {
@@ -150,7 +150,9 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
           transport.socket?.close?.(4000, "manual reconnect", false);
         } catch (err) {
           console.warn("Failed to trigger HL reconnect", err);
-          set({ error: err instanceof Error ? err.message : "Failed to reconnect" });
+          set({
+            error: err instanceof Error ? err.message : "Failed to reconnect",
+          });
         }
       }
     },
@@ -168,7 +170,7 @@ const createSubscription = (
   key: string,
   registry: Map<string, Set<HLSubscriptionHandler>>,
   subscriptions: Map<string, { unsubscribe: () => Promise<void> }>,
-  handler: HLSubscriptionHandler
+  handler: HLSubscriptionHandler,
 ) => {
   const handlerSet = new Set<HLSubscriptionHandler>([handler]);
   registry.set(key, handlerSet);
@@ -196,7 +198,7 @@ const cleanupSubscription = (
   key: string,
   handler: HLSubscriptionHandler,
   registry: Map<string, Set<HLSubscriptionHandler>>,
-  subscriptions: Map<string, { unsubscribe: () => Promise<void> }>
+  subscriptions: Map<string, { unsubscribe: () => Promise<void> }>,
 ) => {
   const entry = registry.get(key);
   if (!entry) return;
@@ -206,9 +208,11 @@ const cleanupSubscription = (
     registry.delete(key);
     const sub = subscriptions.get(key);
     if (sub?.unsubscribe) {
-      sub.unsubscribe().catch((err: unknown) =>
-        console.warn(`Failed to unsubscribe ${key}`, err)
-      );
+      sub
+        .unsubscribe()
+        .catch((err: unknown) =>
+          console.warn(`Failed to unsubscribe ${key}`, err),
+        );
     }
     subscriptions.delete(key);
   }
@@ -218,7 +222,7 @@ export function useHLSubscription(
   method: HLMethodName,
   params: any,
   handler: (data: any) => void,
-  enabled = true
+  enabled = true,
 ) {
   const { client, registry, subscriptions, connectionState } =
     useHyperliquidStore(
@@ -227,7 +231,7 @@ export function useHLSubscription(
         registry: s.registry,
         subscriptions: s.subscriptions,
         connectionState: s.connectionState,
-      }))
+      })),
     );
 
   useEffect(() => {
@@ -243,7 +247,15 @@ export function useHLSubscription(
       if (existingHandlers) {
         existingHandlers.add(handler);
       } else {
-        createSubscription(client, method, param, key, registry, subscriptions, handler);
+        createSubscription(
+          client,
+          method,
+          param,
+          key,
+          registry,
+          subscriptions,
+          handler,
+        );
       }
 
       return key;
@@ -251,7 +263,7 @@ export function useHLSubscription(
 
     return () => {
       keys.forEach((key) =>
-        cleanupSubscription(key, handler, registry, subscriptions)
+        cleanupSubscription(key, handler, registry, subscriptions),
       );
     };
   }, [enabled, method, handler, params, connectionState]);
@@ -268,7 +280,7 @@ export function useHyperliquidConnectionStatus() {
       connectionState: s.connectionState,
       error: s.error,
       latencyMs: s.latencyMs,
-    }))
+    })),
   );
   return { connectionState, error, latencyMs };
 }

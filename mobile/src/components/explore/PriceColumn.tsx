@@ -10,13 +10,8 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import Svg, { Polyline } from "react-native-svg";
-import {
-  GlassButton,
-  Skeleton,
-  Text,
-  View,
-} from "@/components/ui";
-import { NormalizedAsset } from "@/hooks/useMarketPrices";
+import { GlassButton, Skeleton, Text, View } from "@/components/ui";
+import type { NormalizedAsset } from "@/hooks/useMarketPrices";
 import { useColors, withOpacity } from "@/theme";
 import { numberToColor } from "@/utils/currency";
 import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
@@ -76,7 +71,7 @@ export default function PriceColumn({
   isLoading,
   scrollY,
   onPress,
-} : {
+}: {
   tickerData: NormalizedAsset;
   sparklineData: number[];
   rangeDelta: number;
@@ -84,7 +79,7 @@ export default function PriceColumn({
   isHistoryLoading: boolean;
   isLoading?: boolean;
   scrollY: number;
-  onPress?: any
+  onPress?: any;
 }) {
   const router = useRouter();
   const { colors: palette } = useColors();
@@ -234,7 +229,7 @@ export default function PriceColumn({
           width: width / 3,
           flexDirection: "column",
           borderWidth: 1,
-          borderColor: withOpacity(palette.border, .7),
+          borderColor: withOpacity(palette.border, 0.7),
           padding: 12,
           gap: 8,
         }}
@@ -244,7 +239,12 @@ export default function PriceColumn({
         <Skeleton width="60%" height={11} borderRadius={4} />
 
         {/* Price skeleton */}
-        <Skeleton width="80%" height={16} borderRadius={4} sx={{ marginTop: 2 }} />
+        <Skeleton
+          width="80%"
+          height={16}
+          borderRadius={4}
+          sx={{ marginTop: 2 }}
+        />
 
         {/* Change skeleton */}
         <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
@@ -253,14 +253,19 @@ export default function PriceColumn({
         </View>
 
         {/* Sparkline skeleton */}
-        <Skeleton width="100%" height={SPARKLINE_HEIGHT} borderRadius={4} sx={{ marginTop: 8 }} />
+        <Skeleton
+          width="100%"
+          height={SPARKLINE_HEIGHT}
+          borderRadius={4}
+          sx={{ marginTop: 8 }}
+        />
       </GlassButton>
     );
   }
 
   const handleOnPress = () => {
-    onPress?.()
-  }
+    onPress?.();
+  };
 
   return (
     <GlassButton
@@ -269,7 +274,7 @@ export default function PriceColumn({
         width: width / 3,
         flexDirection: "column",
         borderWidth: 1,
-        borderColor: withOpacity(palette.border, .7)
+        borderColor: withOpacity(palette.border, 0.7),
       }}
       enabled={false}
       onPress={handleOnPress}
@@ -363,4 +368,4 @@ export default function PriceColumn({
       </Animated.View>
     </GlassButton>
   );
-};
+}

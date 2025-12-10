@@ -30,7 +30,7 @@ const ThemeContext = createContext({
 export const ThemeProvider = ({ children }) => {
   const [themePreference, setThemePreference] = useState("system");
   const [systemScheme, setSystemScheme] = useState(
-    normalize(Appearance.getColorScheme())
+    normalize(Appearance.getColorScheme()),
   );
   const [hydrated, setHydrated] = useState(false);
 
@@ -83,7 +83,7 @@ export const ThemeProvider = ({ children }) => {
       setThemePreference,
       toggleTheme,
     }),
-    [theme, dripsyTheme, appliedScheme, themePreference, toggleTheme]
+    [theme, dripsyTheme, appliedScheme, themePreference, toggleTheme],
   );
 
   return (

@@ -27,17 +27,13 @@ export default function TabsLayout() {
       })}
     >
       <NativeTabs.Trigger name="(explore)">
-      <NativeTabs.Trigger.TabBar
-          backgroundColor="pink"
-        />
+        <NativeTabs.Trigger.TabBar backgroundColor="pink" />
 
         <Label>Explore</Label>
         <Icon sf="globe.desk" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(agents)">
-              <NativeTabs.Trigger.TabBar
-          backgroundColor="pink"
-        />
+        <NativeTabs.Trigger.TabBar backgroundColor="pink" />
         <Label>Agents</Label>
         <Icon sf="sparkles" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>

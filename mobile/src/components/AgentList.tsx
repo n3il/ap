@@ -2,14 +2,14 @@ import { useQuery } from "@tanstack/react-query";
 import { ActivityIndicator } from "dripsy";
 import { useRouter } from "expo-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { SharedValue, useAnimatedReaction } from "react-native-reanimated";
+import type { LayoutChangeEvent, ViewStyle } from "react-native";
+import { type SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { Text, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { agentService } from "@/services/agentService";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import AgentCard from "./AgentCard";
-import { LayoutChangeEvent, ViewStyle } from "react-native";
 
 const ANIM_COMPLETE_SCROLL_Y = 200;
 
@@ -116,7 +116,7 @@ export default function AgentList({
   // Track scroll position changes with Reanimated
   useAnimatedReaction(
     () => {
-      return scrollY && 'value' in scrollY ? scrollY.value : 0;
+      return scrollY && "value" in scrollY ? scrollY.value : 0;
     },
     (currentScroll, previous) => {
       if (scrollY && currentScroll !== previous) {
@@ -126,10 +126,13 @@ export default function AgentList({
   );
 
   // Handle item layout
-  const handleItemLayout = useCallback((agentId: string, event: LayoutChangeEvent) => {
-    const { y, height } = event.nativeEvent.layout;
-    itemLayoutsRef.current[agentId] = { y, height };
-  }, []);
+  const handleItemLayout = useCallback(
+    (agentId: string, event: LayoutChangeEvent) => {
+      const { y, height } = event.nativeEvent.layout;
+      itemLayoutsRef.current[agentId] = { y, height };
+    },
+    [],
+  );
 
   if (isLoading || isFetching) {
     return (

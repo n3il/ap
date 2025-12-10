@@ -150,9 +150,10 @@ export function buildNormalizedAgentLines({
     return agentSnapshots;
   });
 
-  const timestampSeries = [...snapshotSeries, ...sanitizedAdditionalSeries].filter(
-    (series) => Array.isArray(series) && series.length > 0,
-  );
+  const timestampSeries = [
+    ...snapshotSeries,
+    ...sanitizedAdditionalSeries,
+  ].filter((series) => Array.isArray(series) && series.length > 0);
 
   const { normalizeTimestamp, hasData } = createTimeNormalizer(
     timestampSeries,

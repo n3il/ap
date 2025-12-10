@@ -1,7 +1,7 @@
+import { Image } from "expo-image";
 import Text from "@/components/ui/Text";
 import View from "@/components/ui/View";
 import { useColors } from "@/theme";
-import { Image } from "expo-image";
 
 export const AppLogo = () => {
   const { colors } = useColors();
@@ -30,7 +30,7 @@ export const AppLogo = () => {
           fontWeight: "600",
           color: "accent700",
           letterSpacing: 3,
-          textTransform: 'uppercase',
+          textTransform: "uppercase",
         }}
       >
         {process.env.EXPO_PUBLIC_APP_NAME}

@@ -21,7 +21,7 @@ export const useColors = () => {
       merged[key] =
         value && typeof value === "object" && !Array.isArray(value)
           ? deepMerge(base?.[key], value)
-          : value ?? base?.[key];
+          : (value ?? base?.[key]);
     });
     return merged;
   };
@@ -63,9 +63,7 @@ export const useColors = () => {
       textPrimary:
         resolvedColors.text?.primary ?? fallback.text?.primary ?? undefined,
       textSecondary:
-        resolvedColors.text?.secondary ??
-        fallback.text?.secondary ??
-        undefined,
+        resolvedColors.text?.secondary ?? fallback.text?.secondary ?? undefined,
       textTertiary:
         resolvedColors.text?.tertiary ?? fallback.text?.tertiary ?? undefined,
       providers: resolvedColors.providers ?? fallback.providers,

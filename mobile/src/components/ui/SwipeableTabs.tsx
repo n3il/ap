@@ -104,10 +104,13 @@ export default function SwipeableTabs({
     });
   }, []);
 
-  const handleTabPress = useCallback((index: number) => {
-    markTabLoaded(index);
-    flatListRef.current?.scrollToIndex({ index, animated: true });
-  }, [markTabLoaded]);
+  const handleTabPress = useCallback(
+    (index: number) => {
+      markTabLoaded(index);
+      flatListRef.current?.scrollToIndex({ index, animated: true });
+    },
+    [markTabLoaded],
+  );
 
   const handleScroll = Animated.event(
     [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -265,7 +268,7 @@ export default function SwipeableTabs({
                         textTransform: "uppercase",
                         letterSpacing: 1.1,
                         color: theme.colors.foreground,
-                        opacity: .3,
+                        opacity: 0.3,
                       },
                       currentIndex === index && [
                         {

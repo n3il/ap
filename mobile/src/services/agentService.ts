@@ -104,7 +104,7 @@ export const agentService = {
       .eq("id", agentId)
       .single();
 
-      if (error) throw error;
+    if (error) throw error;
     return normalizeAgent(data, includeLatestAssessment);
   },
 

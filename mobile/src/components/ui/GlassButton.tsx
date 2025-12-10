@@ -1,8 +1,8 @@
 import { GlassView, GlassViewProps } from "expo-glass-effect";
-import { Pressable, View, ViewProps } from "react-native";
+import { Pressable, View, type ViewProps } from "react-native";
 import Text from "@/components/ui/Text";
-import { useColors } from "@/theme";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useColors } from "@/theme";
 
 const styleVariants = {
   default: {
@@ -51,22 +51,26 @@ export default function GlassButton({
   tintColor?: string;
 }) {
   const { colors } = useColors();
-  const { theme } = useTheme()
-  const pressableStyle = styleVariants[styleVariant as keyof typeof styleVariants] || styleVariants.default;
+  const { theme } = useTheme();
+  const pressableStyle =
+    styleVariants[styleVariant as keyof typeof styleVariants] ||
+    styleVariants.default;
 
   const PressableComponent = (
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={[{flexGrow: 1}, pressableStyle, style]}
+      style={[{ flexGrow: 1 }, pressableStyle, style]}
       {...buttonProps}
     >
       {typeof children === "string" ? (
-        <Text style={{
-          fontWeight: "600",
-          textAlign: "center",
-          color: colors.surfaceForeground
-        }}>
+        <Text
+          style={{
+            fontWeight: "600",
+            textAlign: "center",
+            color: colors.surfaceForeground,
+          }}
+        >
           {children}
         </Text>
       ) : (
@@ -99,9 +103,7 @@ export default function GlassButton({
           marginHorizontal: 4,
           backgroundColor: colors.glassTint,
         },
-        theme.isDark && {
-
-        },
+        theme.isDark && {},
         style,
       ]}
       tintColor={tintColor ?? colors.glassTint}

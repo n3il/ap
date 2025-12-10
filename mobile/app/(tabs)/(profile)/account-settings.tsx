@@ -1,10 +1,17 @@
-import { Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import {
+  Ionicons,
+  MaterialCommunityIcons,
+  MaterialIcons,
+} from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
+import parseNumber from "libphonenumber-js";
 import { useState } from "react";
+import { Pressable } from "react-native";
 import { FadeInDown } from "react-native-reanimated";
-import ContainerView from "@/components/ContainerView";
 import ManualLinkingCard from "@/components/auth/ManualLinkingCard";
+import SettingField from "@/components/auth/SettingFields";
+import ContainerView from "@/components/ContainerView";
 import {
   Alert,
   KeyboardAvoidingView,
@@ -20,9 +27,6 @@ import { supabase } from "@/config/supabase";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
-import { Pressable } from "react-native";
-import SettingField from "@/components/auth/SettingFields";
-import parseNumber from "libphonenumber-js";
 
 export default function AccountSettingsScreen() {
   const { user, signOut } = useAuth();
@@ -216,7 +220,8 @@ export default function AccountSettingsScreen() {
         </View>
 
         <ScrollView
-          style={{ flex: 1, gap: 8, }} showsVerticalScrollIndicator={false}
+          style={{ flex: 1, gap: 8 }}
+          showsVerticalScrollIndicator={false}
           contentContainerStyle={{ gap: 18, paddingBottom: "60%" }}
         >
           <AnimatedBox
@@ -384,7 +389,13 @@ export default function AccountSettingsScreen() {
               </Text>
 
               <View sx={{ paddingVertical: 3 }}>
-                <View sx={{ flexDirection: "row", alignItems: "center", justifyContent: "center" }}>
+                <View
+                  sx={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
                   <View
                     sx={{
                       width: 40,

@@ -1,17 +1,20 @@
-import { GlassButton, View, Text } from "@/components/ui";
+import { GlassButton, Text, View } from "@/components/ui";
 import { useTheme } from "@/contexts/ThemeContext";
-import { TIMEFRAME_OPTIONS, useTimeframeStore } from "@/stores/useTimeframeStore";
+import {
+  TIMEFRAME_OPTIONS,
+  useTimeframeStore,
+} from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 
 export default function TimeFrameSelector({
   visibleTimeFrames, // ["24h", "7d", "1M"]
   invisibleTimeFrames = ["15m", "1M"],
-} : {
-  visibleTimeFrames?: string[]
-  invisibleTimeFrames?: string[]
+}: {
+  visibleTimeFrames?: string[];
+  invisibleTimeFrames?: string[];
 }) {
   const { theme } = useTheme();
-  const { colors: palette } = useColors()
+  const { colors: palette } = useColors();
   const { timeframe, setTimeframe } = useTimeframeStore();
 
   if (!timeframe) return null;
@@ -23,7 +26,7 @@ export default function TimeFrameSelector({
         alignItems: "center",
         overflow: "visible",
         marginVertical: 3,
-        alignSelf: "flex-end"
+        alignSelf: "flex-end",
       }}
     >
       {TIMEFRAME_OPTIONS.map((option) => {

@@ -19,7 +19,7 @@ export default function PhoneInputAutoDetect({
   const [countryCodeValue, setCountryCodeValue] = useState(
     `${getCountryCallingCode(DEFAULT_COUNTRY)}`,
   );
-  const [displayValue, setDisplayValue] = useState('');
+  const [displayValue, setDisplayValue] = useState("");
 
   const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY);
 
@@ -83,7 +83,7 @@ export default function PhoneInputAutoDetect({
           height: 40,
           color: palette.foreground,
           letterSpacing: 2,
-          fontStyle: 'italic',
+          fontStyle: "italic",
         }}
         selectionColor={palette.foreground}
         value={"+"}
@@ -97,7 +97,7 @@ export default function PhoneInputAutoDetect({
           height: 40,
           color: palette.foreground,
           letterSpacing: 2,
-          fontStyle: 'italic',
+          fontStyle: "italic",
           marginLeft: 4,
         }}
         selectionColor={palette.foreground}
@@ -108,7 +108,7 @@ export default function PhoneInputAutoDetect({
         onChangeText={setCountryCodeValue}
         onBlur={() => {
           if (!countryCodeValue) {
-            setCountryCodeValue('1')
+            setCountryCodeValue("1");
           }
         }}
       />

@@ -1,9 +1,9 @@
+import type { ViewStyle } from "react-native";
 import { View } from "@/components/ui";
 import LabelValue, { FormattedValueLabel } from "@/components/ui/LabelValue";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
-import { AgentType } from "@/types/agent";
+import type { AgentType } from "@/types/agent";
 import { formatPercent } from "@/utils/currency";
-import { ViewStyle } from "react-native";
 
 export default function AccountStats({
   agent,
@@ -14,12 +14,14 @@ export default function AccountStats({
 }) {
   const accountData = useAccountBalance({ agent });
   return (
-    <View style={[
-      {
-        flexDirection: 'row',
-        gap: 12,
-      },
-    ]}>
+    <View
+      style={[
+        {
+          flexDirection: "row",
+          gap: 12,
+        },
+      ]}
+    >
       <LabelValue
         label="Open P&L"
         value={accountData.openPnlPct}
@@ -29,8 +31,7 @@ export default function AccountStats({
         formatter={formatPercent}
         alignRight
         darkText
-      >
-      </LabelValue>
+      ></LabelValue>
       <LabelValue
         label="All P&L"
         value={accountData.totalPnlPercent}
@@ -40,8 +41,7 @@ export default function AccountStats({
         formatter={formatPercent}
         alignRight
         darkText
-      >
-      </LabelValue>
+      ></LabelValue>
     </View>
   );
 }

@@ -1,9 +1,9 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
+import * as Clipboard from "expo-clipboard";
 import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { FadeInDown } from "react-native-reanimated";
-import * as Clipboard from "expo-clipboard";
 import ContainerView from "@/components/ContainerView";
 import {
   Alert,
@@ -119,7 +119,7 @@ export default function ApiKeysScreen() {
             }
           },
         },
-      ]
+      ],
     );
   };
 
@@ -243,7 +243,11 @@ export default function ApiKeysScreen() {
               <View sx={{ marginTop: 4 }}>
                 <Text
                   variant="sm"
-                  sx={{ fontWeight: "600", color: "textPrimary", marginBottom: 2 }}
+                  sx={{
+                    fontWeight: "600",
+                    color: "textPrimary",
+                    marginBottom: 2,
+                  }}
                 >
                   Key Name
                 </Text>
@@ -266,7 +270,11 @@ export default function ApiKeysScreen() {
               <View sx={{ marginTop: 4 }}>
                 <Text
                   variant="sm"
-                  sx={{ fontWeight: "600", color: "textPrimary", marginBottom: 2 }}
+                  sx={{
+                    fontWeight: "600",
+                    color: "textPrimary",
+                    marginBottom: 2,
+                  }}
                 >
                   Permissions
                 </Text>
@@ -345,7 +353,11 @@ export default function ApiKeysScreen() {
                   marginBottom: 3,
                 }}
               >
-                <Ionicons name="checkmark-circle" size={24} color={palette.success} />
+                <Ionicons
+                  name="checkmark-circle"
+                  size={24}
+                  color={palette.success}
+                />
                 <Text
                   variant="lg"
                   sx={{
@@ -358,7 +370,10 @@ export default function ApiKeysScreen() {
                 </Text>
               </View>
 
-              <Text variant="sm" sx={{ color: "textSecondary", marginBottom: 3 }}>
+              <Text
+                variant="sm"
+                sx={{ color: "textSecondary", marginBottom: 3 }}
+              >
                 ⚠️ Save this key now. You won't be able to see it again!
               </Text>
 
@@ -460,7 +475,8 @@ export default function ApiKeysScreen() {
                 tone="muted"
                 sx={{ marginTop: 2, textAlign: "center" }}
               >
-                Create your first API key to access your account programmatically
+                Create your first API key to access your account
+                programmatically
               </Text>
             </View>
           </AnimatedBox>
@@ -498,7 +514,13 @@ export default function ApiKeysScreen() {
                     >
                       {apiKey.name}
                     </Text>
-                    <View sx={{ flexDirection: "row", alignItems: "center", marginTop: 1 }}>
+                    <View
+                      sx={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        marginTop: 1,
+                      }}
+                    >
                       <Text
                         sx={{
                           fontFamily: "monospace",
@@ -546,7 +568,13 @@ export default function ApiKeysScreen() {
                   )}
                 </View>
 
-                <View sx={{ height: 1, backgroundColor: "border", marginVertical: 2 }} />
+                <View
+                  sx={{
+                    height: 1,
+                    backgroundColor: "border",
+                    marginVertical: 2,
+                  }}
+                />
 
                 <View sx={{ flexDirection: "row", gap: 2, marginTop: 2 }}>
                   {apiKey.scopes.map((scope) => (
@@ -625,7 +653,13 @@ export default function ApiKeysScreen() {
               borderColor: colors.withOpacity(palette.info, 0.3),
             }}
           >
-            <View sx={{ flexDirection: "row", alignItems: "center", marginBottom: 2 }}>
+            <View
+              sx={{
+                flexDirection: "row",
+                alignItems: "center",
+                marginBottom: 2,
+              }}
+            >
               <Ionicons
                 name="information-circle"
                 size={20}
@@ -639,9 +673,9 @@ export default function ApiKeysScreen() {
               </Text>
             </View>
             <Text variant="sm" sx={{ color: "textSecondary", lineHeight: 20 }}>
-              API keys allow you to access your account programmatically. Keep them
-              secure and never share them publicly. Revoke any keys that may have
-              been compromised.
+              API keys allow you to access your account programmatically. Keep
+              them secure and never share them publicly. Revoke any keys that
+              may have been compromised.
             </Text>
           </View>
         </AnimatedBox>

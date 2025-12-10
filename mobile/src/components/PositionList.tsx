@@ -1,9 +1,9 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import type { SxProp } from "dripsy";
 import { useState } from "react";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatAmount, formatPercent } from "@/utils/currency";
-import { SxProp } from "dripsy";
 
 type PositionDetailRowProps = {
   label: string;
@@ -70,9 +70,9 @@ export function PositionRow({
   defaultExpanded = false,
   style = {},
 }: {
-  position: PositionListItem,
-  defaultExpanded?: boolean,
-  style?: ViewStyle
+  position: PositionListItem;
+  defaultExpanded?: boolean;
+  style?: ViewStyle;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const { colors: palette } = useColors();
@@ -148,14 +148,12 @@ export function PositionRow({
                 size={16}
                 color={sideColor}
               />
-
             </View>
 
             <View sx={{ flexDirection: "row", alignItems: "center" }}>
               <Text variant="xs" sx={{ marginRight: 2 }}>
                 {leverage}X {side}
               </Text>
-
             </View>
           </View>
 
@@ -168,7 +166,10 @@ export function PositionRow({
                 sx={{ fontWeight: "500", color: positionPnlColor }}
               >
                 {formatAmount(unrealizedPnlValue, { showSign: true })} (
-                {pnlPercentValue != null ? formatPercent(pnlPercentValue) : "--"})
+                {pnlPercentValue != null
+                  ? formatPercent(pnlPercentValue)
+                  : "--"}
+                )
               </Text>
             </View>
           </View>
@@ -193,7 +194,9 @@ export function PositionRow({
           <PositionDetailRow
             label="Liq. Price"
             value={
-              liquidationPx ? formatAmount(liquidationPx, { precision: 4 }) : "-"
+              liquidationPx
+                ? formatAmount(liquidationPx, { precision: 4 })
+                : "-"
             }
           />
 
@@ -232,14 +235,11 @@ export default function PositionList({
     .slice(0, top);
   return (
     <View sx={sx}>
-      {topPositions.length > 0 ? (
-        topPositions.map((position, i) => (
-          <PositionRow
-            key={position?.coin}
-            position={position}
-          />
-        ))
-      ) : null}
+      {topPositions.length > 0
+        ? topPositions.map((position, i) => (
+            <PositionRow key={position?.coin} position={position} />
+          ))
+        : null}
 
       {positions.length > top ? (
         <Text

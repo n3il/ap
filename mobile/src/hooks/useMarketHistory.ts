@@ -1,6 +1,6 @@
 import { useMemo } from "react";
-import { marketHistoryService } from "@/services/marketHistoryService";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
+import { marketHistoryService } from "@/services/marketHistoryService";
 
 export function useMarketHistory(timeframe: string, visibleSymbols?: string[]) {
   const { tickers } = useMarketPrices();

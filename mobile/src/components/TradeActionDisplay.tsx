@@ -88,16 +88,16 @@ export default function TradeActionDisplay({
             flexDirection: "row",
             alignItems: "center",
             justifyContent: "space-between",
-            paddingTop: 2
+            paddingTop: 2,
           }}
         >
           <Text
             variant="xs"
             sx={{
-              textTransform: 'capitalize'
+              textTransform: "capitalize",
             }}
           >
-              {`${actionData.type} ${actionData.direction || 'short'}` || '-'}
+            {`${actionData.type} ${actionData.direction || "short"}` || "-"}
           </Text>
 
           <Text variant="xs" sx={{ fontSize: 12, fontWeight: "400" }}>
@@ -105,27 +105,33 @@ export default function TradeActionDisplay({
           </Text>
 
           <Text variant="xs" sx={{ fontWeight: "500" }}>
-            {leverage ? `${leverage}x` : '-'}
+            {leverage ? `${leverage}x` : "-"}
           </Text>
           <Text variant="xs" tone="muted">
-            {tradeAmount ? formatAmount(tradeAmount) : '-'}
+            {tradeAmount ? formatAmount(tradeAmount) : "-"}
           </Text>
-
         </View>
       </TouchableOpacity>
 
       {reason ? (
-        <View sx={{ marginTop: 2  }}>
+        <View sx={{ marginTop: 2 }}>
           <Text
             variant="xs"
-
-            sx={{ fontFamily: "monospace", fontStyle: "italic", color: palette.mutedForeground }}
+            sx={{
+              fontFamily: "monospace",
+              fontStyle: "italic",
+              color: palette.mutedForeground,
+            }}
           >
             {reason}
           </Text>
           <Text
             variant="xs"
-            sx={{ fontFamily: "monospace", fontStyle: "italic", color: palette.mutedForeground }}
+            sx={{
+              fontFamily: "monospace",
+              fontStyle: "italic",
+              color: palette.mutedForeground,
+            }}
           >
             (Confidence: {actionData.confidenceScore})
           </Text>
@@ -154,9 +160,12 @@ export function TradeSummary({ tradeActions = [] }: TradeSummaryProps) {
   );
 
   const parts = [
-    "Opened: " + openActions.map(a => `${a.asset} ${a.direction?.toLowerCase()}`).join(', '),
+    "Opened: " +
+      openActions
+        .map((a) => `${a.asset} ${a.direction?.toLowerCase()}`)
+        .join(", "),
     "Closed: " + closeActions.length,
-  ]
+  ];
 
   return (
     <View sx={{ paddingVertical: 2 }}>

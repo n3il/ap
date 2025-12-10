@@ -1,13 +1,13 @@
+import React, { useEffect, useState } from "react";
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from "react-native-reanimated";
 import Text from "@/components/ui/Text";
 import View from "@/components/ui/View";
 import { useColors } from "@/theme";
-import React, { useEffect, useState } from "react";
-import Animated, {
-  useSharedValue,
-  withTiming,
-  useAnimatedStyle,
-  runOnJS,
-} from "react-native-reanimated";
 
 const INTERVAL_MIN = 2000; // 2 seconds
 const INTERVAL_MAX = 3000; // 3 seconds
@@ -19,7 +19,7 @@ export default function AnimatedPhraseSlider({
   phrases: string[];
   style?: any;
 }) {
-  const { colors: palette } = useColors()
+  const { colors: palette } = useColors();
   const [index, setIndex] = useState(0);
   const translateY = useSharedValue(40); // start slightly below
 
@@ -55,7 +55,14 @@ export default function AnimatedPhraseSlider({
   return (
     <View style={[{ height: 24, overflow: "hidden" }, style]}>
       <Animated.View style={animatedStyle}>
-        <Text variant="sm" style={{ fontStyle: "italic", fontFamily: "monospace", color: palette.textSecondary }}>
+        <Text
+          variant="sm"
+          style={{
+            fontStyle: "italic",
+            fontFamily: "monospace",
+            color: palette.textSecondary,
+          }}
+        >
           {phrases[index]}
         </Text>
       </Animated.View>

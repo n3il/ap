@@ -2,6 +2,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { View } from "react-native";
 import InfoSlides from "@/components/InfoSlides";
 import {
   Animated,
@@ -12,7 +13,6 @@ import {
 } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useColors } from "@/theme";
-import { View } from "react-native";
 
 const { width, height } = Dimensions.get("window");
 

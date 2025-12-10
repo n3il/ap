@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { type ComponentProps, useMemo } from "react";
 import SvgChart from "@/components/SvgChart";
+import { useAgent } from "@/hooks/useAgent";
 import { useAgentSnapshots } from "@/hooks/useAgentSnapshots";
 import { assessmentService } from "@/services/assessmentService";
-import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
 import {
   buildNormalizedAgentLines,

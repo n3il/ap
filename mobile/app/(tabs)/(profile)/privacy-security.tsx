@@ -2,8 +2,8 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
 import { useState } from "react";
-import { FadeInDown } from "react-native-reanimated";
 import { Pressable, Switch } from "react-native";
+import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import {
   Alert,
@@ -78,10 +78,7 @@ export default function PrivacySecurityScreen() {
       title: "Active Sessions",
       subtitle: "Manage your active login sessions",
       onPress: () =>
-        Alert.alert(
-          "Coming Soon",
-          "Session management will be available soon",
-        ),
+        Alert.alert("Coming Soon", "Session management will be available soon"),
     },
     {
       id: "api-keys",

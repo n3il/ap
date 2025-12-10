@@ -1,9 +1,9 @@
 import { memo, useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  type StyleProp,
   StyleSheet,
   View,
-  type StyleProp,
   type ViewStyle,
 } from "react-native";
 import {
@@ -88,7 +88,11 @@ const resolveTimestamp = (
   return fallbackIndex;
 };
 
-const buildLabel = (timestamp: number, index: number, total: number): string => {
+const buildLabel = (
+  timestamp: number,
+  index: number,
+  total: number,
+): string => {
   if (total <= 1) return "";
 
   const isLikelyDate = timestamp > 1e9;
@@ -244,9 +248,7 @@ const SvgChart = ({
     [style],
   );
   const explicitHeight =
-    typeof flattenedStyle?.height === "number"
-      ? flattenedStyle.height
-      : null;
+    typeof flattenedStyle?.height === "number" ? flattenedStyle.height : null;
   const resolvedWidth =
     measuredWidth ||
     (typeof flattenedStyle?.width === "number" ? flattenedStyle.width : 320);

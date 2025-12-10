@@ -1,5 +1,5 @@
-import { useColors } from "@/theme";
 import { useMemo } from "react";
+import { useColors } from "@/theme";
 
 export default function useMarkdownStyles() {
   const { colors: palette, withOpacity } = useColors();
@@ -50,7 +50,7 @@ export default function useMarkdownStyles() {
       },
       code_inline: {
         backgroundColor: withOpacity(
-          palette.surface ?? palette.background as string,
+          palette.surface ?? (palette.background as string),
           0.5,
         ),
         color: palette.primary as string,
@@ -62,7 +62,7 @@ export default function useMarkdownStyles() {
       },
       code_block: {
         backgroundColor: withOpacity(
-          palette.surface ?? palette.background as string,
+          palette.surface ?? (palette.background as string),
           0.5,
         ),
         color: palette.textSecondary as string,
@@ -74,7 +74,7 @@ export default function useMarkdownStyles() {
       },
       fence: {
         backgroundColor: withOpacity(
-          palette.surface ?? palette.background as string,
+          palette.surface ?? (palette.background as string),
           0.5,
         ),
         color: palette.textSecondary as string,
@@ -102,7 +102,7 @@ export default function useMarkdownStyles() {
           0.3,
         ),
         borderLeftWidth: 3,
-        borderLeftColor: (palette?.primary) as string,
+        borderLeftColor: palette?.primary as string,
         paddingHorizontal: 12,
         paddingVertical: 8,
         marginVertical: 8,

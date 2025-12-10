@@ -1,4 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
+import { GlassContainer } from "expo-glass-effect";
 import { useCallback, useState } from "react";
 import { Pressable, ScrollView } from "react-native";
 import Animated, {
@@ -12,12 +14,10 @@ import MultiAgentChart from "@/components/agents/MultiAgentChart";
 import { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
 import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
 import ExploreHeader from "@/components/explore/Header";
+import MarketPricesWidget from "@/components/explore/MarketPricesWidget";
 import { GlassButton, RefreshControl, View } from "@/components/ui";
 import GlassSelector from "@/components/ui/GlassSelector";
 import { useColors } from "@/theme";
-import { Ionicons } from "@expo/vector-icons";
-import MarketPricesWidget from "@/components/explore/MarketPricesWidget";
-import { GlassContainer } from "expo-glass-effect";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
@@ -43,10 +43,10 @@ export default function ExploreScreen() {
     },
   });
 
-  const [widgetExpanded, setWidgetExpanded] = useState(false)
+  const [widgetExpanded, setWidgetExpanded] = useState(false);
   const handleAssetPressCallback = useCallback(() => {
-    setWidgetExpanded(!widgetExpanded)
-  }, [widgetExpanded])
+    setWidgetExpanded(!widgetExpanded);
+  }, [widgetExpanded]);
 
   return (
     <View
@@ -89,9 +89,7 @@ export default function ExploreScreen() {
               }}
               onPress={handleAssetPressCallback}
             />
-            <MultiAgentChart
-              scrollY={scrollY}
-            />
+            <MultiAgentChart scrollY={scrollY} />
 
             <PaddedView
               sx={{
@@ -115,41 +113,56 @@ export default function ExploreScreen() {
                 }}
               >
                 <TimeFrameSelector />
-                <GlassContainer spacing={4} style={{
-                  flexDirection: "row",
-                }}>
-                <GlassButton
-                  styleVariant="minimal"
-                  onPress={() =>
-                    setViewMode((prev) => (prev === "list" ? "table" : "list"))
-                  }
-                  tintColor={palette.surface}
+                <GlassContainer
+                  spacing={4}
                   style={{
-                    borderRadius: 8,
+                    flexDirection: "row",
                   }}
                 >
-                  <Ionicons
-                    name={"list-outline"}
-                    size={18}
-                    color={viewMode === "table" ? palette.accent : palette.foreground}
-                  />
-                </GlassButton>
-                <GlassButton
-                  styleVariant="minimal"
-                  onPress={() =>
-                    setViewMode((prev) => (prev === "list" ? "table" : "list"))
-                  }
-                  tintColor={palette.surface}
-                  style={{
-                    borderRadius: 8,
-                  }}
-                >
-                  <Ionicons
-                    name={"grid-outline"}
-                    size={14}
-                    color={viewMode === "list" ? palette.accent : palette.foreground}
-                  />
-                </GlassButton>
+                  <GlassButton
+                    styleVariant="minimal"
+                    onPress={() =>
+                      setViewMode((prev) =>
+                        prev === "list" ? "table" : "list",
+                      )
+                    }
+                    tintColor={palette.surface}
+                    style={{
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Ionicons
+                      name={"list-outline"}
+                      size={18}
+                      color={
+                        viewMode === "table"
+                          ? palette.accent
+                          : palette.foreground
+                      }
+                    />
+                  </GlassButton>
+                  <GlassButton
+                    styleVariant="minimal"
+                    onPress={() =>
+                      setViewMode((prev) =>
+                        prev === "list" ? "table" : "list",
+                      )
+                    }
+                    tintColor={palette.surface}
+                    style={{
+                      borderRadius: 8,
+                    }}
+                  >
+                    <Ionicons
+                      name={"grid-outline"}
+                      size={14}
+                      color={
+                        viewMode === "list"
+                          ? palette.accent
+                          : palette.foreground
+                      }
+                    />
+                  </GlassButton>
                 </GlassContainer>
               </View>
             </PaddedView>
@@ -159,7 +172,7 @@ export default function ExploreScreen() {
           style={{
             marginTop: GLOBAL_PADDING,
             gap: GLOBAL_PADDING,
-            flexDirection: "column"
+            flexDirection: "column",
           }}
         >
           {viewMode === "list" ? (
@@ -176,7 +189,6 @@ export default function ExploreScreen() {
             />
           )}
         </View>
-
       </AnimatedScrollView>
     </View>
   );

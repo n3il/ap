@@ -1,6 +1,6 @@
+import { Ionicons } from "@expo/vector-icons";
 import { Platform, Text, TextInput, View } from "@/components/ui";
 import { useColors } from "@/theme";
-import { Ionicons } from "@expo/vector-icons";
 
 export default function SettingField({
   label,
@@ -31,11 +31,7 @@ export default function SettingField({
       <View sx={{ flexDirection: "row", alignItems: "center" }}>
         {icon && (
           <View sx={{ marginRight: 3 }}>
-            <Ionicons
-              name={icon}
-              size={20}
-              color={palette.textSecondary}
-            />
+            <Ionicons name={icon} size={20} color={palette.textSecondary} />
           </View>
         )}
         <TextInput
@@ -64,5 +60,5 @@ export default function SettingField({
         </Text>
       )}
     </View>
-  )
+  );
 }

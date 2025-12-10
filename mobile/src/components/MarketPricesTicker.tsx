@@ -19,7 +19,11 @@ import {
 } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useMarketHistory } from "@/hooks/useMarketHistory";
-import { NormalizedAsset, useMarketPrices, useMarketPricesStore } from "@/hooks/useMarketPrices";
+import {
+  type NormalizedAsset,
+  useMarketPrices,
+  useMarketPricesStore,
+} from "@/hooks/useMarketPrices";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors, withOpacity } from "@/theme";
 import { numberToColor } from "@/utils/currency";
@@ -340,9 +344,8 @@ export default function MarketPricesWidget({ sx: customSx, scrollY }) {
   const { colors: palette } = useColors();
   const { timeframe } = useTimeframeStore();
   const { tickers, isLoading } = useMarketPrices();
-  const { data: historyData, isFetching: historyFetching } = useMarketHistory(
-    timeframe,
-  );
+  const { data: historyData, isFetching: historyFetching } =
+    useMarketHistory(timeframe);
 
   return (
     <Animated.View style={[customSx]}>

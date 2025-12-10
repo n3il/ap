@@ -1,19 +1,19 @@
+import type { AuthError, Session, User } from "@supabase/supabase-js";
 import * as AppleAuthentication from "expo-apple-authentication";
 import { makeRedirectUri } from "expo-auth-session";
 import * as WebBrowser from "expo-web-browser";
 import {
   createContext,
+  type ReactNode,
   useCallback,
   useContext,
   useEffect,
   useState,
-  ReactNode,
 } from "react";
-import type { User, Session, AuthError } from "@supabase/supabase-js";
 import { supabase } from "@/config/supabase";
 
 // Re-export commonly used types from Supabase
-export type { User, Session, AuthError } from "@supabase/supabase-js";
+export type { AuthError, Session, User } from "@supabase/supabase-js";
 
 // Type definitions
 export interface ProfileData {
@@ -42,7 +42,11 @@ export interface AuthContextType {
   session: Session | null;
   loading: boolean;
   hasCompletedOnboarding: boolean;
-  signUp: (email: string, password: string, metadata?: Record<string, any>) => Promise<AuthResponse>;
+  signUp: (
+    email: string,
+    password: string,
+    metadata?: Record<string, any>,
+  ) => Promise<AuthResponse>;
   signIn: (email: string, password: string) => Promise<AuthResponse>;
   signOut: () => Promise<{ error: AuthError | Error | null }>;
   resetPassword: (email: string) => Promise<AuthResponse>;
@@ -50,10 +54,15 @@ export interface AuthContextType {
   signInWithApple: () => Promise<OAuthSessionResponse>;
   signInWithAppleNative: () => Promise<AuthResponse>;
   signInWithPhone: (phoneNumber: string) => Promise<AuthResponse>;
-  verifyPhoneCode: (phoneNumber: string, token: string) => Promise<AuthResponse>;
+  verifyPhoneCode: (
+    phoneNumber: string,
+    token: string,
+  ) => Promise<AuthResponse>;
   signInWithEmailOtp: (email: string) => Promise<AuthResponse>;
   verifyEmailOtp: (email: string, token: string) => Promise<AuthResponse>;
-  completeOnboarding: (profileData: ProfileData) => Promise<{ error: AuthError | Error | null }>;
+  completeOnboarding: (
+    profileData: ProfileData,
+  ) => Promise<{ error: AuthError | Error | null }>;
 }
 
 interface AuthProviderProps {
@@ -74,28 +83,34 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState<boolean>(false);
-  const redirectUrl = makeRedirectUri({ scheme: process.env.EXPO_PUBLIC_REDIRECT_URL });
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] =
+    useState<boolean>(false);
+  const redirectUrl = makeRedirectUri({
+    scheme: process.env.EXPO_PUBLIC_REDIRECT_URL,
+  });
 
-  const checkOnboardingStatus = useCallback(async (userId: string): Promise<void> => {
-    const { data, error } = await supabase
-      .from("profiles")
-      .select("onboarding_completed")
-      .eq("id", userId)
-      .single();
+  const checkOnboardingStatus = useCallback(
+    async (userId: string): Promise<void> => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("onboarding_completed")
+        .eq("id", userId)
+        .single();
 
-    if (error && error.code !== "PGRST116") {
-      return;
-    }
+      if (error && error.code !== "PGRST116") {
+        return;
+      }
 
-    const onboardingCompleted = data?.onboarding_completed || false;
-    setHasCompletedOnboarding(onboardingCompleted);
+      const onboardingCompleted = data?.onboarding_completed || false;
+      setHasCompletedOnboarding(onboardingCompleted);
 
-    // Sync to user metadata for future sessions
-    await supabase.auth.updateUser({
-      data: { onboarding_completed: onboardingCompleted },
-    });
-  }, []);
+      // Sync to user metadata for future sessions
+      await supabase.auth.updateUser({
+        data: { onboarding_completed: onboardingCompleted },
+      });
+    },
+    [],
+  );
 
   useEffect(() => {
     // Get initial session
@@ -149,7 +164,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     };
   }, [checkOnboardingStatus]);
 
-  const signUp = async (email: string, password: string, metadata: Record<string, any> = {}): Promise<AuthResponse> => {
+  const signUp = async (
+    email: string,
+    password: string,
+    metadata: Record<string, any> = {},
+  ): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -169,7 +188,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const signIn = async (email: string, password: string): Promise<AuthResponse> => {
+  const signIn = async (
+    email: string,
+    password: string,
+  ): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
@@ -185,7 +207,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const signOut = async (): Promise<{ error: AuthError | Error | null }> => {
     try {
-      const { error } = await supabase.auth.signOut({ scope: 'local' });
+      const { error } = await supabase.auth.signOut({ scope: "local" });
       if (error) throw error;
       return { error: null };
     } catch (error) {
@@ -355,7 +377,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const signInWithPhone = async (phoneNumber: string): Promise<AuthResponse> => {
+  const signInWithPhone = async (
+    phoneNumber: string,
+  ): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.signInWithOtp({
         phone: phoneNumber,
@@ -367,7 +391,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const verifyPhoneCode = async (phoneNumber: string, token: string): Promise<AuthResponse> => {
+  const verifyPhoneCode = async (
+    phoneNumber: string,
+    token: string,
+  ): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         phone: phoneNumber,
@@ -396,7 +423,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const verifyEmailOtp = async (email: string, token: string): Promise<AuthResponse> => {
+  const verifyEmailOtp = async (
+    email: string,
+    token: string,
+  ): Promise<AuthResponse> => {
     try {
       const { data, error } = await supabase.auth.verifyOtp({
         email: email,
@@ -410,7 +440,9 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     }
   };
 
-  const completeOnboarding = async (profileData: ProfileData): Promise<{ error: AuthError | Error | null }> => {
+  const completeOnboarding = async (
+    profileData: ProfileData,
+  ): Promise<{ error: AuthError | Error | null }> => {
     try {
       if (!user) throw new Error("No user logged in");
 

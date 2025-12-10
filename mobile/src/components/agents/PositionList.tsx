@@ -1,9 +1,9 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import type { SxProp } from "dripsy";
 import { useState } from "react";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatAmount, formatPercent } from "@/utils/currency";
-import { SxProp } from "dripsy";
 
 type PositionDetailRowProps = {
   label: string;
@@ -47,33 +47,31 @@ function PositionDetailRow({
   );
 }
 
-function TableCell({
-  alignLeft,
-  children,
-}) {
+function TableCell({ alignLeft, children }) {
   return (
-    <View sx={{
-      flexDirection: "row",
-      // marginLeft: !alignLeft ? 'auto' : 'initial',
-      justifyContent: alignLeft ? 'flex-start' : 'flex-end',
-      alignItems: "center",
-      gap: 2, flex: 1
-      }}>
+    <View
+      sx={{
+        flexDirection: "row",
+        // marginLeft: !alignLeft ? 'auto' : 'initial',
+        justifyContent: alignLeft ? "flex-start" : "flex-end",
+        alignItems: "center",
+        gap: 2,
+        flex: 1,
+      }}
+    >
       {children}
     </View>
   );
 }
-
-
 
 export function PositionRow({
   position,
   defaultExpanded = false,
   style = {},
 }: {
-  position: PositionListItem,
-  defaultExpanded?: boolean,
-  style?: ViewStyle
+  position: PositionListItem;
+  defaultExpanded?: boolean;
+  style?: ViewStyle;
 }) {
   const [expanded, setExpanded] = useState(defaultExpanded);
   const { colors: palette } = useColors();
@@ -151,7 +149,6 @@ export function PositionRow({
             <Text variant="xs" sx={{ marginRight: 2 }}>
               {leverage}X {side}
             </Text>
-
           </TableCell>
           <TableCell>
             <Text variant="xs">{formatAmount(totalPositionValue)}</Text>
@@ -172,7 +169,6 @@ export function PositionRow({
               {pnlPercentValue != null ? formatPercent(pnlPercentValue) : "--"}
             </Text>
           </TableCell>
-
         </View>
       </TouchableOpacity>
 
@@ -194,7 +190,9 @@ export function PositionRow({
           <PositionDetailRow
             label="Liq. Price"
             value={
-              liquidationPx ? formatAmount(liquidationPx, { precision: 4 }) : "-"
+              liquidationPx
+                ? formatAmount(liquidationPx, { precision: 4 })
+                : "-"
             }
           />
 
@@ -233,14 +231,11 @@ export default function PositionList({
     .slice(0, top);
   return (
     <View sx={sx}>
-      {topPositions.length > 0 ? (
-        topPositions.map((position, i) => (
-          <PositionRow
-            key={position?.coin}
-            position={position}
-          />
-        ))
-      ) : null}
+      {topPositions.length > 0
+        ? topPositions.map((position, i) => (
+            <PositionRow key={position?.coin} position={position} />
+          ))
+        : null}
 
       {positions.length > top ? (
         <Text

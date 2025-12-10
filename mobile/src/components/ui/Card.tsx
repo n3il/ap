@@ -3,10 +3,10 @@ import { useDripsyTheme } from "dripsy";
 import { GlassView } from "expo-glass-effect";
 import type React from "react";
 import type { StyleProp, ViewStyle } from "react-native";
+import { useTheme } from "@/contexts/ThemeContext";
+import { useColors } from "@/theme";
 import { withOpacity } from "@/theme/utils";
 import View from "./View";
-import { useColors } from "@/theme";
-import { useTheme } from "@/contexts/ThemeContext";
 
 export interface CardProps {
   children: React.ReactNode;
@@ -30,7 +30,7 @@ const Card: React.FC<CardProps> = ({
   isInteractive,
   glassStyle = {},
 }) => {
-  const { theme } = useTheme()
+  const { theme } = useTheme();
   const { colors: palette } = useColors();
 
   const baseStyles: SxProp = {
@@ -61,19 +61,22 @@ const Card: React.FC<CardProps> = ({
     const normalizedIntensity =
       Math.min(Math.max(glassIntensity, 0), 100) / 100;
     const tintOpacity = Math.max(0.05, normalizedIntensity || 0.2);
-    const defaultTintColor =
-      glassTintColor ?? palette.glassTint;
+    const defaultTintColor = glassTintColor ?? palette.glassTint;
 
     return (
       <GlassView
         tintColor={defaultTintColor}
         glassEffectStyle={glassEffectStyle}
         isInteractive={isInteractive}
-        style={[{
-          borderRadius,
-          paddingHorizontal: 6,
-          paddingVertical: 8,
-        }, glassStyle, style]}
+        style={[
+          {
+            borderRadius,
+            paddingHorizontal: 6,
+            paddingVertical: 8,
+          },
+          glassStyle,
+          style,
+        ]}
       >
         {children}
       </GlassView>

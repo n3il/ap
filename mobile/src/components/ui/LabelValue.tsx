@@ -23,7 +23,7 @@ export const FormattedValueLabel = ({
   valueTextVariant = "body",
   formatter = formatAmount,
   darkText = false,
-  sx = {}
+  sx = {},
 }: {
   value: number;
   colorize?: boolean;
@@ -97,7 +97,7 @@ const LabelValue: React.FC<LabelValueProps> = ({
           fontFamily: "monospace",
           alignSelf: alignRight ? "flex-end" : "flex-start",
           color: darkText ? "foreground" : "surfaceForeground",
-          opacity: .7
+          opacity: 0.7,
         }}
       >
         {label}
@@ -110,18 +110,20 @@ const LabelValue: React.FC<LabelValueProps> = ({
             alignItems: "center",
             gap: 1,
             justifyContent: alignRight ? "flex-end" : "flex-start",
-            marginLeft: alignRight ? 'auto': '0',
+            marginLeft: alignRight ? "auto" : "0",
           }}
         >
-          {<FormattedValueLabel
-            value={value}
-            colorize={colorize}
-            formatter={formatter}
-            showSign={showSign}
-            alignRight={alignRight}
-            valueTextVariant={valueTextVariant}
-            darkText={darkText}
-          />}
+          {
+            <FormattedValueLabel
+              value={value}
+              colorize={colorize}
+              formatter={formatter}
+              showSign={showSign}
+              alignRight={alignRight}
+              valueTextVariant={valueTextVariant}
+              darkText={darkText}
+            />
+          }
           {children}
         </View>
       ) : (

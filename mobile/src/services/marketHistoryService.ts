@@ -109,12 +109,14 @@ export function useCandleHistory(
           if (cancelled) break;
 
           try {
-            const rawCandles = await mainnetCandleDataInfoClient.candleSnapshot({
-              coin,
-              interval: config.interval,
-              startTime: startTimeMs,
-              endTime: endTimeMs,
-            });
+            const rawCandles = await mainnetCandleDataInfoClient.candleSnapshot(
+              {
+                coin,
+                interval: config.interval,
+                startTime: startTimeMs,
+                endTime: endTimeMs,
+              },
+            );
 
             const normalized = (rawCandles ?? [])
               .map(normalizeCandlePoint)
@@ -126,11 +128,15 @@ export function useCandleHistory(
               endTimeMs,
             );
           } catch (coinErr) {
-            console.error(`[marketHistoryService] Failed to fetch candles for ${coin}:`, {
-              error: coinErr,
-              message: coinErr instanceof Error ? coinErr.message : String(coinErr),
-              stack: coinErr instanceof Error ? coinErr.stack : undefined,
-            });
+            console.error(
+              `[marketHistoryService] Failed to fetch candles for ${coin}:`,
+              {
+                error: coinErr,
+                message:
+                  coinErr instanceof Error ? coinErr.message : String(coinErr),
+                stack: coinErr instanceof Error ? coinErr.stack : undefined,
+              },
+            );
           }
         }
 

@@ -1,13 +1,12 @@
-import { Pressable, ViewStyle } from "react-native";
+import { Pressable, type ViewStyle } from "react-native";
 import Animated from "react-native-reanimated";
 import AccountStats from "@/components/agent/AccountStats";
 import { Avatar, View } from "@/components/ui";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useColors, withOpacity } from "@/theme";
 import type { AgentType } from "@/types/agent";
-import { useAccountBalance } from "@/hooks/useAccountBalance";
-import ReportPreview from "./reports/Preview";
 import PositionList from "./agents/PositionList";
-
+import ReportPreview from "./reports/Preview";
 
 export default function AgentCard({
   agent,
@@ -25,7 +24,7 @@ export default function AgentCard({
   showPositions?: boolean;
   transparent?: boolean;
   isActive?: boolean;
-  style: ViewStyle,
+  style: ViewStyle;
 }) {
   const { colors: palette } = useColors();
   const accountData = useAccountBalance({ agent });
@@ -37,7 +36,7 @@ export default function AgentCard({
           paddingHorizontal: 18,
           borderRadius: 12,
           marginHorizontal: 10,
-          borderColor: withOpacity(palette.border, .6),
+          borderColor: withOpacity(palette.border, 0.6),
           borderWidth: 1,
           // backgroundColor: palette.surfaceLight
         },
@@ -78,12 +77,14 @@ export default function AgentCard({
       </Pressable>
 
       {showPositions && accountData.openPositions.length > 0 ? (
-        <View sx={{
-          borderTopColor: withOpacity(palette.border, .8),
-          borderTopWidth: .5,
-          paddingTop: 4,
-          marginTop: 4,
-        }}>
+        <View
+          sx={{
+            borderTopColor: withOpacity(palette.border, 0.8),
+            borderTopWidth: 0.5,
+            paddingTop: 4,
+            marginTop: 4,
+          }}
+        >
           <PositionList
             positions={accountData.openPositions}
             top={3}

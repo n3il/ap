@@ -1,10 +1,10 @@
 import { Ionicons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
-import { useRouter } from "expo-router";
-import { useState, useEffect, useRef } from "react";
-import { FadeInDown } from "react-native-reanimated";
 import * as Notifications from "expo-notifications";
-import { Platform } from "react-native";
+import { useRouter } from "expo-router";
+import { useEffect, useRef, useState } from "react";
+import { Platform, Switch } from "react-native";
+import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import {
   Alert,
@@ -17,7 +17,6 @@ import { AnimatedBox } from "@/components/ui/animated";
 import { useAuth } from "@/contexts/AuthContext";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
-import { Switch } from "react-native";
 
 // Configure notification handler
 Notifications.setNotificationHandler({
@@ -52,18 +51,16 @@ export default function NotificationsScreen() {
     registerForPushNotificationsAsync();
 
     // Listen for notifications received while app is foregrounded
-    notificationListener.current = Notifications.addNotificationReceivedListener(
-      (notification) => {
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
         console.log("Notification received:", notification);
-      }
-    );
+      });
 
     // Listen for notification responses (user tapped notification)
-    responseListener.current = Notifications.addNotificationResponseReceivedListener(
-      (response) => {
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
         console.log("Notification response:", response);
-      }
-    );
+      });
 
     return () => {
       if (notificationListener.current) {
@@ -77,7 +74,8 @@ export default function NotificationsScreen() {
 
   const registerForPushNotificationsAsync = async () => {
     try {
-      const { status: existingStatus } = await Notifications.getPermissionsAsync();
+      const { status: existingStatus } =
+        await Notifications.getPermissionsAsync();
       let finalStatus = existingStatus;
 
       if (existingStatus !== "granted") {
@@ -125,7 +123,8 @@ export default function NotificationsScreen() {
       const { status } = await Notifications.getPermissionsAsync();
 
       if (status !== "granted") {
-        const { status: newStatus } = await Notifications.requestPermissionsAsync();
+        const { status: newStatus } =
+          await Notifications.requestPermissionsAsync();
         if (newStatus !== "granted") {
           Alert.alert(
             "Permission Required",
@@ -269,7 +268,6 @@ export default function NotificationsScreen() {
           >
             <GlassView
               glassEffectStyle="clear"
-
               style={{
                 borderRadius: 24,
                 padding: 20,

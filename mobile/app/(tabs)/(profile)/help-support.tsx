@@ -1,6 +1,7 @@
 import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
+import { Pressable } from "react-native";
 import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import {
@@ -14,7 +15,6 @@ import {
 import { AnimatedBox } from "@/components/ui/animated";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
-import { Pressable } from "react-native";
 
 export default function HelpSupportScreen() {
   const { theme, isDark } = useTheme();
@@ -23,25 +23,21 @@ export default function HelpSupportScreen() {
   const palette = colors.colors;
 
   const handleContactSupport = () => {
-    Alert.alert(
-      "Contact Support",
-      "How would you like to contact us?",
-      [
-        {
-          text: "Email",
-          onPress: () => {
-            Linking.openURL("mailto:support@example.com");
-          },
+    Alert.alert("Contact Support", "How would you like to contact us?", [
+      {
+        text: "Email",
+        onPress: () => {
+          Linking.openURL("mailto:support@example.com");
         },
-        {
-          text: "Chat",
-          onPress: () => {
-            Alert.alert("Coming Soon", "Live chat will be available soon");
-          },
+      },
+      {
+        text: "Chat",
+        onPress: () => {
+          Alert.alert("Coming Soon", "Live chat will be available soon");
         },
-        { text: "Cancel", style: "cancel" },
-      ],
-    );
+      },
+      { text: "Cancel", style: "cancel" },
+    ]);
   };
 
   const helpSections = [
@@ -82,10 +78,7 @@ export default function HelpSupportScreen() {
           title: "Documentation",
           subtitle: "Read detailed documentation",
           onPress: () =>
-            Alert.alert(
-              "Coming Soon",
-              "Documentation will be available soon",
-            ),
+            Alert.alert("Coming Soon", "Documentation will be available soon"),
         },
         {
           id: "community",
@@ -93,7 +86,10 @@ export default function HelpSupportScreen() {
           title: "Community",
           subtitle: "Join our community forum",
           onPress: () =>
-            Alert.alert("Coming Soon", "Community forum will be available soon"),
+            Alert.alert(
+              "Coming Soon",
+              "Community forum will be available soon",
+            ),
         },
         {
           id: "updates",
@@ -125,10 +121,7 @@ export default function HelpSupportScreen() {
           title: "Privacy Policy",
           subtitle: "How we handle your data",
           onPress: () =>
-            Alert.alert(
-              "Coming Soon",
-              "Privacy policy will be available soon",
-            ),
+            Alert.alert("Coming Soon", "Privacy policy will be available soon"),
         },
         {
           id: "licenses",
@@ -209,7 +202,7 @@ export default function HelpSupportScreen() {
               {section.items.map((item, itemIndex) => (
                 <View key={item.id}>
                   {itemIndex > 0 && (
-                    <View sx={{ height: 1, backgroundColor: "border", }} />
+                    <View sx={{ height: 1, backgroundColor: "border" }} />
                   )}
                   <Pressable
                     onPress={item.onPress}
@@ -276,7 +269,7 @@ export default function HelpSupportScreen() {
 
         <AnimatedBox
           entering={FadeInDown.delay(400).springify()}
-          sx={{ paddingHorizontal: 6, }}
+          sx={{ paddingHorizontal: 6 }}
         >
           <GlassView
             glassEffectStyle="clear"

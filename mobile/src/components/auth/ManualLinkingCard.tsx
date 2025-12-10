@@ -1,9 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { makeRedirectUri } from "expo-auth-session";
 import { GlassView } from "expo-glass-effect";
 import * as WebBrowser from "expo-web-browser";
-import { makeRedirectUri } from "expo-auth-session";
-import { supabase } from "@/config/supabase";
-import { useColors } from "@/theme";
+import { useEffect, useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -11,7 +9,9 @@ import {
   TouchableOpacity,
   View,
 } from "@/components/ui";
+import { supabase } from "@/config/supabase";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useColors } from "@/theme";
 
 type Identity = {
   identity_id: string;
@@ -53,7 +53,7 @@ function extractCodeFromUrl(url: string) {
 
 export default function ManualLinkingCard() {
   const colors = useColors();
-  const { isDark } = useTheme()
+  const { isDark } = useTheme();
   const palette = colors.colors;
   const [identities, setIdentities] = useState<Identity[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -76,7 +76,8 @@ export default function ManualLinkingCard() {
           : undefined;
       return {
         ...identity,
-        label: identity.provider.charAt(0).toUpperCase() +
+        label:
+          identity.provider.charAt(0).toUpperCase() +
           identity.provider.slice(1),
         detail: email || username || "Linked",
       };
@@ -87,9 +88,7 @@ export default function ManualLinkingCard() {
     () =>
       AVAILABLE_PROVIDERS.filter(
         (provider) =>
-          !identities.some(
-            (identity) => identity.provider === provider.id,
-          ),
+          !identities.some((identity) => identity.provider === provider.id),
       ),
     [identities],
   );
@@ -119,7 +118,9 @@ export default function ManualLinkingCard() {
     setStatusMessage(null);
     setLinkingProvider(provider);
     try {
-      const redirectTo = makeRedirectUri({ scheme: process.env.EXPO_PUBLIC_REDIRECT_URL });
+      const redirectTo = makeRedirectUri({
+        scheme: process.env.EXPO_PUBLIC_REDIRECT_URL,
+      });
       const { data, error } = await supabase.auth.linkIdentity({
         provider,
         options: {
@@ -191,29 +192,31 @@ export default function ManualLinkingCard() {
   }
 
   const successColor =
-    ((colors.success as any)?.DEFAULT ??
-      (colors.success as any) ??
-      palette.brand500 ??
-      palette.info) ?? "#22c55e";
+    (colors.success as any)?.DEFAULT ??
+    (colors.success as any) ??
+    palette.brand500 ??
+    palette.info ??
+    "#22c55e";
   const errorColor =
-    ((colors.error as any)?.DEFAULT ??
-      (colors.error as any) ??
-      palette.error ??
-      palette.brand500) ?? "#ef4444";
+    (colors.error as any)?.DEFAULT ??
+    (colors.error as any) ??
+    palette.error ??
+    palette.brand500 ??
+    "#ef4444";
 
   return (
     <GlassView
-        glassEffectStyle="clear"
-        tintColor={
-          isDark
-            ? colors.withOpacity(palette.background, 0.9)
-            : colors.withOpacity(palette.foreground, 0.9)
-        }
-        style={{
-          borderRadius: 24,
-          padding: 20,
-        }}
-      >
+      glassEffectStyle="clear"
+      tintColor={
+        isDark
+          ? colors.withOpacity(palette.background, 0.9)
+          : colors.withOpacity(palette.foreground, 0.9)
+      }
+      style={{
+        borderRadius: 24,
+        padding: 20,
+      }}
+    >
       <View>
         <Text variant="lg" sx={{ fontWeight: "700", color: "textPrimary" }}>
           Manual identity linking
@@ -228,17 +231,18 @@ export default function ManualLinkingCard() {
         <Text
           variant="xs"
           sx={{
-            color: statusTone === "error"
-              ? errorColor
-              : statusTone === "success"
-                ? successColor
-                : "textPrimary",
+            color:
+              statusTone === "error"
+                ? errorColor
+                : statusTone === "success"
+                  ? successColor
+                  : "textPrimary",
             backgroundColor: colors.withOpacity(
               statusTone === "error"
                 ? errorColor
                 : statusTone === "success"
                   ? successColor
-                  : palette.brand500 ?? palette.info,
+                  : (palette.brand500 ?? palette.info),
               0.08,
             ),
             padding: 6,

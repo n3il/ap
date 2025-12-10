@@ -1,7 +1,7 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { ActivityIndicator, Pressable, Text } from "react-native";
 import { useHyperliquidStore } from "@/hooks/useHyperliquid";
 import { useColors } from "@/theme";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { Pressable, Text, ActivityIndicator } from "react-native";
 
 export const ConnectionIndicator = () => {
   const { colors: palette } = useColors();
@@ -11,10 +11,10 @@ export const ConnectionIndicator = () => {
     latencyMs == null
       ? "strong"
       : latencyMs < 1000
-      ? "strong"
-      : latencyMs < 3000
-      ? "moderate"
-      : "weak";
+        ? "strong"
+        : latencyMs < 3000
+          ? "moderate"
+          : "weak";
 
   const connectionStrengthIndicator = {
     strong: palette.success,
@@ -45,7 +45,7 @@ export const ConnectionIndicator = () => {
             style={{
               display: "none",
               fontSize: 11,
-              color: palette.mutedForeground
+              color: palette.mutedForeground,
             }}
           >
             {latencyMs?.toFixed()}ms

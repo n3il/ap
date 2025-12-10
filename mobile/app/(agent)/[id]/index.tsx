@@ -1,19 +1,19 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { useMemo, useRef, useState } from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import BalanceOverview from "@/components/agent/BalanceOverview";
 import AgentHeader from "@/components/agent/Header";
+import PositionsTab from "@/components/agents/PositionsTab";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
+import TradesTab from "@/components/agents/TradesTab";
 import ContainerView, {
   GLOBAL_PADDING,
   PaddedView,
 } from "@/components/ContainerView";
 import { Animated, SwipeableTabs, View } from "@/components/ui";
+import { ROUTES } from "@/config/routes";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ROUTES } from "@/config/routes";
-import TradesTab from "@/components/agents/TradesTab";
-import PositionsTab from "@/components/agents/PositionsTab";
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
@@ -37,7 +37,7 @@ export default function AgentIndex() {
   });
 
   if (!agentId) {
-    <Redirect href={ROUTES.TABS_AGENTS.path} />
+    <Redirect href={ROUTES.TABS_AGENTS.path} />;
   }
 
   const startContentAtHeight = headerHeight + overviewHeight;
@@ -71,19 +71,19 @@ export default function AgentIndex() {
         key: "Trades",
         title: "Trades",
         content: () => (
-          <View style={{flex: 1, paddingTop: startContentAtHeight}}>
-            <TradesTab  agent={agent} />
+          <View style={{ flex: 1, paddingTop: startContentAtHeight }}>
+            <TradesTab agent={agent} />
           </View>
-        )
+        ),
       },
       {
         key: "Positions",
         title: "Positions",
         content: () => (
-          <View style={{flex: 1, paddingTop: startContentAtHeight}}>
+          <View style={{ flex: 1, paddingTop: startContentAtHeight }}>
             <PositionsTab agent={agent} />
           </View>
-        )
+        ),
       },
     ],
     [agentId, agent, isRefetching, refetch, scrollY, headerHeight],
@@ -92,7 +92,8 @@ export default function AgentIndex() {
   return (
     <ContainerView noSafeArea style={{ paddingTop: insets.top, flex: 1 }}>
       <AgentHeader
-        agentId={agent?.id} agentName={agent?.name}
+        agentId={agent?.id}
+        agentName={agent?.name}
         onLayout={(event) => {
           const { height } = event.nativeEvent.layout;
           setHeaderHeight(height);
@@ -106,7 +107,7 @@ export default function AgentIndex() {
             width: "100%",
             top: insets.top + 100,
             left: 0,
-            zIndex: 0
+            zIndex: 0,
           },
           {
             transform: [{ scale: imageScale }, { translateY: imageTranslateY }],

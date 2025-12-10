@@ -1,15 +1,15 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useRouter } from "expo-router";
 import { useCallback } from "react";
 import { Alert, type StyleProp, type ViewStyle } from "react-native";
 import { ActivityIndicator, Text, View } from "@/components/ui";
 import GlassButton from "@/components/ui/GlassButton";
+import { RadarSpinner } from "@/components/ui/SpinningIcon";
 import { supabase } from "@/config/supabase";
+import { useHyperliquidStore } from "@/hooks/useHyperliquid";
 import { agentWatchlistService } from "@/services/agentWatchlistService";
 import { useColors } from "@/theme";
-import { RadarSpinner } from "@/components/ui/SpinningIcon";
-import { useRouter } from "expo-router";
-import { useHyperliquidStore } from "@/hooks/useHyperliquid";
 
 type Props = {
   agentId?: string;
@@ -51,7 +51,7 @@ export default function AgentHeader({
   timeframe = "24h",
   ...props
 }: Props) {
-  const router = useRouter()
+  const router = useRouter();
   const { colors: palette } = useColors();
   const queryClient = useQueryClient();
 
@@ -102,11 +102,7 @@ export default function AgentHeader({
           queryKey: ["agent-assessments", agentId],
         });
 
-        const queryKeyWithTimeframe = [
-          "agent-assessments",
-          agentId,
-          timeframe,
-        ];
+        const queryKeyWithTimeframe = ["agent-assessments", agentId, timeframe];
         const queryKeyBase = ["agent-assessments", agentId];
 
         const prevWithTimeframe = queryClient.getQueryData(
@@ -195,32 +191,43 @@ export default function AgentHeader({
 
   return (
     <View
-      sx={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 1}}
+      sx={{
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingHorizontal: 1,
+      }}
       {...props}
     >
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
         <GlassButton
           enabled={false}
           onPress={() => router.back()}
           style={{
             flex: 0,
             flexGrow: 0,
-            alignSelf: 'flex-start',
+            alignSelf: "flex-start",
           }}
         >
-          <MaterialCommunityIcons name="chevron-left" size={24} color={palette?.foreground} />
+          <MaterialCommunityIcons
+            name="chevron-left"
+            size={24}
+            color={palette?.foreground}
+          />
         </GlassButton>
-        <Text sx={{
-          fontFamily: "monospace",
-          fontWeight: "500",
-          color: palette?.foreground,
-          letterSpacing: 3,
-          fontSize: 18,
-        }}>
+        <Text
+          sx={{
+            fontFamily: "monospace",
+            fontWeight: "500",
+            color: palette?.foreground,
+            letterSpacing: 3,
+            fontSize: 18,
+          }}
+        >
           {agentName}
         </Text>
       </View>
-      <View style={[{ flexDirection: "row", alignSelf: 'flex-end' }, style]}>
+      <View style={[{ flexDirection: "row", alignSelf: "flex-end" }, style]}>
         <GlassButton
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
@@ -247,7 +254,10 @@ export default function AgentHeader({
             height: 40,
           }}
         >
-          <RadarSpinner isTriggeringAssessment={isTriggeringAssessment} palette={palette} />
+          <RadarSpinner
+            isTriggeringAssessment={isTriggeringAssessment}
+            palette={palette}
+          />
         </GlassButton>
       </View>
     </View>

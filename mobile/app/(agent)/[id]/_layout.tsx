@@ -11,7 +11,8 @@ export default function Layout() {
       initialRouteName="index"
     >
       <Stack.Screen name="index" />
-      <Stack.Screen name="[assessmentId]"
+      <Stack.Screen
+        name="[assessmentId]"
         options={{
           headerShown: true,
           headerTitle: "",

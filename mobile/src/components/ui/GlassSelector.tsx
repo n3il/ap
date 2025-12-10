@@ -10,17 +10,17 @@ const options = [
   {
     label: "Top Performing",
     value: "top",
-    iconName: "trending-up"
+    iconName: "trending-up",
   },
   {
     label: "Top Popular",
     value: "popular",
-    iconName: "fire"
+    iconName: "fire",
   },
   {
     label: "Top New",
     value: "new",
-    iconName: "sparkle"
+    iconName: "sparkle",
   },
 ];
 
@@ -100,7 +100,7 @@ const AnimatedOption = ({
             fontFamily: "monospace",
             fontWeight: "500",
             fontSize: 12,
-            color: colors.surfaceForeground
+            color: colors.surfaceForeground,
           }}
         >
           {option.label}
@@ -169,7 +169,7 @@ export default function GlassSelector({ style, ...props }: GlassSelectorProps) {
               fontFamily: "monospace",
               fontWeight: "500",
               fontSize: 12,
-              color: colors.surfaceForeground
+              color: colors.surfaceForeground,
             }}
           >
             {activeSelection.label}

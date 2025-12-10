@@ -1,9 +1,9 @@
 import React from "react";
-import AnimatedPhraseSlider from "@/components/ui/AnimatedPhraseSlider";
 import { ActivityIndicator, Card, Skeleton, Text, View } from "@/components/ui";
+import AnimatedPhraseSlider from "@/components/ui/AnimatedPhraseSlider";
+import { useTheme } from "@/contexts/ThemeContext";
 import { useColors, withOpacity } from "@/theme";
 import type { AssessmentType } from "@/types/agent";
-import { useTheme } from "@/contexts/ThemeContext";
 
 const LOADING_PHRASES = [
   "Calibrating signals...",
@@ -14,7 +14,7 @@ const LOADING_PHRASES = [
 
 function PendingAssessmentCard({ assessment }: { assessment: AssessmentType }) {
   const { colors } = useColors();
-  const { isDark } = useTheme()
+  const { isDark } = useTheme();
 
   return (
     <Card
@@ -24,7 +24,7 @@ function PendingAssessmentCard({ assessment }: { assessment: AssessmentType }) {
       style={{
         paddingVertical: 18,
         paddingHorizontal: 18,
-        borderRadius: 24
+        borderRadius: 24,
       }}
     >
       <View sx={{ gap: 3 }}>
@@ -38,7 +38,6 @@ function PendingAssessmentCard({ assessment }: { assessment: AssessmentType }) {
           <AnimatedPhraseSlider phrases={LOADING_PHRASES} />
           <ActivityIndicator />
         </View>
-
 
         <View sx={{ gap: 2 }}>
           <Skeleton height={16} width="65%" />

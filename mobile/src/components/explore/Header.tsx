@@ -2,7 +2,6 @@ import { View } from "@/components/ui";
 import { AppLogo } from "@/components/ui/AppLogo";
 import { ConnectionIndicator } from "@/components/ui/ConnectionIndicator";
 
-
 export default function ExploreHeader() {
   const compact = true;
   return (

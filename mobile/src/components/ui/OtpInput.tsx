@@ -120,9 +120,9 @@ const AnimatedExample = () => {
         keyboardType="number-pad"
         textContentType="oneTimeCode"
         renderCell={renderCell}
-         textInputStyle={{
-        color: "transparent"
-      }}
+        textInputStyle={{
+          color: "transparent",
+        }}
       />
       <View style={styles.nextButton}>
         <Text style={styles.nextButtonText}>Verify</Text>

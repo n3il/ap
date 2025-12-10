@@ -69,10 +69,7 @@ export default function AgentsScreen() {
         </GlassButton>
       </View>
 
-      <SwipeableTabs
-        tabs={tabs}
-        initialIndex={0}
-      />
+      <SwipeableTabs tabs={tabs} initialIndex={0} />
     </ContainerView>
   );
 }

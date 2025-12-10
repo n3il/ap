@@ -1,25 +1,25 @@
 import { useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import Markdown from "react-native-markdown-display";
+import PendingAssessmentCard from "@/components/PendingAssessmentCard";
 import { Card, Text, TouchableOpacity, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
+import { useTheme } from "@/contexts/ThemeContext";
+import useMarkdownStyles from "@/hooks/useMarkdownStyles";
 import { useColors } from "@/theme";
 import type { AssessmentType } from "@/types/agent";
-import TradeActionDisplay, { TradeSummary } from "./TradeActionDisplay";
-import PendingAssessmentCard from "@/components/PendingAssessmentCard";
-import useMarkdownStyles from "@/hooks/useMarkdownStyles";
-import { useTheme } from "@/contexts/ThemeContext";
 import ReportPreview from "./reports/Preview";
+import TradeActionDisplay, { TradeSummary } from "./TradeActionDisplay";
 
 const hasContent = (value) =>
   typeof value === "string" && value.trim().length > 0;
 
 function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
-  const { isDark } = useTheme()
+  const { isDark } = useTheme();
   const router = useRouter();
   const [expanded, setExpanded] = useState(false);
   const { colors: palette, withOpacity } = useColors();
-  const markdownStyles = useMarkdownStyles()
+  const markdownStyles = useMarkdownStyles();
 
   const [parsedResponse, _] = useState(() => {
     try {
@@ -79,7 +79,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
   const showStructured = Boolean(parsedResponse);
 
   if (assessment.status === "pending") {
-    return <PendingAssessmentCard assessment={assessment} />
+    return <PendingAssessmentCard assessment={assessment} />;
   }
 
   return (
@@ -90,7 +90,7 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       style={{
         paddingVertical: 18,
         paddingHorizontal: 18,
-        borderRadius: 24
+        borderRadius: 24,
       }}
     >
       <TouchableOpacity
@@ -104,7 +104,11 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       >
         <ReportPreview
           assessmentData={assessment}
-          innerStyle={{  gap: 8, flexDirection: "column-reverse", justifyContent: "space-between" }}
+          innerStyle={{
+            gap: 8,
+            flexDirection: "column-reverse",
+            justifyContent: "space-between",
+          }}
         />
         {expanded ? (
           <View
@@ -177,13 +181,14 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       </TouchableOpacity>
 
       {/* <TradeSummary tradeActions={tradeActions} /> */}
-      {tradeActions.length > 0 && tradeActions.map((action, index) => (
-        <TradeActionDisplay
-          key={`${action.asset ?? "action"}-${index}`}
-          actionData={action}
-          showReason={expanded}
-        />
-      ))}
+      {tradeActions.length > 0 &&
+        tradeActions.map((action, index) => (
+          <TradeActionDisplay
+            key={`${action.asset ?? "action"}-${index}`}
+            actionData={action}
+            showReason={expanded}
+          />
+        ))}
     </Card>
   );
 }

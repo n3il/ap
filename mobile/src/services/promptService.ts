@@ -96,5 +96,4 @@ export const promptService = {
     if (error) throw error;
     return data;
   },
-
 };

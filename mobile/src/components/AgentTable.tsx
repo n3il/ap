@@ -10,7 +10,11 @@ import { agentService } from "@/services/agentService";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useColors } from "@/theme";
 import type { AgentType } from "@/types/agent";
-import { formatAmount, formatPercent, sentimentToColor } from "@/utils/currency";
+import {
+  formatAmount,
+  formatPercent,
+  sentimentToColor,
+} from "@/utils/currency";
 
 interface AgentTableProps {
   userId?: string | null;
@@ -77,7 +81,10 @@ function TableRow({ agent, idx }: { agent: AgentType; idx: number }) {
             variant="sm"
             style={{
               fontWeight: "600",
-              color: Number(accountData?.totalPnlPercent) >= 0 ? "#10b981" : "#ef4444",
+              color:
+                Number(accountData?.totalPnlPercent) >= 0
+                  ? "#10b981"
+                  : "#ef4444",
             }}
           >
             {formatPercent(accountData?.totalPnlPercent)}
@@ -89,7 +96,8 @@ function TableRow({ agent, idx }: { agent: AgentType; idx: number }) {
             variant="sm"
             style={{
               fontWeight: "600",
-              color: Number(accountData?.openPnlPct) >= 0 ? "#10b981" : "#ef4444",
+              color:
+                Number(accountData?.openPnlPct) >= 0 ? "#10b981" : "#ef4444",
             }}
           >
             {formatPercent(accountData?.openPnlPct)}
@@ -229,32 +237,50 @@ export default function AgentTable({
         }}
       >
         <View style={{ flex: 1 }}>
-          <Text variant="xs" style={{ fontWeight: "700", textTransform: "uppercase" }}>
+          <Text
+            variant="xs"
+            style={{ fontWeight: "700", textTransform: "uppercase" }}
+          >
             Agent
           </Text>
         </View>
         <View style={{ flex: 1, alignItems: "flex-end" }}>
-          <Text variant="xs" style={{ fontWeight: "700", textTransform: "uppercase" }}>
+          <Text
+            variant="xs"
+            style={{ fontWeight: "700", textTransform: "uppercase" }}
+          >
             ($)
           </Text>
         </View>
         <View style={{ flex: 1, alignItems: "flex-end" }}>
-          <Text variant="xs" style={{ fontWeight: "700", textTransform: "uppercase" }}>
+          <Text
+            variant="xs"
+            style={{ fontWeight: "700", textTransform: "uppercase" }}
+          >
             Open
           </Text>
         </View>
         <View style={{ flex: 1, alignItems: "center" }}>
-          <Text variant="xs" style={{ fontWeight: "700", textTransform: "uppercase" }}>
+          <Text
+            variant="xs"
+            style={{ fontWeight: "700", textTransform: "uppercase" }}
+          >
             All
           </Text>
         </View>
         <View style={{ flex: 1, alignItems: "center" }}>
-          <Text variant="xs" style={{ fontWeight: "700", textTransform: "uppercase" }}>
+          <Text
+            variant="xs"
+            style={{ fontWeight: "700", textTransform: "uppercase" }}
+          >
             S
           </Text>
         </View>
         <View style={{ flex: 1, alignItems: "flex-end" }}>
-          <Text variant="xs" style={{ fontWeight: "700", textTransform: "uppercase" }}>
+          <Text
+            variant="xs"
+            style={{ fontWeight: "700", textTransform: "uppercase" }}
+          >
             #
           </Text>
         </View>

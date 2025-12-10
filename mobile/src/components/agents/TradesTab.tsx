@@ -1,22 +1,16 @@
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { FlatList, ListRenderItem } from "react-native";
-
-import {
-  ActivityIndicator,
-  RefreshControl,
-  Text,
-  View,
-} from "@/components/ui";
+import { FlatList, type ListRenderItem } from "react-native";
+import { ActivityIndicator, RefreshControl, Text, View } from "@/components/ui";
 import {
   useHyperliquidInfo,
   useHyperliquidStore,
 } from "@/hooks/useHyperliquid";
 import { useColors } from "@/theme";
-import { formatCurrency } from "@/utils/marketFormatting";
+import type { AgentType } from "@/types/agent";
 import { numberToColor } from "@/utils/currency";
-import { AgentType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { formatCurrency } from "@/utils/marketFormatting";
 
 type UserFill = {
   coin: string;
@@ -59,7 +53,9 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
   const { connectionState } = useHyperliquidStore();
 
   const tradingAccountType = !agent?.simulate ? "real" : "paper";
-  const tradingAccount = agent?.trading_accounts?.find((ta) => ta.type === tradingAccountType);
+  const tradingAccount = agent?.trading_accounts?.find(
+    (ta) => ta.type === tradingAccountType,
+  );
   const userAddress = tradingAccount?.hyperliquid_address;
 
   const [fills, setFills] = useState<UserFill[]>([]);
@@ -147,20 +143,40 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
               justifyContent: "center",
             }}
           >
-            <Text sx={{ color: "surfaceForeground", fontSize: 14, fontWeight: "700" }}>
+            <Text
+              sx={{
+                color: "surfaceForeground",
+                fontSize: 14,
+                fontWeight: "700",
+              }}
+            >
               {fill.coin}
             </Text>
           </View>
 
           <View sx={{ flex: 1 }}>
-            <Text sx={{ color: isBuy ? success : error, fontSize: 14, fontWeight: "600" }}>
+            <Text
+              sx={{
+                color: isBuy ? success : error,
+                fontSize: 14,
+                fontWeight: "600",
+              }}
+            >
               {formatCurrency(Number(fill.px))}
             </Text>
             <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-              <Text sx={{ color: isBuy ? "success" : "error", fontSize: 11, fontWeight: "500" }}>
+              <Text
+                sx={{
+                  color: isBuy ? "success" : "error",
+                  fontSize: 11,
+                  fontWeight: "500",
+                }}
+              >
                 {isBuy ? "Buy" : "Sell"}
               </Text>
-              <Text sx={{ color: "mutedForeground", fontSize: 11 }}>Size: {fill.sz}</Text>
+              <Text sx={{ color: "mutedForeground", fontSize: 11 }}>
+                Size: {fill.sz}
+              </Text>
             </View>
           </View>
 
@@ -192,11 +208,27 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
 
   if (!userAddress) {
     return (
-      <View sx={{ flex: 1, padding: 6, alignItems: "center", justifyContent: "center" }}>
-        <Text sx={{ color: "mutedForeground", fontSize: 14, textAlign: "center" }}>
+      <View
+        sx={{
+          flex: 1,
+          padding: 6,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Text
+          sx={{ color: "mutedForeground", fontSize: 14, textAlign: "center" }}
+        >
           No trading account connected
         </Text>
-        <Text sx={{ color: "textSecondary", fontSize: 12, textAlign: "center", marginTop: 2 }}>
+        <Text
+          sx={{
+            color: "textSecondary",
+            fontSize: 12,
+            textAlign: "center",
+            marginTop: 2,
+          }}
+        >
           Connect a Hyperliquid account to view fills
         </Text>
       </View>

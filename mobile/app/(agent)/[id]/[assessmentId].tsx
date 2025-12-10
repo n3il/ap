@@ -1,5 +1,5 @@
-import { useLocalSearchParams } from "expo-router";
 import { useQuery } from "@tanstack/react-query";
+import { useLocalSearchParams } from "expo-router";
 import ContainerView from "@/components/ContainerView";
 import ReportDetail from "@/components/reports/Detail";
 import { ActivityIndicator, Text, View } from "@/components/ui";
@@ -27,18 +27,35 @@ export default function AgentReportScreen() {
   });
 
   return (
-    <View style={{ flex: 1, padding: 16, paddingTop: 140, backgroundColor: palette.background }}>
+    <View
+      style={{
+        flex: 1,
+        padding: 16,
+        paddingTop: 140,
+        backgroundColor: palette.background,
+      }}
+    >
       {!normalizedId ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <Text>Missing assessment ID.</Text>
         </View>
       ) : isLoading ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
           <ActivityIndicator />
         </View>
       ) : isError ? (
-        <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
-          <Text>{error instanceof Error ? error.message : "Unable to load assessment."}</Text>
+        <View
+          style={{ flex: 1, alignItems: "center", justifyContent: "center" }}
+        >
+          <Text>
+            {error instanceof Error
+              ? error.message
+              : "Unable to load assessment."}
+          </Text>
         </View>
       ) : (
         <ReportDetail assessment={assessment} />

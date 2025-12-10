@@ -1,8 +1,7 @@
-import { AssessmentRecordType } from "@/types/agent";
+import type { AssessmentRecordType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
 import SentimentBadge from "../agent/SentimentBadge";
-import { View, Text } from "../ui";
-
+import { Text, View } from "../ui";
 
 export default function ReportPreview({
   assessmentData,
@@ -16,18 +15,24 @@ export default function ReportPreview({
   return (
     <View style={style}>
       <View
-        style={[{
-          flexDirection: "column",
-          // justifyContent: "space-between",
-          justifyContent: "flex-start",
-          alignItems: "flex-start",
-          gap: 2,
-
-        }, innerStyle]}
+        style={[
+          {
+            flexDirection: "column",
+            // justifyContent: "space-between",
+            justifyContent: "flex-start",
+            alignItems: "flex-start",
+            gap: 2,
+          },
+          innerStyle,
+        ]}
       >
         <SentimentBadge
-          sentimentScore={assessmentData.parsed_llm_response?.headline?.sentiment_score}
-          sentimentWord={assessmentData.parsed_llm_response?.headline?.sentiment_word}
+          sentimentScore={
+            assessmentData.parsed_llm_response?.headline?.sentiment_score
+          }
+          sentimentWord={
+            assessmentData.parsed_llm_response?.headline?.sentiment_word
+          }
         />
         <Text
           variant="xs"
@@ -41,7 +46,6 @@ export default function ReportPreview({
             ? `${formatRelativeDate(assessmentData.timestamp)}`
             : "-"}
         </Text>
-
       </View>
 
       <Text

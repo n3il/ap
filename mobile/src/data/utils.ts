@@ -70,7 +70,7 @@ export function getTopKAssets(
   universe: AssetData[],
   assetContexts: AssetContext[],
   sortKey: SortKey = "dayNtlVlm",
-  k: number = K
+  k: number = K,
 ): TopKOutput[] {
   const heapKey = KEY_MAP[sortKey];
 
@@ -108,7 +108,10 @@ export function getTopKAssets(
       heap.push(item);
     } else {
       const smallest = heap.peek();
-      if (smallest && (item[heapKey] as number) > (smallest[heapKey] as number)) {
+      if (
+        smallest &&
+        (item[heapKey] as number) > (smallest[heapKey] as number)
+      ) {
         heap.pop();
         heap.push(item);
       }
@@ -116,9 +119,9 @@ export function getTopKAssets(
   }
 
   // Extract and sort results (largest first)
-  const result = heap.toArray().sort((a, b) =>
-    (b[heapKey] as number) - (a[heapKey] as number)
-  );
+  const result = heap
+    .toArray()
+    .sort((a, b) => (b[heapKey] as number) - (a[heapKey] as number));
 
   // Format output
   return result.map(({ assetData, ctx, assetId }) => ({

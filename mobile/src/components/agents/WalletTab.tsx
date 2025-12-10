@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Animated, RefreshControl, View, Text } from "@/components/ui";
+import { Animated, RefreshControl, Text, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import WalletAddressCard from "../WalletAddressCard";
 
@@ -59,9 +59,15 @@ export default function WalletTab({
               <Text
                 variant="xs"
                 tone="muted"
-                sx={{ textTransform: "uppercase", letterSpacing: 1, marginBottom: 6 }}
+                sx={{
+                  textTransform: "uppercase",
+                  letterSpacing: 1,
+                  marginBottom: 6,
+                }}
               >
-                {account.type === "real" ? "Real Trading Account" : "Paper Trading Account"}
+                {account.type === "real"
+                  ? "Real Trading Account"
+                  : "Paper Trading Account"}
               </Text>
               <WalletAddressCard address={account.hyperliquid_address} />
             </View>
