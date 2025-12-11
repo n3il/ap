@@ -44,6 +44,7 @@ export default function ModalCreateAgent() {
     name: "",
     llm_provider: "google",
     model_name: "gemini-2.5-flash-preview-09-2025",
+    prompt_direction: "",
   });
 
   const createAgentMutation = useMutation({
@@ -201,6 +202,38 @@ export default function ModalCreateAgent() {
                   </GlassButton>
                 ))}
               </View>
+            </View>
+
+            <View style={{ marginBottom: 4, gap: 12 }}>
+              <SectionTitle title="Prompt Direction" />
+              <TextInput
+                style={{
+                  marginTop: 0,
+                  paddingVertical: 22,
+                  paddingHorizontal: 18,
+                  fontSize: 14,
+                  backgroundColor: palette.surface,
+                  borderWidth: 0,
+                  borderRadius: 18,
+                  elevation: 10,
+                  shadowColor: palette.shadow,
+                  shadowOffset: { width: 0, height: 1 },
+                  shadowOpacity: 1,
+                  shadowRadius: 1,
+                  fontFamily: "monospace",
+                }}
+                placeholder="Custom instructions for agent behavior..."
+                placeholderTextColor={
+                  palette.secondary500 ?? palette.textSecondary
+                }
+                value={formData.prompt_direction}
+                onChangeText={(text) =>
+                  setFormData({ ...formData, prompt_direction: text })
+                }
+                multiline
+                numberOfLines={4}
+                textAlignVertical="top"
+              />
             </View>
           </ScrollView>
 

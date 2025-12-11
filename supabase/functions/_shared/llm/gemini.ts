@@ -101,6 +101,7 @@ export function buildPrompt(
     TRADEABLE_ASSETS: JSON.stringify(context.tradeableAssets),
     CANDLE_DATA: JSON.stringify(context.candleData),
     TIMESTAMP: new Date().toISOString(),
+    PROMPT_DIRECTION: context.promptDirection || '',
   }
 
   let userQuery = template.user_template;
