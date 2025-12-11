@@ -1,6 +1,6 @@
 import * as Haptics from "expo-haptics";
-import { ruleTypes, yAxisSides } from "gifted-charts-core";
-import { type ComponentProps, useMemo } from "react";
+import { ruleTypes } from "gifted-charts-core";
+import { type ComponentProps } from "react";
 import { LineChart } from "react-native-gifted-charts";
 import type { SharedValue } from "react-native-reanimated";
 import Animated, {
@@ -9,11 +9,8 @@ import Animated, {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { Dimensions, Text, View } from "@/components/ui";
-import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
-import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
-import { useTimeframeStore } from "@/stores/useTimeframeStore";
+import { useMultiAgentChartData } from "@/hooks/useMultiAgentChartData";
 import { useColors } from "@/theme";
-import { GLOBAL_PADDING } from "../ContainerView";
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
@@ -22,23 +19,6 @@ type MultiAgentChartProps = {
 
 const { width } = Dimensions.get("window");
 
-// --- UTILITY ---
-
-const formatPercentValue = (value: number) => {
-  if (!Number.isFinite(value)) return "0.00%";
-  const sign = value >= 0 ? "+" : "";
-  return `${sign}${value.toFixed(2)}%`;
-};
-
-// Map UI timeframe keys to backend history keys
-const TIMEFRAME_KEY_MAP: Record<string, string> = {
-  "1h": "day",
-  "24h": "day",
-  "7d": "week",
-  "1M": "month",
-  All: "perpAlltime",
-};
-
 // --- COMPONENT ---
 
 export default function MultiAgentChart({
@@ -46,10 +26,7 @@ export default function MultiAgentChart({
   style,
 }: MultiAgentChartProps) {
   const { colors, withOpacity } = useColors();
-  const { timeframe } = useTimeframeStore();
-  const agents = useExploreAgentsStore((state) => state.agents);
-  const { histories: accountHistories, isLoading } =
-    useAgentAccountValueHistories();
+  const { dataSet, minValue, maxValue } = useMultiAgentChartData();
 
   // Animate height based on scroll
   const animatedStyle = useAnimatedStyle(() => {
@@ -99,134 +76,6 @@ export default function MultiAgentChart({
     return indices;
   };
 
-  const { dataSet, minValue, maxValue } = useMemo(() => {
-    if (!agents.length) return { dataSet: [], minValue: 0, maxValue: 0 };
-
-    const timeframeKey =
-      TIMEFRAME_KEY_MAP[timeframe] ?? TIMEFRAME_KEY_MAP["24h"];
-    const formatLabel = getLabelFormatter(timeframeKey);
-    let globalMin = Infinity;
-    let globalMax = Infinity;
-
-    // Single pass through agents
-    const lineIndex = 0;
-    const dataSet = agents
-      .map((agent) => {
-        const agentHistory = accountHistories[agent.id];
-        const timeframeHistory = agentHistory?.histories?.[timeframeKey];
-
-        if (!timeframeHistory || timeframeHistory.length < 2) return null;
-
-        // Find baseline
-        const firstValidPoint = timeframeHistory.find((p) =>
-          Number.isFinite(Number(p?.value)),
-        );
-        const baseline = Number(firstValidPoint?.value);
-        if (!Number.isFinite(baseline)) return null;
-
-        // Single pass: transform data, track min, and assign labels
-        const data: Array<{
-          value: number;
-          dataPointText: string;
-          timestamp: string;
-          label?: string;
-        }> = [];
-        let localMin = Infinity;
-        let localMax = Infinity;
-        const agentColor =
-          colors.providers?.[agent.llm_provider] || colors.surfaceForeground;
-
-        for (let i = 0; i < timeframeHistory.length; i++) {
-          const point = timeframeHistory[i];
-          const timestamp = new Date(point.timestamp).getTime();
-          const value = Number(point.value);
-
-          if (!Number.isFinite(timestamp) || !Number.isFinite(value))
-            return null;
-
-          const percentChange =
-            baseline !== 0 ? ((value - baseline) / baseline) * 100 : 0;
-
-          // Track minimum
-          if (percentChange < localMin) localMin = percentChange;
-          if (percentChange > localMax) localMax = percentChange;
-
-          data.push({
-            value: percentChange,
-            dataPointText: percentChange.toFixed(2) + "%",
-            timestamp: point.timestamp,
-            hideDataPoint: i !== timeframeHistory.length - 1,
-            agentId: agent.id,
-            agentName: agent.name,
-            agentColor,
-          });
-        }
-
-        if (data.length < 2) return null;
-
-        // Update global min
-        if (localMin < globalMin) globalMin = localMin;
-        if (localMax < globalMax) globalMax = localMax;
-
-        // Apply labels in a separate minimal pass
-        const labelIndices = getLabelIndices(data.length);
-        for (const idx of labelIndices) {
-          data[idx].label = formatLabel(new Date(data[idx].timestamp));
-        }
-
-        // Make the last point visible with its value using customDataPoint
-        if (data.length > 0) {
-          const lastPoint = data[data.length - 1];
-          const pointColor =
-            colors.providers?.[agent.llm_provider] || colors.surfaceForeground;
-          lastPoint.customDataPoint = () => {
-            return (
-              <View style={{ alignItems: "center", justifyContent: "center" }}>
-                <View
-                  style={{
-                    position: "absolute",
-                    left: 12,
-                    backgroundColor: pointColor,
-                    paddingHorizontal: 6,
-                    paddingVertical: 0,
-                    borderRadius: 4,
-                    flex: 1,
-                    flexDirection: "row",
-                  }}
-                >
-                  <Text
-                    style={{
-                      color: "white",
-                      fontSize: 12,
-                      fontWeight: "600",
-                      flex: 1,
-                    }}
-                  >
-                    {lastPoint.dataPointText}
-                  </Text>
-                </View>
-              </View>
-            );
-          };
-        }
-
-        return {
-          data,
-          color: agentColor,
-          startFillColor: withOpacity(agentColor, 0.01),
-          endFillColor: withOpacity(agentColor, 0.01),
-          name: agent.name,
-        };
-      })
-      .filter(Boolean);
-
-    return {
-      dataSet,
-      minValue: Number.isFinite(globalMin) ? Math.floor(globalMin) : 0,
-      maxValue: Number.isFinite(globalMax) ? Math.floor(globalMax) : 0,
-    };
-  }, [agents, accountHistories, colors, timeframe, withOpacity]);
-
   // Calculate dynamic y-axis offset based on actual data range
   const yOffset = Math.max(Math.abs(minValue), Math.abs(maxValue), 5) * 1.2;
 
@@ -247,6 +96,7 @@ export default function MultiAgentChart({
           // left: -30
         },
         animatedStyle,
+        style,
       ]}
     >
       <LineChart
@@ -369,6 +219,7 @@ export default function MultiAgentChart({
                 {items.map((item) => {
                   return (
                     <View
+                      key={item.agentId}
                       style={{
                         flexDirection: "column",
                         gap: 2,

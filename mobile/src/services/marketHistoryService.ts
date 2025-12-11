@@ -1,58 +1,18 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  mapHyperliquidCandle,
+  type MarketCandle,
+} from "@/data/mappings/hyperliquid";
 import { useHLSubscription, useHyperliquidInfo } from "@/hooks/useHyperliquid";
 import { TIMEFRAME_CONFIG } from "@/stores/useTimeframeStore";
 import "event-target-polyfill";
 import "fast-text-encoding";
 import * as hl from "@nktkas/hyperliquid";
 
-type CandlePoint = {
-  timestamp: number;
-  open: number;
-  close: number;
-  high: number;
-  low: number;
-  volume?: number;
-  trades?: number;
-};
+type CandlePoint = MarketCandle;
 
 const transport = new hl.HttpTransport({ isTestnet: false });
 const mainnetCandleDataInfoClient = new hl.InfoClient({ transport });
-
-const normalizeCandlePoint = (point: any): CandlePoint | null => {
-  const rawTimestamp = Number(point?.t ?? point?.timestamp);
-  const open = Number(point?.o ?? point?.open);
-  const close = Number(point?.c ?? point?.close);
-  const high = Number(point?.h ?? point?.high);
-  const low = Number(point?.l ?? point?.low);
-
-  const timestamp =
-    Number.isFinite(rawTimestamp) && rawTimestamp < 1e12
-      ? rawTimestamp * 1000
-      : rawTimestamp; // HL returns seconds; convert to ms for window comparisons
-
-  if (
-    !Number.isFinite(timestamp) ||
-    !Number.isFinite(open) ||
-    !Number.isFinite(close) ||
-    !Number.isFinite(high) ||
-    !Number.isFinite(low)
-  ) {
-    return null;
-  }
-
-  const volume = Number(point?.v ?? point?.volume);
-  const trades = Number(point?.n ?? point?.trades);
-
-  return {
-    timestamp,
-    open,
-    close,
-    high,
-    low,
-    volume: Number.isFinite(volume) ? volume : undefined,
-    trades: Number.isFinite(trades) ? trades : undefined,
-  };
-};
 
 const clampToWindow = (
   candles: CandlePoint[],
@@ -85,7 +45,7 @@ export function useCandleHistory(
   // Fetch initial historical window
   useEffect(() => {
     let cancelled = false;
-    if (!coins.length || !config) {
+    if (!coins.length || !config || error?.status === 429) {
       setData({});
       setIsLoading(false);
       return () => {
@@ -119,7 +79,7 @@ export function useCandleHistory(
             );
 
             const normalized = (rawCandles ?? [])
-              .map(normalizeCandlePoint)
+              .map(mapHyperliquidCandle)
               .filter((c): c is CandlePoint => c !== null);
 
             results[coin] = clampToWindow(
@@ -128,15 +88,7 @@ export function useCandleHistory(
               endTimeMs,
             );
           } catch (coinErr) {
-            console.error(
-              `[marketHistoryService] Failed to fetch candles for ${coin}:`,
-              {
-                error: coinErr,
-                message:
-                  coinErr instanceof Error ? coinErr.message : String(coinErr),
-                stack: coinErr instanceof Error ? coinErr.stack : undefined,
-              },
-            );
+            setError(coinErr as Error)
           }
         }
 
@@ -166,7 +118,7 @@ export function useCandleHistory(
       const coin = (evt?.s ?? evt?.coin)?.toUpperCase?.();
       if (!coin || !config) return;
 
-      const normalized = normalizeCandlePoint(evt);
+      const normalized = mapHyperliquidCandle(evt);
       if (!normalized) return;
 
       setData((prev) => {

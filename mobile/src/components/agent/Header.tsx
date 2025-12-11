@@ -229,6 +229,7 @@ export default function AgentHeader({
       </View>
       <View style={[{ flexDirection: "row", alignSelf: "flex-end" }, style]}>
         <GlassButton
+          tintColor={palette.surface}
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
           style={{
@@ -247,6 +248,7 @@ export default function AgentHeader({
           )}
         </GlassButton>
         <GlassButton
+          tintColor={palette.surface}
           onPress={handleRunAssessment}
           disabled={!agentId || isTriggeringAssessment}
           style={{

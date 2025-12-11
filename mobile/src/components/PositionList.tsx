@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { SxProp } from "dripsy";
 import { useState } from "react";
+import type { ViewStyle } from "react-native";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatAmount, formatPercent } from "@/utils/currency";
@@ -12,7 +13,8 @@ type PositionDetailRowProps = {
 };
 
 export type PositionListItem = {
-  coin: string;
+  symbol: string;
+  coin?: string;
   type: string;
   size: number;
   entryPrice: number;
@@ -78,6 +80,7 @@ export function PositionRow({
   const { colors: palette } = useColors();
 
   const {
+    symbol,
     coin,
     size,
     entryPrice,
@@ -88,7 +91,7 @@ export function PositionRow({
     liquidationPx,
   } = position;
 
-  const symbol = coin?.replace("-PERP", "/USDC") ?? "";
+  const formattedSymbol = (symbol || coin)?.replace("-PERP", "/USDC") ?? "";
   const side = size >= 0 ? "long" : "short";
   const absSize = Math.abs(size);
   const entryPriceValue = Number(entryPrice) || 0;
@@ -98,10 +101,10 @@ export function PositionRow({
   const totalPositionValue = positionValue + unrealizedPnlValue;
 
   const entryPriceLabel = entryPriceValue
-    ? formatAmount(entryPriceValue, { precision: 4 })
+    ? formatAmount(entryPriceValue, { precision: 2 })
     : "-";
   const currentPriceLabel = currentPriceValue
-    ? formatAmount(currentPriceValue, { precision: 4 })
+    ? formatAmount(currentPriceValue, { precision: 2 })
     : "-";
   const sizeLabel = absSize || "N/A";
   const unrealizedPnlLabel = formatAmount(unrealizedPnlValue, {
@@ -140,7 +143,7 @@ export function PositionRow({
           <View sx={{ flex: 1 }}>
             <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
               <Text variant="sm" sx={{ fontSize: 12 }}>
-                {symbol}
+                {formattedSymbol}
               </Text>
 
               <MaterialCommunityIcons
@@ -237,7 +240,10 @@ export default function PositionList({
     <View sx={sx}>
       {topPositions.length > 0
         ? topPositions.map((position, i) => (
-            <PositionRow key={position?.coin} position={position} />
+            <PositionRow
+              key={position?.symbol ?? position?.coin ?? i}
+              position={position}
+            />
           ))
         : null}
 

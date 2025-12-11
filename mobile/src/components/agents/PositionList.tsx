@@ -1,6 +1,7 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import type { SxProp } from "dripsy";
 import { useState } from "react";
+import type { ViewStyle } from "react-native";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatAmount, formatPercent } from "@/utils/currency";
@@ -12,7 +13,8 @@ type PositionDetailRowProps = {
 };
 
 export type PositionListItem = {
-  coin: string;
+  symbol: string;
+  coin?: string;
   type: string;
   size: number;
   entryPrice: number;
@@ -77,6 +79,7 @@ export function PositionRow({
   const { colors: palette } = useColors();
 
   const {
+    symbol,
     coin,
     size,
     entryPrice,
@@ -87,7 +90,7 @@ export function PositionRow({
     liquidationPx,
   } = position;
 
-  const symbol = coin?.replace("-PERP", "/USDC") ?? "";
+  const displaySymbol = (symbol || coin)?.replace("-PERP", "/USDC") ?? "";
   const side = size >= 0 ? "long" : "short";
   const absSize = Math.abs(size);
   const entryPriceValue = Number(entryPrice) || 0;
@@ -136,9 +139,9 @@ export function PositionRow({
           }}
         >
           <TableCell alignLeft>
-            <Text variant="sm" sx={{ fontSize: 12 }}>
-              {symbol}
-            </Text>
+              <Text variant="sm" sx={{ fontSize: 12 }}>
+                {displaySymbol}
+              </Text>
             <MaterialCommunityIcons
               name={sideIcon}
               size={16}
@@ -233,7 +236,10 @@ export default function PositionList({
     <View sx={sx}>
       {topPositions.length > 0
         ? topPositions.map((position, i) => (
-            <PositionRow key={position?.coin} position={position} />
+            <PositionRow
+              key={position?.symbol ?? position?.coin ?? i}
+              position={position}
+            />
           ))
         : null}
 

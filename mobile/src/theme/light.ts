@@ -34,7 +34,9 @@ const lightTheme = {
     border: "#505255ff",
     input: "#e2e8f0",
 
-    glassTint: "rgba(194, 34, 34, 0.95)",
+    // glassTint: "rgba(194, 34, 34, 0.95)",
+    glassTint: "rgba(255, 255, 255, 0.1)",
+
 
     tabBackground: "#fff",
     tabIcon: "#111",

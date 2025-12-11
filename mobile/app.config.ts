@@ -1,7 +1,7 @@
 import { ExpoConfig, ConfigContext } from '@expo/config';
 
 export default ({ config }: ConfigContext): ExpoConfig => {
-  const appIdentifier = `com.puppetai.app${process.env.APP_VARIANT_EXT}`;
+  const appIdentifier = `com.puppetai.app${process.env.APP_VARIANT_EXT || ''}`;
 
   return {
     ...config,
@@ -71,7 +71,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       "expo-web-browser",
       "expo-apple-authentication",
       "expo-notifications",
-      "@sentry/react-native/expo",
+      [
+        "@sentry/react-native/expo",
+        {
+          url: "https://sentry.io/",
+          project: "vimana-x4",
+          organization: "puppet"
+        }
+      ],
       [
         "expo-dev-client",
         {

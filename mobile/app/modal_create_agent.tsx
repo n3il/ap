@@ -205,9 +205,10 @@ export default function ModalCreateAgent() {
           </ScrollView>
 
           <GlassButton
-            variant="primary"
             onPress={() => createAgentMutation.mutate(formData)}
-            activeOpacity={0.8}
+            styleVariant="paddedFull"
+            tintColor={palette.surface}
+            glassEffectStyle="regular"
           >
             Continue
           </GlassButton>

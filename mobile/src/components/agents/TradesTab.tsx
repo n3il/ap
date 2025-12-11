@@ -11,23 +11,10 @@ import type { AgentType } from "@/types/agent";
 import { numberToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import { formatCurrency } from "@/utils/marketFormatting";
-
-type UserFill = {
-  coin: string;
-  side: string;
-  px: string;
-  sz: string;
-  time: number;
-  hash: string;
-  tid: number;
-  startPosition: string;
-  dir: string;
-  closedPnl: string;
-  fee: string;
-  oid: number;
-  crossed: boolean;
-  feeToken?: string;
-};
+import {
+  mapHyperliquidFills,
+  type UserFill as NormalizedUserFill,
+} from "@/data/mappings/hyperliquid";
 
 const formatTradeTimestamp = (timestamp?: number) => {
   if (!timestamp && timestamp !== 0) return "—";
@@ -58,7 +45,7 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
   );
   const userAddress = tradingAccount?.hyperliquid_address;
 
-  const [fills, setFills] = useState<UserFill[]>([]);
+  const [fills, setFills] = useState<NormalizedUserFill[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -85,11 +72,8 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
 
         if (!isMounted.current) return;
 
-        if (Array.isArray(data)) {
-          setFills(data as UserFill[]);
-        } else {
-          setFills([]);
-        }
+        const normalized = mapHyperliquidFills(data);
+        setFills(normalized);
       } catch (err) {
         console.error("Failed to load user fills", err);
         if (!isMounted.current) return;
@@ -112,11 +96,11 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
     loadFills({ refresh: true });
   }, [loadFills]);
 
-  const renderFill: ListRenderItem<UserFill> = useCallback(
+  const renderFill: ListRenderItem<NormalizedUserFill> = useCallback(
     ({ item: fill }) => {
-      const isBuy = fill.side === "B";
-      const pnl = Number(fill.closedPnl);
-      const fee = Number(fill.fee);
+      const isBuy = fill.side === "BUY";
+      const pnl = Number(fill.closedPnl ?? 0);
+      const fee = Number(fill.fee ?? 0);
       const hasPnl = Number.isFinite(pnl) && pnl !== 0;
       const pnlColor = numberToColor(pnl);
 
@@ -142,45 +126,45 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
               alignItems: "center",
               justifyContent: "center",
             }}
-          >
-            <Text
-              sx={{
-                color: "surfaceForeground",
-                fontSize: 14,
-                fontWeight: "700",
-              }}
             >
-              {fill.coin}
-            </Text>
-          </View>
-
-          <View sx={{ flex: 1 }}>
-            <Text
-              sx={{
-                color: isBuy ? success : error,
-                fontSize: 14,
-                fontWeight: "600",
-              }}
-            >
-              {formatCurrency(Number(fill.px))}
-            </Text>
-            <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
               <Text
                 sx={{
-                  color: isBuy ? "success" : "error",
-                  fontSize: 11,
-                  fontWeight: "500",
+                  color: "surfaceForeground",
+                  fontSize: 14,
+                  fontWeight: "700",
                 }}
               >
-                {isBuy ? "Buy" : "Sell"}
-              </Text>
-              <Text sx={{ color: "mutedForeground", fontSize: 11 }}>
-                Size: {fill.sz}
+                {fill.symbol}
               </Text>
             </View>
-          </View>
 
-          <View sx={{ alignItems: "flex-end", minWidth: 100 }}>
+            <View sx={{ flex: 1 }}>
+              <Text
+                sx={{
+                  color: isBuy ? success : error,
+                  fontSize: 14,
+                  fontWeight: "600",
+                }}
+              >
+                {formatCurrency(Number(fill.price ?? 0))}
+              </Text>
+              <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
+                <Text
+                  sx={{
+                    color: isBuy ? "success" : "error",
+                    fontSize: 11,
+                    fontWeight: "500",
+                  }}
+                >
+                  {isBuy ? "Buy" : "Sell"}
+                </Text>
+                <Text sx={{ color: "mutedForeground", fontSize: 11 }}>
+                  Size: {fill.size ?? "—"}
+                </Text>
+              </View>
+            </View>
+
+            <View sx={{ alignItems: "flex-end", minWidth: 100 }}>
             {hasPnl && (
               <Text sx={{ color: pnlColor, fontSize: 13, fontWeight: "600" }}>
                 {formatCurrency(pnl)}
@@ -192,7 +176,7 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
               </Text>
             )}
             <Text sx={{ color: "textSecondary", fontSize: 10, marginTop: 1 }}>
-              {formatRelativeDate(fill.time)}
+              {formatRelativeDate(fill.timestamp ?? undefined)}
             </Text>
           </View>
         </View>
@@ -202,7 +186,8 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
   );
 
   const keyExtractor = useCallback(
-    (item: UserFill) => item.hash ?? `${item.coin}-${item.tid}`,
+    (item: NormalizedUserFill) =>
+      item.txHash ?? `${item.symbol}-${item.tradeId ?? item.timestamp}`,
     [],
   );
 

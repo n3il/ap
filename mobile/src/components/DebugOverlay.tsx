@@ -11,6 +11,7 @@ import {
   View,
 } from "@/components/ui";
 import { supabase } from "@/config/supabase";
+import { mapHyperliquidMids } from "@/data/mappings/hyperliquid";
 import { useColors } from "@/theme";
 
 function DebugOverlayComponent() {
@@ -208,9 +209,11 @@ function DebugOverlayComponent() {
           ws.onmessage = (event) => {
             try {
               const payload = JSON.parse(event.data);
-              if (payload?.channel === "allMids" && payload?.data) {
+              const midsUpdate = mapHyperliquidMids(payload);
+
+              if (payload?.channel === "allMids" && midsUpdate?.mids) {
                 receivedData = true;
-                const midsCount = Object.keys(payload.data.mids || {}).length;
+                const midsCount = Object.keys(midsUpdate.mids).length;
                 clearTimeout(timeout);
                 ws.close();
                 results.push({
@@ -218,10 +221,7 @@ function DebugOverlayComponent() {
                   status: "pass",
                   message: `Connected successfully\nReceived ${midsCount} asset prices`,
                   details: {
-                    sampleAssets: Object.keys(payload.data.mids || {}).slice(
-                      0,
-                      5,
-                    ),
+                    sampleAssets: Object.keys(midsUpdate.mids).slice(0, 5),
                   },
                 });
                 resolve();

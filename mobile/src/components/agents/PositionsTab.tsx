@@ -19,7 +19,11 @@ export default function PositionsTab({ agent }: { agent: AgentType }) {
       }}
       data={openPositions}
       renderItem={({ item }) => (
-        <PositionRow key={item.coin} position={item} defaultExpanded />
+        <PositionRow
+          key={item.symbol ?? item.coin}
+          position={item}
+          defaultExpanded
+        />
       )}
     />
   );

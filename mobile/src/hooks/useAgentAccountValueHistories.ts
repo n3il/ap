@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { mapHyperliquidPortfolio } from "@/data/mappings/hyperliquid";
 import { calcPnLByTimeframe } from "@/hooks/useAccountBalance";
 import { useHyperliquidInfo } from "@/hooks/useHyperliquid";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
@@ -25,27 +26,6 @@ const createEmptyHistoryState = (): AgentHistoryState => ({
   totalPnlPercent: null,
   isLoading: true,
 });
-
-const normalizeSeries = (
-  series?: Array<[number | string, number | string]>,
-): HistoryPoint[] => {
-  if (!Array.isArray(series)) return [];
-
-  return series
-    .map((entry) => {
-      if (!Array.isArray(entry) || entry.length < 2) return null;
-      const [timestampRaw, valueRaw] = entry;
-      const timestamp = Number(timestampRaw);
-      const value = Number(valueRaw);
-
-      if (!Number.isFinite(timestamp) || !Number.isFinite(value)) return null;
-      return { timestamp, value };
-    })
-    .filter(
-      (point): point is HistoryPoint =>
-        point !== null && Number.isFinite(point.timestamp),
-    );
-};
 
 const deriveTotals = (histories: HistorySeriesMap) => {
   const allSeries = Object.values(histories).filter(
@@ -144,18 +124,17 @@ export function useAgentAccountValueHistories() {
 
       (async () => {
         try {
-          const data = await infoClient.portfolio({
-            user: address,
-          });
+          const raw = await infoClient.portfolio({ user: address });
           if (isCancelled) return;
 
-          const payloadData: Array<[string, any]> = data ?? [];
-          const accountValueHistory = calcPnLByTimeframe(payloadData);
-          const seriesMap: HistorySeriesMap = payloadData.reduce(
-            (acc, [timeframeKey, summary]) => {
-              acc[timeframeKey] = normalizeSeries(
-                summary?.accountValueHistory ?? [],
-              );
+          const normalized = mapHyperliquidPortfolio(raw);
+          const accountValueHistory = calcPnLByTimeframe(normalized);
+          const seriesMap: HistorySeriesMap = normalized.reduce(
+            (acc, { timeframe, accountValueHistory: series }) => {
+              acc[timeframe] = series.map((entry) => ({
+                timestamp: entry.timestamp,
+                value: entry.value,
+              }));
               return acc;
             },
             {} as HistorySeriesMap,
@@ -204,6 +183,6 @@ export function useAgentAccountValueHistories() {
 
   return {
     histories,
-    isLoading: false,
+    isLoading,
   };
 }

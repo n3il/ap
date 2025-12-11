@@ -1,142 +1,45 @@
 import { Heap } from "heap-js";
+import type { MarketAssetSnapshot } from "@/data/mappings/hyperliquid";
 
-// ---------------------------------------------
-// Types
-// ---------------------------------------------
-export interface AssetData {
-  name: string;
-  szDecimals: number;
-  maxLeverage: number;
-}
+type SortKey =
+  | "dayNotionalVolume"
+  | "fundingRate"
+  | "openInterest"
+  | "markPrice";
 
-export interface AssetContext {
-  dayNtlVlm: string | number;
-  funding: string | number;
-  impactPxs: string[] | number[];
-  markPx: string | number;
-  midPx: string | number;
-  openInterest: string | number;
-  oraclePx: string | number;
-  premium: string | number;
-  prevDayPx: string | number;
-}
+const DEFAULT_K = 10;
 
-export interface TopKOutput {
-  Ticker: string;
-  "Sz-Decimals": number;
-  "Max-Leverage": number;
-  "Day-Ntl-Vlm": string | number;
-  Funding: string | number;
-  "Impact-Pxs": string[] | number[];
-  "Mark-Px": string | number;
-  "Mid-Px": string | number;
-  "Open-Interest": string | number;
-  "Oracle-Px": string | number;
-  Premium: string | number;
-  "Prev-Day-Px": string | number;
-  "Asset-Id": number;
-}
+const toHeapValue = (value: number | null | undefined) =>
+  Number.isFinite(Number(value)) ? Number(value) : -Infinity;
 
-interface HeapItem {
-  assetData: AssetData;
-  ctx: AssetContext;
-  assetId: number;
-  dayNtlVlmNum: number;
-  fundingNum: number;
-  openInterestNum: number;
-  markPxNum: number;
-}
-
-// Valid keys that can be used for sorting
-export type SortKey = "dayNtlVlm" | "funding" | "openInterest" | "markPx";
-
-// ---------------------------------------------
-// Config
-// ---------------------------------------------
-const K = 10;
-
-// Map sort key to HeapItem property
-const KEY_MAP: Record<SortKey, keyof HeapItem> = {
-  dayNtlVlm: "dayNtlVlmNum",
-  funding: "fundingNum",
-  openInterest: "openInterestNum",
-  markPx: "markPxNum",
-};
-
-// ---------------------------------------------
-// Main function
-// ---------------------------------------------
 export function getTopKAssets(
-  universe: AssetData[],
-  assetContexts: AssetContext[],
-  sortKey: SortKey = "dayNtlVlm",
-  k: number = K,
-): TopKOutput[] {
-  const heapKey = KEY_MAP[sortKey];
+  assets: MarketAssetSnapshot[],
+  sortKey: SortKey = "dayNotionalVolume",
+  k: number = DEFAULT_K,
+): MarketAssetSnapshot[] {
+  const heap = new Heap<MarketAssetSnapshot>((a, b) => {
+    return toHeapValue(a[sortKey]) - toHeapValue(b[sortKey]);
+  });
 
-  // Min-heap comparator: smallest value at top
-  const comparator = (a: HeapItem, b: HeapItem) =>
-    (a[heapKey] as number) - (b[heapKey] as number);
-
-  // Create min-heap with heap-js
-  const heap = new Heap<HeapItem>(comparator);
-
-  // Streaming top-K logic
-  for (let i = 0; i < universe.length; i++) {
-    const assetData = universe[i];
-    const ctx = assetContexts[i];
-
-    const dayNtlVlmNum = Number(ctx.dayNtlVlm);
-    const fundingNum = Number(ctx.funding);
-    const openInterestNum = Number(ctx.openInterest);
-    const markPxNum = Number(ctx.markPx);
-
-    // Skip invalid entries
-    if (dayNtlVlmNum <= 0 && fundingNum <= 0) continue;
-
-    const item: HeapItem = {
-      assetData,
-      ctx,
-      assetId: i,
-      dayNtlVlmNum,
-      fundingNum,
-      openInterestNum,
-      markPxNum,
-    };
+  assets.forEach((asset) => {
+    const metric = toHeapValue(asset[sortKey]);
+    if (metric === -Infinity) return;
 
     if (heap.length < k) {
-      heap.push(item);
-    } else {
-      const smallest = heap.peek();
-      if (
-        smallest &&
-        (item[heapKey] as number) > (smallest[heapKey] as number)
-      ) {
-        heap.pop();
-        heap.push(item);
-      }
+      heap.push(asset);
+      return;
     }
-  }
 
-  // Extract and sort results (largest first)
-  const result = heap
+    const smallest = heap.peek();
+    if (smallest && metric > toHeapValue(smallest[sortKey])) {
+      heap.pop();
+      heap.push(asset);
+    }
+  });
+
+  return heap
     .toArray()
-    .sort((a, b) => (b[heapKey] as number) - (a[heapKey] as number));
-
-  // Format output
-  return result.map(({ assetData, ctx, assetId }) => ({
-    Ticker: assetData.name,
-    "Sz-Decimals": assetData.szDecimals,
-    "Max-Leverage": assetData.maxLeverage,
-    "Day-Ntl-Vlm": ctx.dayNtlVlm,
-    Funding: ctx.funding,
-    "Impact-Pxs": ctx.impactPxs,
-    "Mark-Px": ctx.markPx,
-    "Mid-Px": ctx.midPx,
-    "Open-Interest": ctx.openInterest,
-    "Oracle-Px": ctx.oraclePx,
-    Premium: ctx.premium,
-    "Prev-Day-Px": ctx.prevDayPx,
-    "Asset-Id": assetId,
-  }));
+    .sort(
+      (a, b) => toHeapValue(b[sortKey]) - toHeapValue(a[sortKey]),
+    );
 }
