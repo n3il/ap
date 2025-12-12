@@ -93,9 +93,8 @@ export const agentService = {
 
     if (error) throw error;
 
-    return includeLatestAssessment
-      ? data.map((agent) => normalizeAgent(agent, true))
-      : data;
+    return data
+      .map((agent) => normalizeAgent(agent, includeLatestAssessment));
   },
 
   // Get a single agent by ID

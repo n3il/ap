@@ -1,11 +1,12 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ContainerView, { PaddedView } from "@/components/ContainerView";
 import SectionTitle from "@/components/SectionTitle";
 import {
+  FlatList,
   GlassButton,
   KeyboardAvoidingView,
   Platform,
@@ -16,36 +17,58 @@ import {
 } from "@/components/ui";
 import { agentService } from "@/services/agentService";
 import { useColors, withOpacity } from "@/theme";
-
-export const LLM_PROVIDERS = [
-  {
-    id: "google",
-    name: "Google",
-    models: ["gemini-2.5-flash-preview-09-2025", "gemini-1.5-pro"],
-  },
-  {
-    id: "openai",
-    name: "OpenAI",
-    models: ["gpt-5-mini-2025-08-07"],
-  },
-  {
-    id: "anthropic",
-    name: "Anthropic",
-    models: ["claude-3-opus", "claude-3-sonnet", "claude-3-haiku"],
-  },
-  { id: "deepseek", name: "DeepSeek", models: ["deepseek-chat"] },
-];
+import {
+  fetchOpenRouterModels,
+  groupModelsByProvider,
+  getPopularModels,
+  formatModelName,
+  DEFAULT_LLM_PROVIDERS,
+  type LLMProvider,
+} from "@/services/llmService";
 
 export default function ModalCreateAgent() {
   const insets = useSafeAreaInsets();
   const { colors: palette } = useColors();
   const isPresented = router.canGoBack();
+
+  const [models, setModels] = useState<any[]>([]);
+  const [isLoadingModels, setIsLoadingModels] = useState(true);
+
   const [formData, setFormData] = useState({
     name: "",
-    llm_provider: "google",
-    model_name: "gemini-2.5-flash-preview-09-2025",
+    llm_provider: "",
+    model_name: "",
     prompt_direction: "",
   });
+
+  // Handler to select a model
+  const handleModelSelect = (modelSlug: string) => {
+    // Extract provider from slug (e.g., "google/gemini-2.0-flash" -> "google")
+    const provider = modelSlug.split('/')[0] || 'google';
+
+    setFormData({
+      ...formData,
+      llm_provider: provider,
+      model_name: modelSlug,
+    });
+  };
+
+  // Fetch available models from OpenRouter on mount
+  useEffect(() => {
+    async function loadModels() {
+      try {
+        setIsLoadingModels(true);
+        const allModels = await fetchOpenRouterModels();
+        setModels(allModels)
+      } catch (error) {
+        console.error('Failed to load models:', error);
+        setModels([]);
+      } finally {
+        setIsLoadingModels(false);
+      }
+    }
+    loadModels();
+  }, []);
 
   const createAgentMutation = useMutation({
     mutationFn: (agentData) => agentService.createAgent(agentData),
@@ -56,10 +79,6 @@ export default function ModalCreateAgent() {
       alert(`Failed to create agent. ${_error.message}`);
     },
   });
-
-  const selectedProvider = LLM_PROVIDERS.find(
-    (p) => p.id === formData.llm_provider,
-  );
 
   return (
     <ContainerView>
@@ -144,68 +163,74 @@ export default function ModalCreateAgent() {
               />
             </View>
             <View style={{ marginBottom: 4, gap: 12 }}>
-              <SectionTitle title="Model Provider" />
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 2 }}>
-                {LLM_PROVIDERS.map((provider) => (
-                  <GlassButton
-                    key={provider.id}
-                    onPress={() =>
-                      setFormData({
-                        ...formData,
-                        llm_provider: provider.id,
-                        model_name: provider.models[0],
-                      })
-                    }
-                    // tintColor={selectedProvider?.id === provider.id
-                    //   ? withOpacity(palette.providers[provider.id], .4)
-                    //   : withOpacity(palette.providers[provider.id], .1)}
-                  >
-                    <Text
-                      style={{
-                        color:
-                          formData.llm_provider === provider.id
-                            ? palette.foreground
-                            : palette.mutedForeground,
-                      }}
-                    >
-                      {provider.name}
-                    </Text>
-                  </GlassButton>
-                ))}
-              </View>
+              <SectionTitle title="Select Model" />
+              {true ? (
+                <View style={{ padding: 20, alignItems: "center" }}>
+                  <Text style={{ color: palette.mutedForeground }}>
+                    Loading models...
+                  </Text>
+                </View>
+              ) : (
+                <FlatList
+                  data={models}
+                  keyExtractor={(item) => item.slug}
+                  contentContainerStyle={{ gap: 8 }}
+                  renderItem={({ item }) => {
+                    const isSelected = formData.model_name === item.slug;
+                    const displayName = item.name || formatModelName(item.slug);
+
+                    return (
+                      <GlassButton
+                        onPress={() => handleModelSelect(item.slug)}
+                        style={{
+                          flex: 1,
+                          minHeight: 60,
+                          justifyContent: "center",
+                          alignItems: "flex-start",
+                          paddingHorizontal: 12,
+                          paddingVertical: 10,
+                        }}
+                        tintColor={
+                          isSelected
+                            ? palette.primary
+                            : withOpacity(palette.surface, 0.5)
+                        }
+                      >
+                        <View style={{ gap: 2, width: "100%" }}>
+                          <Text
+                            variant="xs"
+                            numberOfLines={2}
+                            style={{
+                              color: isSelected
+                                ? palette.foreground
+                                : palette.mutedForeground,
+                              fontWeight: isSelected ? "700" : "400",
+                              fontSize: 11,
+                            }}
+                          >
+                            {displayName}
+                          </Text>
+                          {item.provider_display_name && (
+                            <Text
+                              variant="xs"
+                              style={{
+                                color: withOpacity(palette.mutedForeground, 0.6),
+                                fontSize: 9,
+                              }}
+                            >
+                              {item.provider_display_name}
+                            </Text>
+                          )}
+                        </View>
+                      </GlassButton>
+                    );
+                  }}
+                />
+              )}
             </View>
 
             <View style={{ marginBottom: 4, gap: 12 }}>
-              <SectionTitle title="Model" />
-              <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 2 }}>
-                {selectedProvider?.models.map((model) => (
-                  <GlassButton
-                    key={model}
-                    onPress={() =>
-                      setFormData({ ...formData, model_name: model })
-                    }
-                    // tintColor={formData.model_name === model
-                    //   ? withOpacity(palette.providers[selectedProvider.id], .9)
-                    //   : withOpacity(palette.providers[selectedProvider.id], .1)}
-                  >
-                    <Text
-                      variant="xs"
-                      style={{
-                        color:
-                          formData.model_name === model
-                            ? palette.foreground
-                            : palette.mutedForeground,
-                      }}
-                    >
-                      {model}
-                    </Text>
-                  </GlassButton>
-                ))}
-              </View>
-            </View>
-
-            <View style={{ marginBottom: 4, gap: 12 }}>
-              <SectionTitle title="Prompt Direction" />
+              <SectionTitle title="Direction" />
               <TextInput
                 style={{
                   marginTop: 0,

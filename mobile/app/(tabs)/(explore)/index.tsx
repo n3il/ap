@@ -18,13 +18,15 @@ import MarketPricesWidget from "@/components/explore/MarketPricesWidget";
 import { GlassButton, RefreshControl, View } from "@/components/ui";
 import GlassSelector from "@/components/ui/GlassSelector";
 import { useColors } from "@/theme";
+import Toggle from "@/components/ui/Toggle";
+import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ExploreScreen() {
   const [isFetching, setIsFetching] = useState(false);
-  const [viewMode, setViewMode] = useState<"list" | "table">("list");
   const queryClient = useQueryClient();
+  const { viewMode } = useExploreAgentsStore()
   const colors = useColors();
   const palette = colors.colors;
   const safeAreaInsets = useSafeAreaInsets();
@@ -113,57 +115,7 @@ export default function ExploreScreen() {
                 }}
               >
                 <TimeFrameSelector />
-                <GlassContainer
-                  spacing={4}
-                  style={{
-                    flexDirection: "row",
-                  }}
-                >
-                  <GlassButton
-                    styleVariant="minimal"
-                    onPress={() =>
-                      setViewMode((prev) =>
-                        prev === "list" ? "table" : "list",
-                      )
-                    }
-                    tintColor={palette.surface}
-                    style={{
-                      borderRadius: 8,
-                    }}
-                  >
-                    <Ionicons
-                      name={"list-outline"}
-                      size={18}
-                      color={
-                        viewMode === "table"
-                          ? palette.accent
-                          : palette.foreground
-                      }
-                    />
-                  </GlassButton>
-                  <GlassButton
-                    styleVariant="minimal"
-                    onPress={() =>
-                      setViewMode((prev) =>
-                        prev === "list" ? "table" : "list",
-                      )
-                    }
-                    tintColor={palette.surface}
-                    style={{
-                      borderRadius: 8,
-                    }}
-                  >
-                    <Ionicons
-                      name={"grid-outline"}
-                      size={14}
-                      color={
-                        viewMode === "list"
-                          ? palette.accent
-                          : palette.foreground
-                      }
-                    />
-                  </GlassButton>
-                </GlassContainer>
+                <Toggle />
               </View>
             </PaddedView>
           </View>

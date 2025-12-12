@@ -2,7 +2,7 @@ import { corsPreflightResponse, successResponse, handleError } from '../_shared/
 import { authenticateRequest } from '../_shared/lib/auth.ts';
 import { validateAgentId } from '../_shared/lib/validation.ts';
 import { callLLMProvider } from '../_shared/llm/providers.ts';
-import { buildPrompt } from '../_shared/llm/gemini.ts';
+import { buildPrompt } from '../_shared/llm/prompt.ts';
 import { fetchPrompt } from '../_shared/lib/prompts.ts';
 import { fetchAndValidateAgent } from '../_shared/lib/agent.ts';
 import { saveAssessment, updateAssessmentStatus } from './lib/persistence.ts';

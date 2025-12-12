@@ -1,35 +1,19 @@
-import { callGeminiAPI } from './gemini.ts';
-import { callDeepseekAPI } from './deepseek.ts';
-import { callOpenAIAPI } from './openai.ts';
-import { callAnthropicAPI } from './anthropic.ts';
-import type { LLMPrompt, LLMResponse, LLMProvider, ParsedLLMResponse } from './types.ts';
+import { callOpenRouterAPI } from './openrouter.ts';
+import type { LLMPrompt, LLMResponse, ParsedLLMResponse } from './types.ts';
 import JSON5 from 'npm:json5@2.2.3';
 
 /**
- * Routes LLM call to the appropriate provider
- * Supports Google (Gemini), OpenAI, Anthropic, and Deepseek
+ * Calls LLM provider via OpenRouter unified API
+ * OpenRouter provides access to all major LLM providers through a single endpoint
  */
 export async function callLLMProvider(
-  provider: string,
+  _provider: string,
   prompt: LLMPrompt,
   modelName?: string
 ): Promise<LLMResponse> {
-  const normalizedProvider = provider.toLowerCase() as LLMProvider;
-
-  switch (normalizedProvider) {
-    case 'deepseek':
-      return await callDeepseekAPI(prompt, modelName);
-
-    case 'openai':
-      return await callOpenAIAPI(prompt, modelName);
-
-    case 'anthropic':
-      return await callAnthropicAPI(prompt, modelName);
-
-    case 'google':
-    default:
-      return await callGeminiAPI(prompt, modelName);
-  }
+  // All providers are now routed through OpenRouter
+  // The provider parameter is kept for backward compatibility but not used
+  return await callOpenRouterAPI(prompt, modelName);
 }
 
 export function tryParseText(text: string): ParsedLLMResponse | null {

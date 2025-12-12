@@ -8,7 +8,6 @@ import { create } from "zustand";
 export const useExploreAgentsStore = create((set, get) => ({
   // The current list of agents based on selected tab
   agents: [],
-
   // Set the agents list (called from AgentList when data changes)
   setAgents: (agents) => set({ agents }),
 
@@ -28,4 +27,7 @@ export const useExploreAgentsStore = create((set, get) => ({
     const { [queryKey]: _removed, ...rest } = get().activeAgentsByQueryKey;
     set({ activeAgentsByQueryKey: rest });
   },
+
+  viewMode: "list",
+  setViewMode: (viewMode) => set({ viewMode }),
 }));

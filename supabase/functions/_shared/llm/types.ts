@@ -4,7 +4,11 @@
 
 export type PromptType = 'POSITION_REVIEW' | 'MARKET_SCAN';
 
-export type LLMProvider = 'google' | 'openai' | 'anthropic' | 'deepseek';
+/**
+ * LLM Provider type - kept for backward compatibility
+ * All providers are now accessed through OpenRouter
+ */
+export type LLMProvider = 'openrouter' | 'google' | 'openai' | 'anthropic' | 'deepseek';
 
 export interface LLMHeadlineBlock {
   short_summary?: string;

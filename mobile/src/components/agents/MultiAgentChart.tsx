@@ -138,7 +138,7 @@ export default function MultiAgentChart({
         endSpacing={30}
         xAxisType={ruleTypes.DASHED}
         // noOfSectionsBelowXAxis={1}
-        showValuesAsDataPointsText
+        // showValuesAsDataPointsText
         yAxisOffset={-yOffset}
         yAxisTextNumberOfLines={1}
         yAxisLabelSuffix="%"
@@ -246,6 +246,16 @@ export default function MultiAgentChart({
                           }}
                         >
                           {`${item.dataPointText}`}
+                        </Text>
+                        <Text
+                          variant="xs"
+                          style={{
+                            fontWeight: "bold",
+                            textAlign: "center",
+                            color: colors.surfaceForeground,
+                          }}
+                        >
+                          {`${item.agentName}`}
                         </Text>
                       </View>
                     </View>
