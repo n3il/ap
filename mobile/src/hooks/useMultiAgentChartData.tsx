@@ -99,6 +99,11 @@ export function useMultiAgentChartData() {
     let globalMin = Infinity;
     let globalMax = Infinity;
 
+    // Calculate the expected time range based on the selected timeframe
+    const config = marketHistoryService.getTimeframeConfig(timeframe);
+    const endTime = Date.now();
+    const startTime = config ? endTime - config.durationMs : endTime - (24 * 60 * 60 * 1000);
+
     const lines: ChartLine[] = [];
 
     // Agent lines
@@ -108,10 +113,16 @@ export function useMultiAgentChartData() {
 
       if (!timeframeHistory || timeframeHistory.length < 2) return;
 
-      const baselinePoint = timeframeHistory.find((p) =>
-        Number.isFinite(Number(p?.value)),
-      );
-      const baseline = Number(baselinePoint?.value);
+      // Filter history to only include points within the time range
+      const filteredHistory = timeframeHistory.filter((p) => {
+        const ts = normalizeTimestamp(p.timestamp);
+        return ts !== null && ts >= startTime && ts <= endTime && Number.isFinite(Number(p?.value));
+      });
+
+      if (filteredHistory.length < 2) return;
+
+      // Use the first point within the filtered range as baseline
+      const baseline = Number(filteredHistory[0]?.value);
       if (!Number.isFinite(baseline)) return;
 
       const data: LineDatum[] = [];
@@ -120,12 +131,12 @@ export function useMultiAgentChartData() {
       const agentColor =
         colors.providers?.[agent.llm_provider] || colors.surfaceForeground;
 
-      for (let i = 0; i < timeframeHistory.length; i++) {
-        const point = timeframeHistory[i];
+      for (let i = 0; i < filteredHistory.length; i++) {
+        const point = filteredHistory[i];
         const timestamp = normalizeTimestamp(point.timestamp);
         const value = Number(point.value);
 
-        if (!Number.isFinite(value) || timestamp === null) return;
+        if (!Number.isFinite(value) || timestamp === null) continue;
 
         const percentChange =
           baseline !== 0 ? ((value - baseline) / baseline) * 100 : 0;
@@ -137,7 +148,7 @@ export function useMultiAgentChartData() {
           value: percentChange,
           dataPointText: formatPercentValue(percentChange),
           timestamp,
-          hideDataPoint: i !== timeframeHistory.length - 1,
+          hideDataPoint: i !== filteredHistory.length - 1,
           id: `${agent.id}-${timestamp}`,
           agentId: agent.id,
           agentName: agent.name,
@@ -198,42 +209,50 @@ export function useMultiAgentChartData() {
     // BTC price line
     const btcCandles = btcHistory.data?.BTC ?? [];
     if (btcCandles.length >= 2) {
-      const baseline = Number(btcCandles[0]?.close);
-      if (Number.isFinite(baseline)) {
-        const btcData: LineDatum[] = btcCandles
-          .map((candle) => {
-            const ts = normalizeTimestamp(candle.timestamp);
-            const price = Number(candle.close);
-            if (!Number.isFinite(price) || ts === null) return null;
-            const pct =
-              baseline !== 0 ? ((price - baseline) / baseline) * 100 : 0;
-            return {
-              value: pct,
-              dataPointText: formatPercentValue(pct),
-              timestamp: ts,
-              id: `BTC-${ts}`
-            };
-          })
-          .filter((p): p is LineDatum => Boolean(p));
+      // Filter BTC candles to only include those within the time range
+      const filteredCandles = btcCandles.filter((candle) => {
+        const ts = normalizeTimestamp(candle.timestamp);
+        return ts !== null && ts >= startTime && ts <= endTime;
+      });
 
-        if (btcData.length >= 2) {
-          const labelIndices = getLabelIndices(btcData.length);
-          for (const idx of labelIndices) {
-            btcData[idx].label = formatLabel(new Date(btcData[idx].timestamp));
+      if (filteredCandles.length >= 2) {
+        const baseline = Number(filteredCandles[0]?.close);
+        if (Number.isFinite(baseline)) {
+          const btcData: LineDatum[] = filteredCandles
+            .map((candle) => {
+              const ts = normalizeTimestamp(candle.timestamp);
+              const price = Number(candle.close);
+              if (!Number.isFinite(price) || ts === null) return null;
+              const pct =
+                baseline !== 0 ? ((price - baseline) / baseline) * 100 : 0;
+              return {
+                value: pct,
+                dataPointText: formatPercentValue(pct),
+                timestamp: ts,
+                id: `BTC-${ts}`
+              };
+            })
+            .filter((p): p is LineDatum => Boolean(p));
+
+          if (btcData.length >= 2) {
+            const labelIndices = getLabelIndices(btcData.length);
+            for (const idx of labelIndices) {
+              btcData[idx].label = formatLabel(new Date(btcData[idx].timestamp));
+            }
+
+            const btcMin = Math.min(...btcData.map((p) => p.value));
+            const btcMax = Math.max(...btcData.map((p) => p.value));
+            globalMin = Math.min(globalMin, btcMin);
+            globalMax = Math.max(globalMax, btcMax);
+
+            lines.push({
+              data: btcData,
+              color: "orange",
+              startFillColor: withOpacity(colors.foreground, 0.01),
+              endFillColor: withOpacity(colors.foreground, 0.01),
+              name: "BTC",
+            });
           }
-
-          const btcMin = Math.min(...btcData.map((p) => p.value));
-          const btcMax = Math.max(...btcData.map((p) => p.value));
-          globalMin = Math.min(globalMin, btcMin);
-          globalMax = Math.max(globalMax, btcMax);
-
-          lines.push({
-            data: btcData,
-            color: "orange",
-            startFillColor: withOpacity(colors.foreground, 0.01),
-            endFillColor: withOpacity(colors.foreground, 0.01),
-            name: "BTC",
-          });
         }
       }
     }
