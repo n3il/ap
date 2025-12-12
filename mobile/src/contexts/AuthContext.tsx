@@ -23,6 +23,7 @@ export interface ProfileData {
   email?: string;
   username?: string;
   avatar_url?: string;
+  photo?: string;
   bio?: string;
   [key: string]: any;
 }

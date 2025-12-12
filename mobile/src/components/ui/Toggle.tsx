@@ -3,7 +3,6 @@ import GlassButton from "./GlassButton";
 import { useColors } from "@/theme";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { Ionicons } from "@expo/vector-icons";
-import Button from "./Button";
 
 
 export default function Toggle() {
@@ -16,15 +15,13 @@ export default function Toggle() {
       spacing={4}
       style={{
         flexDirection: "row",
-        gap: 0,
       }}
     >
-      <Button
+      <GlassButton
         styleVariant="minimal"
+        enabled={viewMode === "table"}
         onPress={() =>
-          setViewMode((prev) =>
-            prev === "list" ? "table" : "list",
-          )
+          setViewMode("table")
         }
         style={{
           borderRadius: 8,
@@ -40,13 +37,13 @@ export default function Toggle() {
               : palette.foreground
           }
         />
-      </Button>
-      <Button
+      </GlassButton>
+      <GlassButton
         styleVariant="minimal"
+        enabled={viewMode === "list"}
         onPress={() =>
-          setViewMode((prev) =>
-            prev === "list" ? "table" : "list",
-          )
+          setViewMode("list")
+
         }
         style={{
           borderRadius: 8,
@@ -61,7 +58,7 @@ export default function Toggle() {
               : palette.foreground
           }
         />
-      </Button>
+      </GlassButton>
     </GlassContainer>
   )
 }

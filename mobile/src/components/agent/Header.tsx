@@ -199,14 +199,16 @@ export default function AgentHeader({
       }}
       {...props}
     >
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 8 }}>
+      <View style={{
+        flexDirection: "row",
+        alignItems: "center",
+      }}>
         <GlassButton
           enabled={false}
           onPress={() => router.back()}
           style={{
             flex: 0,
             flexGrow: 0,
-            alignSelf: "flex-start",
           }}
         >
           <MaterialCommunityIcons
@@ -227,33 +229,57 @@ export default function AgentHeader({
           {agentName}
         </Text>
       </View>
-      <View style={[{ flexDirection: "row", alignSelf: "flex-end" }, style]}>
-        <GlassButton
+      <View style={[{ flexDirection: "row", alignSelf: "flex-end", paddingRight: 10 }, style]}>
+      <GlassButton
           tintColor={palette.surface}
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
           style={{
-            width: 40,
-            height: 40,
+            width: 36,
+            height: 36,
+            alignItems: "center",
+            justifyContent: "center",
           }}
         >
           {showWatchlistSpinner ? (
             <ActivityIndicator size="small" color={palette.foreground} />
           ) : (
             <MaterialCommunityIcons
-              name={"binoculars"}
-              size={24}
+              name={"content-copy"}
+              size={16}
+              color={palette?.foreground}
+            />
+          )}
+        </GlassButton>
+        <GlassButton
+          tintColor={palette.surface}
+          onPress={onBookmarkPress ?? handleToggleWatchlist}
+          disabled={watchlistButtonDisabled}
+          style={{
+            width: 36,
+            height: 36,
+          }}
+        >
+          {showWatchlistSpinner ? (
+            <ActivityIndicator size="small" color={palette.foreground} />
+          ) : (
+            <MaterialCommunityIcons
+              name={isWatchlisted ? "star" : "star-outline"}
+              size={20}
               color={isWatchlisted ? palette?.accent : palette?.foreground}
             />
           )}
         </GlassButton>
         <GlassButton
           tintColor={palette.surface}
+          styleVariant="minimal"
           onPress={handleRunAssessment}
           disabled={!agentId || isTriggeringAssessment}
           style={{
+            padding: 0,
             width: 40,
             height: 40,
+            display: "none"
           }}
         >
           <RadarSpinner

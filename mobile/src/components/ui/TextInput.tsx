@@ -8,38 +8,24 @@ import type {
 import { TextInput as RNTextInput } from "react-native";
 
 import type { AppTheme } from "@/theme/dripsy";
+import { useColors } from "@/theme";
 
 export interface TextInputProps extends RNTextInputProps {
   tone?: "default" | "muted";
 }
 
-const getToneStyles = (theme: AppTheme) => ({
-  default: {
-    backgroundColor: theme.colors.surface,
-    borderColor: theme.colors.border,
-    textColor: theme.colors.textPrimary,
-    placeholder: theme.colors.textTertiary,
-  },
-  muted: {
-    backgroundColor: theme.colors.backgroundSecondary ?? theme.colors.surface,
-    borderColor: theme.colors.border,
-    textColor: theme.colors.textSecondary,
-    placeholder: theme.colors.textTertiary,
-  },
-});
 
 const TextInput = React.forwardRef<RNTextInput, TextInputProps>(
   ({ tone = "default", style, placeholderTextColor, ...props }, ref) => {
     const { theme } = useDripsyTheme();
+    const { colors: palette } = useColors()
     const typedTheme = theme as AppTheme;
-    const tones = getToneStyles(typedTheme);
-    const current = tones[tone] ?? tones.default;
 
     const baseStyle: TextStyle & ViewStyle = {
       flex: 1,
-      backgroundColor: current.backgroundColor,
-      borderColor: current.borderColor,
-      color: current.textColor,
+      backgroundColor: palette.backgroundColor,
+      borderColor: palette.borderColor,
+      color: palette.textColor,
       borderWidth: 1,
       borderRadius: typedTheme.radii?.xl ?? 16,
       paddingHorizontal: typedTheme.space?.["4"] ?? 16,
@@ -60,7 +46,7 @@ const TextInput = React.forwardRef<RNTextInput, TextInputProps>(
     return (
       <RNTextInput
         ref={ref}
-        placeholderTextColor={placeholderTextColor ?? current.placeholder}
+        placeholderTextColor={placeholderTextColor ?? colors.placeholder}
         style={mergedStyle}
         {...props}
       />

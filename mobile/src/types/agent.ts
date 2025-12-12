@@ -73,5 +73,6 @@ export interface AgentType {
   published_at: string;
   simulate: boolean;
   user_id: string;
+  photo?: string | null;
   trading_accounts?: TradingAccountType[];
 }

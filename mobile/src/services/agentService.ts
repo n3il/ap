@@ -88,7 +88,7 @@ export const agentService = {
 
     const { data, error } = await query.order(
       published ? "published_at" : "created_at",
-      { ascending: false },
+      { ascending: true },
     );
 
     if (error) throw error;

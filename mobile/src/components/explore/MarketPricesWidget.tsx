@@ -147,15 +147,12 @@ export default function MarketPricesWidget({
               flex: 1,
               justifyContent: "center",
               alignItems: "center",
-              paddingVertical: 16,
             }}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color={palette.foreground} />
             ) : (
-              <Text sx={{ fontSize: 14, color: "mutedForeground" }}>
-                No market data
-              </Text>
+              null
             )}
           </View>
         )}

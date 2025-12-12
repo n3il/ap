@@ -33,6 +33,13 @@ const formatPercentValue = (value: number) => {
 };
 
 const normalizeTimestamp = (value: unknown): number | null => {
+  // Handle string timestamps (ISO format)
+  if (typeof value === 'string') {
+    const parsed = new Date(value);
+    if (isNaN(parsed.getTime())) return null;
+    return parsed.getTime(); // Returns local time in milliseconds
+  }
+
   const num = Number(value);
   if (!Number.isFinite(num)) return null;
   return num < 1e12 ? num * 1000 : num;
@@ -131,6 +138,7 @@ export function useMultiAgentChartData() {
           dataPointText: formatPercentValue(percentChange),
           timestamp,
           hideDataPoint: i !== timeframeHistory.length - 1,
+          id: `${agent.id}-${timestamp}`,
           agentId: agent.id,
           agentName: agent.name,
           agentColor,
@@ -203,6 +211,7 @@ export function useMultiAgentChartData() {
               value: pct,
               dataPointText: formatPercentValue(pct),
               timestamp: ts,
+              id: `BTC-${ts}`
             };
           })
           .filter((p): p is LineDatum => Boolean(p));

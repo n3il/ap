@@ -81,7 +81,7 @@ const createPingManager = (
 export const useHyperliquidStore = create<HLStoreState>((set, get) => {
   const transport = new hl.WebSocketTransport({
     isTestnet: true,
-    resubscribe: false,
+    resubscribe: true,
   });
   const client = new hl.SubscriptionClient({ transport });
   const infoClient = new hl.InfoClient({ transport });

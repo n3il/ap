@@ -10,10 +10,12 @@ import ContainerView, {
   GLOBAL_PADDING,
   PaddedView,
 } from "@/components/ContainerView";
-import { Animated, SwipeableTabs, View } from "@/components/ui";
+import { Animated, ScrollView, SwipeableTabs, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
+import AgentActions from "@/components/agent/AgentActions";
+import ChartsTab from "@/components/agents/ChartsTab";
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
@@ -68,20 +70,43 @@ export default function AgentIndex() {
         ),
       },
       {
-        key: "Trades",
-        title: "Trades",
-        content: () => (
-          <View style={{ flex: 1, paddingTop: startContentAtHeight }}>
-            <TradesTab agent={agent} />
-          </View>
-        ),
-      },
-      {
         key: "Positions",
         title: "Positions",
         content: () => (
           <View style={{ flex: 1, paddingTop: startContentAtHeight }}>
             <PositionsTab agent={agent} />
+          </View>
+        ),
+      },
+      {
+        key: "Charts",
+        title: "Charts",
+        content: () => (
+          <ScrollView
+            contentContainerStyle={{
+              paddingTop: startContentAtHeight,
+              marginBottom: "70%",
+            }}
+          >
+            <ChartsTab agent={agent} />
+          </ScrollView>
+        ),
+      },
+      {
+        key: "LPs",
+        title: "LPs (932)",
+        content: () => (
+          <View style={{ flex: 1, paddingTop: startContentAtHeight }}>
+
+          </View>
+        ),
+      },
+      {
+        key: "Clones",
+        title: "Clones (3)",
+        content: () => (
+          <View style={{ flex: 1, paddingTop: startContentAtHeight }}>
+
           </View>
         ),
       },
@@ -136,6 +161,7 @@ export default function AgentIndex() {
         activeTabTextStyle={{ color: palette.accent }}
         indicatorColor={palette.foreground}
       />
+      <AgentActions agent={agent} />
     </ContainerView>
   );
 }

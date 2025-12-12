@@ -83,6 +83,17 @@ export default function MultiAgentChart({
   const textColor = darkChart ? colors.surfaceForeground : colors.foreground;
   const backgroundColor = darkChart ? colors.surface : "transparent";
 
+  if (dataSet.length > 0) {
+    dataSet.forEach(d => {
+      console.log([
+        d.name,
+        d.data[d.data.length - 1].timestamp - d.data[0].timestamp,
+        new Date(d.data[0].timestamp),
+        new Date(d.data[d.data.length - 1].timestamp),
+      ].join(' - '))
+    })
+  }
+
   return (
     <Animated.View
       style={[
@@ -138,7 +149,7 @@ export default function MultiAgentChart({
         endSpacing={30}
         xAxisType={ruleTypes.DASHED}
         // noOfSectionsBelowXAxis={1}
-        // showValuesAsDataPointsText
+        showValuesAsDataPointsText
         yAxisOffset={-yOffset}
         yAxisTextNumberOfLines={1}
         yAxisLabelSuffix="%"
@@ -207,7 +218,7 @@ export default function MultiAgentChart({
           persistPointer: true,
           activatePointersOnLongPress: true,
           autoAdjustPointerLabelPosition: true,
-          dynamicLegendComponent: () => <Text>asdf</Text>,
+          // dynamicLegendComponent: () => <Text>asdf</Text>,
           pointerLabelComponent: (items: any) => {
             return (
               <View
@@ -219,7 +230,7 @@ export default function MultiAgentChart({
                 {items.map((item) => {
                   return (
                     <View
-                      key={item.agentId}
+                      key={item.name}
                       style={{
                         flexDirection: "column",
                         gap: 2,
@@ -255,7 +266,7 @@ export default function MultiAgentChart({
                             color: colors.surfaceForeground,
                           }}
                         >
-                          {`${item.agentName}`}
+                          {`${item.name}`}
                         </Text>
                       </View>
                     </View>

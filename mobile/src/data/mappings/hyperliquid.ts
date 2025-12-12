@@ -66,7 +66,7 @@ export const mapHyperliquidCandle = (
     return null;
   }
 
-  const timestamp = rawTimestamp / 1000;
+  const timestamp = rawTimestamp;
 
   const volume = toNumber(point?.v ?? point?.volume);
   const trades = toNumber(point?.n ?? point?.trades);

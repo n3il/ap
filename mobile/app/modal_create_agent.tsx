@@ -15,6 +15,7 @@ import {
   TextInput,
   View,
 } from "@/components/ui";
+import { Keyboard, TouchableWithoutFeedback } from "react-native";
 import { agentService } from "@/services/agentService";
 import { useColors, withOpacity } from "@/theme";
 import {
@@ -89,8 +90,7 @@ export default function ModalCreateAgent() {
       >
         <PaddedView
           style={{
-            backgroundColor: "card",
-            flexGrow: 1,
+            flex: 1,
           }}
         >
           <View
@@ -127,30 +127,17 @@ export default function ModalCreateAgent() {
           </View>
 
           <ScrollView
-            style={{ padding: 6 }}
+            style={{ flex: 1, padding: 6 }}
             contentContainerStyle={{
               gap: 14,
+              paddingBottom: 20,
             }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
           >
             <View style={{ marginBottom: 4, gap: 12 }}>
               <SectionTitle title="Name" />
               <TextInput
-                style={{
-                  marginTop: 0,
-                  paddingVertical: 22,
-                  fontSize: 14,
-                  backgroundColor: palette.surface,
-                  borderWidth: 0,
-                  borderRadius: 18,
-                  elevation: 10,
-                  shadowColor: palette.shadow,
-                  shadowOffset: { width: 0, height: 1 },
-                  shadowOpacity: 1,
-                  shadowRadius: 1,
-                  letterSpacing: 3,
-                  fontFamily: "monospace",
-                  fontWeight: "700",
-                }}
                 placeholder="(╯° _ °）╯  ノ( º _ ºノ) "
                 placeholderTextColor={
                   palette.secondary500 ?? palette.textSecondary
@@ -164,7 +151,7 @@ export default function ModalCreateAgent() {
             </View>
             <View style={{ marginBottom: 4, gap: 12 }}>
               <SectionTitle title="Select Model" />
-              {true ? (
+              {isLoadingModels ? (
                 <View style={{ padding: 20, alignItems: "center" }}>
                   <Text style={{ color: palette.mutedForeground }}>
                     Loading models...
@@ -172,9 +159,11 @@ export default function ModalCreateAgent() {
                 </View>
               ) : (
                 <FlatList
-                  data={models}
-                  keyExtractor={(item) => item.slug}
+                  data={models.slice(0, 10)}
+                  keyExtractor={(item) => item.permaslug || item.slug}
                   contentContainerStyle={{ gap: 8 }}
+                  style={{ maxHeight: 300 }}
+                  showsVerticalScrollIndicator={false}
                   renderItem={({ item }) => {
                     const isSelected = formData.model_name === item.slug;
                     const displayName = item.name || formatModelName(item.slug);
@@ -183,12 +172,9 @@ export default function ModalCreateAgent() {
                       <GlassButton
                         onPress={() => handleModelSelect(item.slug)}
                         style={{
-                          flex: 1,
-                          minHeight: 60,
-                          justifyContent: "center",
-                          alignItems: "flex-start",
-                          paddingHorizontal: 12,
-                          paddingVertical: 10,
+                          paddingHorizontal: 16,
+                          paddingVertical: 12,
+                          marginBottom: 4,
                         }}
                         tintColor={
                           isSelected
@@ -196,7 +182,7 @@ export default function ModalCreateAgent() {
                             : withOpacity(palette.surface, 0.5)
                         }
                       >
-                        <View style={{ gap: 2, width: "100%" }}>
+                        <View style={{ gap: 4 }}>
                           <Text
                             variant="xs"
                             numberOfLines={2}
@@ -219,6 +205,7 @@ export default function ModalCreateAgent() {
                               }}
                             >
                               {item.provider_display_name}
+                              {item.is_free && " • Free"}
                             </Text>
                           )}
                         </View>
@@ -247,7 +234,7 @@ export default function ModalCreateAgent() {
                   shadowRadius: 1,
                   fontFamily: "monospace",
                 }}
-                placeholder="Custom instructions for agent behavior..."
+                placeholder="Custom instructions for agent behavior"
                 placeholderTextColor={
                   palette.secondary500 ?? palette.textSecondary
                 }
@@ -262,14 +249,17 @@ export default function ModalCreateAgent() {
             </View>
           </ScrollView>
 
-          <GlassButton
-            onPress={() => createAgentMutation.mutate(formData)}
-            styleVariant="paddedFull"
-            tintColor={palette.surface}
-            glassEffectStyle="regular"
-          >
-            Continue
-          </GlassButton>
+          <View style={{ padding: 6, paddingTop: 8 }}>
+            <GlassButton
+              onPress={() => createAgentMutation.mutate(formData)}
+              styleVariant="paddedFull"
+              tintColor={palette.surface}
+              glassEffectStyle="regular"
+              disabled={!formData.name || !formData.model_name}
+            >
+              Continue
+            </GlassButton>
+          </View>
         </PaddedView>
       </KeyboardAvoidingView>
     </ContainerView>

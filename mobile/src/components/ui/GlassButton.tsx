@@ -84,9 +84,13 @@ export default function GlassButton({
       <View
         style={[
           {
+            alignItems: "center",
+            justifyContent: "center",
             borderRadius: 32,
             marginHorizontal: 4,
+            backgroundColor: colors.glassTint,
           },
+          style,
         ]}
         {...props}
       >
@@ -94,14 +98,17 @@ export default function GlassButton({
       </View>
     );
 
+
   return (
     <GlassView
       glassEffectStyle="clear"
       style={[
         {
+          alignItems: "center",
+          justifyContent: "center",
           borderRadius: 32,
           marginHorizontal: 4,
-          backgroundColor: colors.glassTint,
+          // backgroundColor: colors.glassTint,
         },
         theme.isDark && {},
         style,

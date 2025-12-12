@@ -139,15 +139,15 @@ export function useCandleHistory(
     [config],
   );
 
-  useHLSubscription(
-    "candle",
-    coins.map((coin) => ({
-      coin,
-      interval: config?.interval,
-    })),
-    handleCandle,
-    Boolean(config && coins.length),
-  );
+  // useHLSubscription(
+  //   "candle",
+  //   coins.map((coin) => ({
+  //     coin,
+  //     interval: config?.interval,
+  //   })),
+  //   handleCandle,
+  //   Boolean(config && coins.length),
+  // );
 
   return {
     data,

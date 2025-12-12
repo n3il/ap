@@ -24,6 +24,7 @@ export interface TextProps extends RNTextProps {
   tone?: TextTone;
   variant?: TextVariant;
   sx?: SxProp;
+  color: string;
 }
 
 const toneTokens: Record<TextTone, keyof AppTheme["colors"]> = {
@@ -35,11 +36,11 @@ const toneTokens: Record<TextTone, keyof AppTheme["colors"]> = {
 };
 
 const Text = React.forwardRef<React.ComponentRef<typeof RNText>, TextProps>(
-  ({ tone = "default", variant = "body", sx, style, ...props }, ref) => {
+  ({ tone = "default", variant = "body", sx, style, color, ...props }, ref) => {
     const { theme } = useDripsyTheme();
     const typedTheme = theme as AppTheme;
 
-    const toneToken = toneTokens[tone] ?? toneTokens.default;
+    const toneToken = color || toneTokens[tone] || toneTokens.default;
 
     // If sx contains complex values or style is provided, use React Native Text
     // to avoid Dripsy parsing errors
