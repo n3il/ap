@@ -13,7 +13,7 @@ export default function TabsLayout() {
   return (
     <NativeTabs
       disableTransparentOnScrollEdge
-      minimizeBehavior="onScrollUp"
+      minimizeBehavior="onScrollDown"
       backgroundColor="black"
       // backgroundColor={theme.colors.tabBackground}
       // badgeBackgroundColor={theme.colors.info.DEFAULT}
@@ -30,13 +30,12 @@ export default function TabsLayout() {
     >
       <NativeTabs.Trigger name="(explore)">
         <NativeTabs.Trigger.TabBar backgroundColor="pink" />
-
         <Label>Explore</Label>
         <Icon sf="globe.desk" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(agents)">
         <NativeTabs.Trigger.TabBar backgroundColor="pink" />
-        <Label>Agents</Label>
+        <Label>Manage</Label>
         <Icon sf="sparkles" drawable="custom_android_drawable" />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger name="(markets)">

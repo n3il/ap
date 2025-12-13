@@ -5,11 +5,10 @@ import * as hl from "@nktkas/hyperliquid";
 import pLimit from "p-limit";
 
 import { useQueries } from "@tanstack/react-query";
-import { historyRequestLimit } from "./requestLimit";
-import { marketHistoryService } from "@/services/marketHistoryService";
 import { TIMEFRAME_CONFIG } from "@/stores/useTimeframeStore";
 import { mapHyperliquidCandle } from "@/data/mappings/hyperliquid";
 import { useDebouncedValue } from "./useDebouncedValue";
+import { useMemo } from "react";
 
 const historyLimit = pLimit(3);
 
@@ -20,11 +19,14 @@ export function useMarketHistory(
   visibleSymbols: string[] = [],
   timeframe: string
 ) {
-  console.log({visibleSymbols})
   const debouncedSymbols = useDebouncedValue(visibleSymbols, 300);
 
+  const stableSymbols = useMemo(() => {
+    return Array.from(new Set(debouncedSymbols)).sort();
+  }, [debouncedSymbols]);
+
   const queries = useQueries({
-    queries: debouncedSymbols.map(symbol => ({
+    queries: stableSymbols.map(symbol => ({
       queryKey: ["candle-history", symbol, timeframe],
       queryFn: () =>
         historyLimit(async () => {
@@ -57,7 +59,8 @@ export function useMarketHistory(
       const delta = end - start;
       const percent = delta / start;
 
-      return [[debouncedSymbols[i], {
+      return [[stableSymbols[i], {
+        isLoading: q.isLoading,
         candles: q.data,
         start, end, delta, percent, prices
       }]];

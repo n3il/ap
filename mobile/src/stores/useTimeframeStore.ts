@@ -38,6 +38,7 @@ export const TIMEFRAME_CONFIG: Record<
       | "1M";
   }
 > = {
+  "5m": { durationMs: 5 * 60 * 1000, interval: "1m" },
   "1h": { durationMs: 60 * 60 * 1000, interval: "1m" },
   "24h": { durationMs: 24 * 60 * 60 * 1000, interval: "5m" },
   "7d": { durationMs: 7 * 24 * 60 * 60 * 1000, interval: "1h" },

@@ -23,6 +23,7 @@ import {
   MINI_SPARKLINE_HEIGHT
 } from "./hooks/useMarketPricesWidgetStyles";
 import { useLayoutState } from "@shopify/flash-list";
+import { ActivityIndicator } from "dripsy";
 
 
 const { width } = Dimensions.get("window");
@@ -33,12 +34,12 @@ const Sparkline = ({
   color = "#ddd",
   width = SPARKLINE_WIDTH,
   height = SPARKLINE_HEIGHT,
+  isLoading = false,
 }) => {
-  const valid = data.filter((value) => Number.isFinite(value));
+  if (isLoading) return <ActivityIndicator color="foreground" />
 
-  if (valid.length < 2) {
-    return null;
-  }
+  const valid = data.filter((value) => Number.isFinite(value));
+  if (valid.length < 2) return null;
 
   const min = Math.min(...valid);
   const max = Math.max(...valid);
@@ -58,7 +59,7 @@ const Sparkline = ({
     <Svg width={width} height={height}>
       <Polyline
         points={points}
-        fill={withOpacity(color, 0.3)}
+        fill={withOpacity(color, 0.5)}
         stroke={color}
         strokeWidth={2}
         strokeLinejoin="round"
@@ -74,14 +75,12 @@ export default function PriceColumn({
   onPress,
   isLoading,
   candleData,
-  candleDataLoading,
 }: {
   tickerData: NormalizedAsset;
   scrollY: number;
   onPress?: any;
   isLoading: boolean;
   candleData?: any;
-  candleDataLoading?: boolean;
 }) {
   const { colors: palette } = useColors();
 
@@ -115,6 +114,7 @@ export default function PriceColumn({
     rangePercent,
     color,
     sparklineData = [],
+    candleDataLoading,
   } = useMemo(() => {
     if (!candleData) return {};
 
@@ -129,6 +129,7 @@ export default function PriceColumn({
       rangePercent: percent,
       color,
       sparklineData: candleData.prices,
+      candleDataLoading: candleData.isLoading
     }
   }, [candleData, tickerData.price])
 
@@ -185,11 +186,12 @@ export default function PriceColumn({
         borderRadius: 12,
         width: width / 3,
         flexDirection: "column",
-        borderWidth: 1,
+        borderWidth: 0,
+        elevation: 10,
         // borderColor: withOpacity(palette.border, 0.9),
       }}
       enabled={false}
-      tintColor={palette.surface}
+      // tintColor={withOpacity(palette.surfaceLight, 0.1)}
       onPress={handleOnPress}
     >
       <View style={{ flexDirection: "row" }}>
@@ -225,17 +227,17 @@ export default function PriceColumn({
           style={[
             {
               position: "absolute",
+              right: 0,
             },
             miniSparklineStyle,
           ]}
         >
-          {!candleDataLoading && sparklineData.length > 0 && (
-            <Sparkline
-              data={sparklineData}
-              color={color}
-              height={MINI_SPARKLINE_HEIGHT}
-            />
-          )}
+          <Sparkline
+            data={sparklineData}
+            color={color}
+            height={MINI_SPARKLINE_HEIGHT}
+            isLoading={candleDataLoading}
+          />
         </Animated.View>
       </View>
 
@@ -275,9 +277,7 @@ export default function PriceColumn({
           sparklineStyle,
         ]}
       >
-        {!candleDataLoading && sparklineData.length > 0 && (
-          <Sparkline data={sparklineData} color={color} />
-        )}
+        <Sparkline data={sparklineData} color={color} isLoading={candleDataLoading} />
       </Animated.View>
     </GlassButton>
   );

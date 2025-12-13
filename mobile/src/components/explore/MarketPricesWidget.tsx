@@ -33,23 +33,19 @@ export default function MarketPricesWidget({
   const [visibleTickers, setVisibleTickers] = useState<string[]>([]);
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: any[] }) => {
-      const next = viewableItems
-        .filter(v => v.isViewable)
-        .map(v => v.item.symbol);
-
       setVisibleTickers(prev => {
-        // Avoid unnecessary updates
-        if (
-          prev.length === next.length &&
-          prev.every((v, i) => v === next[i])
-        ) {
-          return prev;
-        }
-        return next;
+        const set = new Set(prev);
+
+        viewableItems.forEach(v => {
+          set.add(v.item.symbol);
+        });
+
+        return Array.from(set);
       });
     }
   ).current;
 
+  console.log({ visibleTickers })
   const { timeframe } = useTimeframeStore();
   const {
     dataBySymbol: candleDataBySymbol,
@@ -68,14 +64,13 @@ export default function MarketPricesWidget({
             isLoading={isLoading}
             scrollY={scrollY}
             candleData={candleDataBySymbol?.[item.symbol]}
-            candleDataLoading={candleDataLoading}
             onPress={onPress}
           />
         )}
-        // estimatedItemSize={10}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={{
-          itemVisiblePercentThreshold: 90,
+          // itemVisiblePercentThreshold: 90,
+          viewAreaCoveragePercentThreshold: 0,
         }}
         horizontal
         showsHorizontalScrollIndicator={false}
