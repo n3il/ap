@@ -86,11 +86,13 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
     <Card
       isInteractive
       glassEffectStyle={isDark ? "clear" : "regular"}
-      variant="glass"
+      glassTintColor="rgba(0,0,0,.4)"
       style={{
+        borderColor: '#000',
         paddingVertical: 18,
         paddingHorizontal: 18,
         borderRadius: 24,
+        borderWidth: .5,
       }}
     >
       <TouchableOpacity

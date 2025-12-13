@@ -232,7 +232,7 @@ export default function Auth() {
                   key="toggle-email"
                   entering={FadeIn.duration(200)}
                   exiting={FadeOut.duration(150)}
-                  sx={{
+                  style={{
                     flexDirection: "row",
                     alignItems: "center",
                     flexGrow: 1,
@@ -252,7 +252,6 @@ export default function Auth() {
                       color={palette.foreground}
                     />
                     <Text
-                      variant="md"
                       sx={{ fontWeight: "400", textAlign: "center" }}
                     >
                       Email

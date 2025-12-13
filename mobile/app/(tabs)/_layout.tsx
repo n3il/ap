@@ -1,9 +1,14 @@
 import { Icon, Label, NativeTabs } from "expo-router/unstable-native-tabs";
-import { DynamicColorIOS } from "react-native";
+import { DynamicColorIOS, Platform } from "react-native";
 import { useTheme } from "@/contexts/ThemeContext";
 
 export default function TabsLayout() {
   const { theme } = useTheme();
+
+  const tintColor = Platform.OS === "ios" ? DynamicColorIOS({
+      dark: "#000000",
+      light: "#000000",
+    }) : "#000000"
 
   return (
     <NativeTabs
@@ -21,10 +26,7 @@ export default function TabsLayout() {
         selected: theme.colors.tabIconSelected,
       }}
       blurEffect="light"
-      tintColor={DynamicColorIOS({
-        dark: "#000000",
-        light: "#000000",
-      })}
+      tintColor={tintColor}
     >
       <NativeTabs.Trigger name="(explore)">
         <NativeTabs.Trigger.TabBar backgroundColor="pink" />

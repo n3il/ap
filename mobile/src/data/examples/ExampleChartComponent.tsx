@@ -46,7 +46,6 @@ export function ExampleUnifiedChart({ agents }: { agents: AgentType[] }) {
       startTime: Date.now() - TIMEFRAME_DURATIONS[timeframe],
       endTime: Date.now(),
     },
-    numBuckets: 50,
   });
 
   if (isLoading) {

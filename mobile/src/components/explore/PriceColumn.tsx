@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { Dimensions } from "react-native";
 import Animated, {
   Extrapolation,
@@ -11,16 +11,22 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Polyline } from "react-native-svg";
 import { GlassButton, Skeleton, Text, View } from "@/components/ui";
-import type { NormalizedAsset } from "@/hooks/useMarketPrices";
+import { useMarketPricesStore, type NormalizedAsset } from "@/hooks/useMarketPrices";
 import { useColors, withOpacity } from "@/theme";
 import { numberToColor } from "@/utils/currency";
 import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
 import { GLOBAL_PADDING } from "../ContainerView";
+import {
+  useMarketPricesWidgetStyles,
+  SPARKLINE_WIDTH,
+  SPARKLINE_HEIGHT,
+  MINI_SPARKLINE_HEIGHT
+} from "./hooks/useMarketPricesWidgetStyles";
+import { useLayoutState } from "@shopify/flash-list";
+
 
 const { width } = Dimensions.get("window");
 
-const SPARKLINE_WIDTH = (width - GLOBAL_PADDING * 4) / 3;
-const SPARKLINE_HEIGHT = 32;
 
 const Sparkline = ({
   data = [],
@@ -63,164 +69,70 @@ const Sparkline = ({
 };
 
 export default function PriceColumn({
-  tickerData: displayAsset,
-  sparklineData,
-  rangeDelta,
-  rangePercent,
-  isHistoryLoading,
-  isLoading,
+  tickerData,
   scrollY,
   onPress,
+  isLoading,
+  candleData,
+  candleDataLoading,
 }: {
   tickerData: NormalizedAsset;
-  sparklineData: number[];
-  rangeDelta: number;
-  rangePercent: number;
-  isHistoryLoading: boolean;
-  isLoading?: boolean;
   scrollY: number;
   onPress?: any;
+  isLoading: boolean;
+  candleData?: any;
+  candleDataLoading?: boolean;
 }) {
-  const router = useRouter();
   const { colors: palette } = useColors();
 
-  const _hasChange = Number.isFinite(rangePercent);
-
-  // Price flash effect
   const priceOpacity = useSharedValue(1);
-  const prevPrice = useRef(displayAsset?.price);
-
+  const prevPrice = useRef(tickerData?.price);
   useEffect(() => {
     if (
-      prevPrice.current !== displayAsset?.price &&
-      Number.isFinite(displayAsset?.price)
+      prevPrice.current !== tickerData?.price &&
+      Number.isFinite(tickerData?.price)
     ) {
       priceOpacity.value = withSequence(
         withTiming(1, { duration: 500 }),
         withTiming(0.7, { duration: 200 }),
       );
     }
-    prevPrice.current = displayAsset?.price;
-  }, [displayAsset?.price, priceOpacity]);
+    prevPrice.current = tickerData?.price;
+  }, [tickerData?.price, priceOpacity]);
 
-  // Animated styles for each element
-  const symbolStyle = useAnimatedStyle(() => {
-    if (!scrollY) return { fontSize: 11 };
+  const {
+    symbolStyle,
+    priceStyle,
+    changeContainerStyle,
+    changeTextStyle,
+    sparklineStyle,
+    miniSparklineStyle,
+  } = useMarketPricesWidgetStyles({ scrollY, priceOpacity })
 
-    const progress = interpolate(
-      scrollY.value,
-      [0, 100],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
+
+  const {
+    rangeDelta,
+    rangePercent,
+    color,
+    sparklineData = [],
+  } = useMemo(() => {
+    if (!candleData) return {};
+
+    const end = tickerData.price || candleData.end;
+    const start = candleData.start
+    const delta = end - start;
+    const percent = (end - start) / start;
+    const color = palette[numberToColor(percent)]
+
     return {
-      fontSize: interpolate(progress, [0, 1], [11, 10]),
-    };
-  }, [scrollY]);
-
-  const priceStyle = useAnimatedStyle(() => {
-    if (!scrollY) {
-      return {
-        fontSize: 16,
-        fontWeight: "400",
-        opacity: priceOpacity.value,
-      };
+      rangeDelta: delta,
+      rangePercent: percent,
+      color,
+      sparklineData: candleData.prices,
     }
+  }, [candleData, tickerData.price])
 
-    const progress = interpolate(
-      scrollY.value,
-      [0, 100],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      fontSize: interpolate(progress, [0, 1], [16, 12]),
-      fontWeight: progress > 0.5 ? "400" : "500",
-      opacity: priceOpacity.value,
-    };
-  }, [scrollY]);
 
-  const changeContainerStyle = useAnimatedStyle(() => {
-    if (!scrollY) return { marginTop: 2 };
-
-    const progress = interpolate(
-      scrollY.value,
-      [0, 100],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      marginTop: interpolate(progress, [0, 1], [2, 1]),
-    };
-  }, [scrollY]);
-
-  const changeTextStyle = useAnimatedStyle(() => {
-    if (!scrollY) return { fontSize: 11 };
-
-    const progress = interpolate(
-      scrollY.value,
-      [0, 100],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      fontSize: interpolate(progress, [0, 1], [11, 10]),
-    };
-  }, [scrollY]);
-
-  const sparklineStyle = useAnimatedStyle(() => {
-    if (!scrollY) return { marginTop: 8, height: SPARKLINE_HEIGHT };
-
-    const progress = interpolate(
-      scrollY.value,
-      [0, 100],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      marginTop: interpolate(progress, [0, 1], [8, 0]),
-      marginBottom: interpolate(progress, [0, 1], [8, 0]),
-      opacity: interpolate(
-        progress,
-        [0, 0.7, 1],
-        [1, 0.3, 0],
-        Extrapolation.CLAMP,
-      ),
-      height: interpolate(
-        progress,
-        [0, 1],
-        [SPARKLINE_HEIGHT, 0],
-        Extrapolation.CLAMP,
-      ),
-    };
-  }, [scrollY]);
-
-  const MINI_SPARKLINE_HEIGHT = 34;
-  const _expandedStyle = {
-    height: MINI_SPARKLINE_HEIGHT,
-  };
-  const collapsedStyle = {
-    height: 0,
-  };
-  const miniSparklineStyle = useAnimatedStyle(() => {
-    if (!scrollY) return collapsedStyle;
-
-    const progress = interpolate(
-      scrollY.value,
-      [0, 100],
-      [0, 1],
-      Extrapolation.CLAMP,
-    );
-    return {
-      height: interpolate(progress, [0, 1], [0, 30], Extrapolation.CLAMP),
-      opacity: interpolate(progress, [0, 1], [0, 0.2], Extrapolation.CLAMP),
-    };
-  }, [scrollY]);
-
-  const color =
-    palette?.[numberToColor(rangePercent)] || palette.mutedForeground;
-
-  // Show skeleton if loading
   if (isLoading) {
     return (
       <GlassButton
@@ -274,9 +186,10 @@ export default function PriceColumn({
         width: width / 3,
         flexDirection: "column",
         borderWidth: 1,
-        borderColor: withOpacity(palette.border, 0.7),
+        // borderColor: withOpacity(palette.border, 0.9),
       }}
       enabled={false}
+      tintColor={palette.surface}
       onPress={handleOnPress}
     >
       <View style={{ flexDirection: "row" }}>
@@ -291,7 +204,7 @@ export default function PriceColumn({
               symbolStyle,
             ]}
           >
-            {displayAsset?.symbol ?? "—"}
+            {tickerData?.symbol ?? "—"}
           </Animated.Text>
 
           <Animated.Text
@@ -304,7 +217,7 @@ export default function PriceColumn({
             ]}
             numberOfLines={1}
           >
-            {formatCurrency(displayAsset?.price)}
+            {formatCurrency(tickerData?.price)}
           </Animated.Text>
         </View>
 
@@ -316,7 +229,7 @@ export default function PriceColumn({
             miniSparklineStyle,
           ]}
         >
-          {!isHistoryLoading && sparklineData.length > 0 && (
+          {!candleDataLoading && sparklineData.length > 0 && (
             <Sparkline
               data={sparklineData}
               color={color}
@@ -326,7 +239,7 @@ export default function PriceColumn({
         </Animated.View>
       </View>
 
-      {displayAsset?.price && (
+      {tickerData?.price && (
         <Animated.View
           style={[
             {
@@ -362,7 +275,7 @@ export default function PriceColumn({
           sparklineStyle,
         ]}
       >
-        {!isHistoryLoading && sparklineData.length > 0 && (
+        {!candleDataLoading && sparklineData.length > 0 && (
           <Sparkline data={sparklineData} color={color} />
         )}
       </Animated.View>

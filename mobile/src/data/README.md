@@ -128,12 +128,11 @@ const { datasets } = useChartData({
 });
 ```
 
-### Custom Bucketing
+### Custom Candle Intervals
 ```typescript
 const { datasets } = useChartData({
   sources: [...],
   timeRange: {...},
-  numBuckets: 100, // More granular data (default: 50)
   candleInterval: "1h", // Hourly candles (default: "5m")
 });
 ```
@@ -149,10 +148,10 @@ const { datasets } = useChartData({
 
 ## Performance Characteristics
 
-### Database Queries
-- **Agent Account Values**: 1 RPC call (bucketed aggregation in Postgres)
-- **Candle History**: N API calls (1 per ticker, sequential to avoid rate limits)
-- **Sentiment Scores**: 1 query (JSON column selection for efficiency)
+### Data Fetching
+- **Agent Account Values**: 1 Postgres query + N Hyperliquid API calls (1 per unique trading address)
+- **Candle History**: N Hyperliquid API calls (1 per ticker, sequential to avoid rate limits)
+- **Sentiment Scores**: 1 Postgres query (JSON column selection for efficiency)
 
 ### JavaScript Processing
 - **Timestamp Normalization**: O(n) single pass

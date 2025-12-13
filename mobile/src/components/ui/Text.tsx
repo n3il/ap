@@ -24,7 +24,7 @@ export interface TextProps extends RNTextProps {
   tone?: TextTone;
   variant?: TextVariant;
   sx?: SxProp;
-  color: string;
+  color?: string;
 }
 
 const toneTokens: Record<TextTone, keyof AppTheme["colors"]> = {

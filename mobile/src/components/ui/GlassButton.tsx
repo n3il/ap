@@ -30,6 +30,17 @@ const styleVariants = {
   },
 };
 
+export interface GlassButtonProps extends GlassViewProps {
+  children: React.ReactNode;
+  disabled?: boolean;
+  enabled?: boolean;
+  onPress?: () => void;
+  style?: ViewProps["style"];
+  styleVariant?: keyof typeof styleVariants;
+  buttonProps?: ViewProps;
+  tintColor?: string;
+}
+
 export default function GlassButton({
   children,
   disabled = false,
@@ -40,16 +51,7 @@ export default function GlassButton({
   buttonProps = {},
   tintColor,
   ...props // glassProps
-}: {
-  children: React.ReactNode;
-  disabled?: boolean;
-  enabled?: boolean;
-  onPress?: () => void;
-  style?: ViewProps["style"];
-  styleVariant?: keyof typeof styleVariants;
-  buttonProps?: ViewProps;
-  tintColor?: string;
-}) {
+}: GlassButtonProps) {
   const { colors } = useColors();
   const { theme } = useTheme();
   const pressableStyle =

@@ -36,7 +36,6 @@ export type UseChartDataParams = {
   sources: ChartDataSource[];
   timeRange: TimeRange;
   enabled?: boolean;
-  numBuckets?: number; // For bucketing agent account values (default: 50)
   candleInterval?: string; // For candle data (default: "5m")
 };
 
@@ -45,7 +44,6 @@ export const useChartData = (params: UseChartDataParams): ChartDataResult => {
     sources,
     timeRange,
     enabled = true,
-    numBuckets = 50,
     candleInterval = "5m",
   } = params;
 
@@ -89,11 +87,10 @@ export const useChartData = (params: UseChartDataParams): ChartDataResult => {
         tickers: tickers.sort(),
         start: normalizedTimeRange.start,
         end: normalizedTimeRange.end,
-        numBuckets,
         candleInterval,
       },
     ],
-    [agentIds, tickers, normalizedTimeRange, numBuckets, candleInterval],
+    [agentIds, tickers, normalizedTimeRange, candleInterval],
   );
 
   // Fetch all data in parallel
@@ -108,7 +105,6 @@ export const useChartData = (params: UseChartDataParams): ChartDataResult => {
         tickers,
         startTime: startTimeISO,
         endTime: endTimeISO,
-        numBuckets,
         candleInterval,
       });
     },

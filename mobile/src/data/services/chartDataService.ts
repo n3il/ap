@@ -1,10 +1,12 @@
 /**
  * Chart Data Service
- * Unified service for fetching all chart data sources from Postgres
- * Optimized to let the database do heavy lifting
+ * Unified service for fetching all chart data sources
+ * Optimized to let Postgres and external APIs do heavy lifting
  */
 
 import { supabase } from "@/config/supabase";
+import * as hl from "@nktkas/hyperliquid";
+import { mapHyperliquidPortfolio } from "@/data/mappings/hyperliquid";
 import type {
   RawAccountValuePoint,
   RawCandlePoint,
@@ -14,40 +16,97 @@ import type {
 export const chartDataService = {
   /**
    * Fetch agent account value history within a time range
-   * Uses Postgres bucketing for efficient aggregation
+   * Uses Hyperliquid portfolio API (same as useAgentAccountValueHistories)
    */
   async fetchAgentAccountValues(
     agentIds: string[],
     startTime: string,
     endTime: string,
-    numBuckets: number = 50,
   ): Promise<Record<string, RawAccountValuePoint[]>> {
     if (agentIds.length === 0) return {};
 
-    const { data, error } = await supabase.rpc(
-      "get_multi_agent_snapshots_bucketed",
-      {
-        p_agent_ids: agentIds,
-        p_start_time: startTime,
-        p_end_time: endTime,
-        p_num_buckets: numBuckets,
-      },
-    );
+    // Fetch agents to get their Hyperliquid addresses
+    const { data: agents, error: agentsError } = await supabase
+      .from("agents")
+      .select("id, simulate, trading_accounts")
+      .in("id", agentIds);
 
-    if (error) throw error;
+    if (agentsError) throw agentsError;
+    if (!agents || agents.length === 0) return {};
 
-    // Group by agent_id
+    // Map agents to their Hyperliquid addresses
+    const agentToAddress: Record<string, string> = {};
+    const addressToAgents: Record<string, string[]> = {};
+
+    agents.forEach((agent: any) => {
+      const tradingAccountType = agent.simulate ? "paper" : "real";
+      const tradingAccount = agent.trading_accounts?.find(
+        (ta: any) => ta.type === tradingAccountType,
+      );
+      const address = tradingAccount?.hyperliquid_address;
+
+      if (address) {
+        agentToAddress[agent.id] = address;
+        if (!addressToAgents[address]) {
+          addressToAgents[address] = [];
+        }
+        addressToAgents[address].push(agent.id);
+      }
+    });
+
+    // Fetch portfolio data from Hyperliquid for each unique address
+    const transport = new hl.HttpTransport({ isTestnet: false });
+    const infoClient = new hl.InfoClient({ transport });
+
+    const startTimeMs = new Date(startTime).getTime();
+    const endTimeMs = new Date(endTime).getTime();
+    const durationMs = endTimeMs - startTimeMs;
+
+    // Determine which timeframe to use from Hyperliquid
+    // Hyperliquid returns timeframes: day, week, month, perpAlltime
+    let timeframeKey = "day";
+    if (durationMs > 25 * 24 * 60 * 60 * 1000) {
+      timeframeKey = "perpAlltime";
+    } else if (durationMs > 6 * 24 * 60 * 60 * 1000) {
+      timeframeKey = "week";
+    } else if (durationMs > 23 * 60 * 60 * 1000) {
+      timeframeKey = "day";
+    }
+
     const grouped: Record<string, RawAccountValuePoint[]> = {};
     agentIds.forEach((id) => (grouped[id] = []));
 
-    (data || []).forEach((row: any) => {
-      if (grouped[row.agent_id]) {
-        grouped[row.agent_id].push({
-          timestamp: row.bucket_timestamp,
-          equity: row.equity,
-        });
+    // Fetch portfolio for each unique address
+    for (const [address, relatedAgentIds] of Object.entries(addressToAgents)) {
+      try {
+        const raw = await infoClient.portfolio({ user: address });
+        const normalized = mapHyperliquidPortfolio(raw);
+
+        // Find the matching timeframe
+        const timeframeData = normalized.find((tf) => tf.timeframe === timeframeKey);
+
+        if (timeframeData?.accountValueHistory) {
+          // Filter to time range and map to expected format
+          const filtered = timeframeData.accountValueHistory
+            .filter((point) => {
+              const ts = point.timestamp;
+              return ts >= startTimeMs && ts <= endTimeMs;
+            })
+            .map((point) => ({
+              timestamp: point.timestamp,
+              equity: point.value,
+            }));
+
+          // Assign to all agents that share this address
+          relatedAgentIds.forEach((agentId) => {
+            grouped[agentId] = filtered;
+          });
+        }
+      } catch (error) {
+        console.error(`Failed to fetch portfolio for ${address}:`, error);
+        // Leave empty arrays for these agents
       }
-    });
+    }
 
     return grouped;
   },
@@ -157,7 +216,6 @@ export const chartDataService = {
     tickers: string[];
     startTime: string;
     endTime: string;
-    numBuckets?: number;
     candleInterval?: string;
   }): Promise<{
     accountValues: Record<string, RawAccountValuePoint[]>;
@@ -170,7 +228,6 @@ export const chartDataService = {
             params.agentIds,
             params.startTime,
             params.endTime,
-            params.numBuckets,
           )
         : Promise.resolve({}),
       params.tickers.length > 0

@@ -11,6 +11,7 @@ import type { AgentType } from "@/types/agent";
 import { TIMEFRAME_CONFIG, TIMEFRAME_OPTIONS } from "@/stores/useTimeframeStore";
 import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
 import { useColors } from "@/theme";
+import { GLOBAL_PADDING } from "../ContainerView";
 
 const { width } = Dimensions.get("window");
 
@@ -276,10 +277,11 @@ export default function AgentDetailsChart({ agent }: { agent: AgentType }) {
       <View
         style={{
           flexDirection: "row",
-          justifyContent: "center",
-          gap: 8,
+          justifyContent: "flex-end",
+          gap: 16,
           marginBottom: 20,
           flexWrap: "wrap",
+          paddingHorizontal: GLOBAL_PADDING,
         }}
       >
         {TIMEFRAME_OPTIONS.filter((opt) =>
@@ -288,25 +290,13 @@ export default function AgentDetailsChart({ agent }: { agent: AgentType }) {
           <View
             key={option.id}
             onTouchEnd={() => setTimeframe(option.id as TimeframeOption)}
-            style={{
-              paddingHorizontal: 16,
-              paddingVertical: 8,
-              borderRadius: 8,
-              backgroundColor:
-                timeframe === option.id
-                  ? colors.primary
-                  : withOpacity(colors.surface, 0.5),
-              borderWidth: 1,
-              borderColor:
-                timeframe === option.id ? colors.primary : colors.border,
-            }}
           >
             <Text
-              variant="sm"
+              variant="xs"
               style={{
                 color:
                   timeframe === option.id
-                    ? colors.background
+                    ? colors.accent
                     : colors.foreground,
                 fontWeight: timeframe === option.id ? "bold" : "normal",
               }}

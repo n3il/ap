@@ -30,6 +30,7 @@ export {
   RefreshControl,
   StatusBar,
 } from "react-native";
+export { FlashList } from "@shopify/flash-list";
 export { default as Avatar } from "./Avatar";
 export { default as Badge } from "./Badge";
 export { default as Button } from "./Button";

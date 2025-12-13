@@ -1,8 +1,6 @@
-import { Ionicons } from "@expo/vector-icons";
 import { useQueryClient } from "@tanstack/react-query";
-import { GlassContainer } from "expo-glass-effect";
 import { useCallback, useState } from "react";
-import { Pressable, ScrollView } from "react-native";
+import { ScrollView } from "react-native";
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -10,13 +8,12 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AgentList from "@/components/AgentList";
 import AgentTable from "@/components/AgentTable";
-import MultiAgentChart from "@/components/agents/MultiAgentChart";
+import MultiAgentChart from "@/components/agents/NewMultiAgentChart";
 import { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
 import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
 import ExploreHeader from "@/components/explore/Header";
 import MarketPricesWidget from "@/components/explore/MarketPricesWidget";
-import { GlassButton, RefreshControl, View } from "@/components/ui";
-import GlassSelector from "@/components/ui/GlassSelector";
+import { RefreshControl, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import Toggle from "@/components/ui/Toggle";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";

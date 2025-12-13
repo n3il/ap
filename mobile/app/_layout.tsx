@@ -45,16 +45,16 @@ function AuthNavigator() {
       return;
     }
     if (user && !hasCompletedOnboarding) {
-      router.replace(ROUTES.AUTH_ONBOARDING.path);
+      return router.replace(ROUTES.AUTH_ONBOARDING.path);
     } else {
       const requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === "true";
       const showGetStartedScreen =
         process.env.EXPO_PUBLIC_SHOW_GET_STARTED === "true";
       if (requireAuth || showGetStartedScreen) {
-        router.replace(ROUTES.INDEX.path);
+        return router.replace(ROUTES.INDEX.path);
       }
     }
-    router.replace(ROUTES.TABS_INDEX.path);
+    return router.replace(ROUTES.TABS_INDEX.path);
   }, [loading, appIsReady, user, hasCompletedOnboarding, router.replace]);
 
   useEffect(() => {
