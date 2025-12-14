@@ -60,9 +60,7 @@ export default function StepIdentity({
                 <Text variant="lg" style={{ fontWeight: "700" }}>
                   {template.name}
                 </Text>
-                <Text numberOfLines={2}>
-                  {template.headline}
-                </Text>
+                <Text numberOfLines={2}>{template.headline}</Text>
               </View>
             </Button>
           ))}
@@ -72,7 +70,7 @@ export default function StepIdentity({
       <View style={{ gap: 10 }}>
         <SectionTitle title="Identity" />
         <TextInput
-          placeholder={"Name your agent (e.g., \"Calm Risk Manager\")"}
+          placeholder={'Name your agent (e.g., "Calm Risk Manager")'}
           placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
           value={name}
           onChangeText={onChangeName}

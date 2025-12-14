@@ -8,22 +8,22 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AgentList from "@/components/AgentList";
 import AgentTable from "@/components/AgentTable";
-import MultiAgentChart from "@/components/agents/NewMultiAgentChart";
+import MultiAgentChart from "@/components/agents/MultiAgentChart";
 import { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
 import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
 import ExploreHeader from "@/components/explore/Header";
 import MarketPricesWidget from "@/components/explore/MarketPricesWidget";
 import { RefreshControl, View } from "@/components/ui";
-import { useColors } from "@/theme";
 import Toggle from "@/components/ui/Toggle";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
+import { useColors } from "@/theme";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ExploreScreen() {
   const [isFetching, setIsFetching] = useState(false);
   const queryClient = useQueryClient();
-  const { viewMode } = useExploreAgentsStore()
+  const { viewMode } = useExploreAgentsStore();
   const colors = useColors();
   const palette = colors.colors;
   const safeAreaInsets = useSafeAreaInsets();

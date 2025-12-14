@@ -1,24 +1,36 @@
+import type { ViewStyle } from "react-native";
 import type { AssessmentRecordType } from "@/types/agent";
 import { formatRelativeDate } from "@/utils/date";
 import SentimentBadge from "../agent/SentimentBadge";
 import { Text, View } from "../ui";
-import { ViewStyle } from "react-native";
 
 const TradeActionsSummaryText = ({ assessmentData }) => {
-  const openedTrades = assessmentData.parsed_llm_response?.tradeActions.filter(ta => ta.type === "OPEN");
-  const closedTrades = assessmentData.parsed_llm_response?.tradeActions.filter(ta => ta.type === "CLOSE");
+  const openedTrades = assessmentData.parsed_llm_response?.tradeActions.filter(
+    (ta) => ta.type === "OPEN",
+  );
+  const closedTrades = assessmentData.parsed_llm_response?.tradeActions.filter(
+    (ta) => ta.type === "CLOSE",
+  );
 
-  return (openedTrades.length > 0 || closedTrades.length > 0) && (
-    <View style={{flexDirection: "row", gap: 8}}>
-      {openedTrades.length && <Text variant="xs">
-        Opened {openedTrades.length} ({openedTrades.map(t => t.asset).join(', ')})
-      </Text>}
-      {closedTrades.length && <Text variant="xs">
-        Closed {closedTrades.length} {closedTrades.map(t => t.asset).join(', ')}
-      </Text>}
-    </View>
-  )
-}
+  return (
+    (openedTrades.length > 0 || closedTrades.length > 0) && (
+      <View style={{ flexDirection: "row", gap: 8 }}>
+        {openedTrades.length && (
+          <Text variant="xs">
+            Opened {openedTrades.length} (
+            {openedTrades.map((t) => t.asset).join(", ")})
+          </Text>
+        )}
+        {closedTrades.length && (
+          <Text variant="xs">
+            Closed {closedTrades.length}{" "}
+            {closedTrades.map((t) => t.asset).join(", ")}
+          </Text>
+        )}
+      </View>
+    )
+  );
+};
 
 export default function ReportPreview({
   assessmentData,

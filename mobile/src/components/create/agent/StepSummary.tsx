@@ -38,7 +38,8 @@ export default function StepSummary({
           {name || "Unnamed agent"} • {modelLabel || "Pick a model"}
         </Text>
         <Text tone="muted" numberOfLines={4}>
-          {promptPreview || "Direction preview will appear once you add guardrails."}
+          {promptPreview ||
+            "Direction preview will appear once you add guardrails."}
         </Text>
       </Card>
     </View>

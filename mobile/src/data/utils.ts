@@ -39,7 +39,5 @@ export function getTopKAssets(
 
   return heap
     .toArray()
-    .sort(
-      (a, b) => toHeapValue(b[sortKey]) - toHeapValue(a[sortKey]),
-    );
+    .sort((a, b) => toHeapValue(b[sortKey]) - toHeapValue(a[sortKey]));
 }

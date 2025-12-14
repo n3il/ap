@@ -1,14 +1,9 @@
 import { format } from "date-fns";
 
-export function formatXAxisTick(
-  value: number,
-  startTs: number,
-  endTs: number
-) {
+export function formatXAxisTick(value: number, startTs: number, endTs: number) {
   const date = new Date(value);
 
-  const rangeHours =
-    (endTs - startTs) / (1000 * 60 * 60);
+  const rangeHours = (endTs - startTs) / (1000 * 60 * 60);
   const rangeDays = rangeHours / 24;
 
   if (rangeHours <= 6) {

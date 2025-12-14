@@ -3,6 +3,10 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FlatList, type ListRenderItem } from "react-native";
 import { ActivityIndicator, RefreshControl, Text, View } from "@/components/ui";
 import {
+  mapHyperliquidFills,
+  type UserFill as NormalizedUserFill,
+} from "@/data/mappings/hyperliquid";
+import {
   useHyperliquidInfo,
   useHyperliquidStore,
 } from "@/hooks/useHyperliquid";
@@ -11,10 +15,6 @@ import type { AgentType } from "@/types/agent";
 import { numberToColor } from "@/utils/currency";
 import { formatRelativeDate } from "@/utils/date";
 import { formatCurrency } from "@/utils/marketFormatting";
-import {
-  mapHyperliquidFills,
-  type UserFill as NormalizedUserFill,
-} from "@/data/mappings/hyperliquid";
 
 const formatTradeTimestamp = (timestamp?: number) => {
   if (!timestamp && timestamp !== 0) return "—";
@@ -126,45 +126,45 @@ export default function TradesTab({ agent }: { agent: AgentType }) {
               alignItems: "center",
               justifyContent: "center",
             }}
+          >
+            <Text
+              sx={{
+                color: "surfaceForeground",
+                fontSize: 14,
+                fontWeight: "700",
+              }}
             >
+              {fill.symbol}
+            </Text>
+          </View>
+
+          <View sx={{ flex: 1 }}>
+            <Text
+              sx={{
+                color: isBuy ? success : error,
+                fontSize: 14,
+                fontWeight: "600",
+              }}
+            >
+              {formatCurrency(Number(fill.price ?? 0))}
+            </Text>
+            <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
               <Text
                 sx={{
-                  color: "surfaceForeground",
-                  fontSize: 14,
-                  fontWeight: "700",
+                  color: isBuy ? "success" : "error",
+                  fontSize: 11,
+                  fontWeight: "500",
                 }}
               >
-                {fill.symbol}
+                {isBuy ? "Buy" : "Sell"}
+              </Text>
+              <Text sx={{ color: "mutedForeground", fontSize: 11 }}>
+                Size: {fill.size ?? "—"}
               </Text>
             </View>
+          </View>
 
-            <View sx={{ flex: 1 }}>
-              <Text
-                sx={{
-                  color: isBuy ? success : error,
-                  fontSize: 14,
-                  fontWeight: "600",
-                }}
-              >
-                {formatCurrency(Number(fill.price ?? 0))}
-              </Text>
-              <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-                <Text
-                  sx={{
-                    color: isBuy ? "success" : "error",
-                    fontSize: 11,
-                    fontWeight: "500",
-                  }}
-                >
-                  {isBuy ? "Buy" : "Sell"}
-                </Text>
-                <Text sx={{ color: "mutedForeground", fontSize: 11 }}>
-                  Size: {fill.size ?? "—"}
-                </Text>
-              </View>
-            </View>
-
-            <View sx={{ alignItems: "flex-end", minWidth: 100 }}>
+          <View sx={{ alignItems: "flex-end", minWidth: 100 }}>
             {hasPnl && (
               <Text sx={{ color: pnlColor, fontSize: 13, fontWeight: "600" }}>
                 {formatCurrency(pnl)}

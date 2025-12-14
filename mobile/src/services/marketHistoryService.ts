@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  mapHyperliquidCandle,
   type MarketCandle,
+  mapHyperliquidCandle,
 } from "@/data/mappings/hyperliquid";
 import { useHLSubscription, useHyperliquidInfo } from "@/hooks/useHyperliquid";
 import { TIMEFRAME_CONFIG } from "@/stores/useTimeframeStore";
@@ -41,7 +41,6 @@ export function useCandleHistory(
   const [data, setData] = useState<Record<string, CandlePoint[]>>({});
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
-
 
   const handleCandle = useCallback(
     (evt: any) => {

@@ -44,9 +44,7 @@ export default function PhoneInputAutoDetect({
     setCallingCode(digits);
 
     // Try to auto-detect country from new calling code + national digits
-    const phone = parsePhoneNumberFromString(
-      `+${digits}${nationalDigits}`,
-    );
+    const phone = parsePhoneNumberFromString(`+${digits}${nationalDigits}`);
 
     if (phone?.country && phone.country !== country) {
       setCountry(phone.country);
@@ -77,7 +75,6 @@ export default function PhoneInputAutoDetect({
     start: 0,
     end: 0,
   });
-
 
   return (
     <View
@@ -135,4 +132,4 @@ export default function PhoneInputAutoDetect({
     </View>
   );
 }
-90823
+90823;

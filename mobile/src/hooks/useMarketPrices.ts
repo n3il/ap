@@ -1,11 +1,11 @@
 import { useEffect } from "react";
 import { create } from "zustand";
-import { getTopKAssets } from "@/data/utils";
 import {
+  type MarketAssetSnapshot,
   mapHyperliquidMetaAndAssetCtxs,
   mapHyperliquidMids,
-  type MarketAssetSnapshot,
 } from "@/data/mappings/hyperliquid";
+import { getTopKAssets } from "@/data/utils";
 import { useHLSubscription, useHyperliquidInfo } from "@/hooks/useHyperliquid";
 
 export type NormalizedAsset = MarketAssetSnapshot;

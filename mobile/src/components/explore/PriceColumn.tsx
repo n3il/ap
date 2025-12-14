@@ -1,3 +1,5 @@
+import { useLayoutState } from "@shopify/flash-list";
+import { ActivityIndicator } from "dripsy";
 import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef } from "react";
 import { Dimensions } from "react-native";
@@ -11,23 +13,22 @@ import Animated, {
 } from "react-native-reanimated";
 import Svg, { Polyline } from "react-native-svg";
 import { GlassButton, Skeleton, Text, View } from "@/components/ui";
-import { useMarketPricesStore, type NormalizedAsset } from "@/hooks/useMarketPrices";
+import {
+  type NormalizedAsset,
+  useMarketPricesStore,
+} from "@/hooks/useMarketPrices";
 import { useColors, withOpacity } from "@/theme";
 import { numberToColor } from "@/utils/currency";
 import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
 import { GLOBAL_PADDING } from "../ContainerView";
 import {
-  useMarketPricesWidgetStyles,
-  SPARKLINE_WIDTH,
+  MINI_SPARKLINE_HEIGHT,
   SPARKLINE_HEIGHT,
-  MINI_SPARKLINE_HEIGHT
+  SPARKLINE_WIDTH,
+  useMarketPricesWidgetStyles,
 } from "./hooks/useMarketPricesWidgetStyles";
-import { useLayoutState } from "@shopify/flash-list";
-import { ActivityIndicator } from "dripsy";
-
 
 const { width } = Dimensions.get("window");
-
 
 const Sparkline = ({
   data = [],
@@ -36,7 +37,7 @@ const Sparkline = ({
   height = SPARKLINE_HEIGHT,
   isLoading = false,
 }) => {
-  if (isLoading) return <ActivityIndicator color="foreground" />
+  if (isLoading) return <ActivityIndicator color="foreground" />;
 
   const valid = data.filter((value) => Number.isFinite(value));
   if (valid.length < 2) return null;
@@ -106,8 +107,7 @@ export default function PriceColumn({
     changeTextStyle,
     sparklineStyle,
     miniSparklineStyle,
-  } = useMarketPricesWidgetStyles({ scrollY, priceOpacity })
-
+  } = useMarketPricesWidgetStyles({ scrollY, priceOpacity });
 
   const {
     rangeDelta,
@@ -119,20 +119,19 @@ export default function PriceColumn({
     if (!candleData) return {};
 
     const end = tickerData.price || candleData.end;
-    const start = candleData.start
+    const start = candleData.start;
     const delta = end - start;
     const percent = (end - start) / start;
-    const color = palette[numberToColor(percent)]
+    const color = palette[numberToColor(percent)];
 
     return {
       rangeDelta: delta,
       rangePercent: percent,
       color,
       sparklineData: candleData.prices,
-      candleDataLoading: candleData.isLoading
-    }
-  }, [candleData, tickerData.price])
-
+      candleDataLoading: candleData.isLoading,
+    };
+  }, [candleData, tickerData.price]);
 
   if (isLoading) {
     return (
@@ -282,7 +281,11 @@ export default function PriceColumn({
           sparklineStyle,
         ]}
       >
-        <Sparkline data={sparklineData} color={color} isLoading={candleDataLoading} />
+        <Sparkline
+          data={sparklineData}
+          color={color}
+          isLoading={candleDataLoading}
+        />
       </Animated.View>
     </GlassButton>
   );

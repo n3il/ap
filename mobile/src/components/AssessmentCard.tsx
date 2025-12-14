@@ -89,12 +89,12 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       glassEffectStyle={isDark ? "clear" : "regular"}
       // glassTintColor="rgba(0,0,0,.4)"
       style={{
-        borderColor: '#000',
+        borderColor: "#000",
         backgroundColor: "#fff",
         paddingVertical: 18,
         paddingHorizontal: 18,
         borderRadius: 24,
-        borderWidth: .5,
+        borderWidth: 0.5,
       }}
     >
       <TouchableOpacity

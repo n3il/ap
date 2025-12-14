@@ -3,7 +3,10 @@
  * Centralized type definitions for the unified chart data system
  */
 
-export type DataSourceType = "agentAccountValue" | "candleHistory" | "sentiment";
+export type DataSourceType =
+  | "agentAccountValue"
+  | "candleHistory"
+  | "sentiment";
 
 export type ChartDataSource =
   | {

@@ -1,12 +1,12 @@
-import { AgentType } from "@/types/agent";
-import { GlassButton, Text } from "../ui";
-import { View } from "react-native";
-import { GLOBAL_PADDING } from "../ContainerView";
-import { useColors } from "@/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { View } from "react-native";
+import { useColors } from "@/theme";
+import type { AgentType } from "@/types/agent";
+import { GLOBAL_PADDING } from "../ContainerView";
+import { GlassButton, Text } from "../ui";
 
 export function DepositButton() {
-  const { colors: palette, withOpacity } = useColors()
+  const { colors: palette, withOpacity } = useColors();
   return (
     <GlassButton
       tintColor={palette.surface}
@@ -20,7 +20,7 @@ export function DepositButton() {
     >
       <Text
         style={{
-          fontWeight: "600"
+          fontWeight: "600",
           // color: palette.surface,
         }}
       >
@@ -31,28 +31,25 @@ export function DepositButton() {
 }
 
 export function WithdrawButton() {
-  const { colors: palette } = useColors()
+  const { colors: palette } = useColors();
   return (
     <GlassButton
       tintColor={palette.surface}
       enabled={true}
       styleVariant="square"
       onPress={() => {}}
-      style={{
-        // backgroundColor: palette.surfaceForeground,
-      }}
+      style={
+        {
+          // backgroundColor: palette.surfaceForeground,
+        }
+      }
     >
-      <MaterialCommunityIcons
-        name="wallet-bifold"
-        color="#fff"
-        size={24}
-      />
+      <MaterialCommunityIcons name="wallet-bifold" color="#fff" size={24} />
     </GlassButton>
   );
 }
 
 export default function AgentActions({ agent }: { agent: AgentType }) {
-
   return (
     <View
       style={{

@@ -5,8 +5,8 @@
  */
 
 import type {
-  ChartDataset,
   ChartDataSource,
+  ChartDataset,
   NormalizedDataPoint,
   RawAccountValuePoint,
   RawCandlePoint,
@@ -45,7 +45,9 @@ export const filterToTimeRange = (
   startTime: number,
   endTime: number,
 ): NormalizedDataPoint[] => {
-  return points.filter((p) => p.timestamp >= startTime && p.timestamp <= endTime);
+  return points.filter(
+    (p) => p.timestamp >= startTime && p.timestamp <= endTime,
+  );
 };
 
 /**
@@ -122,7 +124,8 @@ export const candlesToPercentChange = (
       baseline = price;
     }
 
-    const percentChange = baseline !== 0 ? ((price - baseline) / baseline) * 100 : 0;
+    const percentChange =
+      baseline !== 0 ? ((price - baseline) / baseline) * 100 : 0;
 
     normalized.push({ timestamp, value: percentChange });
   }
@@ -197,7 +200,12 @@ export const createDataset = (
       id = `candle-${source.ticker}-${key}`;
       label = source.label || `${source.ticker} (${key})`;
       const rawPoints = rawData.candles[source.ticker] || [];
-      data = candlesToPercentChange(rawPoints, key, timeRange.start, timeRange.end);
+      data = candlesToPercentChange(
+        rawPoints,
+        key,
+        timeRange.start,
+        timeRange.end,
+      );
       break;
     }
 

@@ -1,4 +1,9 @@
+import { ActivityIndicator } from "dripsy";
+import * as haptics from "expo-haptics";
+import LottieView from "lottie-react-native";
 import { useMemo } from "react";
+import { Dimensions, type ViewStyle } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import type { SharedValue } from "react-native-reanimated";
 import {
   Extrapolation,
@@ -6,20 +11,14 @@ import {
   useAnimatedStyle,
 } from "react-native-reanimated";
 import { LineChart } from "react-native-wagmi-charts";
-import { Dimensions, type ViewStyle } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import * as haptics from 'expo-haptics';
-
-import { useColors } from "@/theme";
+import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
+import { useMarketHistory } from "@/hooks/useMarketHistory";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
-import { useMarketHistory } from "@/hooks/useMarketHistory";
-import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
+import { useColors } from "@/theme";
 import { GLOBAL_PADDING } from "../ContainerView";
 import { formatXAxisTick } from "../chart/utils";
 import { View } from "../ui";
-import { ActivityIndicator } from "dripsy";
-import LottieView from "lottie-react-native";
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
@@ -34,7 +33,7 @@ const TIMEFRAME_MAP: Record<string, string> = {
   "24h": "perpday",
   "7d": "perpweek",
   "1M": "perpmonth",
-  "Alltime": "perpall",
+  Alltime: "perpall",
 };
 
 const { width } = Dimensions.get("window");
@@ -44,7 +43,7 @@ export default function MultiAgentChart({
   style,
 }: MultiAgentChartProps) {
   const { colors: palette, withOpacity } = useColors();
-  const { agents } = useExploreAgentsStore()
+  const { agents } = useExploreAgentsStore();
 
   const { histories } = useAgentAccountValueHistories();
 
@@ -61,7 +60,10 @@ export default function MultiAgentChart({
     const portfolioTimeframe = TIMEFRAME_MAP[timeframe] || "perpday";
 
     // Process all symbol data (BTC, ETH, etc.)
-    const symbolDataSets: Record<string, Array<{ timestamp: number; value: number }>> = {};
+    const symbolDataSets: Record<
+      string,
+      Array<{ timestamp: number; value: number }>
+    > = {};
     let symbolsDataLength = 0;
 
     Object.entries(candleDataBySymbol).forEach(([symbol, candleData]) => {
@@ -75,11 +77,14 @@ export default function MultiAgentChart({
       }));
 
       symbolDataSets[symbol] = normalizedData;
-      symbolsDataLength = normalizedData.length
+      symbolsDataLength = normalizedData.length;
     });
 
     // Create separate datasets for each agent
-    const agentDataSets: Record<string, Array<{ timestamp: number; value: number }>> = {};
+    const agentDataSets: Record<
+      string,
+      Array<{ timestamp: number; value: number }>
+    > = {};
     let agentsDataLength = 0;
 
     Object.entries(histories).forEach(([agentId, agentState]) => {
@@ -91,30 +96,43 @@ export default function MultiAgentChart({
         timestamp: histPoint.timestamp,
         value: ((histPoint.value - firstValue) / firstValue) * 100,
       }));
-      agentsDataLength = agentHistory.length
+      agentsDataLength = agentHistory.length;
     });
 
-    return { symbolDataSets, agentDataSets, xLength: Math.min(agentsDataLength, symbolsDataLength) };
+    return {
+      symbolDataSets,
+      agentDataSets,
+      xLength: Math.min(agentsDataLength, symbolsDataLength),
+    };
   }, [candleDataBySymbol, histories, timeframe]);
 
   // Animate height based on scroll
   const animatedStyle = useAnimatedStyle(() => {
-    if (!scrollY) return { height: 200 }
-    const height = interpolate(scrollY.value, [0, 100], [300, 100], Extrapolation.CLAMP)
+    if (!scrollY) return { height: 200 };
+    const height = interpolate(
+      scrollY.value,
+      [0, 100],
+      [300, 100],
+      Extrapolation.CLAMP,
+    );
     return { height };
   }, [scrollY]);
 
   const darkChart = false;
   const textColor = darkChart ? palette.surfaceForeground : palette.foreground;
   const backgroundColor = darkChart ? palette.surface : "transparent";
-  const symbolColors: Record<string, string> = { "BTC": "orange", "ETH": "blue", "SOL": "purple" };
+  const symbolColors: Record<string, string> = {
+    BTC: "orange",
+    ETH: "blue",
+    SOL: "purple",
+  };
 
   function invokeHaptic() {
     haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
   }
 
   const { data, minAbs, maxAbs } = useMemo(() => {
-    const data = {...symbolDataSets, ...agentDataSets}
+    const data = { ...symbolDataSets, ...agentDataSets };
     let maxAbs = 0;
     let minAbs = 0;
     for (const entries of Object.values(data)) {
@@ -124,30 +142,38 @@ export default function MultiAgentChart({
         if (value < minAbs) minAbs = abs;
       }
     }
-    return {data, minAbs, maxAbs};
-  }, [Object.keys(symbolDataSets).length, Object.keys(agentDataSets).length])
+    return { data, minAbs, maxAbs };
+  }, [Object.keys(symbolDataSets).length, Object.keys(agentDataSets).length]);
 
-  if (Object.keys(symbolDataSets).length === 0 || Object.keys(agentDataSets).length === 0) {
+  if (
+    Object.keys(symbolDataSets).length === 0 ||
+    Object.keys(agentDataSets).length === 0
+  ) {
     return (
-      <View style={{
-        height: 200, alignItems: 'center', justifyContent: "center",
-      }}>
+      <View
+        style={{
+          height: 200,
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
         <LottieView
           autoPlay
           resizeMode="cover"
           style={{
-            width,
+            width: 50,
             height: 200,
-            opacity: .4,
+            opacity: 0.4,
           }}
           // source={require("@assets/animations/Rocket.json")}
           source={require("@assets/animations/loading-anim.json")}
         />
       </View>
-    )
-  };
-  const startTs = symbolDataSets?.["BTC"]?.[0].timestamp
-  const endTs = symbolDataSets?.["BTC"]?.[symbolDataSets?.["BTC"]?.length - 1].timestamp
+    );
+  }
+  const startTs = symbolDataSets?.["BTC"]?.[0].timestamp;
+  const endTs =
+    symbolDataSets?.["BTC"]?.[symbolDataSets?.["BTC"]?.length - 1].timestamp;
   const chartWidth = width;
 
   return (
@@ -162,9 +188,16 @@ export default function MultiAgentChart({
             if (!data[symbol]) return null;
 
             return (
-              <LineChart id={symbol} yGutter={30} width={chartWidth} height={200}>
-                <LineChart.Path color={symbolColors[symbol] || palette.primary} width={1.5}>
-                </LineChart.Path>
+              <LineChart
+                id={symbol}
+                yGutter={30}
+                width={chartWidth}
+                height={200}
+              >
+                <LineChart.Path
+                  color={symbolColors[symbol] || palette.primary}
+                  width={1.5}
+                ></LineChart.Path>
 
                 {idx === 0 && (
                   <>
@@ -173,15 +206,15 @@ export default function MultiAgentChart({
                       orientation="horizontal"
                       tickCount={4}
                       domain={startTs ? [startTs, endTs] : undefined}
-                      format={value => {
-                        'worklet';
-                        return formatXAxisTick(value, startTs, endTs)
+                      format={(value) => {
+                        "worklet";
+                        return formatXAxisTick(value, startTs, endTs);
                       }}
                     />
                   </>
                 )}
               </LineChart>
-            )
+            );
           })}
 
           {/* Agent performance lines */}
@@ -190,9 +223,14 @@ export default function MultiAgentChart({
 
             const agentColour = palette.providers[agent.llm_provider] ?? "#ddd";
             return (
-              <LineChart id={agent.id} yGutter={30} width={chartWidth} height={200}>
+              <LineChart
+                id={agent.id}
+                yGutter={30}
+                width={chartWidth}
+                height={200}
+              >
                 <LineChart.Path color={agentColour} width={2.5}>
-                  {(data[agent.id].length > 0 && idx === 0) && (
+                  {data[agent.id].length > 0 && idx === 0 && (
                     <>
                       <LineChart.HorizontalLine at={{ value: 0 }} />
                     </>
@@ -223,7 +261,7 @@ export default function MultiAgentChart({
                   />
                 </LineChart.CursorCrosshair>
               </LineChart>
-            )
+            );
           })}
         </LineChart.Group>
       </LineChart.Provider>

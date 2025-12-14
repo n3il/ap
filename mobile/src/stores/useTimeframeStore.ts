@@ -1,6 +1,13 @@
 import { create } from "zustand";
 
-type AvailableTimeframesEnum = "5m" | "15m" | "1h" | "24h" | "7d" | "1M" | "Alltime";
+type AvailableTimeframesEnum =
+  | "5m"
+  | "15m"
+  | "1h"
+  | "24h"
+  | "7d"
+  | "1M"
+  | "Alltime";
 
 type TimeFrameOption = {
   id: AvailableTimeframesEnum;

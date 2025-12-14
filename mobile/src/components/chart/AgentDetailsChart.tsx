@@ -1,16 +1,19 @@
 import { useQuery } from "@tanstack/react-query";
-import { useMemo, useState } from "react";
-import { LineChart, LineChartBicolor } from "react-native-gifted-charts";
 import { ruleTypes } from "gifted-charts-core";
+import { useMemo, useState } from "react";
 import { ScrollView } from "react-native";
+import { LineChart, LineChartBicolor } from "react-native-gifted-charts";
 import { Dimensions, Text, View } from "@/components/ui";
 import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
-import { useCandleHistory } from "@/services/marketHistoryService";
 import { assessmentService } from "@/services/assessmentService";
-import type { AgentType } from "@/types/agent";
-import { TIMEFRAME_CONFIG, TIMEFRAME_OPTIONS } from "@/stores/useTimeframeStore";
-import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
+import { useCandleHistory } from "@/services/marketHistoryService";
+import {
+  TIMEFRAME_CONFIG,
+  TIMEFRAME_OPTIONS,
+} from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
+import type { AgentType } from "@/types/agent";
+import { createTimeNormalizer, normalizeDataSeries } from "@/utils/chartUtils";
 import { GLOBAL_PADDING } from "../ContainerView";
 
 const { width } = Dimensions.get("window");
@@ -270,7 +273,11 @@ export default function AgentDetailsChart({ agent }: { agent: AgentType }) {
 
   return (
     <View
-      style={{ flex: 1, paddingBottom: "60%", backgroundColor: colors.backgroundSecondary }}
+      style={{
+        flex: 1,
+        paddingBottom: "60%",
+        backgroundColor: colors.backgroundSecondary,
+      }}
       // contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
     >
       {/* Timeframe selector */}
@@ -285,7 +292,7 @@ export default function AgentDetailsChart({ agent }: { agent: AgentType }) {
         }}
       >
         {TIMEFRAME_OPTIONS.filter((opt) =>
-          ["1h", "24h", "7d", "1M", "Alltime"].includes(opt.id)
+          ["1h", "24h", "7d", "1M", "Alltime"].includes(opt.id),
         ).map((option) => (
           <View
             key={option.id}
@@ -295,9 +302,7 @@ export default function AgentDetailsChart({ agent }: { agent: AgentType }) {
               variant="xs"
               style={{
                 color:
-                  timeframe === option.id
-                    ? colors.accent
-                    : colors.foreground,
+                  timeframe === option.id ? colors.accent : colors.foreground,
                 fontWeight: timeframe === option.id ? "bold" : "normal",
               }}
             >

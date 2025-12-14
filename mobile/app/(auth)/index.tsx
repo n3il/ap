@@ -219,7 +219,7 @@ export default function Auth() {
               flexDirection: "row",
               justifyContent: "space-between",
               marginBottom: 3,
-              alignItems: "center"
+              alignItems: "center",
             }}
           >
             <GlassButton
@@ -236,20 +236,18 @@ export default function Auth() {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                    }}
-                  >
-                    <MaterialIcons
-                      name="email"
-                      size={22}
-                      color={palette.foreground}
-                    />
-                    <Text
-                      sx={{ fontWeight: "400", textAlign: "center" }}
-                    >
-                      Email
-                    </Text>
+                    justifyContent: "center",
+                    gap: 8,
+                  }}
+                >
+                  <MaterialIcons
+                    name="email"
+                    size={22}
+                    color={palette.foreground}
+                  />
+                  <Text sx={{ fontWeight: "400", textAlign: "center" }}>
+                    Email
+                  </Text>
                 </AnimatedBox>
               ) : (
                 <AnimatedBox
@@ -259,21 +257,21 @@ export default function Auth() {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                      justifyContent: "center",
-                      gap: 8,
-                    }}
+                    justifyContent: "center",
+                    gap: 8,
+                  }}
+                >
+                  <MaterialIcons
+                    name="phonelink-ring"
+                    size={22}
+                    color={palette.foreground}
+                  />
+                  <Text
+                    variant="md"
+                    sx={{ fontWeight: "400", textAlign: "center" }}
                   >
-                    <MaterialIcons
-                      name="phonelink-ring"
-                      size={22}
-                      color={palette.foreground}
-                    />
-                    <Text
-                      variant="md"
-                      sx={{ fontWeight: "400", textAlign: "center" }}
-                    >
-                      Phone Number
-                    </Text>
+                    Phone Number
+                  </Text>
                 </AnimatedBox>
               )}
             </GlassButton>

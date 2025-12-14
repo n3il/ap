@@ -1,10 +1,10 @@
 import { type ReactElement, useMemo } from "react";
 import { Text, View } from "react-native";
 import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
-import { useColors } from "@/theme";
 import { marketHistoryService } from "@/services/marketHistoryService";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
+import { useColors } from "@/theme";
 
 type LineDatum = {
   value: number;
@@ -34,7 +34,7 @@ const formatPercentValue = (value: number) => {
 
 const normalizeTimestamp = (value: unknown): number | null => {
   // Handle string timestamps (ISO format)
-  if (typeof value === 'string') {
+  if (typeof value === "string") {
     const parsed = new Date(value);
     if (isNaN(parsed.getTime())) return null;
     return parsed.getTime(); // Returns local time in milliseconds
@@ -102,7 +102,9 @@ export function useMultiAgentChartData() {
     // Calculate the expected time range based on the selected timeframe
     const config = marketHistoryService.getTimeframeConfig(timeframe);
     const endTime = Date.now();
-    const startTime = config ? endTime - config.durationMs : endTime - (24 * 60 * 60 * 1000);
+    const startTime = config
+      ? endTime - config.durationMs
+      : endTime - 24 * 60 * 60 * 1000;
 
     const lines: ChartLine[] = [];
 
@@ -116,7 +118,12 @@ export function useMultiAgentChartData() {
       // Filter history to only include points within the time range
       const filteredHistory = timeframeHistory.filter((p) => {
         const ts = normalizeTimestamp(p.timestamp);
-        return ts !== null && ts >= startTime && ts <= endTime && Number.isFinite(Number(p?.value));
+        return (
+          ts !== null &&
+          ts >= startTime &&
+          ts <= endTime &&
+          Number.isFinite(Number(p?.value))
+        );
       });
 
       if (filteredHistory.length < 2) return;
@@ -229,7 +236,7 @@ export function useMultiAgentChartData() {
                 value: pct,
                 dataPointText: formatPercentValue(pct),
                 timestamp: ts,
-                id: `BTC-${ts}`
+                id: `BTC-${ts}`,
               };
             })
             .filter((p): p is LineDatum => Boolean(p));
@@ -237,7 +244,9 @@ export function useMultiAgentChartData() {
           if (btcData.length >= 2) {
             const labelIndices = getLabelIndices(btcData.length);
             for (const idx of labelIndices) {
-              btcData[idx].label = formatLabel(new Date(btcData[idx].timestamp));
+              btcData[idx].label = formatLabel(
+                new Date(btcData[idx].timestamp),
+              );
             }
 
             const btcMin = Math.min(...btcData.map((p) => p.value));
@@ -262,12 +271,20 @@ export function useMultiAgentChartData() {
       minValue: Number.isFinite(globalMin) ? Math.floor(globalMin) : 0,
       maxValue: Number.isFinite(globalMax) ? Math.floor(globalMax) : 0,
     };
-  }, [accountHistories, agents, btcHistory.data, colors, timeframe, withOpacity]);
+  }, [
+    accountHistories,
+    agents,
+    btcHistory.data,
+    colors,
+    timeframe,
+    withOpacity,
+  ]);
 
   return {
     dataSet,
     minValue,
     maxValue,
-    isLoading: historiesLoading || btcHistory.isLoading || btcHistory.isFetching,
+    isLoading:
+      historiesLoading || btcHistory.isLoading || btcHistory.isFetching,
   };
 }

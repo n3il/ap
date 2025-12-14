@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
+  type ClearinghouseSnapshot,
   mapHyperliquidClearinghouseState,
   mapHyperliquidPortfolio,
-  type ClearinghouseSnapshot,
   type PortfolioTimeframe,
 } from "@/data/mappings/hyperliquid";
 import {
@@ -76,11 +76,16 @@ export function calcPnLByTimeframe(data: PortfolioTimeframe[]) {
       const first = accountValueHistory[0]?.value ?? null;
       const last = accountValueHistory[accountValueHistory.length - 1]?.value;
       const pnl =
-        first !== null && last !== null && first !== undefined && last !== undefined
+        first !== null &&
+        last !== null &&
+        first !== undefined &&
+        last !== undefined
           ? last - first
           : null;
       const pnlPct =
-        first !== null && first !== 0 && pnl !== null ? (pnl / first) * 100 : null;
+        first !== null && first !== 0 && pnl !== null
+          ? (pnl / first) * 100
+          : null;
 
       return [timeframe, { first, last, pnl, pnlPct }];
     }),
@@ -238,7 +243,9 @@ export function useAccountBalance({ agent }: { agent: AgentType }) {
         : 0;
 
       const inferredMarkPrice =
-        Math.abs(size) > 0 ? positionValueFromState / Math.abs(size) : entryPrice;
+        Math.abs(size) > 0
+          ? positionValueFromState / Math.abs(size)
+          : entryPrice;
       const markPriceCandidate = Number.isFinite(markPriceFromMids)
         ? Number(markPriceFromMids)
         : inferredMarkPrice;
@@ -262,7 +269,8 @@ export function useAccountBalance({ agent }: { agent: AgentType }) {
           : null;
 
       const roeValue =
-        position.returnOnEquity !== null && position.returnOnEquity !== undefined
+        position.returnOnEquity !== null &&
+        position.returnOnEquity !== undefined
           ? Number(position.returnOnEquity)
           : null;
 

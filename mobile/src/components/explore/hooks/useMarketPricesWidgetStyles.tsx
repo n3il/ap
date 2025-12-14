@@ -1,5 +1,10 @@
-import { Extrapolation, useDerivedValue, interpolate, useAnimatedStyle } from "react-native-reanimated";
 import { Dimensions } from "react-native";
+import {
+  Extrapolation,
+  interpolate,
+  useAnimatedStyle,
+  useDerivedValue,
+} from "react-native-reanimated";
 import { GLOBAL_PADDING } from "@/components/ContainerView";
 
 const { width } = Dimensions.get("window");
@@ -8,11 +13,7 @@ export const SPARKLINE_WIDTH = (width - GLOBAL_PADDING * 4) / 3;
 export const SPARKLINE_HEIGHT = 32;
 export const MINI_SPARKLINE_HEIGHT = 34;
 
-export const useMarketPricesWidgetStyles = ({
-  scrollY,
-  priceOpacity,
-}) => {
-
+export const useMarketPricesWidgetStyles = ({ scrollY, priceOpacity }) => {
   // --- Constants ---
   const SCROLL_RANGE = [0, 100];
   const PROGRESS_RANGE = [0, 1];
@@ -24,12 +25,7 @@ export const useMarketPricesWidgetStyles = ({
     // Return 0 if scrollY is not available or is at the top
     if (!scrollY || !scrollY.value) return 0;
 
-    return interpolate(
-      scrollY.value,
-      SCROLL_RANGE,
-      PROGRESS_RANGE,
-      CLAMP
-    );
+    return interpolate(scrollY.value, SCROLL_RANGE, PROGRESS_RANGE, CLAMP);
   }, [scrollY]);
   //
 

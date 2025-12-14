@@ -58,7 +58,9 @@ export default function StepModelSelect({
             variant="outline"
             size="sm"
             sx={{
-              backgroundColor: onlyFree ? withOpacity(palette.success, 0.25) : palette.surface,
+              backgroundColor: onlyFree
+                ? withOpacity(palette.success, 0.25)
+                : palette.surface,
             }}
             onPress={onToggleFree}
           >
@@ -95,7 +97,7 @@ export default function StepModelSelect({
         </View>
 
         <TextInput
-          placeholder={"Search models or providers (e.g., \"gemini\", \"claude\")"}
+          placeholder={'Search models or providers (e.g., "gemini", "claude")'}
           value={modelQuery}
           onChangeText={onChangeQuery}
           style={{ marginTop: 6 }}
@@ -131,7 +133,11 @@ export default function StepModelSelect({
       ) : (
         <FlatList
           data={filteredModels}
-          keyExtractor={(item) => item?.endpoint?.model_variant_permaslug ?? item?.permaslug ?? item?.slug}
+          keyExtractor={(item) =>
+            item?.endpoint?.model_variant_permaslug ??
+            item?.permaslug ??
+            item?.slug
+          }
           renderItem={renderModelCard}
           scrollEnabled={false}
           ItemSeparatorComponent={() => <View style={{ height: 10 }} />}

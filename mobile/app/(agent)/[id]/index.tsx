@@ -1,8 +1,10 @@
 import { Redirect, useLocalSearchParams } from "expo-router";
 import { useMemo, useRef, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import AgentActions from "@/components/agent/AgentActions";
 import BalanceOverview from "@/components/agent/BalanceOverview";
 import AgentHeader from "@/components/agent/Header";
+import ChartsTab from "@/components/agents/ChartsTab";
 import PositionsTab from "@/components/agents/PositionsTab";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
 import TradesTab from "@/components/agents/TradesTab";
@@ -14,8 +16,6 @@ import { Animated, ScrollView, SwipeableTabs, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
-import AgentActions from "@/components/agent/AgentActions";
-import ChartsTab from "@/components/agents/ChartsTab";
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
@@ -96,18 +96,14 @@ export default function AgentIndex() {
         key: "LPs",
         title: "LPs (932)",
         content: () => (
-          <View style={{ flex: 1, paddingTop: startContentAtHeight }}>
-
-          </View>
+          <View style={{ flex: 1, paddingTop: startContentAtHeight }}></View>
         ),
       },
       {
         key: "Clones",
         title: "Clones (3)",
         content: () => (
-          <View style={{ flex: 1, paddingTop: startContentAtHeight }}>
-
-          </View>
+          <View style={{ flex: 1, paddingTop: startContentAtHeight }}></View>
         ),
       },
     ],

@@ -1,5 +1,6 @@
 // Core UI components
 
+export { FlashList } from "@shopify/flash-list";
 export type { ImageProps } from "expo-image";
 export { Image } from "expo-image";
 export type {
@@ -30,7 +31,6 @@ export {
   RefreshControl,
   StatusBar,
 } from "react-native";
-export { FlashList } from "@shopify/flash-list";
 export { default as Avatar } from "./Avatar";
 export { default as Badge } from "./Badge";
 export { default as Button } from "./Button";

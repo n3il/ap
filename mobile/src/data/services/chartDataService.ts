@@ -4,8 +4,8 @@
  * Optimized to let Postgres and external APIs do heavy lifting
  */
 
-import { supabase } from "@/config/supabase";
 import * as hl from "@nktkas/hyperliquid";
+import { supabase } from "@/config/supabase";
 import { mapHyperliquidPortfolio } from "@/data/mappings/hyperliquid";
 import type {
   RawAccountValuePoint,
@@ -83,7 +83,9 @@ export const chartDataService = {
         const normalized = mapHyperliquidPortfolio(raw);
 
         // Find the matching timeframe
-        const timeframeData = normalized.find((tf) => tf.timeframe === timeframeKey);
+        const timeframeData = normalized.find(
+          (tf) => tf.timeframe === timeframeKey,
+        );
 
         if (timeframeData?.accountValueHistory) {
           // Filter to time range and map to expected format

@@ -4,13 +4,13 @@ import { router } from "expo-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
-import SectionTitle from "@/components/SectionTitle";
 import StepDirection from "@/components/create/agent/StepDirection";
 import StepIdentity, {
   type QuickStartTemplate,
 } from "@/components/create/agent/StepIdentity";
 import StepModelSelect from "@/components/create/agent/StepModelSelect";
 import StepSummary from "@/components/create/agent/StepSummary";
+import SectionTitle from "@/components/SectionTitle";
 import {
   Badge,
   GlassButton,
@@ -240,8 +240,9 @@ export default function ModalCreateAgent() {
       list = list.filter((model) => {
         const slug = normalizeModelSlug(model).toLowerCase();
         const name = (model?.name || model?.short_name || "").toLowerCase();
-        const provider =
-          (model?.endpoint?.provider_display_name || "").toLowerCase();
+        const provider = (
+          model?.endpoint?.provider_display_name || ""
+        ).toLowerCase();
         return (
           slug.includes(query) ||
           name.includes(query) ||
@@ -280,13 +281,7 @@ export default function ModalCreateAgent() {
     });
 
     return scored.slice(0, 60);
-  }, [
-    highlightReasoning,
-    modelQuery,
-    models,
-    onlyFree,
-    providerFilter,
-  ]);
+  }, [highlightReasoning, modelQuery, models, onlyFree, providerFilter]);
 
   const currentModel = useMemo(
     () => findModelBySlug(formData.model_name),
@@ -311,7 +306,8 @@ export default function ModalCreateAgent() {
 
     const isSelected = formData.model_name === slug;
     const displayName = item?.name || formatModelName(item?.slug || slug);
-    const provider = item?.endpoint?.provider_display_name || "Unknown provider";
+    const provider =
+      item?.endpoint?.provider_display_name || "Unknown provider";
     const price = formatPrice(item?.endpoint?.pricing);
     const ctx = contextLengthLabel(
       item?.endpoint?.context_length || item?.context_length,
@@ -414,9 +410,7 @@ export default function ModalCreateAgent() {
   };
 
   const modelLabel = currentModel
-    ? formatModelName(
-        currentModel?.slug || normalizeModelSlug(currentModel),
-      )
+    ? formatModelName(currentModel?.slug || normalizeModelSlug(currentModel))
     : "Pick a model";
 
   const steps = useMemo(
@@ -428,9 +422,7 @@ export default function ModalCreateAgent() {
         content: () => (
           <StepIdentity
             name={formData.name}
-            onChangeName={(name) =>
-              setFormData((prev) => ({ ...prev, name }))
-            }
+            onChangeName={(name) => setFormData((prev) => ({ ...prev, name }))}
             quickStarts={quickStarts}
             onApplyTemplate={applyTemplate}
           />
@@ -454,9 +446,7 @@ export default function ModalCreateAgent() {
               highlightReasoning={highlightReasoning}
               providerFilter={providerFilter}
               onToggleFree={() => setOnlyFree((prev) => !prev)}
-              onToggleReasoning={() =>
-                setHighlightReasoning((prev) => !prev)
-              }
+              onToggleReasoning={() => setHighlightReasoning((prev) => !prev)}
               onToggleProviderFilter={() =>
                 setProviderFilter((prev) => (prev ? null : "openai"))
               }
@@ -587,11 +577,7 @@ export default function ModalCreateAgent() {
                 : withOpacity(palette.foreground, 0.2),
             }}
           >
-            <Text
-              variant="xxs"
-              tone="inverse"
-              style={{ fontWeight: "700" }}
-            >
+            <Text variant="xxs" tone="inverse" style={{ fontWeight: "700" }}>
               {index + 1}
             </Text>
           </View>
@@ -656,9 +642,7 @@ export default function ModalCreateAgent() {
                     Model
                   </Badge>
                   <Badge
-                    variant={
-                      formData.prompt_direction ? "success" : "default"
-                    }
+                    variant={formData.prompt_direction ? "success" : "default"}
                     size="sm"
                   >
                     Direction
@@ -704,9 +688,7 @@ export default function ModalCreateAgent() {
           >
             {activeStep > 0 && (
               <GlassButton
-                onPress={() =>
-                  setActiveStep((prev) => Math.max(prev - 1, 0))
-                }
+                onPress={() => setActiveStep((prev) => Math.max(prev - 1, 0))}
                 styleVariant="paddedFull"
                 tintColor={palette.surface}
                 glassEffectStyle="regular"

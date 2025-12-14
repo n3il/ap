@@ -199,10 +199,12 @@ export default function AgentHeader({
       }}
       {...props}
     >
-      <View style={{
-        flexDirection: "row",
-        alignItems: "center",
-      }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+        }}
+      >
         <GlassButton
           enabled={false}
           onPress={() => router.back()}
@@ -229,8 +231,13 @@ export default function AgentHeader({
           {agentName}
         </Text>
       </View>
-      <View style={[{ flexDirection: "row", alignSelf: "flex-end", paddingRight: 10 }, style]}>
-      <GlassButton
+      <View
+        style={[
+          { flexDirection: "row", alignSelf: "flex-end", paddingRight: 10 },
+          style,
+        ]}
+      >
+        <GlassButton
           tintColor={palette.surface}
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
@@ -279,7 +286,7 @@ export default function AgentHeader({
             padding: 0,
             width: 40,
             height: 40,
-            display: "none"
+            display: "none",
           }}
         >
           <RadarSpinner

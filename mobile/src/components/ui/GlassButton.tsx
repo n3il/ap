@@ -1,9 +1,9 @@
-import { GlassView, GlassViewProps } from "expo-glass-effect";
+import { View } from "dripsy";
+import { GlassView, type GlassViewProps } from "expo-glass-effect";
 import { Pressable } from "react-native";
 import Text from "@/components/ui/Text";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
-import { View } from "dripsy";
 
 const styleVariants = {
   default: {
@@ -105,7 +105,6 @@ export default function GlassButton({
         {PressableComponent}
       </View>
     );
-
 
   return (
     <GlassView

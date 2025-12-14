@@ -87,9 +87,7 @@ export default function SwipeableTabs({
     () => new Set([startIndex]),
   );
   const flatListRef = useRef<FlatList>(null);
-  const scrollX = useRef(
-    new Animated.Value(startIndex * SCREEN_WIDTH),
-  ).current;
+  const scrollX = useRef(new Animated.Value(startIndex * SCREEN_WIDTH)).current;
 
   useEffect(() => {
     if (isControlled) return;
@@ -114,7 +112,10 @@ export default function SwipeableTabs({
 
     if (activeIndex !== currentIndex) {
       setCurrentIndex(activeIndex);
-      flatListRef.current?.scrollToIndex({ index: activeIndex, animated: true });
+      flatListRef.current?.scrollToIndex({
+        index: activeIndex,
+        animated: true,
+      });
     }
   }, [activeIndex, currentIndex, isControlled]);
 

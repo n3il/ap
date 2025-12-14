@@ -113,7 +113,7 @@ export const useHyperliquidStore = create<HLStoreState>((set, get) => {
 
   transport.socket.addEventListener("error", (event) => {
     const errorMsg =
-      (typeof event === "object") ? event.message : "WebSocket error occurred";
+      typeof event === "object" ? event.message : "WebSocket error occurred";
     set({ connectionState: "disconnected", error: errorMsg });
     clearPendingState(registry, subscriptions);
     if (pingInterval) {

@@ -1,4 +1,4 @@
-import * as hl from "@nktkas/hyperliquid";
+import type * as hl from "@nktkas/hyperliquid";
 import type {
   AllMidsResponse,
   CandleSnapshotResponse,
@@ -35,7 +35,10 @@ type CandleWsEvent =
     ) => void
       ? E
       : never);
-type CandleInput = CandleSnapshotPoint | CandleWsEvent | Record<string, unknown>;
+type CandleInput =
+  | CandleSnapshotPoint
+  | CandleWsEvent
+  | Record<string, unknown>;
 
 export type MarketCandle = {
   timestamp: number;
@@ -128,7 +131,9 @@ export const mapHyperliquidMetaAndAssetCtxs = (
       const impactA = toNumber(ctx?.impactPxs?.[0]);
       const impactB = toNumber(ctx?.impactPxs?.[1]);
       const impactPrices =
-        impactA !== null && impactB !== null ? ([impactA, impactB] as [number, number]) : null;
+        impactA !== null && impactB !== null
+          ? ([impactA, impactB] as [number, number])
+          : null;
 
       return {
         symbol,
@@ -147,9 +152,8 @@ export const mapHyperliquidMetaAndAssetCtxs = (
         previousDayPrice: toNumber(ctx?.prevDayPx),
       };
     })
-    .filter(
-      (asset): asset is MarketAssetSnapshot =>
-        Boolean(asset && asset.symbol && asset.symbol.length > 0),
+    .filter((asset): asset is MarketAssetSnapshot =>
+      Boolean(asset && asset.symbol && asset.symbol.length > 0),
     );
 };
 
@@ -222,9 +226,7 @@ type UserFillsPayload =
   | Awaited<ReturnType<hl.InfoClient["userFills"]>>
   | null;
 
-export const mapHyperliquidFills = (
-  payload: UserFillsPayload,
-): UserFill[] => {
+export const mapHyperliquidFills = (payload: UserFillsPayload): UserFill[] => {
   if (!Array.isArray(payload)) return [];
 
   return (payload as any[])
@@ -247,12 +249,16 @@ export const mapHyperliquidFills = (
         size: toNumber(raw?.sz ?? raw?.size),
         timestamp: normalizedTime,
         txHash: raw?.hash,
-        tradeId: Number.isFinite(Number(raw?.tid)) ? Number(raw?.tid) : undefined,
+        tradeId: Number.isFinite(Number(raw?.tid))
+          ? Number(raw?.tid)
+          : undefined,
         startPosition: toNumber(raw?.startPosition),
         direction: raw?.dir ?? null,
         closedPnl: toNumber(raw?.closedPnl),
         fee: toNumber(raw?.fee),
-        orderId: Number.isFinite(Number(raw?.oid)) ? Number(raw?.oid) : undefined,
+        orderId: Number.isFinite(Number(raw?.oid))
+          ? Number(raw?.oid)
+          : undefined,
         crossed: Boolean(raw?.crossed),
         feeToken: raw?.feeToken ?? null,
       };
@@ -274,9 +280,7 @@ type PortfolioPayload =
   | Awaited<ReturnType<hl.InfoClient["portfolio"]>>
   | null;
 
-const normalizeAccountValueHistory = (
-  series: unknown,
-): AccountValuePoint[] => {
+const normalizeAccountValueHistory = (series: unknown): AccountValuePoint[] => {
   if (!Array.isArray(series)) return [];
 
   return (series as Array<[unknown, unknown]>)
@@ -307,9 +311,8 @@ export const mapHyperliquidPortfolio = (
         ),
       };
     })
-    .filter(
-      (entry): entry is PortfolioTimeframe =>
-        Boolean(entry && entry.timeframe && entry.accountValueHistory),
+    .filter((entry): entry is PortfolioTimeframe =>
+      Boolean(entry && entry.timeframe && entry.accountValueHistory),
     );
 };
 

@@ -139,9 +139,9 @@ export function PositionRow({
           }}
         >
           <TableCell alignLeft>
-              <Text variant="sm" sx={{ fontSize: 12 }}>
-                {displaySymbol}
-              </Text>
+            <Text variant="sm" sx={{ fontSize: 12 }}>
+              {displaySymbol}
+            </Text>
             <MaterialCommunityIcons
               name={sideIcon}
               size={16}

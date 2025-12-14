@@ -9,7 +9,7 @@ import Animated from "react-native-reanimated";
 import PriceColumn from "@/components/explore/PriceColumn";
 import { ActivityIndicator, FlashList, Text, View } from "@/components/ui";
 import { useMarketHistory } from "@/hooks/useMarketHistory";
-import { NormalizedAsset, useMarketPrices } from "@/hooks/useMarketPrices";
+import { type NormalizedAsset, useMarketPrices } from "@/hooks/useMarketPrices";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 
@@ -33,19 +33,19 @@ export default function MarketPricesWidget({
   const [visibleTickers, setVisibleTickers] = useState<string[]>([]);
   const onViewableItemsChanged = useRef(
     ({ viewableItems }: { viewableItems: any[] }) => {
-      setVisibleTickers(prev => {
+      setVisibleTickers((prev) => {
         const set = new Set(prev);
 
-        viewableItems.forEach(v => {
+        viewableItems.forEach((v) => {
           set.add(v.item.symbol);
         });
 
         return Array.from(set);
       });
-    }
+    },
   ).current;
 
-  console.log({ visibleTickers })
+  console.log({ visibleTickers });
   const { timeframe } = useTimeframeStore();
   const {
     dataBySymbol: candleDataBySymbol,
@@ -57,7 +57,7 @@ export default function MarketPricesWidget({
     <Animated.View style={style}>
       <FlashList
         data={tickers as NormalizedAsset[]}
-        keyExtractor={item => item.symbol}
+        keyExtractor={(item) => item.symbol}
         renderItem={({ item, extraData }) => (
           <PriceColumn
             tickerData={item}
@@ -75,7 +75,7 @@ export default function MarketPricesWidget({
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={{
-          paddingVertical: 6
+          paddingVertical: 6,
         }}
       />
     </Animated.View>

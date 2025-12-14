@@ -56,7 +56,7 @@ export default function TimeFrameSelector({
                 // color: isSelected ? palette.accent : palette.foreground,
                 opacity: isSelected ? 1 : 0.3,
               }}
-              >
+            >
               {option.label}
             </Text>
           </GlassButton>

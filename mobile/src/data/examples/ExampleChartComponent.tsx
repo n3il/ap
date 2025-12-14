@@ -5,7 +5,7 @@
 
 import React, { useState } from "react";
 import { LineChart } from "react-native-gifted-charts";
-import { View, Text } from "@/components/ui";
+import { Text, View } from "@/components/ui";
 import { useChartData } from "@/data";
 import { useColors } from "@/theme";
 import type { AgentType } from "@/types/agent";
@@ -59,9 +59,7 @@ export function ExampleUnifiedChart({ agents }: { agents: AgentType[] }) {
   if (error) {
     return (
       <View style={{ padding: 20, alignItems: "center" }}>
-        <Text style={{ color: colors.error }}>
-          Error: {error.message}
-        </Text>
+        <Text style={{ color: colors.error }}>Error: {error.message}</Text>
       </View>
     );
   }
@@ -104,7 +102,14 @@ export function ExampleUnifiedChart({ agents }: { agents: AgentType[] }) {
       </View>
 
       {/* Legend */}
-      <View style={{ flexDirection: "row", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          flexWrap: "wrap",
+          gap: 12,
+          marginBottom: 12,
+        }}
+      >
         {datasets.map((dataset) => (
           <View
             key={dataset.id}
@@ -182,7 +187,9 @@ export function ExampleAgentChart({ agent }: { agent: AgentType }) {
   });
 
   // Separate datasets by type for different axes
-  const accountDataset = datasets.find((d) => d.sourceType === "agentAccountValue");
+  const accountDataset = datasets.find(
+    (d) => d.sourceType === "agentAccountValue",
+  );
   const sentimentDataset = datasets.find((d) => d.sourceType === "sentiment");
   const btcDataset = datasets.find((d) => d.sourceType === "candleHistory");
 

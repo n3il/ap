@@ -5,10 +5,13 @@ import { useTheme } from "@/contexts/ThemeContext";
 export default function TabsLayout() {
   const { theme } = useTheme();
 
-  const tintColor = Platform.OS === "ios" ? DynamicColorIOS({
-      dark: "#000000",
-      light: "#000000",
-    }) : "#000000"
+  const tintColor =
+    Platform.OS === "ios"
+      ? DynamicColorIOS({
+          dark: "#000000",
+          light: "#000000",
+        })
+      : "#000000";
 
   return (
     <NativeTabs

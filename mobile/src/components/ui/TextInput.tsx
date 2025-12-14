@@ -6,19 +6,17 @@ import type {
   ViewStyle,
 } from "react-native";
 import { TextInput as RNTextInput } from "react-native";
-
-import type { AppTheme } from "@/theme/dripsy";
 import { useColors } from "@/theme";
+import type { AppTheme } from "@/theme/dripsy";
 
 export interface TextInputProps extends RNTextInputProps {
   tone?: "default" | "muted";
 }
 
-
 const TextInput = React.forwardRef<RNTextInput, TextInputProps>(
   ({ tone = "default", style, placeholderTextColor, ...props }, ref) => {
     const { theme } = useDripsyTheme();
-    const { colors: palette } = useColors()
+    const { colors: palette } = useColors();
     const typedTheme = theme as AppTheme;
 
     const baseStyle: TextStyle & ViewStyle = {

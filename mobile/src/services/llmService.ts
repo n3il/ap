@@ -23,7 +23,8 @@ export interface LLMProvider {
   models: string[];
 }
 
-const OPENROUTER_MODELS_API = 'https://openrouter.ai/api/frontend/models?order=newest';
+const OPENROUTER_MODELS_API =
+  "https://openrouter.ai/api/frontend/models?order=newest";
 
 /**
  * Fetches available models from OpenRouter API
@@ -43,7 +44,7 @@ export async function fetchOpenRouterModels(): Promise<OpenRouterModel[]> {
 
     return models;
   } catch (error) {
-    console.error('Error fetching OpenRouter models:', error);
+    console.error("Error fetching OpenRouter models:", error);
     // Return empty array on error so the app doesn't crash
     return [];
   }
@@ -55,25 +56,25 @@ export async function fetchOpenRouterModels(): Promise<OpenRouterModel[]> {
  */
 export function formatModelName(slug: string): string {
   // Split on "/" to get the model part
-  const parts = slug.split('/');
+  const parts = slug.split("/");
   if (parts.length < 2) return slug;
 
   const modelPart = parts[1];
 
   // Split on ":" to separate variant (like ":free")
-  const [modelName, variant] = modelPart.split(':');
+  const [modelName, variant] = modelPart.split(":");
 
   // Convert kebab-case to Title Case and clean up
   let formatted = modelName
-    .split('-')
-    .map(word => {
+    .split("-")
+    .map((word) => {
       // Skip version numbers and common prefixes
-      if (word === 'exp' || word === 'preview') return '';
+      if (word === "exp" || word === "preview") return "";
       // Capitalize
       return word.charAt(0).toUpperCase() + word.slice(1);
     })
     .filter(Boolean)
-    .join(' ');
+    .join(" ");
 
   // Add variant if present
   if (variant) {
@@ -86,17 +87,20 @@ export function formatModelName(slug: string): string {
 /**
  * Groups models by provider
  */
-export function groupModelsByProvider(models: OpenRouterModel[]): LLMProvider[] {
+export function groupModelsByProvider(
+  models: OpenRouterModel[],
+): LLMProvider[] {
   const providerMap = new Map<string, Set<string>>();
 
   models.forEach((model) => {
     // Extract provider from slug (e.g., "google/gemini-2.0-flash" -> "google")
-    const parts = model.slug.split('/');
+    const parts = model.slug.split("/");
     if (parts.length < 2) return;
 
     const providerId = parts[0];
-    const providerName = model.provider_display_name ||
-                        providerId.charAt(0).toUpperCase() + providerId.slice(1);
+    const providerName =
+      model.provider_display_name ||
+      providerId.charAt(0).toUpperCase() + providerId.slice(1);
 
     if (!providerMap.has(providerId)) {
       providerMap.set(providerId, new Set());

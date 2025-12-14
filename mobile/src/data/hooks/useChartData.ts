@@ -28,9 +28,16 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
-import type { ChartDataResult, ChartDataSource, TimeRange } from "../types/chartData";
 import { chartDataService } from "../services/chartDataService";
-import { createDatasets, normalizeTimestamp } from "../utils/chartDataNormalizer";
+import type {
+  ChartDataResult,
+  ChartDataSource,
+  TimeRange,
+} from "../types/chartData";
+import {
+  createDatasets,
+  normalizeTimestamp,
+} from "../utils/chartDataNormalizer";
 
 export type UseChartDataParams = {
   sources: ChartDataSource[];
@@ -40,12 +47,7 @@ export type UseChartDataParams = {
 };
 
 export const useChartData = (params: UseChartDataParams): ChartDataResult => {
-  const {
-    sources,
-    timeRange,
-    enabled = true,
-    candleInterval = "5m",
-  } = params;
+  const { sources, timeRange, enabled = true, candleInterval = "5m" } = params;
 
   // Normalize time range once
   const normalizedTimeRange = useMemo(() => {
@@ -94,7 +96,11 @@ export const useChartData = (params: UseChartDataParams): ChartDataResult => {
   );
 
   // Fetch all data in parallel
-  const { data: rawData, isLoading, error } = useQuery({
+  const {
+    data: rawData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey,
     queryFn: async () => {
       const startTimeISO = new Date(normalizedTimeRange.start).toISOString();
