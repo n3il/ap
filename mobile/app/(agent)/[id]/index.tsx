@@ -16,6 +16,8 @@ import { Animated, ScrollView, SwipeableTabs, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
+import HeaderChart from "@/components/agent/HeaderChart";
+import MultiAgentChart from "@/components/agents/MultiAgentChart";
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
@@ -46,6 +48,21 @@ export default function AgentIndex() {
 
   const tabs = useMemo(
     () => [
+      {
+        key: "Account",
+        title: "Account",
+        content: () => (
+          <View style={{
+            flex: 1,
+            paddingTop: startContentAtHeight,
+          }}>
+            <MultiAgentChart
+              agentsProp={[agent]}
+              tickerSymbols={[]}
+            />
+          </View>
+        ),
+      },
       {
         key: "Timeline",
         title: "Timeline",
@@ -141,13 +158,13 @@ export default function AgentIndex() {
       >
         <PaddedView style={{ gap: 12, paddingHorizontal: 8 }}>
           <BalanceOverview agent={agent} />
+          {/* <HeaderChart
+            agentId={agent?.id}
+            style={{
+              zIndex: 9999,
+            }}
+          /> */}
         </PaddedView>
-        {/* <HeaderChart
-          agentId={agent?.id}
-          style={{
-            zIndex: 9999
-          }}
-        /> */}
       </Animated.View>
 
       <SwipeableTabs

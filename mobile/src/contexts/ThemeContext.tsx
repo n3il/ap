@@ -8,7 +8,7 @@ import {
   useMemo,
   useState,
 } from "react";
-import { Appearance } from "react-native";
+import { Appearance, useColorScheme } from "react-native";
 
 import darkTheme from "@/theme/base";
 import { dripsyDarkTheme, dripsyLightTheme } from "@/theme/dripsy";
@@ -28,6 +28,7 @@ const ThemeContext = createContext({
 });
 
 export const ThemeProvider = ({ children }) => {
+  const colorMode = useColorScheme()
   const [themePreference, setThemePreference] = useState("system");
   const [systemScheme, setSystemScheme] = useState(
     normalize(Appearance.getColorScheme()),
@@ -86,7 +87,7 @@ export const ThemeProvider = ({ children }) => {
     [theme, dripsyTheme, appliedScheme, themePreference, toggleTheme],
   );
 
-  console.log({ dripsyTheme });
+  console.log({ colorMode });
 
   return (
     <ThemeContext.Provider value={value}>

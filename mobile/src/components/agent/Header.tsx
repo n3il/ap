@@ -9,7 +9,7 @@ import { RadarSpinner } from "@/components/ui/SpinningIcon";
 import { supabase } from "@/config/supabase";
 import { useHyperliquidStore } from "@/hooks/useHyperliquid";
 import { agentWatchlistService } from "@/services/agentWatchlistService";
-import { useColors } from "@/theme";
+import { useColors, withOpacity } from "@/theme";
 
 type Props = {
   agentId?: string;
@@ -196,6 +196,9 @@ export default function AgentHeader({
         justifyContent: "space-between",
         alignItems: "center",
         paddingHorizontal: 1,
+        borderBottomWidth: .5,
+        borderBottomColor: "border",
+        paddingBottom: 1,
       }}
       {...props}
     >
@@ -238,7 +241,7 @@ export default function AgentHeader({
         ]}
       >
         <GlassButton
-          tintColor={palette.surface}
+          tintColor={withOpacity(palette.backkgroundSecondary, .1)}
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
           style={{
@@ -259,7 +262,7 @@ export default function AgentHeader({
           )}
         </GlassButton>
         <GlassButton
-          tintColor={palette.surface}
+          tintColor={withOpacity(palette.backkgroundSecondary, .1)}
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
           style={{
@@ -278,7 +281,8 @@ export default function AgentHeader({
           )}
         </GlassButton>
         <GlassButton
-          tintColor={palette.surface}
+          tintColor={withOpacity(palette.backkgroundSecondary, .1)}
+          glassEffectStyle="regular"
           styleVariant="minimal"
           onPress={handleRunAssessment}
           disabled={!agentId || isTriggeringAssessment}

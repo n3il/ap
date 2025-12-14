@@ -110,12 +110,16 @@ export default function TradeActionDisplay({
           <Text variant="xs" tone="muted">
             {tradeAmount ? formatAmount(tradeAmount) : "-"}
           </Text>
+          <Text variant="xs" tone="muted">
+            {actionData.confidenceScore}
+          </Text>
         </View>
       </TouchableOpacity>
 
       {reason ? (
         <View sx={{ marginTop: 2 }}>
           <Text
+            numberOfLines={2}
             variant="xs"
             sx={{
               fontFamily: "monospace",
@@ -124,16 +128,6 @@ export default function TradeActionDisplay({
             }}
           >
             {reason}
-          </Text>
-          <Text
-            variant="xs"
-            sx={{
-              fontFamily: "monospace",
-              fontStyle: "italic",
-              color: palette.mutedForeground,
-            }}
-          >
-            (Confidence: {actionData.confidenceScore})
           </Text>
         </View>
       ) : null}

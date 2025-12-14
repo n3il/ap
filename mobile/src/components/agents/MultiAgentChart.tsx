@@ -19,10 +19,13 @@ import { useColors } from "@/theme";
 import { GLOBAL_PADDING } from "../ContainerView";
 import { formatXAxisTick } from "../chart/utils";
 import { View } from "../ui";
+import { AgentType } from "@/types/agent";
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
   style?: ViewStyle;
+  agentsProp?: AgentType[],
+  tickerSymbols?: string[],
 };
 
 // Map UI timeframes to Hyperliquid portfolio timeframes
@@ -41,14 +44,16 @@ const { width } = Dimensions.get("window");
 export default function MultiAgentChart({
   scrollY,
   style,
+  agentsProp,
+  tickerSymbols = ["BTC", "ETH", "SOL"],
 }: MultiAgentChartProps) {
   const { colors: palette, withOpacity } = useColors();
-  const { agents } = useExploreAgentsStore();
+  const { agents: exploreListAgents } = useExploreAgentsStore();
+  const agents = agentsProp || exploreListAgents
 
   const { histories } = useAgentAccountValueHistories();
 
   const { timeframe } = useTimeframeStore();
-  const tickerSymbols = ["BTC", "ETH", "SOL"];
   const {
     dataBySymbol: candleDataBySymbol,
     isFetching: candleDataLoading,
@@ -157,9 +162,9 @@ export default function MultiAgentChart({
           justifyContent: "center",
         }}
       >
-        <LottieView
+        {/* <LottieView
           autoPlay
-          resizeMode="cover"
+          resizeMode="contain"
           style={{
             width: 50,
             height: 200,
@@ -167,7 +172,7 @@ export default function MultiAgentChart({
           }}
           // source={require("@assets/animations/Rocket.json")}
           source={require("@assets/animations/loading-anim.json")}
-        />
+        /> */}
       </View>
     );
   }
@@ -195,8 +200,8 @@ export default function MultiAgentChart({
                 height={200}
               >
                 <LineChart.Path
-                  color={symbolColors[symbol] || palette.primary}
-                  width={1.5}
+                  color={(symbolColors[symbol] || palette.primary)}
+                  width={1}
                 ></LineChart.Path>
 
                 {idx === 0 && (
@@ -206,6 +211,7 @@ export default function MultiAgentChart({
                       orientation="horizontal"
                       tickCount={4}
                       domain={startTs ? [startTs, endTs] : undefined}
+                      strokeWidth={.3}
                       format={(value) => {
                         "worklet";
                         return formatXAxisTick(value, startTs, endTs);

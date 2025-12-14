@@ -116,7 +116,7 @@ export default function HeaderChart({ agentId, ...props }: HeaderChartProps) {
       <SvgChart
         lines={lines}
         isLoading={isLoading}
-        chartAspectRatio={3 / 5}
+        chartAspectRatio={3 / 9}
         {...props}
       />
     </>

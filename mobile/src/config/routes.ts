@@ -58,6 +58,10 @@ export const ROUTES = {
     path: "/(agent)/[id]",
     requiresAuthentication: "optional",
   },
+  AGENT_ID_MODAL_BUY_SELL_AGENT: {
+    path: "/(agent)/[id]/modal_buy_sell_agent",
+    requiresAuthentication: "optional",
+  },
   AGENT_ASSESSMENT_ID: {
     path: "/(agent)/[id]/[assessmentId]",
     requiresAuthentication: "optional",

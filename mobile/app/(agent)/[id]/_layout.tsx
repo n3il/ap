@@ -21,6 +21,14 @@ export default function Layout() {
         }}
       />
       <Stack.Screen name="manage" />
+
+      <Stack.Screen
+        name="modal_buy_sell_agent"
+        options={{
+          animation: "slide_from_bottom",
+          presentation: "modal",
+        }}
+      />
     </Stack>
   );
 }

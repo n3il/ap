@@ -1,68 +1,114 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { View } from "react-native";
 import { useColors } from "@/theme";
 import type { AgentType } from "@/types/agent";
 import { GLOBAL_PADDING } from "../ContainerView";
-import { GlassButton, Text } from "../ui";
+import { View, Text } from "dripsy";
+import { GlassButton, ViewProps } from "../ui";
+import { useRouter } from "expo-router";
+import { ROUTES } from "@/config/routes";
+import { ViewStyle } from "react-native";
 
-export function DepositButton() {
-  const { colors: palette, withOpacity } = useColors();
-  return (
-    <GlassButton
-      tintColor={palette.surface}
-      enabled={true}
-      styleVariant="paddedFull"
-      onPress={() => {}}
-      style={{
-        flex: 1,
-        // backgroundColor: palette.surfaceForeground,
-      }}
-    >
-      <Text
-        style={{
-          fontWeight: "600",
-          // color: palette.surface,
-        }}
-      >
-        Transfer
-      </Text>
-    </GlassButton>
-  );
-}
-
-export function WithdrawButton() {
+export function DrawerButton({
+  title,
+  onPress,
+  icon,
+  variant = "surface",
+  styleVariant,
+  style,
+}: {
+  title?: string;
+  onPress: () => void;
+  icon?: string;
+  variant?: string;
+  styleVariant?: string;
+  style?: ViewStyle;
+}) {
   const { colors: palette } = useColors();
   return (
     <GlassButton
+      onPress={onPress}
       tintColor={palette.surface}
-      enabled={true}
-      styleVariant="square"
-      onPress={() => {}}
-      style={
-        {
-          // backgroundColor: palette.surfaceForeground,
-        }
-      }
+      styleVariant={styleVariant}
+      style={[{
+        paddingVertical: 4,
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "row",
+      }, style]}
     >
-      <MaterialCommunityIcons name="wallet-bifold" color="#fff" size={24} />
+      <View sx={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 2 }}>
+        {icon && (
+          <MaterialCommunityIcons
+            name={icon as any}
+            color={palette.surfaceForeground}
+            size={20}
+          />
+        )}
+        {title && <Text
+          style={{
+            fontWeight: "600",
+            color: palette.surfaceForeground,
+          }}
+        >
+          {title}
+        </Text>}
+      </View>
     </GlassButton>
   );
 }
 
+
 export default function AgentActions({ agent }: { agent: AgentType }) {
+  const router = useRouter()
+
+  const handleTransfer = () => {
+    router.push({
+      pathname: ROUTES.AGENT_ID_MODAL_BUY_SELL_AGENT.path,
+      params: { id: agent.id, name: agent.name },
+    } as any);
+  };
+
+  const handleTrade = () => {
+    // TODO: Implement trade action
+    console.log("Trade clicked for agent:", agent.id);
+  };
+
+  const handleSettings = () => {
+    // TODO: Implement settings action
+    console.log("Settings clicked for agent:", agent.id);
+  };
+
   return (
     <View
       style={{
         position: "absolute",
-        bottom: 0,
         flexDirection: "row",
-        flex: 1,
         bottom: 20,
-        paddingHorizontal: GLOBAL_PADDING,
+        left: GLOBAL_PADDING,
+        right: GLOBAL_PADDING,
+        gap: 0,
       }}
     >
-      <DepositButton />
-      <WithdrawButton />
+      <DrawerButton
+        title="Buy"
+        icon="arrow-up-bold-circle"
+        onPress={handleTransfer}
+        variant="surface"
+        style={{ flex: 1, }}
+      />
+      <DrawerButton
+        title="Sell"
+        icon="arrow-down-bold-circle"
+        onPress={handleTrade}
+        variant="primary"
+        style={{ flex: 1, }}
+      />
+      <DrawerButton
+        icon="wallet"
+        onPress={handleSettings}
+        variant="outline"
+        style={{ flexShrink: 0, paddingHorizontal: 12 }}
+      />
     </View>
   );
 }
