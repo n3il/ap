@@ -86,6 +86,8 @@ export const ThemeProvider = ({ children }) => {
     [theme, dripsyTheme, appliedScheme, themePreference, toggleTheme],
   );
 
+  console.log({ dripsyTheme })
+
   return (
     <ThemeContext.Provider value={value}>
       <DripsyProvider theme={dripsyTheme}>{children}</DripsyProvider>

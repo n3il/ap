@@ -1,5 +1,5 @@
 import SectionTitle from "@/components/SectionTitle";
-import { GlassButton, ScrollView, Text, TextInput, View } from "@/components/ui";
+import { Button, ScrollView, Text, TextInput, View } from "@/components/ui";
 import { useColors, withOpacity } from "@/theme";
 
 export interface QuickStartTemplate {
@@ -44,24 +44,27 @@ export default function StepIdentity({
           }}
         >
           {quickStarts.map((template) => (
-            <GlassButton
+            <Button
               key={template.name}
               onPress={() => onApplyTemplate(template)}
-              glassEffectStyle="regular"
-              tintColor={withOpacity(palette.surface, 0.9)}
-              style={{
+              variant="surface"
+              size="lg"
+              sx={{
                 width: "100%",
                 alignItems: "flex-start",
                 gap: 4,
+                backgroundColor: withOpacity(palette.surface, 0.9),
               }}
             >
-              <Text variant="lg" style={{ fontWeight: "700" }}>
-                {template.name}
-              </Text>
-              <Text tone="muted" numberOfLines={2}>
-                {template.headline}
-              </Text>
-            </GlassButton>
+              <View sx={{ gap: 4 }}>
+                <Text variant="lg" style={{ fontWeight: "700" }}>
+                  {template.name}
+                </Text>
+                <Text numberOfLines={2}>
+                  {template.headline}
+                </Text>
+              </View>
+            </Button>
           ))}
         </View>
       </View>

@@ -1,9 +1,9 @@
 import SectionTitle from "@/components/SectionTitle";
 import {
   ActivityIndicator,
+  Button,
   Card,
   FlatList,
-  GlassButton,
   Text,
   TextInput,
   View,
@@ -54,41 +54,44 @@ export default function StepModelSelect({
             flexWrap: "wrap",
           }}
         >
-          <GlassButton
-            styleVariant="minimal"
-            tintColor={
-              onlyFree ? withOpacity(palette.success, 0.25) : palette.surface
-            }
+          <Button
+            variant="outline"
+            size="sm"
+            sx={{
+              backgroundColor: onlyFree ? withOpacity(palette.success, 0.25) : palette.surface,
+            }}
             onPress={onToggleFree}
           >
             <Text>{onlyFree ? "Showing free only" : "Prefer free"}</Text>
-          </GlassButton>
-          <GlassButton
-            styleVariant="minimal"
-            tintColor={
-              highlightReasoning
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            sx={{
+              backgroundColor: highlightReasoning
                 ? withOpacity(palette.info, 0.2)
-                : palette.surface
-            }
+                : palette.surface,
+            }}
             onPress={onToggleReasoning}
           >
             <Text>
               {highlightReasoning ? "Reasoning first" : "Speed first"}
             </Text>
-          </GlassButton>
-          <GlassButton
-            styleVariant="minimal"
-            tintColor={
-              providerFilter
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            sx={{
+              backgroundColor: providerFilter
                 ? withOpacity(palette.accent, 0.2)
-                : palette.surface
-            }
+                : palette.surface,
+            }}
             onPress={onToggleProviderFilter}
           >
             <Text>
               {providerFilter ? `Provider: ${providerFilter}` : "Prefer OpenAI"}
             </Text>
-          </GlassButton>
+          </Button>
         </View>
 
         <TextInput
@@ -119,11 +122,11 @@ export default function StepModelSelect({
             gap: 8,
           }}
         >
-          <Text style={{ fontWeight: "700" }}>Couldn’t load models</Text>
+          <Text style={{ fontWeight: "700" }}>Couldn't load models</Text>
           <Text tone="muted">{error}</Text>
-          <GlassButton onPress={onRetry} glassEffectStyle="regular">
+          <Button onPress={onRetry} variant="surface" size="md">
             Try again
-          </GlassButton>
+          </Button>
         </Card>
       ) : (
         <FlatList

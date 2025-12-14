@@ -70,19 +70,20 @@ export default function GlassButton({
       style={[{ flexGrow: 1 }, pressableStyle]}
       {...buttonProps}
     >
-      {typeof children === "string" ? (
-        <Text
-          style={{
-            fontWeight: "600",
-            textAlign: "center",
-            color: colors.surfaceForeground,
-          }}
-        >
-          {children}
-        </Text>
-      ) : (
-        children
-      )}
+      <View sx={{ color: colors.surfaceForeground }}>
+        {typeof children === "string" ? (
+          <Text
+            style={{
+              fontWeight: "600",
+              textAlign: "center",
+            }}
+          >
+            {children}
+          </Text>
+        ) : (
+          children
+        )}
+      </View>
     </Pressable>
   );
 

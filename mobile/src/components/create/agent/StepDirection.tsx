@@ -1,5 +1,5 @@
 import SectionTitle from "@/components/SectionTitle";
-import { GlassButton, ScrollView, Text, TextInput, View } from "@/components/ui";
+import { Button, ScrollView, Text, TextInput, View } from "@/components/ui";
 import { useColors, withOpacity } from "@/theme";
 
 interface StepDirectionProps {
@@ -64,14 +64,17 @@ export default function StepDirection({
           }}
         >
           {guardrails.map((snippet) => (
-            <GlassButton
+            <Button
               key={snippet}
-              styleVariant="minimal"
-              tintColor={withOpacity(palette.surface, 0.9)}
+              variant="outline"
+              size="sm"
+              sx={{
+                backgroundColor: withOpacity(palette.surface, 0.9),
+              }}
               onPress={() => onAddGuardrail(snippet)}
             >
               <Text numberOfLines={2}>{snippet}</Text>
-            </GlassButton>
+            </Button>
           ))}
         </View>
         <Text tone="muted" variant="sm">
