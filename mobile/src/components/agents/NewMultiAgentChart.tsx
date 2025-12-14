@@ -1,20 +1,24 @@
-import { type ComponentProps, useMemo } from "react";
+import { useMemo } from "react";
 import type { SharedValue } from "react-native-reanimated";
-import Animated, {
+import {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
 } from "react-native-reanimated";
-import { CartesianChart, Line, useChartPressState } from "victory-native";
-import { Circle, matchFont, useFont } from "@shopify/react-native-skia";
+import { LineChart } from "react-native-wagmi-charts";
+import { Dimensions, type ViewStyle } from "react-native";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import * as haptics from 'expo-haptics';
 
 import { useColors } from "@/theme";
-import { accountValuesToPercentChange, useChartData } from "@/data";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
-import { Platform, ViewStyle } from "react-native";
 import { useMarketHistory } from "@/hooks/useMarketHistory";
 import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
+import { GLOBAL_PADDING } from "../ContainerView";
+import { formatXAxisTick } from "../chart/utils";
+import { View } from "../ui";
+import { ActivityIndicator } from "dripsy";
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
@@ -32,204 +36,184 @@ const TIMEFRAME_MAP: Record<string, string> = {
   "Alltime": "perpall",
 };
 
+const { width } = Dimensions.get("window");
+
 export default function MultiAgentChart({
   scrollY,
   style,
 }: MultiAgentChartProps) {
-  // 'Christmas Calling-Personal Use'
-  const fontFamily = Platform.select({ ios: "Helvetica", default: "monospace" });
-  const fontStyle = {
-    fontFamily,
-    fontSize: 11,
-    // fontStyle: "italic",
-    fontWeight: "bold",
-  };
-  const font = matchFont(fontStyle);
-
-  const { colors, withOpacity } = useColors();
+  const { colors: palette, withOpacity } = useColors();
   const { agents } = useExploreAgentsStore()
 
   const { histories } = useAgentAccountValueHistories();
 
   const { timeframe } = useTimeframeStore();
+  const tickerSymbols = ["BTC", "ETH", "SOL"];
   const {
     dataBySymbol: candleDataBySymbol,
     isFetching: candleDataLoading,
     error: candleDataError,
-  } = useMarketHistory(["BTC"], timeframe);
+  } = useMarketHistory(tickerSymbols, timeframe);
 
-  // Transform candle data for victory-native chart
-  const chartData = useMemo(() => {
-    const btcCandles = candleDataBySymbol["BTC"]?.candles || [];
+  // Transform candle data for wagmi charts
+  const { symbolDataSets, agentDataSets, xLength } = useMemo(() => {
     const portfolioTimeframe = TIMEFRAME_MAP[timeframe] || "perpday";
 
-    // Normalize BTC data to percentage change
-    const btcData = btcCandles.map((candle, index) => {
-      const firstPrice = btcCandles[0]?.close || 1;
-      const percentChange = ((candle.close - firstPrice) / firstPrice) * 100;
-      return {
+    // Process all symbol data (BTC, ETH, etc.)
+    const symbolDataSets: Record<string, Array<{ timestamp: number; value: number }>> = {};
+    let symbolsDataLength = 0;
+
+    Object.entries(candleDataBySymbol).forEach(([symbol, candleData]) => {
+      const candles = candleData?.candles || [];
+      if (candles.length === 0) return;
+
+      const firstPrice = candles[0]?.close || 1;
+      const normalizedData = candles.map((candle) => ({
         timestamp: candle.timestamp,
-        btc: percentChange,
-      };
+        value: ((candle.close - firstPrice) / firstPrice) * 100,
+      }));
+
+      symbolDataSets[symbol] = normalizedData;
+      symbolsDataLength = normalizedData.length
     });
 
-    // Merge agent account value histories
-    const agentData: Record<string, number>[] = btcData.map((point) => ({
-      timestamp: point.timestamp,
-      btc: point.btc,
-    }));
+    // Create separate datasets for each agent
+    const agentDataSets: Record<string, Array<{ timestamp: number; value: number }>> = {};
+    let agentsDataLength = 0;
 
-    // Add each agent's data
     Object.entries(histories).forEach(([agentId, agentState]) => {
       const agentHistory = agentState.histories[portfolioTimeframe];
       if (!agentHistory || agentHistory.length === 0) return;
 
       const firstValue = agentHistory[0]?.value || 1;
-
-      agentHistory.forEach((histPoint) => {
-        const percentChange = ((histPoint.value - firstValue) / firstValue) * 100;
-
-        // Find matching timestamp or closest one
-        const closestPoint = agentData.reduce((prev, curr) => {
-          return Math.abs(curr.timestamp - histPoint.timestamp) < Math.abs(prev.timestamp - histPoint.timestamp)
-            ? curr
-            : prev;
-        }, agentData[0]);
-
-        if (closestPoint && Math.abs(closestPoint.timestamp - histPoint.timestamp) < 3600000) {
-          closestPoint[`agent_${agentId}`] = percentChange;
-        }
-      });
+      agentDataSets[agentId] = agentHistory.map((histPoint) => ({
+        timestamp: histPoint.timestamp,
+        value: ((histPoint.value - firstValue) / firstValue) * 100,
+      }));
+      agentsDataLength = agentHistory.length
     });
 
-    return agentData;
+    return { symbolDataSets, agentDataSets, xLength: Math.min(agentsDataLength, symbolsDataLength) };
   }, [candleDataBySymbol, histories, timeframe]);
-
-
-  // Get all y-keys dynamically
-  // const yKeys = useMemo(() => {
-  //   if (chartData.length === 0) return [];
-  //   const keys = Object.keys(chartData[0] || {}).filter(k => k !== 'timestamp');
-  //   return keys;
-  // }, [chartData]);
-
-
-  const yKeys = [
-    'btc',
-    'agent_d56f3d26-e38a-4fe7-a613-34ade397636a',
-    'agent_11830321-82cd-4aae-93e9-d673675df8f9',
-  ]
 
   // Animate height based on scroll
   const animatedStyle = useAnimatedStyle(() => {
     if (!scrollY) return { height: 200 }
-    const height = interpolate(scrollY.value, [0, 100], [200, 100], Extrapolation.CLAMP)
+    const height = interpolate(scrollY.value, [0, 100], [300, 100], Extrapolation.CLAMP)
     return { height };
   }, [scrollY]);
 
   const darkChart = false;
-  const textColor = darkChart ? colors.surfaceForeground : colors.foreground;
-  const backgroundColor = darkChart ? colors.surface : "transparent";
+  const textColor = darkChart ? palette.surfaceForeground : palette.foreground;
+  const backgroundColor = darkChart ? palette.surface : "transparent";
+  const symbolColors: Record<string, string> = { "BTC": "orange", "ETH": "blue", "SOL": "purple" };
 
-  // Create chart press state with all y-keys
-  const initialPressState = useMemo(() => {
-    const yState = yKeys.reduce((acc, key) => {
-      acc[key] = 0;
-      return acc;
-    }, {} as Record<string, number>);
-    return { x: 0, y: yState };
-  }, [yKeys]);
+  function invokeHaptic() {
+    haptics.impactAsync(haptics.ImpactFeedbackStyle.Light);
+  }
 
-  const { state, isActive } = useChartPressState(initialPressState);
-
-  // Assign colors to each line
-  const lineColors: Record<string, string> = useMemo(() => {
-    const agentColors = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
-    const colorMap: Record<string, string> = {
-      btc: colors.primary,
-    };
-
-    let colorIndex = 0;
-    yKeys.forEach((key) => {
-      if (key !== 'btc') {
-        colorMap[key] = agentColors[colorIndex % agentColors.length];
-        colorIndex++;
+  const { data, minAbs, maxAbs } = useMemo(() => {
+    const data = {...symbolDataSets, ...agentDataSets}
+    let maxAbs = 0;
+    let minAbs = 0;
+    for (const entries of Object.values(data)) {
+      for (const { value } of entries) {
+        const abs = Math.abs(value);
+        if (abs > maxAbs) maxAbs = abs;
+        if (value < minAbs) minAbs = abs;
       }
-    });
+    }
+    return {data, minAbs, maxAbs};
+  }, [Object.keys(symbolDataSets).length, Object.keys(agentDataSets).length])
 
-    return colorMap;
-  }, [yKeys, colors.primary]);
+  if (Object.keys(symbolDataSets).length === 0 || Object.keys(agentDataSets).length === 0) {
+    return (
+      <View style={{ height: 200, alignItems: 'center', justifyContent: "center" }}>
+        <ActivityIndicator color="surface" />
+      </View>
+    )
+  };
+  const startTs = symbolDataSets?.["BTC"]?.[0].timestamp
+  const endTs = symbolDataSets?.["BTC"]?.[symbolDataSets?.["BTC"]?.length - 1].timestamp
+  const chartWidth = width;
 
   return (
-    <Animated.View
-      style={[
-        {
-          padding: 0,
-          backgroundColor,
-          overflow: "hidden",
-          borderColor: colors.border,
-          margin: 10,
-          borderRadius: 12,
-        },
-        animatedStyle,
-        style,
-      ]}
-    >
-      {chartData.length > 0 && font && (
-        <CartesianChart
-          data={chartData}
-          xKey="timestamp"
-          yKeys={yKeys}
-          chartPressState={state}
-          axisOptions={{
-            font,
-            // tickCount: 5,
-            labelColor: withOpacity(textColor, .8),
-            formatXLabel: (value) => {
-              const date = new Date(value);
-              return `${date.getHours()}:${date.getMinutes()}`;
-            },
-            formatYLabel: (value) => `${value.toFixed(1)}%`,
-          }}
-        >
-          {({ points }) => (
-            <>
-              {yKeys.map((key) => {
-                const pointsForKey = points[key];
-                if (!pointsForKey) return null;
+    <GestureHandlerRootView style={{ flex: 1, height: 200 }}>
+      <LineChart.Provider
+        xLength={xLength}
+        data={data}
+        onCurrentIndexChange={invokeHaptic}
+      >
+        <LineChart.Group>
+          {tickerSymbols.map((symbol, idx) => {
+            if (!data[symbol]) return null;
 
-                return (
-                  <Line
-                    key={key}
-                    points={pointsForKey}
-                    color={lineColors[key] || colors.primary}
-                    strokeWidth={key === 'btc' ? 1.5 : 2.5}
-                    animate={{ type: "timing", duration: 300 }}
-                    connectMissingData
-                    curveType="stepAfter"
+            return (
+              <LineChart id={symbol} yGutter={30} width={chartWidth} height={200}>
+                <LineChart.Path color={symbolColors[symbol] || palette.primary} width={1.5}>
+                </LineChart.Path>
+
+                {idx === 0 && (
+                  <>
+                    <LineChart.Axis
+                      position="bottom"
+                      orientation="horizontal"
+                      tickCount={4}
+                      domain={startTs ? [startTs, endTs] : undefined}
+                      format={value => {
+                        'worklet';
+                        return formatXAxisTick(value, startTs, endTs)
+                      }}
+                    />
+                  </>
+                )}
+              </LineChart>
+            )
+          })}
+
+          {/* Agent performance lines */}
+          {agents.map((agent, idx) => {
+            if (!data[agent.id]) return null;
+
+            const agentColour = palette.providers[agent.llm_provider] ?? "#ddd";
+            return (
+              <LineChart id={agent.id} yGutter={30} width={chartWidth} height={200}>
+                <LineChart.Path color={agentColour} width={2.5}>
+                  {(data[agent.id].length > 0 && idx === 0) && (
+                    <>
+                      <LineChart.HorizontalLine at={{ value: 0 }} />
+                    </>
+                  )}
+                  <LineChart.Dot
+                    color={agentColour}
+                    at={data[agent.id].length - 1}
+                    hasPulse
+                    pulseDurationMs={3000}
                   />
-                );
-              })}
-
-              {isActive && yKeys.map((key) => {
-                const position = state.y[key]?.position;
-                if (!position) return null;
-
-                return (
-                  <Circle
-                    key={`circle-${key}`}
-                    cx={state.x.position}
-                    cy={position}
-                    r={5}
-                    color={lineColors[key] || colors.primary}
-                    opacity={0.8}
+                  <LineChart.Gradient />
+                </LineChart.Path>
+                <LineChart.CursorCrosshair
+                  color={palette.primary}
+                  outerSize={30}
+                  size={10}
+                  onActivated={invokeHaptic}
+                  onEnded={invokeHaptic}
+                >
+                  <LineChart.Tooltip
+                    textStyle={{
+                      backgroundColor: palette.background,
+                      borderRadius: 8,
+                      color: palette.foreground,
+                      fontSize: 14,
+                      padding: 8,
+                    }}
                   />
-                );
-              })}
-            </>
-          )}
-        </CartesianChart>
-      )}
-    </Animated.View>
+                </LineChart.CursorCrosshair>
+              </LineChart>
+            )
+          })}
+        </LineChart.Group>
+      </LineChart.Provider>
+    </GestureHandlerRootView>
   );
 }

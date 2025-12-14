@@ -74,6 +74,9 @@ export default function MarketPricesWidget({
         }}
         horizontal
         showsHorizontalScrollIndicator={false}
+        contentContainerStyle={{
+          paddingVertical: 6
+        }}
       />
     </Animated.View>
   );

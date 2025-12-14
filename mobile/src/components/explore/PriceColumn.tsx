@@ -188,6 +188,11 @@ export default function PriceColumn({
         flexDirection: "column",
         borderWidth: 0,
         elevation: 10,
+        // backgroundColor: "#fff",
+        // shadowColor: "#000",
+        // shadowOffset: [2,2],
+        // shadowOpacity: .05,
+
         // borderColor: withOpacity(palette.border, 0.9),
       }}
       enabled={false}

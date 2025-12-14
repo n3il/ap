@@ -23,7 +23,7 @@ export interface LLMProvider {
   models: string[];
 }
 
-const OPENROUTER_MODELS_API = 'https://openrouter.ai/api/frontend/models';
+const OPENROUTER_MODELS_API = 'https://openrouter.ai/api/frontend/models?order=newest';
 
 /**
  * Fetches available models from OpenRouter API
@@ -114,88 +114,3 @@ export function groupModelsByProvider(models: OpenRouterModel[]): LLMProvider[] 
     }))
     .sort((a, b) => a.name.localeCompare(b.name));
 }
-
-/**
- * Filters models to show only the most popular/useful ones
- */
-export function getPopularModels(models: OpenRouterModel[]): OpenRouterModel[] {
-  const popularModelSlugs = [
-    // Google
-    'google/gemini-2.0-flash-exp:free',
-    'google/gemini-flash-1.5',
-    'google/gemini-pro-1.5',
-    // OpenAI
-    'openai/gpt-4o',
-    'openai/gpt-4o-mini',
-    'openai/gpt-4-turbo',
-    'openai/o1-mini',
-    // Anthropic
-    'anthropic/claude-3.5-sonnet',
-    'anthropic/claude-3-opus',
-    'anthropic/claude-3-haiku',
-    // Meta
-    'meta-llama/llama-3.3-70b-instruct',
-    'meta-llama/llama-3.1-405b-instruct',
-    // DeepSeek
-    'deepseek/deepseek-chat',
-    // Mistral
-    'mistralai/mistral-large',
-    'mistralai/mistral-medium',
-  ];
-
-  return models.filter(model => popularModelSlugs.includes(model.slug));
-}
-
-/**
- * Default providers and models for fallback
- */
-export const DEFAULT_LLM_PROVIDERS: LLMProvider[] = [
-  {
-    id: "google",
-    name: "Google",
-    models: [
-      "google/gemini-2.0-flash-exp:free",
-      "google/gemini-flash-1.5",
-      "google/gemini-pro-1.5",
-    ],
-  },
-  {
-    id: "openai",
-    name: "OpenAI",
-    models: [
-      "openai/gpt-4o",
-      "openai/gpt-4o-mini",
-      "openai/gpt-4-turbo",
-    ],
-  },
-  {
-    id: "anthropic",
-    name: "Anthropic",
-    models: [
-      "anthropic/claude-3.5-sonnet",
-      "anthropic/claude-3-opus",
-      "anthropic/claude-3-haiku",
-    ],
-  },
-  {
-    id: "deepseek",
-    name: "DeepSeek",
-    models: ["deepseek/deepseek-chat"],
-  },
-  {
-    id: "meta",
-    name: "Meta",
-    models: [
-      "meta-llama/llama-3.3-70b-instruct",
-      "meta-llama/llama-3.1-405b-instruct",
-    ],
-  },
-  {
-    id: "mistral",
-    name: "Mistral",
-    models: [
-      "mistralai/mistral-large",
-      "mistralai/mistral-medium",
-    ],
-  },
-];

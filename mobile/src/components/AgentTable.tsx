@@ -71,7 +71,7 @@ function TableRow({ agent, idx }: { agent: AgentType; idx: number }) {
         </View>
 
         <View style={{ flex: 1, alignItems: "flex-end" }}>
-          <Text variant="sm" style={{ fontWeight: "600" }}>
+          <Text variant="sm" style={{ fontWeight: "600" }} numberOfLines={1}>
             {formatAmount(accountData.equity, { showUnits: [] })}
           </Text>
         </View>
@@ -231,9 +231,6 @@ export default function AgentTable({
           alignItems: "center",
           paddingVertical: 12,
           paddingHorizontal: 16,
-          // backgroundColor: palette.surface,
-          // borderBottomWidth: 1,
-          borderBottomColor: palette.border,
         }}
       >
         <View style={{ flex: 1 }}>
@@ -281,7 +278,7 @@ export default function AgentTable({
             variant="xs"
             style={{ fontWeight: "700", textTransform: "uppercase" }}
           >
-            #
+            P
           </Text>
         </View>
       </View>

@@ -84,11 +84,13 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
 
   return (
     <Card
+      variant="outlined"
       isInteractive
       glassEffectStyle={isDark ? "clear" : "regular"}
-      glassTintColor="rgba(0,0,0,.4)"
+      // glassTintColor="rgba(0,0,0,.4)"
       style={{
         borderColor: '#000',
+        backgroundColor: "#fff",
         paddingVertical: 18,
         paddingHorizontal: 18,
         borderRadius: 24,

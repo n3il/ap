@@ -3,6 +3,8 @@ import GlassButton from "./GlassButton";
 import { useColors } from "@/theme";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { Ionicons } from "@expo/vector-icons";
+import View from "./View";
+import Divider from "./Divider";
 
 
 export default function Toggle() {
@@ -11,54 +13,53 @@ export default function Toggle() {
 
 
   return (
-    <GlassContainer
-      spacing={4}
+    <View
       style={{
         flexDirection: "row",
+        // borderColor: palette.border,
+        // borderWidth: .5,
+        // borderRadius: 10,
       }}
     >
       <GlassButton
-        styleVariant="minimal"
-        enabled={viewMode === "table"}
-        onPress={() =>
-          setViewMode("table")
-        }
-        style={{
-          borderRadius: 8,
-          backgroundColor: "transparent",
-        }}
-      >
-        <Ionicons
-          name={"list-outline"}
-          size={18}
-          color={
-            viewMode === "table"
-              ? palette.accent
-              : palette.foreground
-          }
-        />
-      </GlassButton>
-      <GlassButton
-        styleVariant="minimal"
-        enabled={viewMode === "list"}
+        styleVariant="none"
+        // enabled={viewMode === "list"}
+        enabled={false}
         onPress={() =>
           setViewMode("list")
 
         }
         style={{
-          borderRadius: 8,
+          padding: 3,
+          marginLeft: 2,
+          opacity: viewMode === "list" ? 1 : .8,
         }}
       >
         <Ionicons
-          name={"grid-outline"}
+          name={"list-outline"}
           size={14}
-          color={
-            viewMode === "list"
-              ? palette.accent
-              : palette.foreground
-          }
+          color={palette.foreground}
         />
       </GlassButton>
-    </GlassContainer>
+      <GlassButton
+        styleVariant="none"
+        // enabled={viewMode === "table"}
+        enabled={false}
+        onPress={() =>
+          setViewMode("table")
+        }
+        style={{
+          padding: 3,
+          marginRight: 2,
+          opacity: viewMode === "table" ? 1 : .8,
+        }}
+      >
+        <Ionicons
+          name={"square-outline"}
+          size={14}
+          color={palette.foreground}
+        />
+      </GlassButton>
+    </View>
   )
 }

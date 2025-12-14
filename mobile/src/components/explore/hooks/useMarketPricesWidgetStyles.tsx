@@ -87,7 +87,7 @@ export const useMarketPricesWidgetStyles = ({
     const p = progress.value;
     return {
       height: interpolate(p, PROGRESS_RANGE, [0, 30], CLAMP),
-      opacity: interpolate(p, PROGRESS_RANGE, [0, 0.2], CLAMP), // Fades in dim
+      opacity: interpolate(p, PROGRESS_RANGE, [0, 0.4], CLAMP), // Fades in dim
     };
   }, [progress]);
 

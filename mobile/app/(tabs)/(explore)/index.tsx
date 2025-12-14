@@ -61,7 +61,7 @@ export default function ExploreScreen() {
       <AnimatedScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: "70%" }}
-        stickyHeaderIndices={[0]}
+        // stickyHeaderIndices={[0]}
         refreshControl={
           <RefreshControl
             refreshing={isFetching}

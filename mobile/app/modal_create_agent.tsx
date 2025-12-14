@@ -15,16 +15,11 @@ import {
   TextInput,
   View,
 } from "@/components/ui";
-import { Keyboard, TouchableWithoutFeedback } from "react-native";
 import { agentService } from "@/services/agentService";
 import { useColors, withOpacity } from "@/theme";
 import {
   fetchOpenRouterModels,
-  groupModelsByProvider,
-  getPopularModels,
   formatModelName,
-  DEFAULT_LLM_PROVIDERS,
-  type LLMProvider,
 } from "@/services/llmService";
 
 export default function ModalCreateAgent() {
@@ -159,22 +154,22 @@ export default function ModalCreateAgent() {
                 </View>
               ) : (
                 <FlatList
-                  data={models.slice(0, 10)}
-                  keyExtractor={(item) => item.permaslug || item.slug}
+                  data={models.slice(0, 100)}
+                  keyExtractor={(item) => item.endpoint.model_variant_slug}
                   contentContainerStyle={{ gap: 8 }}
                   style={{ maxHeight: 300 }}
                   showsVerticalScrollIndicator={false}
                   renderItem={({ item }) => {
-                    const isSelected = formData.model_name === item.slug;
+                    const isSelected = formData.model_name === item.endpoint.model_variant_permaslug;
                     const displayName = item.name || formatModelName(item.slug);
 
                     return (
                       <GlassButton
-                        onPress={() => handleModelSelect(item.slug)}
+                        enabled={false}
+                        onPress={() => handleModelSelect(item.endpoint.model_variant_permaslug)}
                         style={{
-                          paddingHorizontal: 16,
-                          paddingVertical: 12,
-                          marginBottom: 4,
+                          flexDirection: "row",
+                          justifyContent: "space-between",
                         }}
                         tintColor={
                           isSelected
@@ -182,32 +177,13 @@ export default function ModalCreateAgent() {
                             : withOpacity(palette.surface, 0.5)
                         }
                       >
-                        <View style={{ gap: 4 }}>
-                          <Text
-                            variant="xs"
-                            numberOfLines={2}
-                            style={{
-                              color: isSelected
-                                ? palette.foreground
-                                : palette.mutedForeground,
-                              fontWeight: isSelected ? "700" : "400",
-                              fontSize: 11,
-                            }}
-                          >
-                            {displayName}
-                          </Text>
-                          {item.provider_display_name && (
-                            <Text
-                              variant="xs"
-                              style={{
-                                color: withOpacity(palette.mutedForeground, 0.6),
-                                fontSize: 9,
-                              }}
-                            >
-                              {item.provider_display_name}
-                              {item.is_free && " • Free"}
-                            </Text>
-                          )}
+                        <View style={{ gap: 4, flexDirection: "column" }}>
+                          <Text>{displayName}</Text>
+                          <Text>{item.endpoint.provider_display_name}</Text>
+                        </View>
+                        <View style={{ gap: 4, flexDirection: "column" }}>
+                          <Text>{new Date(item.created_at).toLocaleDateString("en-US")}</Text>
+                          {item.endpoint.is_free && <Text>free</Text>}
                         </View>
                       </GlassButton>
                     );

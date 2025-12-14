@@ -9,6 +9,10 @@ const styleVariants = {
     paddingHorizontal: 8,
     paddingVertical: 8,
   },
+  none: {
+    paddingHorizontal: 0,
+    paddingVertical: 0,
+  },
   square: {
     paddingHorizontal: 14,
     paddingVertical: 14,

@@ -9,7 +9,6 @@ export default function SentimentBadge({ sentimentScore, sentimentWord }) {
         backgroundColor: sentimentToColor(sentimentScore),
         fontStyle: "italic",
         fontWeight: "900",
-        marginBottom: 2,
         paddingHorizontal: 1,
         color: "#fff",
         textAlign: "left",
