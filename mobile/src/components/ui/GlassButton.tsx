@@ -1,8 +1,9 @@
 import { GlassView, GlassViewProps } from "expo-glass-effect";
-import { Pressable, View, type ViewProps } from "react-native";
+import { Pressable } from "react-native";
 import Text from "@/components/ui/Text";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
+import { View } from "dripsy";
 
 const styleVariants = {
   default: {
@@ -66,7 +67,7 @@ export default function GlassButton({
     <Pressable
       onPress={onPress}
       disabled={disabled}
-      style={[{ flexGrow: 1 }, pressableStyle, style]}
+      style={[{ flexGrow: 1 }, pressableStyle]}
       {...buttonProps}
     >
       {typeof children === "string" ? (

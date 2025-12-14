@@ -56,7 +56,7 @@ export default function ReportPreview({
       >
         {assessmentData.parsed_llm_response?.headline?.short_summary}
       </Text>
-      <TradeActionsSummaryText assessmentData={assessmentData}  />
+      {/* <TradeActionsSummaryText assessmentData={assessmentData}  /> */}
     </View>
   );
 }

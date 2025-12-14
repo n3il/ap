@@ -4,7 +4,7 @@ import {
   getCountryCallingCode,
   parsePhoneNumberFromString,
 } from "libphonenumber-js";
-import { useCallback, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { TextInput, View } from "react-native";
 import { useColors } from "@/theme";
 
@@ -16,119 +16,123 @@ export default function PhoneInputAutoDetect({
   onChange: (value: string) => void;
 }) {
   const { colors: palette } = useColors();
-  const [countryCodeValue, setCountryCodeValue] = useState(
-    `${getCountryCallingCode(DEFAULT_COUNTRY)}`,
+
+  // ---- single sources of truth ----
+  const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
+  const [callingCode, setCallingCode] = useState(
+    getCountryCallingCode(DEFAULT_COUNTRY),
   );
-  const [displayValue, setDisplayValue] = useState("");
+  const [nationalDigits, setNationalDigits] = useState("");
 
-  const [countryCode, setCountryCode] = useState<CountryCode>(DEFAULT_COUNTRY);
+  // ---- derived formatted display (never edited directly) ----
+  const displayValue = useMemo(() => {
+    const formatter = new AsYouType(country);
+    return formatter.input(nationalDigits);
+  }, [country, nationalDigits]);
 
-  const formatter = useMemo(() => new AsYouType(countryCode), [countryCode]);
+  // ---- emit E.164 upward ----
+  useEffect(() => {
+    const full = `+${callingCode}${nationalDigits}`;
+    const phone = parsePhoneNumberFromString(full);
 
-  const processAndReport = useCallback(
-    (input: string, currentCountry: CountryCode) => {
-      const digitsOnly = input.replace(/[^\d+]/g, "");
-      formatter.reset();
-      const formattedDisplay = formatter.input(digitsOnly);
-      if (formattedDisplay !== displayValue) {
-        setDisplayValue(formattedDisplay);
-      }
+    onChange(phone?.isValid() ? phone.number : "");
+  }, [callingCode, nationalDigits, onChange]);
 
-      const phoneNumber = parsePhoneNumberFromString(
-        formattedDisplay,
-        currentCountry,
-      );
+  // ---- handlers ----
+  const handleCallingCodeChange = (text: string) => {
+    const digits = text.replace(/\D/g, "");
+    setCallingCode(digits);
 
-      let e164 = "";
-      let _raw = digitsOnly;
-      let _formatted = formattedDisplay;
-      let newCountry = currentCountry;
+    // Try to auto-detect country from new calling code + national digits
+    const phone = parsePhoneNumberFromString(
+      `+${digits}${nationalDigits}`,
+    );
 
-      if (phoneNumber?.isValid()) {
-        e164 = phoneNumber.number;
-        _formatted = phoneNumber.formatNational();
-        newCountry = phoneNumber.country || currentCountry;
-        _raw = phoneNumber.nationalNumber; // Use the parsed national number digits
-      } else if (digitsOnly.startsWith("+")) {
-        e164 = digitsOnly;
-        _formatted = digitsOnly;
-      }
-
-      if (newCountry !== currentCountry) {
-        setCountryCode(newCountry);
-      }
-
-      onChange(e164);
-    },
-    [formatter, onChange, displayValue],
-  ); // Depend on formatter and onChange
-
-  const handleTextChange = (text: string) => {
-    processAndReport(text, countryCode);
+    if (phone?.country && phone.country !== country) {
+      setCountry(phone.country);
+    }
   };
+
+  const handleNationalChange = (text: string) => {
+    const isDeleting = text.length < displayValue.length;
+
+    if (isDeleting) {
+      const lastChar = displayValue[selection.start - 1];
+
+      // If deleting formatting, just move cursor left
+      if (lastChar && /\D/.test(lastChar)) {
+        setSelection({
+          start: selection.start - 1,
+          end: selection.start - 1,
+        });
+        return;
+      }
+    }
+
+    const digits = text.replace(/\D/g, "");
+    setNationalDigits(digits);
+  };
+
+  const [selection, setSelection] = useState<{ start: number; end: number }>({
+    start: 0,
+    end: 0,
+  });
+
 
   return (
     <View
       style={{
         flexDirection: "row",
-        justifyContent: "flex-start",
         alignItems: "center",
         padding: 8,
         borderRadius: 8,
       }}
     >
+      {/* + (fixed) */}
       <TextInput
-        style={{
-          fontSize: 24,
-          height: 40,
-          color: palette.foreground,
-          letterSpacing: 2,
-          fontStyle: "italic",
-        }}
-        selectionColor={palette.foreground}
-        value={"+"}
-        keyboardType="phone-pad"
-        textContentType="telephoneNumber"
+        value="+"
         editable={false}
-      />
-      <TextInput
         style={{
           fontSize: 24,
           height: 40,
           color: palette.foreground,
-          letterSpacing: 2,
-          fontStyle: "italic",
-          marginLeft: 4,
-        }}
-        selectionColor={palette.foreground}
-        value={countryCodeValue}
-        placeholder="1"
-        keyboardType="phone-pad"
-        textContentType="telephoneNumber"
-        onChangeText={setCountryCodeValue}
-        onBlur={() => {
-          if (!countryCodeValue) {
-            setCountryCodeValue("1");
-          }
         }}
       />
+
+      {/* country calling code */}
       <TextInput
+        value={callingCode}
+        placeholder="1"
+        keyboardType="number-pad"
+        onChangeText={handleCallingCodeChange}
+        style={{
+          fontSize: 24,
+          height: 40,
+          color: palette.foreground,
+          marginLeft: 4,
+          minWidth: 18,
+        }}
+      />
+
+      {/* national number */}
+      <TextInput
+        value={displayValue}
+        placeholder="(000) 000-0000"
+        keyboardType="phone-pad"
+        textContentType="telephoneNumber"
+        onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
+        onChangeText={handleNationalChange}
+        autoFocus
         style={{
           flex: 1,
           fontSize: 24,
           height: 40,
           color: palette.foreground,
-          letterSpacing: 2,
           marginLeft: 12,
+          letterSpacing: 2,
         }}
-        selectionColor={palette.foreground}
-        value={displayValue}
-        placeholder="(000) 000-0000"
-        keyboardType="phone-pad"
-        textContentType="telephoneNumber"
-        onChangeText={handleTextChange}
-        autoFocus
       />
     </View>
   );
 }
+90823

@@ -46,7 +46,7 @@ const TextInput = React.forwardRef<RNTextInput, TextInputProps>(
     return (
       <RNTextInput
         ref={ref}
-        placeholderTextColor={placeholderTextColor ?? colors.placeholder}
+        placeholderTextColor={placeholderTextColor ?? palette.placeholder}
         style={mergedStyle}
         {...props}
       />

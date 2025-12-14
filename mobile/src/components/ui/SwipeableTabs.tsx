@@ -34,11 +34,13 @@ export interface SwipeableTab {
   key: string;
   title: string;
   content: TabContent;
+  isCompleted?: boolean;
 }
 
 interface SwipeableTabsProps {
   tabs: SwipeableTab[];
   initialIndex?: number;
+  activeIndex?: number;
   onTabChange?: (index: number) => void;
   tabStyle?: ViewStyle;
   activeTabStyle?: ViewStyle;
@@ -62,6 +64,7 @@ interface SwipeableTabsProps {
 export default function SwipeableTabs({
   tabs,
   initialIndex = 0,
+  activeIndex,
   onTabChange,
   indicatorColor = "#007AFF",
   contentStyle,
@@ -74,26 +77,46 @@ export default function SwipeableTabs({
   contentContainerStyle,
 }: SwipeableTabsProps) {
   const { theme } = useTheme();
-  const [currentIndex, setCurrentIndex] = useState(initialIndex);
+  const isControlled = typeof activeIndex === "number";
+  const startIndex = isControlled ? (activeIndex as number) : initialIndex;
+  const [currentIndex, setCurrentIndex] = useState(startIndex);
   const [tabLayouts, setTabLayouts] = useState<
     Record<string, { x: number; width: number }>
   >({});
   const [loadedTabs, setLoadedTabs] = useState<Set<number>>(
-    () => new Set([initialIndex]),
+    () => new Set([startIndex]),
   );
   const flatListRef = useRef<FlatList>(null);
   const scrollX = useRef(
-    new Animated.Value(initialIndex * SCREEN_WIDTH),
+    new Animated.Value(startIndex * SCREEN_WIDTH),
   ).current;
 
   useEffect(() => {
+    if (isControlled) return;
     setLoadedTabs((prev) => {
       if (prev.has(initialIndex)) return prev;
       const next = new Set(prev);
       next.add(initialIndex);
       return next;
     });
-  }, [initialIndex]);
+  }, [initialIndex, isControlled]);
+
+  useEffect(() => {
+    if (!isControlled) return;
+    if (typeof activeIndex !== "number") return;
+
+    setLoadedTabs((prev) => {
+      if (prev.has(activeIndex)) return prev;
+      const next = new Set(prev);
+      next.add(activeIndex);
+      return next;
+    });
+
+    if (activeIndex !== currentIndex) {
+      setCurrentIndex(activeIndex);
+      flatListRef.current?.scrollToIndex({ index: activeIndex, animated: true });
+    }
+  }, [activeIndex, currentIndex, isControlled]);
 
   const markTabLoaded = useCallback((index: number) => {
     setLoadedTabs((prev) => {
@@ -108,8 +131,12 @@ export default function SwipeableTabs({
     (index: number) => {
       markTabLoaded(index);
       flatListRef.current?.scrollToIndex({ index, animated: true });
+      if (!isControlled) {
+        setCurrentIndex(index);
+      }
+      onTabChange?.(index);
     },
-    [markTabLoaded],
+    [isControlled, markTabLoaded, onTabChange],
   );
 
   const handleScroll = Animated.event(
@@ -122,13 +149,15 @@ export default function SwipeableTabs({
       const newIndex = Math.round(
         event.nativeEvent.contentOffset.x / SCREEN_WIDTH,
       );
-      if (newIndex !== currentIndex) {
+      if (newIndex !== currentIndex && !isControlled) {
         setCurrentIndex(newIndex);
+      }
+      if (newIndex !== currentIndex) {
         onTabChange?.(newIndex);
       }
       markTabLoaded(newIndex);
     },
-    [currentIndex, onTabChange, markTabLoaded],
+    [currentIndex, isControlled, onTabChange, markTabLoaded],
   );
 
   const tabWidth = SCREEN_WIDTH / tabs.length;
@@ -316,7 +345,7 @@ export default function SwipeableTabs({
         onMomentumScrollEnd={handleMomentumScrollEnd}
         scrollEventThrottle={16}
         getItemLayout={getItemLayout}
-        initialScrollIndex={initialIndex}
+        initialScrollIndex={startIndex}
         bounces={false}
         decelerationRate="fast"
         refreshing={refreshing}

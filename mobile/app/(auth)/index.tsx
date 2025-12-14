@@ -219,6 +219,7 @@ export default function Auth() {
               flexDirection: "row",
               justifyContent: "space-between",
               marginBottom: 3,
+              alignItems: "center"
             }}
           >
             <GlassButton
@@ -235,15 +236,8 @@ export default function Auth() {
                   style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    flexGrow: 1,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
+                      justifyContent: "center",
                       gap: 8,
-                      flexGrow: 1,
                     }}
                   >
                     <MaterialIcons
@@ -256,25 +250,17 @@ export default function Auth() {
                     >
                       Email
                     </Text>
-                  </View>
                 </AnimatedBox>
               ) : (
                 <AnimatedBox
                   key="toggle-sms"
                   entering={FadeIn.duration(200)}
                   exiting={FadeOut.duration(150)}
-                  sx={{
+                  style={{
                     flexDirection: "row",
                     alignItems: "center",
-                    flexGrow: 1,
-                  }}
-                >
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      alignItems: "center",
+                      justifyContent: "center",
                       gap: 8,
-                      flexGrow: 1,
                     }}
                   >
                     <MaterialIcons
@@ -288,7 +274,6 @@ export default function Auth() {
                     >
                       Phone Number
                     </Text>
-                  </View>
                 </AnimatedBox>
               )}
             </GlassButton>
