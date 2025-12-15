@@ -205,7 +205,7 @@ export default function PriceColumn({
               {
                 textTransform: "uppercase",
                 letterSpacing: 1.2,
-                color: palette.textSecondary,
+                color: palette.foreground,
               },
               symbolStyle,
             ]}

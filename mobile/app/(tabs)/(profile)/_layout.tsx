@@ -35,6 +35,13 @@ export default function ProfileLayout() {
         }}
       />
       <Stack.Screen
+        name="wallet-management"
+        options={{
+          title: "Wallet Management",
+          presentation: "card",
+        }}
+      />
+      <Stack.Screen
         name="help-support"
         options={{
           title: "Help & Support",

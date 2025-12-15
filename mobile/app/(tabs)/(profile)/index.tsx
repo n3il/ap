@@ -1,27 +1,18 @@
-import { Feather, Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
-import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { colors } from "react-native-keyboard-controller/lib/typescript/components/KeyboardToolbar/colors";
-import { FadeInDown } from "react-native-reanimated";
 import ContainerView from "@/components/ContainerView";
 import DebugOverlay from "@/components/DebugOverlay";
-import SectionTitle from "@/components/SectionTitle";
 import {
   Alert,
-  Avatar,
-  Card,
   ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
 } from "@/components/ui";
-import { AnimatedBox } from "@/components/ui/animated";
 import LockScreen from "@/components/ui/LockScreen";
 import { ROUTES } from "@/config/routes";
 import { useAuth } from "@/contexts/AuthContext";
 import { useAnimationKey } from "@/hooks/useAnimationKey";
 import { useColors } from "@/theme";
+import Section, { SectionItem } from "@/components/settings/Section";
+import WalletSelector from "@/components/wallets/WalletSelector";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
@@ -53,33 +44,45 @@ export default function ProfileScreen() {
 
   const menuItems = [
     {
-      id: "account",
-      icon: "person-outline",
-      title: "Account Settings",
-      subtitle: "Manage your account details",
-      onPress: () => router.push("/(tabs)/(profile)/account-settings"),
-    },
-    {
-      id: "notifications",
-      icon: "notifications-outline",
-      title: "Notifications",
-      subtitle: "Configure notification preferences",
-      onPress: () => router.push("/(tabs)/(profile)/notifications"),
-    },
-    {
-      id: "privacy",
-      icon: "shield-checkmark-outline",
-      title: "Privacy & Security",
-      subtitle: "Manage your privacy settings",
-      onPress: () => router.push("/(tabs)/(profile)/privacy-security"),
-    },
-    {
-      id: "help",
-      icon: "help-circle-outline",
-      title: "Help & Support",
-      subtitle: "Get help and contact support",
-      onPress: () => router.push("/(tabs)/(profile)/help-support"),
-    },
+      title: "Settings",
+      children: [
+        {
+          id: "wallet",
+          icon: "wallet-outline",
+          title: "Add & Manage Wallets",
+          subtitle: "Manage your viem wallet",
+          onPress: () => router.push("/(tabs)/(profile)/wallet-management"),
+        },
+        {
+          id: "account",
+          icon: "person-outline",
+          title: "Account Settings",
+          subtitle: "Manage your account details",
+          onPress: () => router.push("/(tabs)/(profile)/account-settings"),
+        },
+        {
+          id: "notifications",
+          icon: "notifications-outline",
+          title: "Notifications",
+          subtitle: "Configure notification preferences",
+          onPress: () => router.push("/(tabs)/(profile)/notifications"),
+        },
+        {
+          id: "privacy",
+          icon: "shield-checkmark-outline",
+          title: "Integrations",
+          subtitle: "Connected apps and API keys",
+          onPress: () => router.push("/(tabs)/(profile)/privacy-security"),
+        },
+        {
+          id: "help",
+          icon: "help-circle-outline",
+          title: "Help & Support",
+          subtitle: "Get help and contact support",
+          onPress: () => router.push("/(tabs)/(profile)/help-support"),
+        },
+      ]
+    }
   ];
 
   if (loading) {
@@ -105,94 +108,16 @@ export default function ProfileScreen() {
           paddingBottom: 150,
         }}
       >
-        <SectionTitle
-          title="Profile"
-          sx={{ fontSize: 16, marginVertical: 6 }}
-        />
 
-        <AnimatedBox entering={FadeInDown.delay(100).springify()} key={animKey}>
-          <Card
-            sx={{
-              borderRadius: 24,
-              backgroundColor: "transparent",
-              borderWidth: 1,
-              borderColor: palette.border,
-            }}
-          >
-            <Avatar
-              name={user.user_metadata?.full_name}
-              email={user.email}
-              phoneNumber={user.phone}
-              size="md"
-            />
-          </Card>
-        </AnimatedBox>
+        <WalletSelector />
 
-        <SectionTitle
-          title="Settings"
-          sx={{ fontSize: 16, marginVertical: 6 }}
-        />
-        <View sx={{ gap: 2 }}>
-          {menuItems.map((item, index) => (
-            <AnimatedBox
-              key={`${item.id}-${animKey}`}
-              entering={FadeInDown.delay(200 + index * 50).springify()}
-              sx={{ marginBottom: 3 }}
-            >
-              <TouchableOpacity onPress={item.onPress} activeOpacity={0.7}>
-                <View
-                  sx={{
-                    borderRadius: "lg",
-                    padding: 4,
-                  }}
-                >
-                  <View sx={{ flexDirection: "row", alignItems: "center" }}>
-                    <View
-                      sx={{
-                        width: 48,
-                        height: 48,
-                        borderRadius: "full",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        marginRight: 4,
-                        backgroundColor: withOpacity(
-                          palette.brand500 ?? palette.info,
-                          0.15,
-                        ),
-                      }}
-                    >
-                      <Ionicons
-                        name={item.icon}
-                        size={24}
-                        color={palette.brand500 ?? palette.info}
-                      />
-                    </View>
-                    <View sx={{ flex: 1 }}>
-                      <Text
-                        sx={{
-                          fontSize: 16,
-                          fontWeight: "600",
-                          color: "textPrimary",
-                          marginBottom: 1,
-                        }}
-                      >
-                        {item.title}
-                      </Text>
-                      <Text sx={{ fontSize: 14, color: "textSecondary" }}>
-                        {item.subtitle}
-                      </Text>
-                    </View>
-                    <Feather
-                      name="chevron-right"
-                      size={20}
-                      color={palette.mutedForeground}
-                    />
-                  </View>
-                </View>
-              </TouchableOpacity>
-            </AnimatedBox>
-          ))}
-        </View>
+        {menuItems.map((section, sectionIdx) => (
+          <Section section={section} sectionIdx={sectionIdx}>
+            {section.children.map((item, itemIdx) => (
+              <SectionItem item={item} itemIdx={itemIdx} />
+            ))}
+          </Section>
+        ))}
       </ScrollView>
       {false && <DebugOverlay />}
     </ContainerView>

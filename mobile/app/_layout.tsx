@@ -1,3 +1,4 @@
+import 'react-native-get-random-values';
 import "fast-text-encoding";
 import "event-target-polyfill";
 import "@/polyfills/domException";
@@ -8,12 +9,11 @@ import * as ExpoSplashScreen from "expo-splash-screen";
 import { useEffect, useMemo, useState } from "react";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import DebugOverlay from "@/components/DebugOverlay";
-import ExploreHeader from "@/components/explore/Header";
 import SplashScreen from "@/components/SplashScreen";
 import { ROUTES } from "@/config/routes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { WalletProvider } from "@/contexts/WalletContext";
 import { useColors } from "@/theme";
 
 Sentry.init({
@@ -131,7 +131,9 @@ export default Sentry.wrap(function RootLayout() {
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
             <AuthProvider>
-              <AuthNavigator />
+              <WalletProvider>
+                <AuthNavigator />
+              </WalletProvider>
             </AuthProvider>
           </QueryClientProvider>
         </SafeAreaProvider>

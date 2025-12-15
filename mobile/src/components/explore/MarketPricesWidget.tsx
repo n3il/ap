@@ -45,7 +45,6 @@ export default function MarketPricesWidget({
     },
   ).current;
 
-  console.log({ visibleTickers });
   const { timeframe } = useTimeframeStore();
   const {
     dataBySymbol: candleDataBySymbol,
