@@ -1,6 +1,10 @@
+import useRouteAuth from "@/hooks/useRouteAuth";
 import { Stack } from "expo-router";
+import { useEffect } from "react";
 
 export default function ProfileLayout() {
+  useRouteAuth({ autoRedirect: true })
+
   return (
     <Stack
       screenOptions={{

@@ -1,12 +1,17 @@
-import { usePathname } from "expo-router";
-import { useMemo } from "react";
+import { usePathname, useRouter } from "expo-router";
+import { useEffect, useMemo } from "react";
 import { isRouteAccessible, ROUTES } from "@/config/routes";
 import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Hook to check route accessibility based on authentication state
  */
-export default function useRouteAuth() {
+export default function useRouteAuth({
+  autoRedirect = false
+}: {
+  autoRedirect?: boolean
+}) {
+  const router = useRouter();
   const pathname = usePathname();
   const { user, loading } = useAuth();
   const isAuthenticated = !!user;
@@ -28,6 +33,12 @@ export default function useRouteAuth() {
     },
     [isAuthenticated, loading, requireAuth],
   );
+
+  useEffect(() => {
+    if (autoRedirect) {
+      router.push(ROUTES.AUTH_INDEX.path)
+    }
+  }, [pathname]);
 
   return {
     isAuthenticated,

@@ -47,13 +47,6 @@ export default function ProfileScreen() {
       title: "Settings",
       children: [
         {
-          id: "wallet",
-          icon: "wallet-outline",
-          title: "Add & Manage Wallets",
-          subtitle: "Manage your viem wallet",
-          onPress: () => router.push("/(tabs)/(profile)/wallet-management"),
-        },
-        {
           id: "account",
           icon: "person-outline",
           title: "Account Settings",

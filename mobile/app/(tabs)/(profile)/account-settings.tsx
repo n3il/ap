@@ -40,7 +40,7 @@ export default function AccountSettingsScreen() {
 
   const [formData, setFormData] = useState({
     full_name: user?.full_name || "",
-    phone: user.phone,
+    phone: user?.phone,
     email: user?.email || "",
   });
 

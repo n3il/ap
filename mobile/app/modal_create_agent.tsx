@@ -616,11 +616,7 @@ export default function ModalCreateAgent() {
               <View style={{ flex: 1, gap: 6 }}>
                 <SectionTitle title="New agent" sx={{ padding: 2 }} />
                 <Text variant="xl" style={{ fontWeight: "700" }}>
-                  Swipe through to design your AI teammate
-                </Text>
-                <Text tone="muted" variant="sm">
-                  Identity, brain, guardrails, and a final review—all in one
-                  smooth wizard.
+                  Design your AI Portfolio Manager
                 </Text>
                 <View
                   style={{
