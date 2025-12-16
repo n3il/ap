@@ -3,7 +3,7 @@ import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { View } from "react-native";
+import { View } from "dripsy";
 import InfoSlides from "@/components/InfoSlides";
 import {
   Animated,
@@ -90,6 +90,19 @@ export default function GetStartedScreen() {
         nativeControls={false}
         contentFit="cover"
       />
+      <View
+        style={{
+          width,
+          height,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          zIndex: 0,
+          backgroundColor: "rgba(0,0,0,.7)"
+        }}
+      />
 
       <Animated.View
         style={{
@@ -102,7 +115,13 @@ export default function GetStartedScreen() {
         <SafeAreaView style={{ flex: 1 }}>
           <InfoSlides onSlideChange={handleSlideChange} />
 
-          <View sx={{ paddingHorizontal: 8, paddingBottom: 4 }}>
+          <View sx={{
+            paddingHorizontal: 8,
+            paddingBottom: 4,
+            position: "absolute",
+            inset: 0,
+            top: "auto"
+          }}>
             <View
               sx={{
                 flexDirection: "row",
@@ -131,16 +150,16 @@ export default function GetStartedScreen() {
                     variant="lg"
                     sx={{
                       fontWeight: 500,
-                      color: "foreground",
                       textAlign: "center",
+                      color: "#fff"
                     }}
                   >
-                    Get started
+                    Authenticate
                   </Text>
                   <MaterialCommunityIcons
-                    name="arrow-right"
+                    name="chevron-double-up"
                     size={24}
-                    color={palette.foreground}
+                    color={"#fff"}
                   />
                 </View>
               </GlassButton>
@@ -149,17 +168,20 @@ export default function GetStartedScreen() {
             {process.env.EXPO_PUBLIC_REQUIRE_AUTH !== "true" && (
               <GlassButton
                 style={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                  borderRadius: 36,
-                  alignSelf: "center",
-                  paddingHorizontal: 16,
-                  marginTop: 16,
+                  marginTop: 24,
+                  marginBottom: 16,
+                  backgroundColor: "transparent",
+                  borderRadius: 10000
                 }}
                 onPress={handleContinueWithoutAuth}
-                activeOpacity={0.8}
               >
-                <Text>Continue without an account</Text>
+                <Text
+                  style={{
+                    color: "#fff"
+                  }}
+                >
+                  Continue without an account
+                </Text>
               </GlassButton>
             )}
           </View>

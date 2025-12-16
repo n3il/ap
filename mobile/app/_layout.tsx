@@ -1,9 +1,8 @@
-import 'react-native-get-random-values';
-import "fast-text-encoding";
-import "event-target-polyfill";
-import "@/polyfills/domException";
+// Polyfills are loaded in index.js
 import * as Sentry from "@sentry/react-native";
+import { PrivyProvider, usePrivy } from "@privy-io/expo";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import Constants from "expo-constants";
 import { Stack, useRouter } from "expo-router";
 import * as ExpoSplashScreen from "expo-splash-screen";
 import { useEffect, useMemo, useState } from "react";
@@ -13,7 +12,6 @@ import SplashScreen from "@/components/SplashScreen";
 import { ROUTES } from "@/config/routes";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
-import { WalletProvider } from "@/contexts/WalletContext";
 import { useColors } from "@/theme";
 
 Sentry.init({
@@ -34,60 +32,18 @@ ExpoSplashScreen.preventAutoHideAsync();
 const queryClient = new QueryClient();
 
 function AuthNavigator() {
-  const { colors: palette } = useColors();
-  const { user, loading, hasCompletedOnboarding } = useAuth();
-  const router = useRouter();
-  const [appIsReady, setAppIsReady] = useState(false);
-
-  // Handle navigation based on auth state
-  useEffect(() => {
-    if (loading || !appIsReady) {
-      return;
-    }
-    if (user && !hasCompletedOnboarding) {
-      return router.replace(ROUTES.AUTH_ONBOARDING.path);
-    } else {
-      const requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === "true";
-      const showGetStartedScreen =
-        process.env.EXPO_PUBLIC_SHOW_GET_STARTED === "true";
-      if (requireAuth || showGetStartedScreen) {
-        return router.replace(ROUTES.INDEX.path);
-      }
-    }
-    return router.replace(ROUTES.TABS_INDEX.path);
-  }, [loading, appIsReady, user, hasCompletedOnboarding, router.replace]);
+  const { isReady } = usePrivy();
 
   useEffect(() => {
     async function prepare() {
-      await ExpoSplashScreen.hideAsync();
-    }
-    if (appIsReady) {
+       await ExpoSplashScreen.hideAsync();
+     }
+    if (isReady) {
       prepare();
     }
-  }, [appIsReady]);
+  }, [isReady]);
 
-  useEffect(() => {
-    async function prepare() {
-      try {
-        // Keep splash visible for minimum duration for smooth UX
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-      } catch (_e) {
-        //
-      } finally {
-        setAppIsReady(true);
-      }
-    }
-    if (!loading) {
-      prepare();
-    }
-  }, [loading]);
-
-  const rootBg = useMemo(
-    () => palette.backkgroundSecondary as string,
-    [palette],
-  );
-
-  if (loading || !appIsReady) {
+  if (!isReady) {
     return <SplashScreen />;
   }
 
@@ -97,7 +53,7 @@ function AuthNavigator() {
         headerShown: false,
         presentation: "card",
         contentStyle: {
-          backgroundColor: rootBg,
+          backgroundColor: "#000",
         },
         animation: "none",
       }}
@@ -125,16 +81,29 @@ function AuthNavigator() {
 }
 
 export default Sentry.wrap(function RootLayout() {
+  const privyAppId = Constants.expoConfig?.extra?.privyAppId;
+  const privyClientId = Constants.expoConfig?.extra?.privyClientId;
+
   return (
     <ThemeProvider>
       <KeyboardProvider>
         <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-              <WalletProvider>
+            <PrivyProvider
+              appId={privyAppId}
+              clientId={privyClientId}
+              config={{
+                loginMethods: ["email", "sms", "google", "apple", "wallet"],
+                embeddedWallets: {
+                  createOnLogin: "all-users",
+                  requireUserPasswordOnCreate: false,
+                },
+              }}
+            >
+              <AuthProvider>
                 <AuthNavigator />
-              </WalletProvider>
-            </AuthProvider>
+              </AuthProvider>
+            </PrivyProvider>
           </QueryClientProvider>
         </SafeAreaProvider>
       </KeyboardProvider>

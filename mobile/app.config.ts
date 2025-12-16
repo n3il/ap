@@ -96,6 +96,8 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       policy: "fingerprint"
     },
     extra: {
+      privyAppId: process.env.EXPO_PUBLIC_PRIVY_APP_ID,
+      privyClientId: process.env.EXPO_PUBLIC_PRIVY_CLIENT_ID,
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
       eas: {

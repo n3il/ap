@@ -1,7 +1,5 @@
-import type { AuthError, Session, User } from "@supabase/supabase-js";
-import * as AppleAuthentication from "expo-apple-authentication";
-import { makeRedirectUri } from "expo-auth-session";
-import * as WebBrowser from "expo-web-browser";
+import type { PrivyEmbeddedWalletProvider } from "@privy-io/expo";
+import { useEmbeddedEthereumWallet, usePrivy } from "@privy-io/expo";
 import {
   createContext,
   type ReactNode,
@@ -12,10 +10,7 @@ import {
 } from "react";
 import { supabase } from "@/config/supabase";
 
-// Re-export commonly used types from Supabase
-export type { AuthError, Session, User } from "@supabase/supabase-js";
-
-// Type definitions
+// Type definitions (maintain compatibility with existing code)
 export interface ProfileData {
   id?: string;
   full_name?: string;
@@ -30,40 +25,51 @@ export interface ProfileData {
 
 export interface AuthResponse<T = any> {
   data: T | null;
-  error: AuthError | Error | null;
+  error: Error | null;
 }
 
 export interface OAuthSessionResponse {
   data: { session: boolean } | null;
-  error: AuthError | Error | null;
+  error: Error | null;
 }
 
 export interface AuthContextType {
-  user: User | null;
-  session: Session | null;
+  // User state (Privy-based)
+  user: any | null;
+  session: any | null; // Kept for compatibility
+  privyUserId: string | null;
   loading: boolean;
   hasCompletedOnboarding: boolean;
-  signUp: (
+  isReady: boolean;
+
+  // Auth methods
+  signInWithEmailOtp: (email: string) => Promise<AuthResponse>;
+  signInWithPhone: (phoneNumber: string) => Promise<AuthResponse>;
+  signInWithGoogle: () => Promise<OAuthSessionResponse>;
+  signInWithApple: () => Promise<OAuthSessionResponse>;
+  signInWithWallet: () => Promise<AuthResponse>;
+  signOut: () => Promise<{ error: Error | null }>;
+
+  // Onboarding
+  completeOnboarding: (
+    profileData: ProfileData,
+  ) => Promise<{ error: Error | null }>;
+
+  // Embedded wallet access
+  embeddedWallet: PrivyEmbeddedWalletProvider | null;
+  walletAddress: string | null;
+
+  // Deprecated methods (for compatibility - will show warnings)
+  signUp?: (
     email: string,
     password: string,
     metadata?: Record<string, any>,
   ) => Promise<AuthResponse>;
-  signIn: (email: string, password: string) => Promise<AuthResponse>;
-  signOut: () => Promise<{ error: AuthError | Error | null }>;
-  resetPassword: (email: string) => Promise<AuthResponse>;
-  signInWithGoogle: () => Promise<OAuthSessionResponse>;
-  signInWithApple: () => Promise<OAuthSessionResponse>;
-  signInWithAppleNative: () => Promise<AuthResponse>;
-  signInWithPhone: (phoneNumber: string) => Promise<AuthResponse>;
-  verifyPhoneCode: (
-    phoneNumber: string,
-    token: string,
-  ) => Promise<AuthResponse>;
-  signInWithEmailOtp: (email: string) => Promise<AuthResponse>;
-  verifyEmailOtp: (email: string, token: string) => Promise<AuthResponse>;
-  completeOnboarding: (
-    profileData: ProfileData,
-  ) => Promise<{ error: AuthError | Error | null }>;
+  signIn?: (email: string, password: string) => Promise<AuthResponse>;
+  resetPassword?: (email: string) => Promise<AuthResponse>;
+  signInWithAppleNative?: () => Promise<AuthResponse>;
+  verifyPhoneCode?: (phoneNumber: string, token: string) => Promise<AuthResponse>;
+  verifyEmailOtp?: (email: string, token: string) => Promise<AuthResponse>;
 }
 
 interface AuthProviderProps {
@@ -81,300 +87,77 @@ export const useAuth = (): AuthContextType => {
 };
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [hasCompletedOnboarding, setHasCompletedOnboarding] =
-    useState<boolean>(false);
-  const redirectUrl = makeRedirectUri({
-    scheme: process.env.EXPO_PUBLIC_REDIRECT_URL,
-  });
+  // Privy hooks
+  const {
+    user: privyUser,
+    isReady,
+    login,
+    logout,
+  } = usePrivy();
 
+  const { wallet: embeddedWallet, address: walletAddress } =
+    useEmbeddedEthereumWallet();
+
+  // Local state
+  const [loading, setLoading] = useState(true);
+  const [hasCompletedOnboarding, setHasCompletedOnboarding] = useState(false);
+
+  // Derive user ID
+  const privyUserId = privyUser?.id || null;
+
+  // Create a session-like object for compatibility
+  const session = privyUser ? { user: privyUser } : null;
+
+  // Check onboarding status from Privy metadata or Supabase
   const checkOnboardingStatus = useCallback(
-    async (userId: string): Promise<void> => {
-      const { data, error } = await supabase
-        .from("profiles")
-        .select("onboarding_completed")
-        .eq("id", userId)
-        .single();
+    async (userId: string) => {
+      try {
+        // First check Privy user metadata
+        const metadata = (privyUser as any)?.customMetadata;
+        if (metadata?.onboarding_completed !== undefined) {
+          setHasCompletedOnboarding(metadata.onboarding_completed);
+          return;
+        }
 
-      if (error && error.code !== "PGRST116") {
-        return;
+        // Fallback: check Supabase profiles table
+        const { data, error } = await supabase
+          .from("profiles")
+          .select("onboarding_completed")
+          .eq("privy_user_id", userId)
+          .single();
+
+        if (!error && data) {
+          setHasCompletedOnboarding(data.onboarding_completed || false);
+        }
+      } catch (error) {
+        console.error("Error checking onboarding status:", error);
       }
-
-      const onboardingCompleted = data?.onboarding_completed || false;
-      setHasCompletedOnboarding(onboardingCompleted);
-
-      // Sync to user metadata for future sessions
-      await supabase.auth.updateUser({
-        data: { onboarding_completed: onboardingCompleted },
-      });
     },
-    [],
+    [privyUser],
   );
 
+  // Monitor Privy user state
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
+    if (!isReady) {
+      setLoading(true);
+      return;
+    }
 
-      // Check onboarding status from user metadata or fallback to database query
-      if (session?.user) {
-        const onboardingFromMetadata =
-          session.user.user_metadata?.onboarding_completed;
-        if (onboardingFromMetadata !== undefined) {
-          setHasCompletedOnboarding(onboardingFromMetadata);
-          setLoading(false);
-        } else {
-          // Fallback: query profiles table and sync to metadata
-          checkOnboardingStatus(session.user.id).finally(() =>
-            setLoading(false),
-          );
-        }
-      } else {
-        setLoading(false);
-      }
-    });
-
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-
-      if (session?.user) {
-        const onboardingFromMetadata =
-          session.user.user_metadata?.onboarding_completed;
-        if (onboardingFromMetadata !== undefined) {
-          setHasCompletedOnboarding(onboardingFromMetadata);
-        } else {
-          // Fallback: query profiles table
-          checkOnboardingStatus(session.user.id);
-        }
-      } else {
-        setHasCompletedOnboarding(false);
-      }
-
+    if (privyUser) {
+      checkOnboardingStatus(privyUser.id).finally(() => setLoading(false));
+    } else {
+      setHasCompletedOnboarding(false);
       setLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [checkOnboardingStatus]);
-
-  const signUp = async (
-    email: string,
-    password: string,
-    metadata: Record<string, any> = {},
-  ): Promise<AuthResponse> => {
-    try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            ...metadata,
-            onboarding_completed: false,
-          },
-        },
-      });
-
-      if (error) throw error;
-      return { data, error: null };
-    } catch (error) {
-      return { data: null, error: error as AuthError | Error };
     }
-  };
+  }, [isReady, privyUser, checkOnboardingStatus]);
 
-  const signIn = async (
-    email: string,
-    password: string,
-  ): Promise<AuthResponse> => {
+  // Auth methods implementation
+  const signInWithEmailOtp = async (email: string): Promise<AuthResponse> => {
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-      return { data, error: null };
+      await login({ email });
+      return { data: true, error: null };
     } catch (error) {
-      return { data: null, error: error as AuthError | Error };
-    }
-  };
-
-  const signOut = async (): Promise<{ error: AuthError | Error | null }> => {
-    try {
-      const { error } = await supabase.auth.signOut({ scope: "local" });
-      if (error) throw error;
-      return { error: null };
-    } catch (error) {
-      return { error: error as AuthError | Error };
-    }
-  };
-
-  const resetPassword = async (email: string): Promise<AuthResponse> => {
-    try {
-      const { data, error } = await supabase.auth.resetPasswordForEmail(email);
-      if (error) throw error;
-      return { data, error: null };
-    } catch (error) {
-      return { data: null, error: error as AuthError | Error };
-    }
-  };
-
-  const signInWithGoogle = async (): Promise<OAuthSessionResponse> => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "google",
-        options: {
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: true,
-        },
-      });
-
-      if (error) throw error;
-
-      if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(
-          data.url,
-          redirectUrl,
-        );
-
-        // Extract tokens from the result URL
-        if (result.type === "success" && result.url) {
-          // Parse tokens from URL hash
-          const url = result.url;
-          let access_token: string | null = null;
-          let refresh_token: string | null = null;
-
-          if (url.includes("#")) {
-            const hashPart = url.split("#")[1];
-            const hashParams = new URLSearchParams(hashPart);
-            access_token = hashParams.get("access_token");
-            refresh_token = hashParams.get("refresh_token");
-          }
-
-          if (access_token && refresh_token) {
-            const { error: sessionError } = await supabase.auth.setSession({
-              access_token,
-              refresh_token,
-            });
-
-            if (sessionError) {
-              throw sessionError;
-            }
-
-            return { data: { session: true }, error: null };
-          } else {
-            return { data: null, error: new Error("No tokens received") };
-          }
-        }
-
-        return { data: null, error: new Error("Browser session cancelled") };
-      }
-
-      return { data: null, error: new Error("No OAuth URL generated") };
-    } catch (error) {
-      return { data: null, error: error as AuthError | Error };
-    }
-  };
-
-  const signInWithApple = async (): Promise<OAuthSessionResponse> => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider: "apple",
-        options: {
-          redirectTo: redirectUrl,
-          skipBrowserRedirect: true,
-        },
-      });
-
-      if (error) throw error;
-      if (!data?.url) throw new Error("No OAuth URL generated");
-
-      const result = await WebBrowser.openAuthSessionAsync(
-        data.url,
-        redirectUrl,
-      );
-
-      if (result.type !== "success" || !result.url)
-        return { data: null, error: new Error("Browser session cancelled") };
-
-      const url = result.url;
-      let access_token: string | null = null;
-      let refresh_token: string | null = null;
-
-      if (url.includes("#")) {
-        const hash = url.split("#")[1];
-        const params = new URLSearchParams(hash);
-        access_token = params.get("access_token");
-        refresh_token = params.get("refresh_token");
-      }
-
-      if (!access_token || !refresh_token)
-        return { data: null, error: new Error("No tokens received") };
-
-      const { error: sessionError } = await supabase.auth.setSession({
-        access_token,
-        refresh_token,
-      });
-
-      if (sessionError) throw sessionError;
-      return { data: { session: true }, error: null };
-    } catch (error) {
-      return { data: null, error: error as AuthError | Error };
-    }
-  };
-
-  const signInWithAppleNative = async (): Promise<AuthResponse> => {
-    try {
-      const credential = await AppleAuthentication.signInAsync({
-        requestedScopes: [
-          AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
-          AppleAuthentication.AppleAuthenticationScope.EMAIL,
-        ],
-      });
-      // Sign in via Supabase Auth.
-      if (credential.identityToken) {
-        const { error, data } = await supabase.auth.signInWithIdToken({
-          provider: "apple",
-          token: credential.identityToken,
-        });
-        if (!error) {
-          // Apple only provides the user's full name on the first sign-in
-          // Save it to user metadata if available
-          if (credential.fullName) {
-            const nameParts: string[] = [];
-            if (credential.fullName.givenName)
-              nameParts.push(credential.fullName.givenName);
-            if (credential.fullName.middleName)
-              nameParts.push(credential.fullName.middleName);
-            if (credential.fullName.familyName)
-              nameParts.push(credential.fullName.familyName);
-            const fullName = nameParts.join(" ");
-            await supabase.auth.updateUser({
-              data: {
-                full_name: fullName,
-                given_name: credential.fullName.givenName,
-                family_name: credential.fullName.familyName,
-              },
-            });
-          }
-          return { data, error };
-        }
-      } else {
-        throw new Error("No identityToken.");
-      }
-    } catch (error) {
-      // if (error.code === 'ERR_REQUEST_CANCELED') {
-      // return { data: null, error };
-      // } else {
-      return { data: null, error: error as AuthError | Error };
-      // }
+      return { data: null, error: error as Error };
     }
   };
 
@@ -382,74 +165,58 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
     phoneNumber: string,
   ): Promise<AuthResponse> => {
     try {
-      const { data, error } = await supabase.auth.signInWithOtp({
-        phone: phoneNumber,
-      });
-      if (error) throw error;
-      return { data, error: null };
+      await login({ phoneNumber });
+      return { data: true, error: null };
     } catch (error) {
-      return { data: null, error: error as AuthError | Error };
+      return { data: null, error: error as Error };
     }
   };
 
-  const verifyPhoneCode = async (
-    phoneNumber: string,
-    token: string,
-  ): Promise<AuthResponse> => {
+  const signInWithGoogle = async (): Promise<OAuthSessionResponse> => {
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        phone: phoneNumber,
-        token: token,
-        type: "sms",
-      });
-      if (error) throw error;
-      return { data, error: null };
+      await login({ google: {} });
+      return { data: { session: true }, error: null };
     } catch (error) {
-      return { data: null, error: error as AuthError | Error };
+      return { data: null, error: error as Error };
     }
   };
 
-  const signInWithEmailOtp = async (email: string): Promise<AuthResponse> => {
+  const signInWithApple = async (): Promise<OAuthSessionResponse> => {
     try {
-      const { data, error } = await supabase.auth.signInWithOtp({
-        email: email,
-        options: {
-          shouldCreateUser: true,
-        },
-      });
-      if (error) throw error;
-      return { data, error: null };
+      await login({ apple: {} });
+      return { data: { session: true }, error: null };
     } catch (error) {
-      return { data: null, error: error as AuthError | Error };
+      return { data: null, error: error as Error };
     }
   };
 
-  const verifyEmailOtp = async (
-    email: string,
-    token: string,
-  ): Promise<AuthResponse> => {
+  const signInWithWallet = async (): Promise<AuthResponse> => {
     try {
-      const { data, error } = await supabase.auth.verifyOtp({
-        email: email,
-        token: token,
-        type: "email",
-      });
-      if (error) throw error;
-      return { data, error: null };
+      await login({ wallet: {} });
+      return { data: true, error: null };
     } catch (error) {
-      return { data: null, error: error as AuthError | Error };
+      return { data: null, error: error as Error };
+    }
+  };
+
+  const signOut = async (): Promise<{ error: Error | null }> => {
+    try {
+      await logout();
+      return { error: null };
+    } catch (error) {
+      return { error: error as Error };
     }
   };
 
   const completeOnboarding = async (
     profileData: ProfileData,
-  ): Promise<{ error: AuthError | Error | null }> => {
+  ): Promise<{ error: Error | null }> => {
     try {
-      if (!user) throw new Error("No user logged in");
+      if (!privyUser) throw new Error("No user logged in");
 
-      // Update profiles table
+      // Update Supabase profiles table
       const { error: profileError } = await supabase.from("profiles").upsert({
-        id: user.id,
+        privy_user_id: privyUser.id,
         ...profileData,
         onboarding_completed: true,
         updated_at: new Date().toISOString(),
@@ -457,37 +224,33 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
       if (profileError) throw profileError;
 
-      // Update user metadata to sync with session
-      const { error: metadataError } = await supabase.auth.updateUser({
-        data: { onboarding_completed: true },
-      });
-
-      if (metadataError) throw metadataError;
+      // Note: Privy custom metadata update would go here if supported in Expo SDK
+      // For now, rely on Supabase as source of truth
 
       setHasCompletedOnboarding(true);
       return { error: null };
     } catch (error) {
-      return { error: error as AuthError | Error };
+      return { error: error as Error };
     }
   };
 
+
   const value: AuthContextType = {
-    user,
+    user: privyUser,
     session,
+    privyUserId,
     loading,
     hasCompletedOnboarding,
-    signUp,
-    signIn,
-    signOut,
-    resetPassword,
+    isReady,
+    signInWithEmailOtp,
+    signInWithPhone,
     signInWithGoogle,
     signInWithApple,
-    signInWithAppleNative,
-    signInWithPhone,
-    verifyPhoneCode,
-    signInWithEmailOtp,
-    verifyEmailOtp,
+    signInWithWallet,
+    signOut,
     completeOnboarding,
+    embeddedWallet,
+    walletAddress,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

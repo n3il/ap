@@ -30,7 +30,6 @@ export default function Auth() {
   const {
     signInWithGoogle,
     signInWithApple,
-    signInWithAppleNative,
     signInWithPhone,
     signInWithEmailOtp,
   } = useAuth();
@@ -112,14 +111,13 @@ export default function Auth() {
 
   const handleAppleSignIn = async () => {
     setLoading(true);
-    const { error } = await (Platform.OS === "ios"
-      ? signInWithAppleNative
-      : signInWithApple)();
+    const { error } = await signInWithApple();
     setLoading(false);
 
     if (error) {
       Alert.alert(t("login.errors.appleSignInFailed"), error.message);
     }
+    // Privy handles native Apple Sign-In automatically on iOS
   };
 
   return (

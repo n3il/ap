@@ -1,12 +1,12 @@
 import type React from "react";
 import { SafeAreaView } from "react-native-safe-area-context";
-import View, { type ViewProps } from "@/components/ui/View";
+import { SxProp, View } from "dripsy";
 // import { LinearGradient } from 'expo-linear-gradient';
 import { useTheme } from "@/contexts/ThemeContext";
 
 // import { Gradient } from 'dripsy/gradient'
 
-type ContainerViewProps = ViewProps & {
+type ContainerViewProps = SxProp & {
   children: React.ReactNode;
   noSafeArea?: boolean;
   transparent?: boolean;
@@ -23,15 +23,16 @@ export default function ContainerView({
 }: ContainerViewProps) {
   const {
     theme: { colors },
+    isDark
   } = useTheme();
+
+  console.log({ isDark })
 
   return (
     <View
       sx={{
         flex: 1,
-        backgroundColor: transparent
-          ? "transparent"
-          : colors.backgroundSecondary,
+        backgroundColor: "backgroundSecondary",
       }}
       {...props}
       style={style}

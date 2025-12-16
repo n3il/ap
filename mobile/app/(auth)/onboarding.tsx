@@ -68,22 +68,13 @@ export default function OnboardingScreen() {
       title: t("onboarding.steps.profile.title"),
       subtitle: t("onboarding.steps.profile.subtitle"),
     },
-    {
-      id: "preferences",
-      title: t("onboarding.steps.preferences.title"),
-      subtitle: t("onboarding.steps.preferences.subtitle"),
-    },
   ];
 
   // Profile data
   const [displayName, setDisplayName] = useState(
     user?.user_metadata?.full_name || "",
   );
-  const [bio, _setBio] = useState("");
-
-  // Preferences
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [theme, setTheme] = useState("light");
+  const [bio, setBio] = useState("");
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
@@ -107,8 +98,6 @@ export default function OnboardingScreen() {
     const { error } = await completeOnboarding({
       display_name: displayName,
       bio,
-      notifications_enabled: notificationsEnabled,
-      theme,
     });
     if (!error) {
       router.replace(getDefaultUnauthenticatedRoute());
@@ -214,140 +203,13 @@ export default function OnboardingScreen() {
                 variant="surface"
                 sx={{ flex: 1, borderColor: "primary", borderRadius: "full" }}
                 textProps={{ style: { fontWeight: "600" } }}
-                onPress={handleNext}
-              >
-                {t("onboarding.steps.profile.next")}
-              </Button>
-            </View>
-          </AnimatedBox>
-        );
-
-      case "preferences":
-        return (
-          <AnimatedBox
-            key="preferences-step"
-            entering={FadeIn.duration(300)}
-            exiting={FadeOut.duration(200)}
-            style={{ gap: 8 }}
-          >
-            <View
-              sx={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingVertical: 4,
-                borderBottomWidth: 1,
-                borderBottomColor: "border",
-              }}
-            >
-              <View sx={{ flex: 1, marginRight: 4 }}>
-                <Text variant="body" sx={{ fontWeight: "600" }}>
-                  {t("onboarding.steps.preferences.enableNotifications")}
-                </Text>
-                <Text variant="sm" tone="muted" sx={{ marginTop: 1 }}>
-                  {t("onboarding.steps.preferences.notificationsDescription")}
-                </Text>
-              </View>
-              <Button
-                variant="ghost"
-                sx={{ padding: 1 }}
-                onPress={() => setNotificationsEnabled(!notificationsEnabled)}
-              >
-                <View
-                  sx={{
-                    width: 50,
-                    height: 28,
-                    borderRadius: "full",
-                    justifyContent: "center",
-                    paddingHorizontal: 0.5,
-                  }}
-                  style={{
-                    backgroundColor: notificationsEnabled
-                      ? colors.success
-                      : (colors.colors.secondary700 ?? colors.secondary),
-                  }}
-                >
-                  <View
-                    sx={{
-                      width: 24,
-                      height: 24,
-                      borderRadius: "full",
-                      backgroundColor: "foreground",
-                    }}
-                    style={{
-                      alignSelf: notificationsEnabled
-                        ? "flex-end"
-                        : "flex-start",
-                    }}
-                  />
-                </View>
-              </Button>
-            </View>
-
-            <View
-              sx={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-                paddingVertical: 4,
-                borderBottomWidth: 1,
-                borderBottomColor: "border",
-                marginBottom: 4,
-              }}
-            >
-              <Text variant="body" sx={{ fontWeight: "600" }}>
-                {t("onboarding.steps.preferences.theme")}
-              </Text>
-              <View sx={{ flexDirection: "row", gap: 2 }}>
-                <Button
-                  variant={theme === "light" ? "surface" : "secondary"}
-                  sx={{
-                    paddingVertical: 2,
-                    paddingHorizontal: 4,
-                    borderRadius: "full",
-                  }}
-                  onPress={() => setTheme("light")}
-                >
-                  <Text variant="sm" sx={{ fontWeight: "500" }}>
-                    {t("onboarding.steps.preferences.light")}
-                  </Text>
-                </Button>
-                <Button
-                  variant={theme === "dark" ? "surface" : "secondary"}
-                  sx={{
-                    paddingVertical: 2,
-                    paddingHorizontal: 4,
-                    borderRadius: "full",
-                  }}
-                  onPress={() => setTheme("dark")}
-                >
-                  <Text variant="sm" sx={{ fontWeight: "500" }}>
-                    {t("onboarding.steps.preferences.dark")}
-                  </Text>
-                </Button>
-              </View>
-            </View>
-
-            <View sx={{ flexDirection: "row", gap: 3, marginTop: 2 }}>
-              <Button
-                variant="secondary"
-                sx={{ flex: 1, borderRadius: "full" }}
-                textProps={{ style: { fontWeight: "600" } }}
-                onPress={handleBack}
-              >
-                {t("onboarding.steps.preferences.back")}
-              </Button>
-              <Button
-                variant="surface"
-                sx={{ flex: 1, borderColor: "primary", borderRadius: "full" }}
-                textProps={{ style: { fontWeight: "600" } }}
                 onPress={handleComplete}
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="white" />
+                  <ActivityIndicator />
                 ) : (
-                  t("onboarding.steps.preferences.complete")
+                  t("onboarding.steps.profile.complete") || "Complete"
                 )}
               </Button>
             </View>

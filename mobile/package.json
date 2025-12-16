@@ -1,6 +1,6 @@
 {
   "license": "0BSD",
-  "main": "expo-router/entry",
+  "main": "index.js",
   "scripts": {
     "start": "expo start",
     "android": "expo run:android",
@@ -15,9 +15,12 @@
     "submit:ios": "eas submit -n --platform ios"
   },
   "dependencies": {
+    "@ethersproject/shims": "^5.8.0",
     "@expo/vector-icons": "^15.0.3",
     "@lottiefiles/dotlottie-react": "^0.13.5",
     "@nktkas/hyperliquid": "^0.29.0",
+    "@privy-io/expo": "^0.62.0",
+    "@privy-io/expo-native-extensions": "^0.0.6",
     "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@sentry/react-native": "~7.2.0",
@@ -25,11 +28,13 @@
     "@shopify/react-native-skia": "^2.4.7",
     "@supabase/supabase-js": "^2.86.2",
     "@tanstack/react-query": "^5.90.12",
+    "buffer": "^6.0.3",
     "date-fns": "^4.1.0",
     "dripsy": "^4.3.8",
     "event-target-polyfill": "^0.0.4",
-    "expo": "~54.0.27",
+    "expo": "^54.0.29",
     "expo-apple-authentication": "~8.0.8",
+    "expo-application": "~7.0.8",
     "expo-auth-session": "~7.0.10",
     "expo-blur": "~15.0.8",
     "expo-build-properties": "~1.0.10",
@@ -71,6 +76,7 @@
     "react-native-markdown-display": "^7.0.2",
     "react-native-otp-entry": "^1.8.5",
     "react-native-pager-view": "6.9.1",
+    "react-native-passkeys": "^0.3.3",
     "react-native-phone-number-input": "^2.1.0",
     "react-native-reanimated": "~4.1.1",
     "react-native-safe-area-context": "^5.6.2",

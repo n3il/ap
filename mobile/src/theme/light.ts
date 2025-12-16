@@ -9,7 +9,7 @@ const lightTheme = {
     background: "#f8fafc",
     backgroundSecondary: "#e2e8f0",
     backgroundSplash: "#378593",
-    surface: "#1e2841ff",
+    surface: "#ffffffff",
     surfaceForeground: "#ffffff",
     surfaceLight: "#242c35ff",
     surfaceDark: "#e2e8f0",

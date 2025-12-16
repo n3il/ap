@@ -1,15 +1,10 @@
-import 'react-native-get-random-values';
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import * as SecureStore from "expo-secure-store";
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useState,
-} from "react";
+import { useEmbeddedEthereumWallet } from "@privy-io/expo";
+import { createContext, useContext } from "react";
 import type { Address } from "viem";
-import { generatePrivateKey, privateKeyToAccount } from "viem/accounts";
+
+// Compatibility wrapper for Privy's embedded wallet
+// This maintains the old WalletContext API for backwards compatibility
+// while using Privy's embedded wallet under the hood
 
 interface Wallet {
   address: Address;
@@ -21,6 +16,7 @@ interface WalletContextType {
   wallets: Wallet[];
   selectedWallet: Wallet | null;
   isLoading: boolean;
+  // Deprecated methods - wallets are now managed by Privy
   createWallet: (label: string) => Promise<Wallet>;
   importWallet: (privateKey: string, label: string) => Promise<Wallet>;
   deleteWallet: (address: Address) => Promise<void>;
@@ -30,189 +26,69 @@ interface WalletContextType {
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
 
-const WALLETS_STORAGE_KEY = "wallets";
-const SELECTED_WALLET_KEY = "selected_wallet";
-
 export function WalletProvider({ children }: { children: React.ReactNode }) {
-  const [wallets, setWallets] = useState<Wallet[]>([]);
-  const [selectedWallet, setSelectedWallet] = useState<Wallet | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { wallet, address, exportWallet, isLoading } = useEmbeddedEthereumWallet();
 
-  // Load wallets from storage
-  useEffect(() => {
-    loadWallets();
-  }, []);
-
-  const loadWallets = async () => {
-    try {
-      setIsLoading(true);
-      const walletsJson = await AsyncStorage.getItem(WALLETS_STORAGE_KEY);
-      const selectedAddress = await AsyncStorage.getItem(SELECTED_WALLET_KEY);
-
-      if (walletsJson) {
-        const loadedWallets = JSON.parse(walletsJson);
-        setWallets(loadedWallets);
-
-        if (selectedAddress) {
-          const selected = loadedWallets.find(
-            (w: Wallet) => w.address === selectedAddress,
-          );
-          setSelectedWallet(selected || null);
-        } else if (loadedWallets.length > 0) {
-          setSelectedWallet(loadedWallets[0]);
-        }
+  // Create compatibility wallet object
+  const compatibilityWallet: Wallet | null = wallet && address
+    ? {
+        address: address as Address,
+        label: "Privy Embedded Wallet",
+        createdAt: new Date().toISOString(),
       }
-    } catch (error) {
-      console.error("Failed to load wallets:", error);
-    } finally {
-      setIsLoading(false);
+    : null;
+
+  const wallets = compatibilityWallet ? [compatibilityWallet] : [];
+
+  // Deprecated methods - show warnings
+  const createWallet = async (label: string): Promise<Wallet> => {
+    console.warn(
+      "createWallet is deprecated. Privy creates embedded wallets automatically on login.",
+    );
+    if (compatibilityWallet) {
+      return compatibilityWallet;
     }
+    throw new Error("No embedded wallet available. Please log in first.");
   };
 
-  const saveWallets = async (newWallets: Wallet[]) => {
-    try {
-      await AsyncStorage.setItem(WALLETS_STORAGE_KEY, JSON.stringify(newWallets));
-      setWallets(newWallets);
-    } catch (error) {
-      console.error("Failed to save wallets:", error);
-      throw new Error("Failed to save wallet");
-    }
+  const importWallet = async (
+    privateKey: string,
+    label: string,
+  ): Promise<Wallet> => {
+    console.warn(
+      "importWallet is deprecated. Privy manages embedded wallets automatically.",
+    );
+    throw new Error("Wallet import not supported with Privy embedded wallets");
   };
 
-  const createWallet = useCallback(
-    async (label: string): Promise<Wallet> => {
-      try {
-        // Generate a new private key
-        const privateKey = generatePrivateKey();
-        const account = privateKeyToAccount(privateKey);
+  const deleteWallet = async (address: Address): Promise<void> => {
+    console.warn(
+      "deleteWallet is deprecated. Privy wallets cannot be deleted, only exported.",
+    );
+    throw new Error("Wallet deletion not supported with Privy embedded wallets");
+  };
 
-        // Store private key securely
-        await SecureStore.setItemAsync(
-          `wallet_pk_${account.address}`,
-          privateKey,
-        );
+  const selectWallet = (address: Address): void => {
+    console.warn(
+      "selectWallet is deprecated. Privy provides a single embedded wallet per user.",
+    );
+  };
 
-        // Create wallet object
-        const newWallet: Wallet = {
-          address: account.address,
-          label,
-          createdAt: new Date().toISOString(),
-        };
-
-        // Save to storage
-        const updatedWallets = [...wallets, newWallet];
-        await saveWallets(updatedWallets);
-
-        // Set as selected if it's the first wallet
-        if (wallets.length === 0) {
-          setSelectedWallet(newWallet);
-          await AsyncStorage.setItem(SELECTED_WALLET_KEY, newWallet.address);
-        }
-
-        return newWallet;
-      } catch (error) {
-        console.error("Failed to create wallet:", error);
-        throw new Error("Failed to create wallet");
-      }
-    },
-    [wallets],
-  );
-
-  const importWallet = useCallback(
-    async (privateKey: string, label: string): Promise<Wallet> => {
-      try {
-        // Ensure private key has 0x prefix
-        const normalizedKey = privateKey.startsWith("0x")
-          ? privateKey
-          : `0x${privateKey}`;
-
-        const account = privateKeyToAccount(normalizedKey as `0x${string}`);
-
-        // Check if wallet already exists
-        if (wallets.some((w) => w.address === account.address)) {
-          throw new Error("Wallet already exists");
-        }
-
-        // Store private key securely
-        await SecureStore.setItemAsync(
-          `wallet_pk_${account.address}`,
-          normalizedKey,
-        );
-
-        // Create wallet object
-        const newWallet: Wallet = {
-          address: account.address,
-          label,
-          createdAt: new Date().toISOString(),
-        };
-
-        // Save to storage
-        const updatedWallets = [...wallets, newWallet];
-        await saveWallets(updatedWallets);
-
-        // Set as selected if it's the first wallet
-        if (wallets.length === 0) {
-          setSelectedWallet(newWallet);
-          await AsyncStorage.setItem(SELECTED_WALLET_KEY, newWallet.address);
-        }
-
-        return newWallet;
-      } catch (error) {
-        console.error("Failed to import wallet:", error);
-        throw new Error("Failed to import wallet");
-      }
-    },
-    [wallets],
-  );
-
-  const deleteWallet = useCallback(
-    async (address: Address) => {
-      try {
-        // Delete private key from secure storage
-        await SecureStore.deleteItemAsync(`wallet_pk_${address}`);
-
-        // Remove from wallets list
-        const updatedWallets = wallets.filter((w) => w.address !== address);
-        await saveWallets(updatedWallets);
-
-        // Update selected wallet if needed
-        if (selectedWallet?.address === address) {
-          const newSelected = updatedWallets[0] || null;
-          setSelectedWallet(newSelected);
-          if (newSelected) {
-            await AsyncStorage.setItem(SELECTED_WALLET_KEY, newSelected.address);
-          } else {
-            await AsyncStorage.removeItem(SELECTED_WALLET_KEY);
-          }
-        }
-      } catch (error) {
-        console.error("Failed to delete wallet:", error);
-        throw new Error("Failed to delete wallet");
-      }
-    },
-    [wallets, selectedWallet],
-  );
-
-  const selectWallet = useCallback(async (address: Address) => {
-    const wallet = wallets.find((w) => w.address === address);
-    if (wallet) {
-      setSelectedWallet(wallet);
-      await AsyncStorage.setItem(SELECTED_WALLET_KEY, address);
-    }
-  }, [wallets]);
-
-  const getPrivateKey = useCallback(async (address: Address) => {
+  const getPrivateKey = async (address: Address): Promise<string | null> => {
+    console.warn(
+      "getPrivateKey is deprecated. Use exportWallet from useEmbeddedEthereumWallet hook instead.",
+    );
     try {
-      return await SecureStore.getItemAsync(`wallet_pk_${address}`);
+      return await exportWallet();
     } catch (error) {
-      console.error("Failed to get private key:", error);
+      console.error("Failed to export wallet:", error);
       return null;
     }
-  }, []);
+  };
 
   const value: WalletContextType = {
     wallets,
-    selectedWallet,
+    selectedWallet: compatibilityWallet,
     isLoading,
     createWallet,
     importWallet,

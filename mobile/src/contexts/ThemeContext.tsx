@@ -30,9 +30,6 @@ const ThemeContext = createContext({
 export const ThemeProvider = ({ children }) => {
   const colorMode = useColorScheme()
   const [themePreference, setThemePreference] = useState("system");
-  const [systemScheme, setSystemScheme] = useState(
-    normalize(Appearance.getColorScheme()),
-  );
   const [hydrated, setHydrated] = useState(false);
 
   // Load saved preference
@@ -48,32 +45,24 @@ export const ThemeProvider = ({ children }) => {
     if (hydrated) AsyncStorage.setItem(STORAGE_KEY, themePreference);
   }, [hydrated, themePreference]);
 
-  // React to OS / Simulator theme changes
-  useEffect(() => {
-    const subscription = Appearance.addChangeListener(() => {
-      const updated = normalize(Appearance.getColorScheme());
-      setSystemScheme(updated);
-    });
-    return () => subscription?.remove?.();
-  }, []);
-
   // Toggle theme
   const toggleTheme = useCallback(() => {
     setThemePreference((prev) => {
       if (prev === "system") {
-        return systemScheme === "dark" ? "light" : "dark";
+        return colorMode === "dark" ? "light" : "dark";
       }
       return prev === "dark" ? "light" : "dark";
     });
-  }, [systemScheme]);
+  }, [colorMode]);
 
   const appliedScheme =
-    themePreference === "system" ? systemScheme : themePreference;
+    themePreference === "system" ? colorMode : themePreference;
 
   const theme = appliedScheme === "dark" ? darkTheme : lightTheme;
   const dripsyTheme =
     appliedScheme === "dark" ? dripsyDarkTheme : dripsyLightTheme;
 
+  console.log({ appliedScheme, themePreference })
   const value = useMemo(
     () => ({
       theme,

@@ -4,19 +4,17 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AgentActions from "@/components/agent/AgentActions";
 import BalanceOverview from "@/components/agent/BalanceOverview";
 import AgentHeader from "@/components/agent/Header";
-import ChartsTab from "@/components/agents/ChartsTab";
+// import ChartsTab from "@/components/agents/ChartsTab";
 import PositionsTab from "@/components/agents/PositionsTab";
 import ThoughtsTab from "@/components/agents/ThoughtsTab";
-import TradesTab from "@/components/agents/TradesTab";
 import ContainerView, {
   GLOBAL_PADDING,
   PaddedView,
 } from "@/components/ContainerView";
-import { Animated, ScrollView, SwipeableTabs, View } from "@/components/ui";
+import { Animated, SwipeableTabs, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
-import HeaderChart from "@/components/agent/HeaderChart";
 import MultiAgentChart from "@/components/agents/MultiAgentChart";
 
 export default function AgentIndex() {
@@ -95,20 +93,20 @@ export default function AgentIndex() {
           </View>
         ),
       },
-      {
-        key: "Charts",
-        title: "Charts",
-        content: () => (
-          <ScrollView
-            contentContainerStyle={{
-              paddingTop: startContentAtHeight,
-              marginBottom: "70%",
-            }}
-          >
-            <ChartsTab agent={agent} />
-          </ScrollView>
-        ),
-      },
+      // {
+      //   key: "Charts",
+      //   title: "Charts",
+      //   content: () => (
+      //     <ScrollView
+      //       contentContainerStyle={{
+      //         paddingTop: startContentAtHeight,
+      //         marginBottom: "70%",
+      //       }}
+      //     >
+      //       <ChartsTab agent={agent} />
+      //     </ScrollView>
+      //   ),
+      // },
       {
         key: "LPs",
         title: "LPs (932)",
