@@ -11,7 +11,7 @@ import {
   TouchableOpacity,
   View,
 } from "@/components/ui";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePrivy } from "@privy-io/expo";
 import { agentService } from "@/services/agentService";
 import { useColors } from "@/theme";
 
@@ -20,7 +20,7 @@ const AgentManageScreen = () => {
   const { id } = useLocalSearchParams();
   const agentId = Array.isArray(id) ? id[0] : id;
   const queryClient = useQueryClient();
-  const { user } = useAuth();
+  const { user } = usePrivy();
   const colors = useColors();
 
   const {

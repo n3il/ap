@@ -54,11 +54,6 @@ export default function SettingField({
           }}
         />
       </View>
-      {!editable && (
-        <Text variant="xs" tone="subtle" sx={{ marginTop: 1 }}>
-          Email cannot be changed
-        </Text>
-      )}
     </View>
   );
 }

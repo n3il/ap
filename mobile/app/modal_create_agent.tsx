@@ -24,6 +24,7 @@ import {
 import { agentService } from "@/services/agentService";
 import { fetchOpenRouterModels, formatModelName } from "@/services/llmService";
 import { useColors, withOpacity } from "@/theme";
+import { Pressable } from "dripsy";
 
 const normalizeModelSlug = (model: any) =>
   model?.endpoint?.model_variant_permaslug ||
@@ -60,25 +61,19 @@ const guardrailSnippets = [
 
 const quickStarts: QuickStartTemplate[] = [
   {
-    name: "Calm Risk Manager",
+    name: "Lightning",
     headline: "Keeps positions tidy and trims risk before it grows teeth.",
-    prompt:
-      "You are a calm risk manager. Lead with risk first, highlight drawdowns, and recommend conservative sizing. Offer one protective move and one upside move. Use short sentences.",
-    modelSuggestions: ["anthropic/claude-3.5-haiku", "openai/gpt-4o-mini"],
+    icon: "lightning-bolt",
   },
   {
-    name: "Momentum Scout",
+    name: "Intra Day",
     headline: "Scans momentum and flags heat with a light, fast touch.",
-    prompt:
-      "You are a momentum scout. Spot acceleration, surface top 3 signals with a one-line rationale each, and propose a tight entry + exit with stops. Keep it punchy.",
-    modelSuggestions: ["google/gemini-2.0-flash", "openai/gpt-5.2-chat"],
+    icon: "rabbit",
   },
   {
-    name: "Deep Researcher",
+    name: "Long Haul",
     headline: "Stitches together context, risk, and narrative to advise.",
-    prompt:
-      "You are a deep research advisor. Before any trade, restate objectives, cite 2 data points, and give a concise recommendation with confidence level. Avoid filler.",
-    modelSuggestions: ["openai/gpt-5.2-chat", "anthropic/claude-3.5-sonnet"],
+    icon: "tortoise",
   },
 ];
 
@@ -317,6 +312,7 @@ export default function ModalCreateAgent() {
 
     return (
       <GlassButton
+        enabled={false}
         onPress={() => handleModelSelect(slug, item)}
         glassEffectStyle="regular"
         tintColor={
@@ -345,36 +341,30 @@ export default function ModalCreateAgent() {
               {provider} • {slug}
             </Text>
           </View>
-          {isSelected ? (
-            <Badge variant="primary" size="sm">
-              Selected
-            </Badge>
-          ) : (
-            <Badge variant="default" size="sm">
-              Tap to choose
-            </Badge>
-          )}
+          <Badge variant="default" size="sm">
+            Recommended
+          </Badge>
         </View>
 
         <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          {item?.endpoint?.is_free && (
-            <Badge variant="success" size="sm">
-              Free
-            </Badge>
-          )}
           {supportsReasoning && (
             <Badge variant="info" size="sm">
               Reasoning
             </Badge>
           )}
           {ctx && (
-            <Badge variant="secondary" size="sm">
+            <Badge variant="default" size="sm">
               {ctx}
             </Badge>
           )}
           {price && (
-            <Badge variant="primary" size="sm">
+            <Badge variant="default" size="sm">
               {price}
+            </Badge>
+          )}
+          {item?.endpoint?.is_free && (
+            <Badge variant="default" size="sm">
+              Free
             </Badge>
           )}
         </View>
@@ -382,8 +372,9 @@ export default function ModalCreateAgent() {
         <Text
           tone="muted"
           variant="sm"
-          numberOfLines={2}
-          style={{ width: "100%" }}
+          style={{
+            flex: 0,
+          }}
         >
           {item?.description ||
             item?.endpoint?.model?.description ||
@@ -540,52 +531,6 @@ export default function ModalCreateAgent() {
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
   };
 
-  const renderTab = (
-    tab: (typeof tabs)[0],
-    index: number,
-    isActive: boolean,
-  ) => {
-    const step = steps[index];
-    const completed = step?.isCompleted;
-
-    return (
-      <GlassButton
-        key={tab.key}
-        onPress={() => setActiveStep(index)}
-        styleVariant="minimal"
-        tintColor={
-          isActive ? withOpacity(palette.accent, 0.2) : palette.surface
-        }
-        style={{ paddingHorizontal: 10, paddingVertical: 6 }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <View
-            style={{
-              width: 18,
-              height: 18,
-              borderRadius: 999,
-              alignItems: "center",
-              justifyContent: "center",
-              backgroundColor: completed
-                ? withOpacity(palette.success, 0.9)
-                : withOpacity(palette.foreground, 0.2),
-            }}
-          >
-            <Text variant="xxs" tone="inverse" style={{ fontWeight: "700" }}>
-              {index + 1}
-            </Text>
-          </View>
-          <Text style={{ fontWeight: "700" }}>{tab.title}</Text>
-        </View>
-      </GlassButton>
-    );
-  };
 
   return (
     <ContainerView>
@@ -609,14 +554,14 @@ export default function ModalCreateAgent() {
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                alignItems: "center",
+                alignItems: "flex-start",
                 gap: 10,
               }}
             >
               <View style={{ flex: 1, gap: 6 }}>
                 <SectionTitle title="New agent" sx={{ padding: 2 }} />
                 <Text variant="xl" style={{ fontWeight: "700" }}>
-                  Design your AI Portfolio Manager
+                  Design AI Portfolio Manager
                 </Text>
                 <View
                   style={{
@@ -646,18 +591,16 @@ export default function ModalCreateAgent() {
                 </View>
               </View>
               {isPresented && (
-                <GlassButton
+                <Pressable
+                  sx={{ padding: 3 }}
                   onPress={() => router.push("../")}
-                  tintColor={palette.glassTint}
-                  style={{ flexGrow: 0, paddingHorizontal: 10 }}
-                  styleVariant="square"
                 >
                   <MaterialCommunityIcons
-                    name="close"
+                    name="chevron-double-up"
                     size={18}
                     color={palette.foreground}
                   />
-                </GlassButton>
+                </Pressable>
               )}
             </View>
           </View>
@@ -671,7 +614,6 @@ export default function ModalCreateAgent() {
               paddingHorizontal: GLOBAL_PADDING,
               paddingBottom: 16,
             }}
-            renderTab={renderTab}
           />
 
           <View
@@ -701,11 +643,14 @@ export default function ModalCreateAgent() {
               disabled={primaryDisabled}
               style={{ flex: 2 }}
             >
-              {isLastStep
-                ? createAgentMutation.isPending
-                  ? "Launching…"
-                  : "Launch agent"
-                : "Next"}
+              <Text color="surfaceForeground">
+                {isLastStep
+                  ? createAgentMutation.isPending
+                    ? "Launching…"
+                    : "Launch agent"
+                  : "Next"}
+              </Text>
+
             </GlassButton>
           </View>
         </View>

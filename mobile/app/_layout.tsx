@@ -9,13 +9,12 @@ import { useEffect, useMemo, useState } from "react";
 import { KeyboardProvider } from "react-native-keyboard-controller";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import SplashScreen from "@/components/SplashScreen";
+import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
+import { WalletProvider } from "@/contexts/WalletContext";
 import { ROUTES } from "@/config/routes";
-import { AuthProvider, useAuth } from "@/contexts/AuthContext";
-import { ThemeProvider } from "@/contexts/ThemeContext";
-import { useColors } from "@/theme";
 
 Sentry.init({
-  dsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  dsn: Constants.expoConfig?.extra?.sentryDsn,
   sendDefaultPii: true,
   enableLogs: false,
   spotlight: __DEV__,
@@ -29,10 +28,10 @@ ExpoSplashScreen.setOptions({
 // Prevent native splash screen from auto-hiding
 ExpoSplashScreen.preventAutoHideAsync();
 
-const queryClient = new QueryClient();
-
 function AuthNavigator() {
-  const { isReady } = usePrivy();
+  const { user, isReady } = usePrivy();
+  const router = useRouter()
+  const hasCompletedOnboarding = true;
 
   useEffect(() => {
     async function prepare() {
@@ -42,6 +41,26 @@ function AuthNavigator() {
       prepare();
     }
   }, [isReady]);
+
+
+  useEffect(() => {
+    if (!isReady) {
+      return;
+    }
+    if (user && !hasCompletedOnboarding) {
+      // return router.replace(ROUTES.AUTH_ONBOARDING.path);
+      return router.replace(ROUTES.TABS_INDEX.path);
+    } else {
+      const requireAuth = process.env.EXPO_PUBLIC_REQUIRE_AUTH === "true";
+      const showGetStartedScreen =
+        process.env.EXPO_PUBLIC_SHOW_GET_STARTED === "true";
+      if (requireAuth || showGetStartedScreen) {
+        return router.replace(ROUTES.INDEX.path);
+      }
+    }
+    return router.replace(ROUTES.TABS_INDEX.path);
+  }, [isReady, user, hasCompletedOnboarding, router.replace]);
+
 
   if (!isReady) {
     return <SplashScreen />;
@@ -76,9 +95,24 @@ function AuthNavigator() {
           presentation: "modal",
         }}
       />
+
     </Stack>
   );
 }
+
+function PrivyWrapper() {
+  const { colorScheme } = useTheme()
+
+  return (
+    <>
+      <WalletProvider>
+        <AuthNavigator />
+      </WalletProvider>
+    </>
+  )
+}
+
+const queryClient = new QueryClient();
 
 export default Sentry.wrap(function RootLayout() {
   const privyAppId = Constants.expoConfig?.extra?.privyAppId;
@@ -92,17 +126,8 @@ export default Sentry.wrap(function RootLayout() {
             <PrivyProvider
               appId={privyAppId}
               clientId={privyClientId}
-              config={{
-                loginMethods: ["email", "sms", "google", "apple", "wallet"],
-                embeddedWallets: {
-                  createOnLogin: "all-users",
-                  requireUserPasswordOnCreate: false,
-                },
-              }}
             >
-              <AuthProvider>
-                <AuthNavigator />
-              </AuthProvider>
+              <PrivyWrapper />
             </PrivyProvider>
           </QueryClientProvider>
         </SafeAreaProvider>

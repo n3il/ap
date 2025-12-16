@@ -14,9 +14,10 @@ import {
   View,
 } from "@/components/ui";
 import { AnimatedBox } from "@/components/ui/animated";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePrivy } from "@privy-io/expo";
 import { useLocalization } from "@/hooks/useLocalization";
 import { useColors } from "@/theme";
+import { useAuthFlow } from "@/contexts/AuthFlowContext";
 
 const RESEND_COUNTDOWN = 60; // seconds
 
@@ -26,18 +27,11 @@ export default function VerifyOTPScreen() {
   const [countdown, setCountdown] = useState(RESEND_COUNTDOWN);
   const countdownInterval = useRef(null);
   const router = useRouter();
-  const params = useLocalSearchParams();
-  const {
-    verifyPhoneCode,
-    signInWithPhone,
-    verifyEmailOtp,
-    signInWithEmailOtp,
-  } = useAuth();
+  const { user } = usePrivy();
+  const { emailAuth, smsAuth, authType, contactInfo } = useAuthFlow();
   const { t } = useLocalization();
   const colors = useColors();
   const palette = colors.colors;
-
-  const { phoneNumber, email, type } = params;
 
   const startCountdown = useCallback(() => {
     setCountdown(RESEND_COUNTDOWN);
@@ -65,6 +59,14 @@ export default function VerifyOTPScreen() {
     };
   }, [startCountdown]);
 
+  // Redirect when user is authenticated
+  useEffect(() => {
+    if (user) {
+      // Successfully authenticated, navigate to main app
+      router.replace("/(tabs)");
+    }
+  }, [user, router]);
+
   const handleVerifyCode = async (code: string) => {
     if (!code || code.length !== 6) {
       return;
@@ -72,26 +74,20 @@ export default function VerifyOTPScreen() {
 
     setLoading(true);
 
-    if (type === "phone") {
-      const { error } = await verifyPhoneCode(phoneNumber, code);
-      setLoading(false);
-
-      if (error) {
-        Alert.alert(t("login.errors.verificationFailed"), error.message);
-      } else {
-        // Success - Navigate to onboarding or tabs
-        router.replace("/(auth)/onboarding");
+    try {
+      if (authType === "phone") {
+        await smsAuth.loginWithCode({ code });
+      } else if (authType === "email") {
+        await emailAuth.loginWithCode({ code });
       }
-    } else if (type === "email") {
-      const { error } = await verifyEmailOtp(email, code);
+      // Success - Privy will update user state and app will navigate automatically
+    } catch (error) {
+      Alert.alert(
+        t("login.errors.verificationFailed"),
+        error instanceof Error ? error.message : String(error)
+      );
+    } finally {
       setLoading(false);
-
-      if (error) {
-        Alert.alert(t("login.errors.verificationFailed"), error.message);
-      } else {
-        // Success - Navigate to onboarding or tabs
-        router.replace("/(auth)/onboarding");
-      }
     }
   };
 
@@ -100,26 +96,28 @@ export default function VerifyOTPScreen() {
 
     setLoading(true);
 
-    if (type === "phone") {
-      const { error } = await signInWithPhone(phoneNumber);
-      setLoading(false);
-
-      if (error) {
-        Alert.alert(t("login.errors.codeSendFailed"), error.message);
-      } else {
-        Alert.alert(t("login.success.codeSent.phone"));
-        startCountdown();
+    try {
+      if (authType === "phone") {
+        await smsAuth.sendCode({ phone: contactInfo });
+        Alert.alert(
+          t("common.success"),
+          t("login.success.codeSent.phone") || "Code sent successfully"
+        );
+      } else if (authType === "email") {
+        await emailAuth.sendCode({ email: contactInfo });
+        Alert.alert(
+          t("common.success"),
+          t("login.success.codeSent.email") || "Code sent successfully"
+        );
       }
-    } else if (type === "email") {
-      const { error } = await signInWithEmailOtp(email);
+      startCountdown();
+    } catch (error) {
+      Alert.alert(
+        t("login.errors.codeSendFailed"),
+        error instanceof Error ? error.message : String(error)
+      );
+    } finally {
       setLoading(false);
-
-      if (error) {
-        Alert.alert(t("login.errors.codeSendFailed"), error.message);
-      } else {
-        Alert.alert(t("login.success.codeSent.email"));
-        startCountdown();
-      }
     }
   };
 
@@ -145,9 +143,9 @@ export default function VerifyOTPScreen() {
               Verify Code
             </Text>
             <Text variant="body" tone="muted">
-              {type === "phone"
-                ? `Enter the code sent to ${phoneNumber}`
-                : `Enter the code sent to ${email}`}
+              {authType === "phone"
+                ? `Enter the code sent to ${contactInfo}`
+                : `Enter the code sent to ${contactInfo}`}
             </Text>
           </View>
 

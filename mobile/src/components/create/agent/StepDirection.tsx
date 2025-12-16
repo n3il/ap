@@ -1,6 +1,7 @@
 import SectionTitle from "@/components/SectionTitle";
 import { Button, ScrollView, Text, TextInput, View } from "@/components/ui";
 import { useColors, withOpacity } from "@/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 interface StepDirectionProps {
   prompt: string;
@@ -26,10 +27,10 @@ export default function StepDirection({
       showsVerticalScrollIndicator={false}
     >
       <View style={{ gap: 10 }}>
-        <SectionTitle title="Direction & guardrails" />
+        <SectionTitle title="Direction" />
+        <MaterialCommunityIcons name="movie-open-outline" size={40} />
         <Text tone="muted" variant="sm">
-          Tell the agent how to show up. Think tone, risk posture, and the
-          must-haves you never want to explain twice.
+          Just some hints will do.
         </Text>
         <TextInput
           style={{
@@ -37,8 +38,8 @@ export default function StepDirection({
             paddingVertical: 18,
             paddingHorizontal: 18,
             fontSize: 14,
-            backgroundColor: palette.surface,
-            borderWidth: 0,
+            borderColor: palette.surface,
+            borderWidth: .5,
             borderRadius: 18,
             elevation: 6,
             shadowColor: palette.shadow,
@@ -48,7 +49,7 @@ export default function StepDirection({
             fontFamily: "monospace",
             minHeight: 140,
           }}
-          placeholder="Custom instructions for agent behavior"
+          placeholder="Prioritize real life summits"
           placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
           value={prompt}
           onChangeText={onChangePrompt}
@@ -63,25 +64,19 @@ export default function StepDirection({
             gap: 8,
           }}
         >
+          <SectionTitle title="Quick-add Examples" />
+
           {guardrails.map((snippet) => (
             <Button
               key={snippet}
               variant="outline"
               size="sm"
-              sx={{
-                backgroundColor: withOpacity(palette.surface, 0.9),
-              }}
               onPress={() => onAddGuardrail(snippet)}
             >
               <Text numberOfLines={2}>{snippet}</Text>
             </Button>
           ))}
         </View>
-        <Text tone="muted" variant="sm">
-          {characterCount
-            ? `${characterCount} characters — clarity is power.`
-            : "Add a few lines and we’ll keep them pinned to every run."}
-        </Text>
       </View>
     </ScrollView>
   );

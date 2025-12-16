@@ -15,7 +15,7 @@ import {
 } from "@/components/ui";
 import { AnimatedBox } from "@/components/ui/animated";
 import { supabase } from "@/config/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePrivy } from "@privy-io/expo";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 
@@ -31,7 +31,7 @@ interface ApiKey {
 }
 
 export default function ApiKeysScreen() {
-  const { user } = useAuth();
+  const { user } = usePrivy();
   const { theme, isDark } = useTheme();
   const router = useRouter();
   const colors = useColors();

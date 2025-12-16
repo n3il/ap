@@ -1,35 +1,30 @@
 import {
   Ionicons,
   MaterialCommunityIcons,
-  MaterialIcons,
 } from "@expo/vector-icons";
-import { GlassView } from "expo-glass-effect";
 import { useRouter } from "expo-router";
-import parseNumber from "libphonenumber-js";
 import { useState } from "react";
-import { Pressable } from "react-native";
 import { FadeInDown } from "react-native-reanimated";
-import ManualLinkingCard from "@/components/auth/ManualLinkingCard";
 import SettingField from "@/components/auth/SettingFields";
-import ContainerView from "@/components/ContainerView";
+import ContainerView, { PaddedView } from "@/components/ContainerView";
 import {
   Alert,
   KeyboardAvoidingView,
-  Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "@/components/ui";
 import { AnimatedBox } from "@/components/ui/animated";
 import { supabase } from "@/config/supabase";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePrivy } from "@privy-io/expo";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
+import { Pressable } from "dripsy";
+import { ROUTES } from "@/config/routes";
 
 export default function AccountSettingsScreen() {
-  const { user, signOut } = useAuth();
+  const { user, logout } = usePrivy();
   const { theme, isDark, colorScheme, themePreference, setThemePreference } =
     useTheme();
   const router = useRouter();
@@ -79,39 +74,6 @@ export default function AccountSettingsScreen() {
     { key: "dark", label: "Dark", icon: "moon" },
     { key: "system", label: "System", icon: "phone-portrait-outline" },
   ];
-  const activeThemeOption =
-    themeOptions.find((option) => option.key === themePreference) ??
-    themeOptions[0];
-  const formattedScheme =
-    colorScheme.charAt(0).toUpperCase() + colorScheme.slice(1);
-  const themeStatusText =
-    themePreference === "system"
-      ? `Following system preference (${formattedScheme})`
-      : `${activeThemeOption.label} theme enabled`;
-
-  const handleChangePassword = () => {
-    Alert.alert(
-      "Change Password",
-      "A password reset link will be sent to your email",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Send Link",
-          onPress: async () => {
-            try {
-              const { error } = await supabase.auth.resetPasswordForEmail(
-                user?.email,
-              );
-              if (error) throw error;
-              Alert.alert("Success", "Password reset link sent to your email");
-            } catch (_error) {
-              Alert.alert("Error", "Failed to send password reset link");
-            }
-          },
-        },
-      ],
-    );
-  };
 
   const handleLogout = async () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -120,9 +82,12 @@ export default function AccountSettingsScreen() {
         text: "Sign Out",
         style: "destructive",
         onPress: async () => {
-          const { error } = await signOut();
-          if (error) {
-            Alert.alert("Error", error.message || String(error));
+          try {
+            await logout();
+
+            router.push(ROUTES.INDEX.path)
+          } catch (error) {
+            Alert.alert("Error", error instanceof Error ? error.message : String(error));
           }
         },
       },
@@ -224,22 +189,12 @@ export default function AccountSettingsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ gap: 18, paddingBottom: "60%" }}
         >
+
           <AnimatedBox
             entering={FadeInDown.delay(100).springify()}
-            style={{ paddingHorizontal: 6, marginBottom: 6, flex: 1 }}
+            style={{ paddingHorizontal: 6, flex: 1 }}
           >
-            <GlassView
-              glassEffectStyle="clear"
-              tintColor={
-                isDark
-                  ? colors.withOpacity(palette.background, 0.9)
-                  : colors.withOpacity(palette.foreground, 0.9)
-              }
-              style={{
-                borderRadius: 24,
-                padding: 20,
-              }}
-            >
+            <PaddedView>
               <Text
                 variant="lg"
                 sx={{
@@ -258,6 +213,7 @@ export default function AccountSettingsScreen() {
                   setFormData({ ...formData, full_name: text })
                 }
                 icon="person-outline"
+                editable={isEditing}
               />
 
               <SettingField
@@ -266,9 +222,9 @@ export default function AccountSettingsScreen() {
                 onChangeText={(text) =>
                   setFormData({ ...formData, email: text })
                 }
-                editable={false}
                 keyboardType="email-address"
                 icon="mail-outline"
+                editable={false}
               />
 
               <SettingField
@@ -279,167 +235,37 @@ export default function AccountSettingsScreen() {
                 }
                 keyboardType="phone-pad"
                 icon="call-outline"
+                editable={false}
               />
-            </GlassView>
+            </PaddedView>
           </AnimatedBox>
 
-          <AnimatedBox
-            entering={FadeInDown.delay(200).springify()}
-            sx={{ paddingHorizontal: 6, marginBottom: 6 }}
-          >
-            <View
-              style={{
-                borderRadius: 24,
-                padding: 20,
-              }}
-            >
+          <AnimatedBox entering={FadeInDown.delay(250).springify()}>
+            <PaddedView>
               <Text
                 variant="lg"
                 sx={{
                   fontWeight: "700",
                   color: "textPrimary",
-                  marginBottom: 4,
-                }}
-              >
-                Security
-              </Text>
-
-              <Pressable
-                onPress={handleChangePassword}
-                activeOpacity={0.7}
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  paddingVertical: 3,
-                }}
-              >
-                <View
-                  sx={{ flexDirection: "row", alignItems: "center", flex: 1 }}
-                >
-                  <View
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: "full",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 3,
-                      backgroundColor: colors.withOpacity(
-                        palette.brand500 ?? palette.info,
-                        0.15,
-                      ),
-                    }}
-                  >
-                    <Ionicons
-                      name="lock-closed-outline"
-                      size={20}
-                      color={theme.colors.purple[400]}
-                    />
-                  </View>
-                  <View sx={{ flex: 1 }}>
-                    <Text
-                      sx={{
-                        fontSize: 16,
-                        fontWeight: "600",
-                        color: "textPrimary",
-                      }}
-                    >
-                      Change Password
-                    </Text>
-                    <Text variant="sm" tone="muted" sx={{ marginTop: 0.5 }}>
-                      Send reset link to email
-                    </Text>
-                  </View>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={20}
-                  color={theme.colors.text.secondary}
-                />
-              </Pressable>
-            </View>
-          </AnimatedBox>
-
-          <AnimatedBox
-            entering={FadeInDown.delay(250).springify()}
-            sx={{ paddingHorizontal: 6, marginBottom: 6 }}
-          >
-            <GlassView
-              glassEffectStyle="clear"
-              tintColor={
-                isDark
-                  ? colors.withOpacity(palette.background, 0.9)
-                  : colors.withOpacity(palette.foreground, 0.9)
-              }
-              style={{
-                borderRadius: 24,
-                padding: 20,
-              }}
-            >
-              <Text
-                variant="lg"
-                sx={{
-                  fontWeight: "700",
-                  color: "textPrimary",
-                  marginBottom: 4,
                 }}
               >
                 Appearance
               </Text>
 
               <View sx={{ paddingVertical: 3 }}>
-                <View
-                  sx={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <View
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      borderRadius: "full",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginRight: 3,
-                      backgroundColor: colors.withOpacity(
-                        palette.brand500 ?? palette.info,
-                        0.15,
-                      ),
-                    }}
+                  <Text
+                    variant="xs"
                   >
-                    <Ionicons
-                      name={activeThemeOption.icon}
-                      size={20}
-                      color={theme.colors.accent}
-                    />
-                  </View>
-                  <View sx={{ flex: 1 }}>
-                    <Text
-                      sx={{
-                        fontSize: 16,
-                        fontWeight: "600",
-                        color: "textPrimary",
-                      }}
-                    >
-                      Theme
-                    </Text>
-                    <Text variant="sm" tone="muted" sx={{ marginTop: 0.5 }}>
-                      {themeStatusText}
-                    </Text>
-                  </View>
-                </View>
-
+                    The system theme is "{colorScheme}".
+                  </Text>
                 <View sx={{ flexDirection: "row", gap: 3, marginTop: 4 }}>
+
                   {themeOptions.map((option) => {
                     const selected = option.key === themePreference;
                     return (
-                      <TouchableOpacity
+                      <Pressable
                         key={option.key}
                         onPress={() => setThemePreference(option.key)}
-                        activeOpacity={0.8}
                         sx={{
                           flex: 1,
                           flexDirection: "row",
@@ -449,8 +275,9 @@ export default function AccountSettingsScreen() {
                           borderWidth: 1,
                           paddingHorizontal: 4,
                           paddingVertical: 3,
-                          backgroundColor: selected ? "accent" : "surface",
                           borderColor: selected ? "accent" : "border",
+                          backgroundColor: selected ? "surface" : "transparent",
+                          gap: 2
                         }}
                       >
                         <Ionicons
@@ -473,30 +300,16 @@ export default function AccountSettingsScreen() {
                         >
                           {option.label}
                         </Text>
-                      </TouchableOpacity>
+                      </Pressable>
                     );
                   })}
                 </View>
               </View>
-            </GlassView>
+            </PaddedView>
           </AnimatedBox>
 
-          <AnimatedBox
-            entering={FadeInDown.delay(300).springify()}
-            sx={{ paddingHorizontal: 6, marginBottom: 6 }}
-          >
-            <GlassView
-              glassEffectStyle="clear"
-              tintColor={
-                isDark
-                  ? colors.withOpacity(palette.background, 0.9)
-                  : colors.withOpacity(palette.foreground, 0.9)
-              }
-              style={{
-                borderRadius: 24,
-                padding: 20,
-              }}
-            >
+          <AnimatedBox entering={FadeInDown.delay(300).springify()}>
+            <PaddedView>
               <Text
                 variant="lg"
                 sx={{
@@ -568,90 +381,15 @@ export default function AccountSettingsScreen() {
                   </Text>
                 </View>
               </View>
-            </GlassView>
-          </AnimatedBox>
-
-          <AnimatedBox
-            entering={FadeInDown.delay(320).springify()}
-            sx={{ paddingHorizontal: 6, marginBottom: 6 }}
-          >
-            <ManualLinkingCard />
-          </AnimatedBox>
-
-          <AnimatedBox
-            entering={FadeInDown.delay(400).springify()}
-            sx={{ paddingHorizontal: 6, marginBottom: 12 }}
-          >
-            <TouchableOpacity
-              onPress={() => {
-                Alert.alert(
-                  "Delete Account",
-                  "This action is permanent and cannot be undone. All your data will be deleted.",
-                  [
-                    { text: "Cancel", style: "cancel" },
-                    {
-                      text: "Delete",
-                      style: "destructive",
-                      onPress: () =>
-                        Alert.alert(
-                          "Coming Soon",
-                          "Account deletion will be available soon",
-                        ),
-                    },
-                  ],
-                );
-              }}
-              sx={{
-                borderRadius: "xl",
-                overflow: "hidden",
-                backgroundColor: colors.withOpacity(colors.error, 0.1),
-                borderWidth: 1,
-                borderColor: colors.withOpacity(colors.error, 0.3),
-              }}
-            >
-              <View
-                sx={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingVertical: 4,
-                  paddingHorizontal: 6,
-                }}
-              >
-                <MaterialIcons
-                  name="delete-outline"
-                  size={22}
-                  color="rgb(248, 113, 113)"
-                />
-                <Text
-                  sx={{
-                    fontSize: 16,
-                    fontWeight: "600",
-                    color: "errorLight",
-                    marginLeft: 2,
-                  }}
-                >
-                  Delete Account
-                </Text>
-              </View>
-            </TouchableOpacity>
+            </PaddedView>
           </AnimatedBox>
 
           <AnimatedBox
             entering={FadeInDown.delay(700).springify()}
-            sx={{ paddingHorizontal: 6, marginBottom: 12 }}
           >
             <TouchableOpacity
               onPress={handleLogout}
               activeOpacity={0.8}
-              sx={{
-                borderRadius: "xl",
-                overflow: "hidden",
-                marginBottom: 24,
-                backgroundColor: colors.withOpacity(palette.error, 0.15),
-                borderWidth: 1,
-                borderColor: colors.withOpacity(palette.error, 0.3),
-              }}
             >
               <View
                 sx={{

@@ -62,7 +62,9 @@ export default function Section({
         >
           {section.title}
         </Text>
-        {children}
+        <View style={{ gap: 8 }}>
+          {children}
+        </View>
       </View>
     </AnimatedBox>
   );
@@ -84,7 +86,6 @@ export function SectionItem({ item, itemIdx }: SectionItemProps) {
 
   return (
     <View key={item.id}>
-      {itemIdx > 0 && <View sx={{ height: 1, backgroundColor: "border" }} />}
       <Pressable
         onPress={handlePress}
         style={{

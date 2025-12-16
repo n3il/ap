@@ -26,7 +26,7 @@ export default function AccountStats({
         label="Open P&L"
         value={accountData.openPnlPct}
         textVariant="xs"
-        valueTextVariant="xs"
+        valueTextVariant="sm"
         colorize
         formatter={formatPercent}
         alignRight
@@ -36,7 +36,7 @@ export default function AccountStats({
         label="All P&L"
         value={accountData.totalPnlPercent}
         textVariant="xs"
-        valueTextVariant="xs"
+        valueTextVariant="sm"
         colorize
         formatter={formatPercent}
         alignRight

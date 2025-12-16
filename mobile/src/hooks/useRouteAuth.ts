@@ -1,7 +1,7 @@
+import { usePrivy } from "@privy-io/expo";
 import { usePathname, useRouter } from "expo-router";
 import { useEffect, useMemo } from "react";
 import { isRouteAccessible, ROUTES } from "@/config/routes";
-import { useAuth } from "@/contexts/AuthContext";
 
 /**
  * Hook to check route accessibility based on authentication state
@@ -13,8 +13,9 @@ export default function useRouteAuth({
 }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, loading } = useAuth();
+  const { user, isReady } = usePrivy();
   const isAuthenticated = !!user;
+  const loading = !isReady;
 
   // Get REQUIRE_AUTH from environment variable
   const requireAuth =
@@ -34,11 +35,12 @@ export default function useRouteAuth({
     [isAuthenticated, loading, requireAuth],
   );
 
-  useEffect(() => {
-    if (autoRedirect) {
-      router.push(ROUTES.AUTH_INDEX.path)
-    }
-  }, [pathname]);
+  // useEffect(() => {
+  //   console.log(pathname)
+  //   if (autoRedirect) {
+  //     router.push(ROUTES.AUTH_INDEX.path)
+  //   }
+  // }, [pathname]);
 
   return {
     isAuthenticated,

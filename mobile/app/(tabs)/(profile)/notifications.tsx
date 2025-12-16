@@ -14,7 +14,7 @@ import {
   View,
 } from "@/components/ui";
 import { AnimatedBox } from "@/components/ui/animated";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePrivy } from "@privy-io/expo";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 
@@ -28,7 +28,7 @@ Notifications.setNotificationHandler({
 });
 
 export default function NotificationsScreen() {
-  const { user } = useAuth();
+  const { user } = usePrivy();
   const { theme, isDark } = useTheme();
   const router = useRouter();
   const colors = useColors();

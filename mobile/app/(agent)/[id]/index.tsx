@@ -57,6 +57,8 @@ export default function AgentIndex() {
             <MultiAgentChart
               agentsProp={[agent]}
               tickerSymbols={[]}
+              // showTradeActions
+              // showSentiment
             />
           </View>
         ),

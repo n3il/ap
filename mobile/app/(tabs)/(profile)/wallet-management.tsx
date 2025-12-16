@@ -302,7 +302,6 @@ export default function WalletManagementScreen() {
           {/* Create Wallet Section */}
           <AnimatedBox
             entering={FadeInDown.delay(300).springify()}
-            sx={{ paddingHorizontal: 6, marginBottom: 6 }}
           >
             {!showCreateModal ? (
               <TouchableOpacity
@@ -354,8 +353,6 @@ export default function WalletManagementScreen() {
                   borderRadius: "xl",
                   padding: 5,
                   backgroundColor: "surface",
-                  borderWidth: 1,
-                  borderColor: "border",
                 }}
               >
                 <Text

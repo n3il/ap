@@ -29,7 +29,8 @@ const accentPalette = {
 };
 
 export const PROVIDER_COLORS = {
-  openai: "#064194ff",
+  // openai: "#064194ff",
+  openai: "#ff009dff",
   anthropic: "#ff009dff",
   deepseek: "#1af4ffff",
   google: "#22e200ff",
@@ -91,7 +92,7 @@ const darkTheme = {
     background: "#1f2436ff",
     backgroundSecondary: "#101a2c",
     backgroundSplash: "#101a2c",
-    surface: "#181f2eff",
+    surface: "#0f131cff",
     surfaceForeground: "#f8fafc",
     surfaceLight: "#16213a",
     surfaceBorder: "#323e59ff",

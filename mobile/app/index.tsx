@@ -14,6 +14,7 @@ import {
 } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useColors } from "@/theme";
+import { useLogin } from '@privy-io/expo/ui';
 
 const { width, height } = Dimensions.get("window");
 
@@ -47,11 +48,8 @@ export default function GetStartedScreen() {
     ]).start();
   }, [fadeAnim, scaleAnim]);
 
-  const handleAuth = (type) => {
-    router.push({
-      pathname: ROUTES.AUTH_INDEX.path,
-      params: { type },
-    });
+  const handleAuth = () => {
+    router.push(ROUTES.AUTH_INDEX.path);
   };
 
   const handleContinueWithoutAuth = () => {
@@ -171,7 +169,9 @@ export default function GetStartedScreen() {
                   marginTop: 24,
                   marginBottom: 16,
                   backgroundColor: "transparent",
-                  borderRadius: 10000
+                  borderRadius: 10000,
+                  marginHorizontal: 'auto',
+                  paddingHorizontal: 12,
                 }}
                 onPress={handleContinueWithoutAuth}
               >

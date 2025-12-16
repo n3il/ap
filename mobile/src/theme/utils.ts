@@ -58,3 +58,28 @@ export const blendColors = (base, overlay, alpha = 0.5) => {
 
   return `rgba(${blended.join(", ")}, 1)`;
 };
+
+
+function hashString(str) {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    hash = (hash << 5) - hash + str.charCodeAt(i);
+    hash |= 0; // convert to 32-bit integer
+  }
+  return Math.abs(hash);
+}
+
+export function resolveProviderColor(input, colors) {
+  if (!input || typeof input !== "string") {
+    return colors.default;
+  }
+
+  const keys = Object.keys(colors).filter(
+    (k) => k !== "default"
+  );
+
+  const hash = hashString(input.toLowerCase());
+  const index = hash % keys.length;
+
+  return colors[keys[index]] ?? colors.default;
+}

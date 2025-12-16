@@ -157,6 +157,7 @@ export function PositionRow({
               <Text variant="xs" sx={{ marginRight: 2 }}>
                 {leverage}X {side}
               </Text>
+
             </View>
           </View>
 

@@ -1,26 +1,24 @@
-import { makeRedirectUri } from "expo-auth-session";
-import { GlassView } from "expo-glass-effect";
-import * as WebBrowser from "expo-web-browser";
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
   Text,
   TouchableOpacity,
   View,
+  Card,
 } from "@/components/ui";
-import { supabase } from "@/config/supabase";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
+import { usePrivy, useLinkWithOAuth, useUnlinkOAuth } from "@privy-io/expo";
 
-type Identity = {
-  identity_id: string;
-  provider: string;
-  identity_data?: {
-    email?: string;
-    username?: string;
-    [key: string]: unknown;
-  };
+type LinkedAccount = {
+  type: string;
+  address?: string;
+  email?: string;
+  phone?: string;
+  username?: string;
+  subject?: string;
+  [key: string]: unknown;
 };
 
 const AVAILABLE_PROVIDERS = [
@@ -36,27 +34,11 @@ const AVAILABLE_PROVIDERS = [
   },
 ];
 
-function extractCodeFromUrl(url: string) {
-  try {
-    const parsed = new URL(url);
-    const code = parsed.searchParams.get("code");
-    if (code) return code;
-    if (url.includes("#")) {
-      const hashParams = new URLSearchParams(url.split("#")[1]);
-      return hashParams.get("code");
-    }
-  } catch (_error) {
-    // ignore malformed URLs
-  }
-  return null;
-}
-
 export default function ManualLinkingCard() {
   const colors = useColors();
   const { isDark } = useTheme();
   const palette = colors.colors;
-  const [identities, setIdentities] = useState<Identity[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { user } = usePrivy();
   const [linkingProvider, setLinkingProvider] = useState<string | null>(null);
   const [unlinkingId, setUnlinkingId] = useState<string | null>(null);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -64,104 +46,91 @@ export default function ManualLinkingCard() {
     "default",
   );
 
-  const linkedProviders = useMemo(() => {
-    return identities.map((identity) => {
+  const { link: linkWithOAuth } = useLinkWithOAuth({
+    onSuccess: (user) => {
+      setStatusTone("success");
+      setStatusMessage("Account linked successfully!");
+      setLinkingProvider(null);
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error ? error.message : "Unable to link identity.";
+      setStatusTone("error");
+      setStatusMessage(message);
+      setLinkingProvider(null);
+    },
+  });
+
+  const { unlink: unlinkOAuth } = useUnlinkOAuth({
+    onSuccess: (user) => {
+      setStatusTone("success");
+      setStatusMessage("Identity unlinked successfully.");
+      setUnlinkingId(null);
+    },
+    onError: (error) => {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to unlink this provider.";
+      setStatusTone("error");
+      setStatusMessage(message);
+      setUnlinkingId(null);
+    },
+  });
+
+  const linkedAccounts = useMemo(() => {
+    if (!user?.linked_accounts) return [];
+
+    return user.linked_accounts.map((account: LinkedAccount) => {
+      const accountType = account.type;
       const email =
-        typeof identity.identity_data?.email === "string"
-          ? identity.identity_data?.email
-          : undefined;
+        typeof account.email === "string" ? account.email : undefined;
       const username =
-        typeof identity.identity_data?.username === "string"
-          ? identity.identity_data?.username
-          : undefined;
+        typeof account.username === "string" ? account.username : undefined;
+      const phone =
+        typeof account.phone === "string" ? account.phone : undefined;
+
       return {
-        ...identity,
+        ...account,
+        id: `${accountType}-${account.subject || account.address || account.email || account.phone}`,
         label:
-          identity.provider.charAt(0).toUpperCase() +
-          identity.provider.slice(1),
-        detail: email || username || "Linked",
+          accountType.charAt(0).toUpperCase() + accountType.slice(1),
+        detail: email || username || phone || "Linked",
+        provider: accountType,
       };
     });
-  }, [identities]);
+  }, [user?.linked_accounts]);
+
+  const linkedOAuthProviders = useMemo(
+    () => linkedAccounts.filter((acc) =>
+      AVAILABLE_PROVIDERS.some(p => p.id === acc.provider)
+    ),
+    [linkedAccounts],
+  );
 
   const pendingProviders = useMemo(
     () =>
       AVAILABLE_PROVIDERS.filter(
         (provider) =>
-          !identities.some((identity) => identity.provider === provider.id),
+          !linkedAccounts.some((account) => account.provider === provider.id),
       ),
-    [identities],
+    [linkedAccounts],
   );
 
-  const canUnlink = linkedProviders.length > 1;
-
-  useEffect(() => {
-    refreshIdentities();
-  }, []);
-
-  async function refreshIdentities() {
-    try {
-      setIsLoading(true);
-      const { data, error } = await supabase.auth.getUserIdentities();
-      if (error) throw error;
-      setIdentities(data?.identities ?? []);
-    } catch (error) {
-      console.error("Failed to load linked identities", error);
-      setStatusTone("error");
-      setStatusMessage("Unable to load linked identities right now.");
-    } finally {
-      setIsLoading(false);
-    }
-  }
+  const canUnlink = linkedAccounts.length > 1;
 
   async function handleLink(provider: string) {
     setStatusMessage(null);
     setLinkingProvider(provider);
     try {
-      const redirectTo = makeRedirectUri({
-        scheme: process.env.EXPO_PUBLIC_REDIRECT_URL,
-      });
-      const { data, error } = await supabase.auth.linkIdentity({
-        provider,
-        options: {
-          redirectTo,
-          skipBrowserRedirect: true,
-        },
-      });
-
-      if (error) {
-        throw error;
-      }
-
-      if (data?.url) {
-        const result = await WebBrowser.openAuthSessionAsync(
-          data.url,
-          redirectTo,
-        );
-        if (result.type === "success" && result.url) {
-          const code = extractCodeFromUrl(result.url);
-          if (code) {
-            await supabase.auth.exchangeCodeForSession(code);
-          }
-        }
-      }
-
-      setStatusTone("success");
-      setStatusMessage(
-        "If prompted, approve the new login in your browser to finish linking. Refresh to see updates.",
-      );
+      await linkWithOAuth({ provider });
     } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Unable to link identity.";
-      setStatusTone("error");
-      setStatusMessage(message);
-    } finally {
-      setLinkingProvider(null);
-      await refreshIdentities();
+      // Error handled by onError callback
+      console.error("Link error:", error);
     }
   }
 
-  async function handleUnlink(identity: Identity) {
+  async function handleUnlink(account: any) {
     if (!canUnlink) {
       Alert.alert(
         "Cannot unlink",
@@ -171,23 +140,15 @@ export default function ManualLinkingCard() {
     }
 
     setStatusMessage(null);
-    setUnlinkingId(identity.identity_id);
+    setUnlinkingId(account.id);
     try {
-      const { error } = await supabase.auth.unlinkIdentity(identity);
-      if (error) throw error;
-
-      setStatusTone("success");
-      setStatusMessage("Identity unlinked successfully.");
-      await refreshIdentities();
+      await unlinkOAuth({
+        provider: account.provider,
+        subject: account.subject,
+      });
     } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : "Unable to unlink this provider.";
-      setStatusTone("error");
-      setStatusMessage(message);
-    } finally {
-      setUnlinkingId(null);
+      // Error handled by onError callback
+      console.error("Unlink error:", error);
     }
   }
 
@@ -205,25 +166,14 @@ export default function ManualLinkingCard() {
     "#ef4444";
 
   return (
-    <GlassView
-      glassEffectStyle="clear"
-      tintColor={
-        isDark
-          ? colors.withOpacity(palette.background, 0.9)
-          : colors.withOpacity(palette.foreground, 0.9)
-      }
+    <View
       style={{
-        borderRadius: 24,
         padding: 20,
       }}
     >
       <View>
         <Text variant="lg" sx={{ fontWeight: "700", color: "textPrimary" }}>
-          Manual identity linking
-        </Text>
-        <Text variant="sm" tone="muted" sx={{ marginTop: 2 }}>
-          Connect additional OAuth providers to this account so you can sign in
-          with any linked identity. Requires manual approval in your browser.
+          Linked Accounts
         </Text>
       </View>
 
@@ -237,16 +187,9 @@ export default function ManualLinkingCard() {
                 : statusTone === "success"
                   ? successColor
                   : "textPrimary",
-            backgroundColor: colors.withOpacity(
-              statusTone === "error"
-                ? errorColor
-                : statusTone === "success"
-                  ? successColor
-                  : (palette.brand500 ?? palette.info),
-              0.08,
-            ),
-            padding: 6,
+            paddingVertical: 6,
             borderRadius: 12,
+            textAlign: "left"
           }}
         >
           {statusMessage}
@@ -254,30 +197,10 @@ export default function ManualLinkingCard() {
       ) : null}
 
       <View sx={{ gap: 3 }}>
-        <Text
-          variant="xs"
-          tone="muted"
-          sx={{ letterSpacing: 1, textTransform: "uppercase" }}
-        >
-          Linked providers
-        </Text>
         <View sx={{ gap: 3 }}>
-          {isLoading ? (
-            <View
-              sx={{
-                flexDirection: "row",
-                alignItems: "center",
-                gap: 3,
-                paddingVertical: 2,
-              }}
-            >
-              <ActivityIndicator color={colors.primary} />
-              <Text tone="muted">Loading providers…</Text>
-            </View>
-          ) : linkedProviders.length ? (
-            linkedProviders.map((identity) => (
+          {linkedOAuthProviders.map((account) => (
               <View
-                key={identity.identity_id}
+                key={account.id}
                 sx={{
                   flexDirection: "row",
                   justifyContent: "space-between",
@@ -287,51 +210,41 @@ export default function ManualLinkingCard() {
               >
                 <View>
                   <Text sx={{ fontWeight: "600", color: "textPrimary" }}>
-                    {identity.label}
+                    {account.label}
                   </Text>
                   <Text variant="xs" tone="muted">
-                    {identity.detail}
+                    {account.detail}
                   </Text>
                 </View>
-                {identity.provider !== "email" ? (
-                  <TouchableOpacity
-                    onPress={() => handleUnlink(identity)}
-                    disabled={unlinkingId === identity.identity_id}
-                    sx={{
-                      paddingHorizontal: 4,
-                      paddingVertical: 2,
-                      borderRadius: "full",
-                      backgroundColor: "surface",
-                      borderWidth: 1,
-                      borderColor: "border",
-                    }}
-                  >
-                    {unlinkingId === identity.identity_id ? (
-                      <ActivityIndicator size="small" color={colors.primary} />
-                    ) : (
-                      <Text variant="sm" tone="muted">
-                        Unlink
-                      </Text>
-                    )}
-                  </TouchableOpacity>
-                ) : null}
+                <TouchableOpacity
+                  onPress={() => handleUnlink(account)}
+                  disabled={unlinkingId === account.id || !canUnlink}
+                  sx={{
+                    paddingHorizontal: 4,
+                    paddingVertical: 2,
+                    borderRadius: "full",
+                    backgroundColor: "surface",
+                    borderWidth: 1,
+                    borderColor: "border",
+                    opacity: !canUnlink ? 0.5 : 1,
+                  }}
+                >
+                  {unlinkingId === account.id ? (
+                    <ActivityIndicator size="small" color={colors.primary} />
+                  ) : (
+                    <Text variant="sm" tone="muted">
+                      Unlink
+                    </Text>
+                  )}
+                </TouchableOpacity>
               </View>
             ))
-          ) : (
-            <Text tone="muted">No linked providers yet.</Text>
-          )}
+          })
         </View>
       </View>
 
       {pendingProviders.length ? (
         <View sx={{ gap: 3 }}>
-          <Text
-            variant="xs"
-            tone="muted"
-            sx={{ letterSpacing: 1, textTransform: "uppercase" }}
-          >
-            Add another login
-          </Text>
           <View sx={{ gap: 3 }}>
             {pendingProviders.map((provider) => (
               <View
@@ -385,6 +298,6 @@ export default function ManualLinkingCard() {
           All supported providers are already linked to this account.
         </Text>
       )}
-    </GlassView>
+    </View>
   );
 }

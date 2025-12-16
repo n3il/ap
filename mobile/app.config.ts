@@ -93,13 +93,14 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       url: "https://u.expo.dev/5f885227-49e3-4a41-be3b-9571706c061e"
     },
     runtimeVersion: {
-      policy: "fingerprint"
+      policy: "appVersion"
     },
     extra: {
       privyAppId: process.env.EXPO_PUBLIC_PRIVY_APP_ID,
       privyClientId: process.env.EXPO_PUBLIC_PRIVY_CLIENT_ID,
       supabaseUrl: process.env.EXPO_PUBLIC_SUPABASE_URL,
       supabaseAnonKey: process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY,
+      sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN,
       eas: {
         projectId: "5f885227-49e3-4a41-be3b-9571706c061e"
       }

@@ -15,16 +15,8 @@ export const ROUTES = {
   },
 
   // Auth Routes - Always allow unauthenticated
-  AUTH_ONBOARDING: {
-    path: "/(auth)/onboarding",
-    requiresAuthentication: false,
-  },
   AUTH_VERIFY_OTP: {
     path: "/(auth)/verify-otp",
-    requiresAuthentication: false,
-  },
-  AUTH_FORGOT_PASSWORD: {
-    path: "/(auth)/forgot-password",
     requiresAuthentication: false,
   },
   AUTH_INDEX: {

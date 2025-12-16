@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import ContainerView from "@/components/ContainerView";
+import ContainerView, { PaddedView } from "@/components/ContainerView";
 import DebugOverlay from "@/components/DebugOverlay";
 import {
   Alert,
@@ -8,23 +8,25 @@ import {
 } from "@/components/ui";
 import LockScreen from "@/components/ui/LockScreen";
 import { ROUTES } from "@/config/routes";
-import { useAuth } from "@/contexts/AuthContext";
+import { usePrivy } from "@privy-io/expo";
 import { useAnimationKey } from "@/hooks/useAnimationKey";
 import { useColors } from "@/theme";
 import Section, { SectionItem } from "@/components/settings/Section";
 import WalletSelector from "@/components/wallets/WalletSelector";
+import { ActivityIndicator, Text, View } from "dripsy";
+import { WalletProvider } from "@/contexts/WalletContext";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
-  const { user, signOut, loading } = useAuth();
+  const { user, logout, isReady } = usePrivy();
   const router = useRouter();
   const { colors: palette, withOpacity } = useColors();
 
-  useEffect(() => {
-    if (!user) {
-      router.push(ROUTES.AUTH_INDEX.path);
-    }
-  }, [user]);
+  // useEffect(() => {
+  //   if (isReady && !user) {
+  //     router.push(ROUTES.AUTH_INDEX.path);
+  //   }
+  // }, [user, isReady]);
 
   const handleLogout = async () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [
@@ -33,9 +35,10 @@ export default function ProfileScreen() {
         text: "Sign Out",
         style: "destructive",
         onPress: async () => {
-          const { error } = await signOut();
-          if (error) {
-            Alert.alert("Error", error.message || String(error));
+          try {
+            await logout();
+          } catch (error) {
+            Alert.alert("Error", error instanceof Error ? error.message : String(error));
           }
         },
       },
@@ -50,35 +53,35 @@ export default function ProfileScreen() {
           id: "account",
           icon: "person-outline",
           title: "Account Settings",
-          subtitle: "Manage your account details",
+          subtitle: "Profile, App Preferences",
           onPress: () => router.push("/(tabs)/(profile)/account-settings"),
         },
         {
           id: "notifications",
           icon: "notifications-outline",
           title: "Notifications",
-          subtitle: "Configure notification preferences",
+          subtitle: "Push Notifications, Alerts",
           onPress: () => router.push("/(tabs)/(profile)/notifications"),
         },
         {
           id: "privacy",
           icon: "shield-checkmark-outline",
-          title: "Integrations",
-          subtitle: "Connected apps and API keys",
+          title: "Advanced",
+          subtitle: "API keys",
           onPress: () => router.push("/(tabs)/(profile)/privacy-security"),
         },
         {
           id: "help",
           icon: "help-circle-outline",
           title: "Help & Support",
-          subtitle: "Get help and contact support",
+          subtitle: "Contact support",
           onPress: () => router.push("/(tabs)/(profile)/help-support"),
         },
       ]
     }
   ];
 
-  if (loading) {
+  if (!isReady) {
     return (
       <ContainerView>
         <ActivityIndicator size="large" color={palette.foreground} />
@@ -101,13 +104,23 @@ export default function ProfileScreen() {
           paddingBottom: 150,
         }}
       >
-
-        <WalletSelector />
+        <PaddedView style={{
+          marginVertical: 18,
+          gap: 32
+        }}>
+          <Text
+            variant="sm"
+            sx={{ color: "textSecondary" }}
+          >
+            Logged in with: {user.linked_accounts[0].type}
+          </Text>
+          <WalletSelector />
+        </PaddedView>
 
         {menuItems.map((section, sectionIdx) => (
-          <Section section={section} sectionIdx={sectionIdx}>
+          <Section key={section.title} section={section} sectionIdx={sectionIdx}>
             {section.children.map((item, itemIdx) => (
-              <SectionItem item={item} itemIdx={itemIdx} />
+              <SectionItem key={item.title} item={item} itemIdx={itemIdx} />
             ))}
           </Section>
         ))}

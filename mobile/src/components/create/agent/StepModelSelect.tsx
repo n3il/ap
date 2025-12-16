@@ -46,56 +46,6 @@ export default function StepModelSelect({
   return (
     <View style={{ flex: 1, gap: 12 }}>
       <View style={{ gap: 10 }}>
-        <SectionTitle title="Brain & provider" />
-        <View
-          style={{
-            flexDirection: "row",
-            gap: 8,
-            flexWrap: "wrap",
-          }}
-        >
-          <Button
-            variant="outline"
-            size="sm"
-            sx={{
-              backgroundColor: onlyFree
-                ? withOpacity(palette.success, 0.25)
-                : palette.surface,
-            }}
-            onPress={onToggleFree}
-          >
-            <Text>{onlyFree ? "Showing free only" : "Prefer free"}</Text>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            sx={{
-              backgroundColor: highlightReasoning
-                ? withOpacity(palette.info, 0.2)
-                : palette.surface,
-            }}
-            onPress={onToggleReasoning}
-          >
-            <Text>
-              {highlightReasoning ? "Reasoning first" : "Speed first"}
-            </Text>
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            sx={{
-              backgroundColor: providerFilter
-                ? withOpacity(palette.accent, 0.2)
-                : palette.surface,
-            }}
-            onPress={onToggleProviderFilter}
-          >
-            <Text>
-              {providerFilter ? `Provider: ${providerFilter}` : "Prefer OpenAI"}
-            </Text>
-          </Button>
-        </View>
-
         <TextInput
           placeholder={'Search models or providers (e.g., "gemini", "claude")'}
           value={modelQuery}

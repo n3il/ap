@@ -9,18 +9,18 @@ const lightTheme = {
     background: "#f8fafc",
     backgroundSecondary: "#e2e8f0",
     backgroundSplash: "#378593",
-    surface: "#ffffffff",
+    surface: "#242c35ff",
     surfaceForeground: "#ffffff",
-    surfaceLight: "#242c35ff",
+    surfaceLight: "#3f5c7eff",
     surfaceDark: "#e2e8f0",
     foreground: "#0f172a",
     text: {
       primary: "#0f172a",
-      secondary: "#475569",
+      secondary: "#2f3946ff",
       tertiary: "#94a3b8",
     },
     card: {
-      DEFAULT: "#ffffff",
+      DEFAULT: "transparent",
       foreground: "#0f172a",
     },
     popover: {
@@ -31,7 +31,7 @@ const lightTheme = {
       DEFAULT: "#e2e8f0",
       foreground: "#64748b",
     },
-    border: "#505255ff",
+    border: "#959aa2ff",
     input: "#e2e8f0",
 
     // glassTint: "rgba(194, 34, 34, 0.95)",

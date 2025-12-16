@@ -111,7 +111,7 @@ export default function WalletSelector() {
                     No Wallet Connected
                   </Text>
                   <Text variant="sm" tone="muted">
-                    Tap to create or manage wallets
+                    Tap to create or connect wallets
                   </Text>
                 </>
               )}

@@ -1,12 +1,14 @@
 import SectionTitle from "@/components/SectionTitle";
-import { Button, ScrollView, Text, TextInput, View } from "@/components/ui";
-import { useColors, withOpacity } from "@/theme";
+import { Button, GlassButton, ScrollView, Text, TextInput, View } from "@/components/ui";
+import { border, useColors, withOpacity } from "@/theme";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { Pressable } from "dripsy";
+import { useState } from "react";
 
 export interface QuickStartTemplate {
   name: string;
   headline: string;
-  prompt: string;
-  modelSuggestions?: string[];
+  icon: string;
 }
 
 interface StepIdentityProps {
@@ -23,6 +25,7 @@ export default function StepIdentity({
   onApplyTemplate,
 }: StepIdentityProps) {
   const { colors: palette } = useColors();
+  const [selected, setSelected] = useState(quickStarts[1])
 
   return (
     <ScrollView
@@ -31,38 +34,48 @@ export default function StepIdentity({
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <View style={{ gap: 10 }}>
-        <SectionTitle title="Start with a vibe" />
-        <Text tone="muted" variant="sm">
-          One tap to pre-fill tone, direction, and a suggested model. You can
-          tweak everything afterward.
+      <View style={{ gap: 4, paddingTop: 8 }}>
+        <SectionTitle title="Expected Investment Horizon" />
+        <Text variant="sm">
+          All agents are connected to live data feeds and can react to market conditions quickly.
         </Text>
         <View
           style={{
-            flexDirection: "column",
+            flexDirection: "row",
+            justifyContent: "space-evenly",
             gap: 10,
+            marginTop: 16
           }}
         >
           {quickStarts.map((template) => (
-            <Button
+            <Pressable
               key={template.name}
-              onPress={() => onApplyTemplate(template)}
-              variant="surface"
-              size="lg"
+              onPress={() => setSelected(template)}
               sx={{
-                width: "100%",
-                alignItems: "flex-start",
-                gap: 4,
-                backgroundColor: withOpacity(palette.surface, 0.9),
+                flexDirection: "column",
+                background: "transparent",
+                borderWidth: 2,
+                border: "border",
+                justifyContent: "center",
+                alignItems: "center",
+                borderRadius: 18,
+                paddingHorizontal: 4,
+                paddingVertical: 1,
+                opacity: selected.name === template.name ? 1 : 0.5,
               }}
             >
-              <View sx={{ gap: 4 }}>
-                <Text variant="lg" style={{ fontWeight: "700" }}>
-                  {template.name}
-                </Text>
-                <Text numberOfLines={2}>{template.headline}</Text>
-              </View>
-            </Button>
+              <Text
+                variant="lg"
+                sx={{ fontWeight: "700",  }}
+
+              >
+                {template.name}
+              </Text>
+              <MaterialCommunityIcons
+                name={template.icon}
+                size={30}
+              />
+            </Pressable>
           ))}
         </View>
       </View>
