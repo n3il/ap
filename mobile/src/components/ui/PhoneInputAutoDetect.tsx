@@ -3,6 +3,7 @@ import {
   type CountryCode,
   getCountryCallingCode,
   parsePhoneNumberFromString,
+  PhoneNumber,
 } from "libphonenumber-js";
 import { useEffect, useMemo, useState } from "react";
 import { TextInput, View } from "react-native";
@@ -13,7 +14,7 @@ const DEFAULT_COUNTRY: CountryCode = "US";
 export default function PhoneInputAutoDetect({
   onChange,
 }: {
-  onChange: (value: string) => void;
+  onChange: (value) => void;
 }) {
   const { colors: palette } = useColors();
 
@@ -35,8 +36,8 @@ export default function PhoneInputAutoDetect({
     const full = `+${callingCode}${nationalDigits}`;
     const phone = parsePhoneNumberFromString(full);
 
-    onChange(phone?.isValid() ? phone.number : "");
-  }, [callingCode, nationalDigits, onChange]);
+    onChange([phone?.number || "", phone?.isValid() || false]);
+  }, [callingCode, nationalDigits]);
 
   // ---- handlers ----
   const handleCallingCodeChange = (text: string) => {
@@ -132,4 +133,3 @@ export default function PhoneInputAutoDetect({
     </View>
   );
 }
-90823;

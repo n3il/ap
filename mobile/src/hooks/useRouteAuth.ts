@@ -35,12 +35,11 @@ export default function useRouteAuth({
     [isAuthenticated, loading, requireAuth],
   );
 
-  // useEffect(() => {
-  //   console.log(pathname)
-  //   if (autoRedirect) {
-  //     router.push(ROUTES.AUTH_INDEX.path)
-  //   }
-  // }, [pathname]);
+  useEffect(() => {
+    if (isReady && !user && autoRedirect) {
+      router.push(ROUTES.AUTH_INDEX.path)
+    }
+  }, []);
 
   return {
     isAuthenticated,

@@ -106,6 +106,7 @@ export default function GlassButton({
       </View>
     );
 
+  console.log({ disabled })
   return (
     <GlassView
       glassEffectStyle="clear"

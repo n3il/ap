@@ -15,6 +15,7 @@ import Section, { SectionItem } from "@/components/settings/Section";
 import WalletSelector from "@/components/wallets/WalletSelector";
 import { ActivityIndicator, Text, View } from "dripsy";
 import { WalletProvider } from "@/contexts/WalletContext";
+import useRouteAuth from "@/hooks/useRouteAuth";
 
 export default function ProfileScreen() {
   const animKey = useAnimationKey();
@@ -22,6 +23,7 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { colors: palette, withOpacity } = useColors();
 
+  useRouteAuth({ autoRedirect: true })
   // useEffect(() => {
   //   if (isReady && !user) {
   //     router.push(ROUTES.AUTH_INDEX.path);

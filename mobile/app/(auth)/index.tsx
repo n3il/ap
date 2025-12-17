@@ -1,4 +1,4 @@
-import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -23,13 +23,12 @@ import { useColors } from "@/theme";
 import { useAuthFlow } from "@/contexts/AuthFlowContext";
 
 export default function Auth() {
-  const [authMode, setAuthMode] = useState("phone"); // 'phone' or 'email'
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [[phoneNumber, isValidPhoneNumber], setPhoneNumber] = useState(["", false]);
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
 
-  const { emailAuth, smsAuth, setAuthType, setContactInfo } = useAuthFlow();
+  const { emailAuth, smsAuth, authType, setAuthType, setContactInfo } = useAuthFlow();
   const { login: loginWithOAuth } = useLoginWithOAuth();
 
   const { t } = useLocalization();
@@ -41,14 +40,10 @@ export default function Auth() {
     const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return re.test(email);
   };
-
-  const validatePhoneNumber = (phone: string) => {
-    const re = /^(\+[1-9])?\d{9,14}$/;
-    return re.test(phone.replace(/[\s()-]/g, ""));
-  };
+  const validEmail = validateEmail(email);
 
   const handlePhoneSubmit = async () => {
-    if (!validatePhoneNumber(phoneNumber)) {
+    if (!isValidPhoneNumber) {
       Alert.alert(t("common.error"), t("login.errors.invalidPhoneNumber"));
       return;
     }
@@ -56,9 +51,7 @@ export default function Auth() {
     setLoading(true);
     try {
       await smsAuth.sendCode({ phone: phoneNumber });
-      // Store context and navigate
-      setAuthType("phone");
-      setContactInfo(phoneNumber);
+      setContactInfo(phoneNumber)
       router.push("verify-otp");
     } catch (error) {
       Alert.alert(
@@ -76,7 +69,7 @@ export default function Auth() {
       return;
     }
 
-    if (!validateEmail(email)) {
+    if (!validEmail) {
       Alert.alert(t("common.error"), "Please enter a valid email address");
       return;
     }
@@ -84,9 +77,7 @@ export default function Auth() {
     setLoading(true);
     try {
       await emailAuth.sendCode({ email });
-      // Store context and navigate
-      setAuthType("email");
-      setContactInfo(email);
+      setContactInfo(email)
       router.push("verify-otp");
     } catch (error) {
       Alert.alert(
@@ -96,10 +87,6 @@ export default function Auth() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const toggleAuthMode = () => {
-    setAuthMode(authMode === "phone" ? "email" : "phone");
   };
 
   const handleGoogleSignIn = async () => {
@@ -156,15 +143,15 @@ export default function Auth() {
             <View sx={{ marginBottom: 0, gap: 8 }}>
               <SectionTitle
                 title={
-                  authMode === "phone"
+                  authType === "phone"
                     ? t("login.phoneNumber")
                     : t("login.email")
                 }
                 sx={{ fontSize: 14 }}
               />
-              {authMode === "phone" ? (
+              {authType === "phone" ? (
                 <PhoneInputAutoDetect
-                  onChange={(e164Value) => setPhoneNumber(e164Value)}
+                  onChange={(phoneNumberState) => setPhoneNumber(phoneNumberState)}
                 />
               ) : (
                 <TextInput
@@ -215,14 +202,13 @@ export default function Auth() {
             }}
           >
             <GlassButton
-              style={{ flex: 4 }}
-              onPress={toggleAuthMode}
+              style={{ flex: 2 }}
+              onPress={() => setAuthType(authType === "phone" ? "email" : "phone")}
               disabled={loading}
-              styleVariant="paddedFull"
               tintColor={palette.surfaceLight}
             >
               <AnimatedBox
-                key={`toggle-${authMode}`}
+                key={`toggle-${authType}`}
                 entering={FadeIn.duration(200)}
                 exiting={FadeOut.duration(150)}
                 style={{
@@ -233,7 +219,7 @@ export default function Auth() {
                 }}
               >
                 <MaterialIcons
-                  name={authMode === "phone" ? "alternate-email" : "sms"}
+                  name={authType === "phone" ? "alternate-email" : "sms"}
                   size={22}
                   color={palette.surfaceForeground}
                 />
@@ -244,13 +230,12 @@ export default function Auth() {
                     color: "surfaceForeground",
                   }}
                 >
-                  {authMode === "phone" ? "Email" : "SMS"}
+                  {authType === "phone" ? "Email" : "SMS"}
                 </Text>
               </AnimatedBox>
             </GlassButton>
 
             <GlassButton
-              styleVariant="paddedFull"
               onPress={handleGoogleSignIn}
               disabled={loading}
               style={{ flex: 1 }}
@@ -259,7 +244,6 @@ export default function Auth() {
             </GlassButton>
 
             <GlassButton
-              styleVariant="paddedFull"
               onPress={handleAppleSignIn}
               disabled={loading}
               style={{ flex: 1 }}
@@ -275,12 +259,12 @@ export default function Auth() {
           }}
         >
           <AnimatedBox
-            key={`${authMode}-submit`}
+            key={`${authType}-submit`}
             entering={FadeIn.duration(300)}
             exiting={FadeOut.duration(200)}
             style={{ gap: 8 }}
           >
-            {authMode === "phone" && (
+            {authType === "phone" && (
               <Text
                 variant="xs"
                 sx={{
@@ -296,16 +280,25 @@ export default function Auth() {
 
             <GlassButton
               onPress={
-                authMode === "phone" ? handlePhoneSubmit : handleEmailSubmit
+                authType === "phone" ? handlePhoneSubmit : handleEmailSubmit
               }
-              disabled={loading}
+              disabled={loading || (
+                authType === "phone" ? !isValidPhoneNumber : !validEmail
+              )}
               styleVariant="paddedFull"
               tintColor={palette.surface}
             >
               {loading ? (
-                <ActivityIndicator color={palette.foreground} />
+                <ActivityIndicator color={palette.surfaceForeground} />
               ) : (
-                <Text sx={{ color: "background" }}>{t("login.sendCode")}</Text>
+                <View sx={{ flexDirection: "row" }}>
+                  <Text sx={{ color: "surfaceForeground" }}>{t("login.sendCode")}</Text>
+                  <MaterialCommunityIcons
+                    name="chevron-double-right"
+                    color={palette.surfaceForeground}
+                    size={24}
+                  />
+                </View>
               )}
             </GlassButton>
           </AnimatedBox>

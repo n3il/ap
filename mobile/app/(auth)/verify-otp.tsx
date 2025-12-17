@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   Alert,
   Button,
+  GlassButton,
   KeyboardAvoidingView,
   Platform,
   Text,
@@ -27,7 +28,6 @@ export default function VerifyOTPScreen() {
   const [countdown, setCountdown] = useState(RESEND_COUNTDOWN);
   const countdownInterval = useRef(null);
   const router = useRouter();
-  const { user } = usePrivy();
   const { emailAuth, smsAuth, authType, contactInfo } = useAuthFlow();
   const { t } = useLocalization();
   const colors = useColors();
@@ -58,14 +58,6 @@ export default function VerifyOTPScreen() {
       }
     };
   }, [startCountdown]);
-
-  // Redirect when user is authenticated
-  useEffect(() => {
-    if (user) {
-      // Successfully authenticated, navigate to main app
-      router.replace("/(tabs)");
-    }
-  }, [user, router]);
 
   const handleVerifyCode = async (code: string) => {
     if (!code || code.length !== 6) {
@@ -230,21 +222,22 @@ export default function VerifyOTPScreen() {
                 : t("login.resendCode")}
             </Text>
           </Button>
+
         </AnimatedBox>
 
         <View sx={{ marginBottom: 2 }}>
-          <Button
-            variant="outline"
+          <GlassButton
             onPress={handleGoBack}
             disabled={loading}
-            sx={{ width: 60, height: 60, padding: 0, borderRadius: "full" }}
+            styleVariant="paddedFull"
+            tintColor={palette.surface}
           >
             <MaterialIcons
               name="arrow-back"
               size={20}
               color={palette.foreground}
             />
-          </Button>
+          </GlassButton>
         </View>
       </KeyboardAvoidingView>
     </ContainerView>
