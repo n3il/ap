@@ -164,6 +164,7 @@ export default function Auth() {
                     borderWidth: 0,
                     borderRadius: 0,
                     flex: 0,
+                    color: palette.foreground,
                   }}
                   selectionColor={palette.foreground}
                   placeholderTextColor={withOpacity(palette.foreground, .8)}

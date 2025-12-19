@@ -47,8 +47,6 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
     }
   }, [userId, mids, infoClient, sync]);
 
-  console.log(account)
-
   return useMemo((): UseAccountBalanceReturn => ({
     isLoading: account?.isLoading ?? false,
     error: account?.error ?? null,

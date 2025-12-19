@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { usePrivy } from "@privy-io/expo";
 import { supabase } from "@/config/supabase";
+import Constants from "expo-constants";
 
 interface SupabaseContextType {
   isReady: boolean;
@@ -12,9 +13,12 @@ const SupabaseContext = createContext<SupabaseContextType>({
   userId: null,
 });
 
+const SUPABASE_URL = Constants.expoConfig?.extra?.supabaseUrl;
+
 export function SupabaseProvider({ children }: { children: React.ReactNode }) {
   const { user, isReady: privyReady, getAccessToken } = usePrivy();
   const [isReady, setIsReady] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
 
   useEffect(() => {
     async function updateSupabaseAuth() {
@@ -26,18 +30,38 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
 
         if (user) {
           // Get the Privy access token
-          const token = await getAccessToken();
+          const privyToken = await getAccessToken();
 
-          if (token) {
-            // Set the auth token on Supabase client
-            await supabase.auth.setSession({
-              access_token: token,
-              refresh_token: "", // Privy handles refresh
+          if (privyToken) {
+            // Call our edge function to sync Privy user with Supabase
+            const response = await fetch(`${SUPABASE_URL}/functions/v1/privy_auth`, {
+              method: "POST",
+              headers: {
+                "Authorization": `Bearer ${privyToken}`,
+                "Content-Type": "application/json",
+              },
             });
+
+            if (!response.ok) {
+              throw new Error(`Edge function error: ${response.status}`);
+            }
+
+            const { session, user: profileUser } = await response.json();
+
+            if (session) {
+              // Set the Supabase session
+              await supabase.auth.setSession({
+                access_token: session.access_token,
+                refresh_token: session.refresh_token,
+              });
+
+              setUserId(profileUser.id);
+            }
           }
         } else {
           // Clear session if no user
           await supabase.auth.signOut();
+          setUserId(null);
         }
 
         setIsReady(true);
@@ -52,7 +76,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
 
   const contextValue: SupabaseContextType = {
     isReady,
-    userId: user?.id || null,
+    userId,
   };
 
   return (

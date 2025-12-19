@@ -7,9 +7,21 @@ export const processHyperliquidData = (
 
   const accountValue = parseFloat(chState.marginSummary.accountValue || "0");
 
+  const rawHistory: Record<string, any[]> = {};
+
+
+
   // 1. Map Timeframe PnL safely
   const pnlHistory = Object.fromEntries(
     historyData.map(([timeframe, content]) => {
+      const points = (content.accountValueHistory || []).map((p: any) => ({
+        timestamp: p[0],
+        value: parseFloat(p[1])
+      }));
+
+      // Store the points for the chart
+      rawHistory[timeframe] = points;
+
       const history = content.accountValueHistory || [];
       const firstVal = history[0]?.[1];
       const first = firstVal ? parseFloat(firstVal) : 0;
@@ -64,6 +76,7 @@ export const processHyperliquidData = (
     accountValue,
     positions,
     pnlHistory,
+    rawHistory,
     totalOpenPnl: positions.reduce((sum: number, p: any) => sum + p.unrealizedPnl, 0),
   };
 };

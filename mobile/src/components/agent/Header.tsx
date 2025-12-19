@@ -199,7 +199,7 @@ export default function AgentHeader({
         paddingHorizontal: 1,
         borderBottomWidth: .5,
         borderBottomColor: "border",
-        paddingBottom: 1,
+        paddingBottom: 4,
       }}
       {...props}
     >
@@ -215,7 +215,9 @@ export default function AgentHeader({
           style={{
             flex: 0,
             flexGrow: 0,
+            backgroundColor: "transparent"
           }}
+          tintColor={withOpacity(palette.backkgroundSecondary, .8)}
         >
           <MaterialCommunityIcons
             name="chevron-left"
@@ -237,7 +239,7 @@ export default function AgentHeader({
       </View>
       <View
         style={[
-          { flexDirection: "row", alignSelf: "flex-end", paddingRight: 10 },
+          { flexDirection: "row", alignSelf: "flex-end", paddingRight: 10, gap: 8 },
           style,
         ]}
       >
@@ -246,17 +248,17 @@ export default function AgentHeader({
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
           style={{
-            width: 36,
+            width: 50,
             height: 36,
             alignItems: "center",
             justifyContent: "center",
           }}
         >
-          {showWatchlistSpinner ? (
+          {false ? (
             <ActivityIndicator size="small" color={palette.foreground} />
           ) : (
             <MaterialCommunityIcons
-              name={"content-copy"}
+              name={"robot"}
               size={16}
               color={palette?.foreground}
             />
@@ -267,7 +269,7 @@ export default function AgentHeader({
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
           style={{
-            width: 36,
+            width: 50,
             height: 36,
           }}
         >
@@ -275,7 +277,7 @@ export default function AgentHeader({
             <ActivityIndicator size="small" color={palette.foreground} />
           ) : (
             <MaterialCommunityIcons
-              name={isWatchlisted ? "star" : "star-outline"}
+              name={isWatchlisted ? "binoculars" : "binoculars"}
               size={20}
               color={isWatchlisted ? palette?.accent : palette?.foreground}
             />

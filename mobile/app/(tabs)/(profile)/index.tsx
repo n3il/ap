@@ -110,14 +110,13 @@ export default function ProfileScreen() {
           marginVertical: 18,
           gap: 32
         }}>
+          <WalletSelector />
           <Text
             variant="sm"
             sx={{ color: "textSecondary" }}
           >
             Logged in with: {user.linked_accounts[0].type}
-            {JSON.stringify(user)}
           </Text>
-          <WalletSelector />
         </PaddedView>
 
         {menuItems.map((section, sectionIdx) => (

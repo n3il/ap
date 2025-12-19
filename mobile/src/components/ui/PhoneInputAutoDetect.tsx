@@ -16,7 +16,7 @@ export default function PhoneInputAutoDetect({
 }: {
   onChange: (value) => void;
 }) {
-  const { colors: palette } = useColors();
+  const { colors: palette, withOpacity } = useColors();
 
   // ---- single sources of truth ----
   const [country, setCountry] = useState<CountryCode>(DEFAULT_COUNTRY);
@@ -103,6 +103,7 @@ export default function PhoneInputAutoDetect({
         placeholder="1"
         keyboardType="number-pad"
         onChangeText={handleCallingCodeChange}
+        placeholderTextColor={withOpacity(palette.foreground, .8)}
         style={{
           fontSize: 24,
           height: 40,
@@ -121,6 +122,7 @@ export default function PhoneInputAutoDetect({
         onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}
         onChangeText={handleNationalChange}
         autoFocus
+        placeholderTextColor={withOpacity(palette.foreground, .8)}
         style={{
           flex: 1,
           fontSize: 24,

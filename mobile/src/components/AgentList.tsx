@@ -47,6 +47,8 @@ export default function AgentList({
   const itemLayoutsRef = useRef<ItemLayouts>({});
   const [activeAgentId, setActiveAgentId] = useState();
 
+  agentCardProps.showRecentAssessment = includeLatestAssessment
+
   const {
     data: agents = [],
     isLoading,
@@ -63,7 +65,7 @@ export default function AgentList({
     queryFn: () =>
       agentService.getAgents({
         published,
-        includeLatestAssessment: agentCardProps.showRecentAssessment && includeLatestAssessment,
+        includeLatestAssessment: agentCardProps.showRecentAssessment,
         isActive,
         isBookmarked,
         userId,

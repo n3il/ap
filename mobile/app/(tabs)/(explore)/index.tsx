@@ -13,7 +13,7 @@ import { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
 import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
 import ExploreHeader from "@/components/explore/Header";
 import MarketPricesWidget from "@/components/explore/MarketPricesWidget";
-import { RefreshControl, View } from "@/components/ui";
+import { View, RefreshControl } from "@/components/ui";
 import Toggle from "@/components/ui/Toggle";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useColors } from "@/theme";
@@ -122,6 +122,7 @@ export default function ExploreScreen() {
             marginTop: GLOBAL_PADDING,
             gap: GLOBAL_PADDING,
             flexDirection: "column",
+            zIndex: 99999
           }}
         >
           {viewMode === "list" ? (

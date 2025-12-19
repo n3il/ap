@@ -51,6 +51,7 @@ export default function ReportPreview({
       />
       <Text
         variant="xs"
+
         sx={{
           fontWeight: "300",
           fontStyle: "italic",
@@ -64,7 +65,12 @@ export default function ReportPreview({
 
       <Text
         variant="sm"
-        sx={{ fontWeight: "500", fontSize: 13, fontFamily: "monospace" }}
+        sx={{
+          fontWeight: "500",
+          fontSize: 13,
+          fontFamily: "monospace",
+          lineHeight: 30,
+        }}
       >
         {assessmentData.parsed_llm_response?.headline?.short_summary}
       </Text>

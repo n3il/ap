@@ -82,12 +82,12 @@ function TableRow({ agent, idx }: { agent: AgentType; idx: number }) {
             style={{
               fontWeight: "600",
               color:
-                Number(accountData?.totalPnlPercent) >= 0
+                Number(accountData.pnlHistory.allTime?.pnlPct) >= 0
                   ? "#10b981"
                   : "#ef4444",
             }}
           >
-            {formatPercent(accountData?.totalPnlPercent)}
+            {formatPercent(accountData.pnlHistory.allTime?.pnlPct)}
           </Text>
         </View>
 
@@ -97,10 +97,10 @@ function TableRow({ agent, idx }: { agent: AgentType; idx: number }) {
             style={{
               fontWeight: "600",
               color:
-                Number(accountData?.openPnlPct) >= 0 ? "#10b981" : "#ef4444",
+                Number(accountData?.totalOpenPnl) >= 0 ? "#10b981" : "#ef4444",
             }}
           >
-            {formatPercent(accountData?.openPnlPct)}
+            {formatPercent(accountData?.totalOpenPnl)}
           </Text>
         </View>
 
@@ -127,7 +127,7 @@ function TableRow({ agent, idx }: { agent: AgentType; idx: number }) {
         {/* Positions */}
         <View style={{ flex: 1, alignItems: "flex-end" }}>
           <Text variant="sm" style={{ fontWeight: "500" }}>
-            {accountData.openPositions.length}
+            {accountData.positions.length}
           </Text>
         </View>
       </View>
@@ -222,6 +222,7 @@ export default function AgentTable({
         borderRadius: 12,
         marginHorizontal: 10,
         overflow: "hidden",
+        backgroundColor: palette.backgroundSecondary,
       }}
     >
       {/* Table Header */}
@@ -283,12 +284,9 @@ export default function AgentTable({
         </View>
       </View>
 
-      {/* Table Body */}
-      <ScrollView style={{ maxHeight: 600 }}>
-        {agents.map((agent, idx) => (
-          <TableRow key={agent.id} agent={agent} />
-        ))}
-      </ScrollView>
+      {agents.map((agent, idx) => (
+        <TableRow key={agent.id} agent={agent} />
+      ))}
     </View>
   );
 }

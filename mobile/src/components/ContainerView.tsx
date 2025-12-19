@@ -26,8 +26,6 @@ export default function ContainerView({
     isDark
   } = useTheme();
 
-  console.log({ isDark })
-
   return (
     <View
       sx={{

@@ -143,7 +143,7 @@ export default function AgentIndex() {
           {
             position: "absolute",
             width: "100%",
-            top: insets.top + 100,
+            top: insets.top + 120,
             left: 0,
             zIndex: 0,
           },

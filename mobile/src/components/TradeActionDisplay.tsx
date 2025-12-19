@@ -91,14 +91,15 @@ export default function TradeActionDisplay({
             paddingTop: 2,
           }}
         >
-          <StatusBadge
+          <Text
             variant="xs"
             sx={{
               textTransform: "capitalize",
+              color: actionData.direction === "LONG" ? "long" : "short",
             }}
           >
             {`${actionData.type} ${actionData.direction || "short"}` || "-"}
-          </StatusBadge>
+          </Text>
 
           <Text variant="xs" sx={{ fontSize: 12, fontWeight: "400" }}>
             {asset}

@@ -278,7 +278,6 @@ export default function PriceColumn({
       <Animated.View
         style={[
           {
-            overflow: "hidden",
           },
           sparklineStyle,
         ]}

@@ -1,5 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 import Constants from "expo-constants";
+import { Platform } from "react-native";
+import "react-native-url-polyfill/auto";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl;
 const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey;
@@ -8,9 +11,9 @@ const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey;
 // Auth sessions are managed by SupabaseProvider using Privy tokens
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: true, // Allow session management
-    autoRefreshToken: false, // Privy handles token refresh
+    storage: AsyncStorage,
+    autoRefreshToken: true,
+    persistSession: true,
     detectSessionInUrl: false,
-    storage: undefined, // Don't persist to storage, managed in memory
   },
 });

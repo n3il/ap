@@ -1,4 +1,4 @@
-import { Ionicons } from "@expo/vector-icons";
+import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import AgentList from "@/components/AgentList";
 import ContainerView from "@/components/ContainerView";
@@ -32,7 +32,8 @@ export default function AgentsScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
             paddingBottom: "70%",
-            gap: 12,
+            gap: 24,
+            marginTop: 18,
           }}
         >
           <AgentList
@@ -40,7 +41,7 @@ export default function AgentsScreen() {
             emptyState={<View />}
             agentCardProps={{
               showRecentAssessment: false,
-              showPositions: false,
+              showPositions: true,
               showDailyPnlCalendar: true,
             }}
           />
@@ -62,18 +63,25 @@ export default function AgentsScreen() {
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: 4,
+          marginTop: 4,
         }}
       >
         <SectionTitle title="" sx={{ fontSize: 16 }} />
         <GlassButton
           onPress={handleCreateAgent}
-          style={{
-            alignItems: "center",
-            justifyContent: "center",
+          styleVariant="square"
+          buttonProps={{
+            style: {
+              flexDirection: "column",
+              padding: 10,
+              paddingLeft: 100,
+              paddingRight: 30
+
+            }
           }}
-          activeOpacity={0.8}
+          tintColor="rgba(0,0,0,.3)"
         >
-          <Ionicons name="add" size={20} color={palette.foreground} />
+          <MaterialCommunityIcons name="meteor" size={30} color={"orange"} />
         </GlassButton>
       </View>
 

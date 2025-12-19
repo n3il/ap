@@ -97,8 +97,6 @@ export function WalletProvider({ children }: { children: React.ReactNode }) {
     getPrivateKey,
   };
 
-  console.log({ wallets })
-
   return (
     <WalletContext.Provider value={value}>{children}</WalletContext.Provider>
   );

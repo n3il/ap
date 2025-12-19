@@ -1,5 +1,5 @@
 import { MaterialIcons } from "@expo/vector-icons";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { OtpInput } from "react-native-otp-entry";
 import { LinearTransition } from "react-native-reanimated";
@@ -128,7 +128,9 @@ export default function VerifyOTPScreen() {
       >
         <AnimatedBox
           layout={LinearTransition.duration(300).springify()}
-          style={{ flex: 1, justifyContent: "center", alignItems: "stretch" }}
+          style={{
+            marginVertical: "auto",
+          }}
         >
           <View sx={{ marginBottom: 8 }}>
             <Text variant="h1" sx={{ fontWeight: 300, marginBottom: 2 }}>
@@ -188,23 +190,18 @@ export default function VerifyOTPScreen() {
             />
           </View>
 
-          <Button
-            variant="surface"
-            sx={{
-              borderColor: "primary",
-              borderRadius: "full",
-              marginBottom: 4,
-            }}
-            textProps={{ style: { fontWeight: "600" } }}
+          <GlassButton
             onPress={() => handleVerifyCode(verificationCode)}
             disabled={loading || verificationCode.length !== 6}
+            styleVariant="paddedFull"
+            tintColor={palette.surface}
           >
             {loading ? (
               <ActivityIndicator color={palette.foreground} />
             ) : (
               t("login.verify")
             )}
-          </Button>
+          </GlassButton>
 
           <Button
             variant="ghost"
@@ -225,12 +222,20 @@ export default function VerifyOTPScreen() {
 
         </AnimatedBox>
 
-        <View sx={{ marginBottom: 2 }}>
+        <View
+          sx={{
+            flexGrow: 0,
+            alignItems: "flex-start",
+            justifyItems: "flex-end",
+          }}
+        >
           <GlassButton
             onPress={handleGoBack}
             disabled={loading}
+            enabled={false}
             styleVariant="paddedFull"
             tintColor={palette.surface}
+            style={{ marginTop: "auto", height: 50, marginBottom: "30", width: 50 }}
           >
             <MaterialIcons
               name="arrow-back"

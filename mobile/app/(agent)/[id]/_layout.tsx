@@ -10,7 +10,12 @@ export default function Layout() {
       }}
       initialRouteName="index"
     >
-      <Stack.Screen name="index" />
+      <Stack.Screen name="index"
+        options={{
+          animation: "slide_from_right",
+          presentation: "card"
+        }}
+      />
       <Stack.Screen
         name="[assessmentId]"
         options={{

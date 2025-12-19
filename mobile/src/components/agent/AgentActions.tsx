@@ -27,7 +27,7 @@ export function DrawerButton({
   return (
     <GlassButton
       onPress={onPress}
-      tintColor={palette.surface}
+      tintColor={palette.surfaceLight}
       styleVariant={styleVariant}
       style={[{
         paddingVertical: 4,
@@ -91,14 +91,14 @@ export default function AgentActions({ agent }: { agent: AgentType }) {
     >
       <DrawerButton
         title="Buy"
-        icon="arrow-up-bold-circle"
+        icon="chevron-up"
         onPress={handleTransfer}
         variant="surface"
         style={{ flex: 1, }}
       />
       <DrawerButton
         title="Sell"
-        icon="arrow-down-bold-circle"
+        icon="chevron-down"
         onPress={handleTrade}
         variant="primary"
         style={{ flex: 1, }}

@@ -62,7 +62,6 @@ export const ThemeProvider = ({ children }) => {
   const dripsyTheme =
     appliedScheme === "dark" ? dripsyDarkTheme : dripsyLightTheme;
 
-  console.log({ appliedScheme, themePreference })
   const value = useMemo(
     () => ({
       theme,
@@ -75,8 +74,6 @@ export const ThemeProvider = ({ children }) => {
     }),
     [theme, dripsyTheme, appliedScheme, themePreference, toggleTheme],
   );
-
-  console.log({ colorMode });
 
   return (
     <ThemeContext.Provider value={value}>

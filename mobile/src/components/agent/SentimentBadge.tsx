@@ -1,5 +1,6 @@
 import { sentimentToColor } from "@/utils/currency";
-import { StatusBadge, Text } from "../ui";
+import { StatusBadge } from "../ui";
+import { Text } from "dripsy";
 
 export default function SentimentBadge({ sentimentScore, sentimentWord }) {
   return (
@@ -13,6 +14,10 @@ export default function SentimentBadge({ sentimentScore, sentimentWord }) {
         color: "#fff",
         textAlign: "left",
         alignSelf: "flex-start",
+
+        textShadowColor: "rgba(0,0,0,0.6)",
+        textShadowOffset: { width: 0, height: 1 },
+        textShadowRadius: 2,
       }}
     >
       feeling {sentimentWord?.toLowerCase()} {`(${sentimentScore})`}

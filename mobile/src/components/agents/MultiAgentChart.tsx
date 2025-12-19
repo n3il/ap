@@ -5,10 +5,12 @@ import { useMemo } from "react";
 import { Dimensions, type ViewStyle } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import type { SharedValue } from "react-native-reanimated";
-import {
+import Animated, {
   Extrapolation,
   interpolate,
   useAnimatedStyle,
+  useAnimatedProps,
+  useDerivedValue,
 } from "react-native-reanimated";
 import { LineChart } from "react-native-wagmi-charts";
 import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
@@ -22,6 +24,9 @@ import { View } from "../ui";
 import { AgentType } from "@/types/agent";
 import { resolveProviderColor } from "@/theme/utils";
 import { useTheme } from "@/contexts/ThemeContext";
+import { useAccountStore } from "@/hooks/useAccountStore";
+
+const AnimatedLineChart = Animated.createAnimatedComponent(LineChart);
 
 type MultiAgentChartProps = {
   scrollY?: SharedValue<number> | null;
@@ -32,13 +37,13 @@ type MultiAgentChartProps = {
 
 // Map UI timeframes to Hyperliquid portfolio timeframes
 const TIMEFRAME_MAP: Record<string, string> = {
-  "5m": "perpday",
-  "15m": "perpday",
-  "1h": "perpday",
-  "24h": "perpday",
-  "7d": "perpweek",
-  "1M": "perpmonth",
-  Alltime: "perpall",
+  "5m": "perpDay",
+  "15m": "perpDay",
+  "1h": "perpDay",
+  "24h": "perpDay",
+  "7d": "perpWeek",
+  "1M": "perpMonth",
+  Alltime: "perpAll",
 };
 
 // Duration in milliseconds for filtering perpday data
@@ -57,109 +62,100 @@ export default function MultiAgentChart({
   agentsProp,
   tickerSymbols = ["BTC"],
 }: MultiAgentChartProps) {
-  const { colors: palette, withOpacity } = useColors();
   const { isDark } = useTheme()
+  const { colors: palette } = useColors();
   const { agents: exploreListAgents } = useExploreAgentsStore();
-  const agents = agentsProp || exploreListAgents
+  const agents = agentsProp || exploreListAgents;
 
   const { timeframe } = useTimeframeStore();
-  const { histories, isLoading } = useAgentAccountValueHistories(timeframe);
+
+  // Access the global account store
+  const accountEntries = useAccountStore((state) => state.accounts);
+  const isLoading = false
+
   const {
     dataBySymbol: candleDataBySymbol,
     isFetching: candleDataLoading,
-    error: candleDataError,
   } = useMarketHistory(tickerSymbols, timeframe);
 
-  // Transform candle data for wagmi charts
   const { symbolDataSets, agentDataSets, xLength } = useMemo(() => {
-    const portfolioTimeframe = TIMEFRAME_MAP[timeframe] || "perpday";
-    const duration = TIMEFRAME_DURATION[timeframe];
+    const portfolioTimeframe = TIMEFRAME_MAP[timeframe] || "perpDay";
 
-    // Helper function to filter data by time duration
-    const filterByDuration = <T extends { timestamp: number }>(
-      data: T[],
-      durationMs?: number
-    ): T[] => {
-      if (!durationMs || data.length === 0) return data;
+    // 1. Get Master Timestamps from BTC (or the primary ticker)
+    const btcCandles = candleDataBySymbol["BTC"]?.candles || [];
+    if (btcCandles.length === 0) return { symbolDataSets: {}, agentDataSets: {}, xLength: 0 };
 
-      const latestTimestamp = data[data.length - 1]?.timestamp || Date.now();
-      const cutoffTimestamp = latestTimestamp - durationMs;
+    const masterTimestamps = btcCandles.map(c => c.timestamp);
+    const firstBtcPrice = btcCandles[0].close;
 
-      return data.filter((point) => point.timestamp >= cutoffTimestamp);
-    };
-
-    // Process all symbol data (BTC, ETH, etc.)
-    const symbolDataSets: Record<
-      string,
-      Array<{ timestamp: number; value: number }>
-    > = {};
-    let symbolsDataLength = 0;
-
+    // 2. Align Symbols
+    const symbolDataSets: Record<string, any[]> = {};
     Object.entries(candleDataBySymbol).forEach(([symbol, candleData]) => {
       const candles = candleData?.candles || [];
-      if (candles.length === 0) return;
+      const firstPrice = candles[0]?.close || 1;
 
-      // Filter candles by duration if needed
-      const filteredCandles = filterByDuration(candles, duration);
-      if (filteredCandles.length === 0) return;
-
-      const firstPrice = filteredCandles[0]?.close || 1;
-      const normalizedData = filteredCandles.map((candle) => ({
-        timestamp: candle.timestamp,
-        value: ((candle.close - firstPrice) / firstPrice) * 100,
-      }));
-
-      symbolDataSets[symbol] = normalizedData;
-      symbolsDataLength = normalizedData.length;
+      // Map to master timestamps to ensure identical length
+      symbolDataSets[symbol] = masterTimestamps.map(ts => {
+        const match = candles.find(c => c.timestamp === ts);
+        // Fallback to previous value or 0 if timestamp is missing
+        return {
+          timestamp: ts,
+          value: match ? ((match.close - firstPrice) / firstPrice) * 100 : 0
+        };
+      });
     });
 
-    // Create separate datasets for each agent
-    const agentDataSets: Record<
-      string,
-      Array<{ timestamp: number; value: number }>
-    > = {};
-    let agentsDataLength = 0;
+    // 3. Align Agents to Master Timestamps
+    const agentDataSets: Record<string, any[]> = {};
+    agents.forEach((agent) => {
+      const addr = agent?.trading_accounts?.find(ta => ta.type === (agent.simulate ? "paper" : "real"))?.hyperliquid_address;
+      const historyPoints = accountEntries[addr || ""]?.data?.rawHistory?.[portfolioTimeframe] || [];
 
-    Object.entries(histories).forEach(([agentId, agentState]) => {
-      const agentHistory = agentState.histories[portfolioTimeframe];
-      if (!agentHistory || agentHistory.length === 0) return;
+      if (historyPoints.length === 0) return;
 
-      // Filter agent history by duration if needed
-      const filteredHistory = filterByDuration(agentHistory, duration);
-      if (filteredHistory.length === 0) return;
+      const firstVal = historyPoints[0].value;
 
-      const firstValue = filteredHistory[0]?.value || 1;
-      agentDataSets[agentId] = filteredHistory.map((histPoint) => ({
-        timestamp: histPoint.timestamp,
-        value: ((histPoint.value - firstValue) / firstValue) * 100,
-      }));
-      agentsDataLength = filteredHistory.length;
+      // IMPORTANT: Align agent points to the master timeline
+      agentDataSets[agent.id] = masterTimestamps.map(ts => {
+        // Find the closest historical point before or at this timestamp
+        const closestPoint = historyPoints.reduce((prev, curr) => {
+          return (curr.timestamp <= ts && curr.timestamp > prev.timestamp) ? curr : prev;
+        }, historyPoints[0]);
+
+        return {
+          timestamp: ts,
+          value: ((closestPoint.value - firstVal) / firstVal) * 100
+        };
+      });
     });
 
     return {
       symbolDataSets,
       agentDataSets,
-      xLength: Math.min(agentsDataLength, symbolsDataLength),
+      xLength: masterTimestamps.length,
     };
-  }, [candleDataBySymbol, histories, timeframe]);
+  }, [candleDataBySymbol, accountEntries, timeframe, agents]);
 
   // Animate height based on scroll
-  const animatedStyle = useAnimatedStyle(() => {
-    if (!scrollY) return { height: 200 };
-    const height = interpolate(
+  const chartHeight = useDerivedValue(() => {
+    if (!scrollY) return 200;
+    return interpolate(
       scrollY.value,
       [0, 100],
-      [300, 100],
+      [250, 200],
       Extrapolation.CLAMP,
     );
-    return { height };
+  }, [scrollY]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return { height: chartHeight.value };
   }, [scrollY]);
 
   const darkChart = false;
   const textColor = darkChart ? palette.surfaceForeground : palette.foreground;
   const backgroundColor = darkChart ? palette.surface : "transparent";
   const symbolColors: Record<string, string> = {
-    BTC: "orange",
+    BTC: "#999", // "orange",
     ETH: "blue",
     SOL: "purple",
   };
@@ -172,6 +168,7 @@ export default function MultiAgentChart({
     const data = { ...symbolDataSets, ...agentDataSets };
     let maxAbs = 0;
     let minAbs = 0;
+    console.log(Object.values(data))
     for (const entries of Object.values(data)) {
       for (const { value } of entries) {
         const abs = Math.abs(value);
@@ -182,65 +179,37 @@ export default function MultiAgentChart({
     return { data, minAbs, maxAbs };
   }, [Object.keys(symbolDataSets).length, Object.keys(agentDataSets).length]);
 
-  // if (isLoading || candleDataLoading) {
-  //   return (
-  //     <View
-  //       style={{
-  //         height: 200,
-  //         alignItems: "center",
-  //         justifyContent: "center",
-  //       }}
-  //     >
-  //       {/* <LottieView
-  //         autoPlay
-  //         resizeMode="contain"
-  //         style={{
-  //           width: 50,
-  //           height: 200,
-  //           opacity: 0.4,
-  //         }}
-  //         // source={require("@assets/animations/Rocket.json")}
-  //         source={require("@assets/animations/loading-anim.json")}
-  //       /> */}
-  //       <ActivityIndicator />
-  //     </View>
-  //   );
-  // }
   const startTs = symbolDataSets?.["BTC"]?.[0].timestamp;
   const endTs =
     symbolDataSets?.["BTC"]?.[symbolDataSets?.["BTC"]?.length - 1].timestamp;
   const chartWidth = width - GLOBAL_PADDING * 2;
-  const chartHeight = 200
 
   return (
-    <GestureHandlerRootView
-      style={{
-        flex: 1,
-        // height: chartHeight ,
-        paddingHorizontal: GLOBAL_PADDING,
-        // borderTopWidth: .5,
-        // borderTopColor: palette.border,
-        // borderRadius: 12,
-      }}
-    >
-      {isLoading && (
-        <ActivityIndicator color="foreground" />
-      )}
-      <LineChart.Provider
-        xLength={xLength}
-        data={Object.keys(data).length > 0 ? data : []}
-        onCurrentIndexChange={invokeHaptic}
+    <Animated.View style={[animatedStyle, { minHeight: 100 }]}>
+      <GestureHandlerRootView
+        style={{
+          paddingHorizontal: GLOBAL_PADDING,
+        }}
       >
+        {isLoading && (
+          <ActivityIndicator color="foreground" />
+        )}
+        <LineChart.Provider
+          xLength={xLength}
+          data={Object.keys(data).length > 0 ? data : []}
+          onCurrentIndexChange={invokeHaptic}
+        >
         <LineChart.Group>
           {tickerSymbols.map((symbol, idx) => {
             if (!data[symbol]) return null;
 
             return (
-              <LineChart
+              <AnimatedLineChart
                 id={symbol}
                 yGutter={30}
                 width={chartWidth}
-                height={chartHeight}
+                style={[{position: "absolute"}, animatedStyle]}
+                key={symbol}
               >
                 <LineChart.Path
                   color={(symbolColors[symbol] || palette.primary)}
@@ -255,7 +224,7 @@ export default function MultiAgentChart({
                 {idx === 0 && (
                   <>
                     <LineChart.Axis
-                      position="bottom"
+                      position="top"
                       orientation="horizontal"
                       tickCount={4}
                       labelPadding={0}
@@ -275,7 +244,7 @@ export default function MultiAgentChart({
                     />
                   </>
                 )}
-              </LineChart>
+              </AnimatedLineChart>
             );
           })}
 
@@ -286,11 +255,12 @@ export default function MultiAgentChart({
             // const agentColour = palette.providers[agent.llm_provider] ?? "#ddd";
             const agentColour = resolveProviderColor(`${agent.llm_provider}`, palette.providers)
             return (
-              <LineChart
+              <AnimatedLineChart
+                key={agent.id}
                 id={agent.id}
                 yGutter={30}
                 width={chartWidth}
-                height={chartHeight}
+                style={[{position: "absolute"}, animatedStyle]}
               >
                 <LineChart.Path
                   // color={agentColour}
@@ -338,11 +308,12 @@ export default function MultiAgentChart({
                     }}
                   />
                 </LineChart.CursorCrosshair>
-              </LineChart>
+              </AnimatedLineChart>
             );
           })}
         </LineChart.Group>
       </LineChart.Provider>
     </GestureHandlerRootView>
+    </Animated.View>
   );
 }

@@ -1,6 +1,6 @@
 // Polyfills are loaded in index.js
 import * as Sentry from "@sentry/react-native";
-import { createPrivyClient, PrivyProvider, usePrivy } from "@privy-io/expo";
+import { PrivyProvider, usePrivy } from "@privy-io/expo";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { Stack, useRouter } from "expo-router";
@@ -102,8 +102,6 @@ function AuthNavigator() {
 }
 
 function PrivyWrapper() {
-  const { colorScheme } = useTheme()
-
   return (
     <>
       <SupabaseProvider>

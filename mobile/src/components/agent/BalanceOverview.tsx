@@ -53,7 +53,7 @@ export default function BalanceOverview({ agent }: { agent: AgentType }) {
             .filter(([key]) => key.includes("perp"))
             .map(([key, timeframeData]) => {
               const timeframeOpt = accountBalanceTimeframes[key];
-              if (!timeframeOpt || !timeframeData) return null;
+              if (!timeframeOpt || !timeframeData.pnlPct) return null;
 
               return (
                 <Pressable key={timeframeOpt.id} onPress={() => setTimeframe(timeframeOpt.id)}>

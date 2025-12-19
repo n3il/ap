@@ -39,7 +39,7 @@ export default function AgentCard({
   const accountData = useAccountBalance({ agent });
   return (
     <GlassButton
-      enabled={false}
+      enabled={isDark}
       glassEffectStyle="clear"
       tintColor={isDark
         ? withOpacity(palette.surfaceLight, .5) // "rgba(0, 0, 0, 0.3)"

@@ -71,10 +71,10 @@ export const useMarketPricesWidgetStyles = ({ scrollY, priceOpacity }) => {
     if (!scrollY) return { marginTop: 8, height: SPARKLINE_HEIGHT };
     const p = progress.value;
     return {
-      marginTop: interpolate(p, PROGRESS_RANGE, [8, 0]),
-      marginBottom: interpolate(p, PROGRESS_RANGE, [8, 0]),
-      height: interpolate(p, PROGRESS_RANGE, [SPARKLINE_HEIGHT, 0], CLAMP),
-      opacity: interpolate(p, [0, 0.7, 1], [1, 0.3, 0], CLAMP), // Fades out completely
+      marginTop: interpolate(p, [0, 0.5], [8, 0]),
+      marginBottom: interpolate(p, [0, 0.5], [8, 0]),
+      height: interpolate(p, [0, 0.5], [SPARKLINE_HEIGHT, 0], CLAMP),
+      opacity: interpolate(p, [0, 0.5], [.8, 0], CLAMP), // Fades out completely
     };
   }, [progress]);
 
@@ -82,8 +82,8 @@ export const useMarketPricesWidgetStyles = ({ scrollY, priceOpacity }) => {
     if (!scrollY) return collapsedStyle;
     const p = progress.value;
     return {
-      height: interpolate(p, PROGRESS_RANGE, [0, 30], CLAMP),
-      opacity: interpolate(p, PROGRESS_RANGE, [0, 0.4], CLAMP), // Fades in dim
+      height: interpolate(p, [.5, 1], [0, 30], CLAMP),
+      opacity: interpolate(p, [.5, 1], [0, 0.4], CLAMP), // Fades in dim
     };
   }, [progress]);
 
