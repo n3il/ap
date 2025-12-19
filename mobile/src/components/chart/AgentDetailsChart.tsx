@@ -42,7 +42,7 @@ export default function AgentDetailsChart({ agent }: { agent: AgentType }) {
 
   // Fetch account value histories
   const { histories, isLoading: accountHistoriesLoading } =
-    useAgentAccountValueHistories();
+    useAgentAccountValueHistories(timeframe);
   const agentHistory = histories[agent.id];
 
   // Fetch BTC candle data

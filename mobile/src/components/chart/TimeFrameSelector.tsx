@@ -42,10 +42,13 @@ export default function TimeFrameSelector({
           <GlassButton
             key={option.id}
             enabled={false}
-            // glassEffectStyle={isSelected ? "clear" : "regular"}
+            glassEffectStyle={isSelected ? "clear" : "regular"}
             tintColor={isSelected ? palette.surface : palette.surface}
             onPress={() => setTimeframe(option.id)}
             styleVariant="minimal"
+            style={{
+              backgroundColor: "transparent",
+            }}
           >
             <Text
               style={{

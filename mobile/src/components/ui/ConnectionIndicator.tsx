@@ -1,7 +1,8 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
-import { ActivityIndicator, Pressable, Text } from "react-native";
+import { Pressable } from "react-native";
 import { useHyperliquidStore } from "@/hooks/useHyperliquid";
 import { useColors } from "@/theme";
+import { Text, ActivityIndicator } from 'dripsy';
 
 export const ConnectionIndicator = () => {
   const { colors: palette } = useColors();
@@ -28,11 +29,11 @@ export const ConnectionIndicator = () => {
       style={{ flexDirection: "row", alignItems: "center", gap: 8 }}
       disabled={connectionState !== "disconnected"}
     >
-      <Text style={{ color: palette.muted?.DEFAULT ?? palette.muted }}>
+      <Text style={{ color: "textTertiary" }}>
         {latencyMs?.toFixed()}
       </Text>
       {connectionState === "connecting" ? (
-        <ActivityIndicator size="small" color={palette.mutedForeground} />
+        <ActivityIndicator size="small" color="textTertiary" />
       ) : connectionState === "disconnected" ? (
         <MaterialCommunityIcons
           name="signal-off"
@@ -45,7 +46,7 @@ export const ConnectionIndicator = () => {
             style={{
               display: "none",
               fontSize: 11,
-              color: palette.mutedForeground,
+              color: "textTertiary",
             }}
           >
             {latencyMs?.toFixed()}ms

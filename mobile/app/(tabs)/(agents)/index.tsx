@@ -35,7 +35,15 @@ export default function AgentsScreen() {
             gap: 12,
           }}
         >
-          <AgentList isActive emptyState={<View />} />
+          <AgentList
+            isActive
+            emptyState={<View />}
+            agentCardProps={{
+              showRecentAssessment: false,
+              showPositions: false,
+              showDailyPnlCalendar: true,
+            }}
+          />
         </ScrollView>
       ),
     },

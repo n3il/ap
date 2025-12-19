@@ -1,6 +1,6 @@
 // Polyfills are loaded in index.js
 import * as Sentry from "@sentry/react-native";
-import { PrivyProvider, usePrivy } from "@privy-io/expo";
+import { createPrivyClient, PrivyProvider, usePrivy } from "@privy-io/expo";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import { Stack, useRouter } from "expo-router";
@@ -11,6 +11,7 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import SplashScreen from "@/components/SplashScreen";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
 import { WalletProvider } from "@/contexts/WalletContext";
+import { SupabaseProvider } from "@/contexts/SupabaseContext";
 import { ROUTES } from "@/config/routes";
 
 Sentry.init({
@@ -105,9 +106,11 @@ function PrivyWrapper() {
 
   return (
     <>
-      <WalletProvider>
-        <AuthNavigator />
-      </WalletProvider>
+      <SupabaseProvider>
+        <WalletProvider>
+          <AuthNavigator />
+        </WalletProvider>
+      </SupabaseProvider>
     </>
   )
 }
@@ -121,7 +124,7 @@ export default Sentry.wrap(function RootLayout() {
   return (
     <ThemeProvider>
       <KeyboardProvider>
-        <SafeAreaProvider>
+        {/* <SafeAreaProvider> */}
           <QueryClientProvider client={queryClient}>
             <PrivyProvider
               appId={privyAppId}
@@ -130,7 +133,7 @@ export default Sentry.wrap(function RootLayout() {
               <PrivyWrapper />
             </PrivyProvider>
           </QueryClientProvider>
-        </SafeAreaProvider>
+        {/* </SafeAreaProvider> */}
       </KeyboardProvider>
     </ThemeProvider>
   );

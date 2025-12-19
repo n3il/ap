@@ -1,4 +1,5 @@
 import { supabase } from "@/config/supabase";
+import { useSupabaseContext } from "@/contexts/SupabaseContext";
 
 const TABLE_NAME = "agents_watchlist";
 
@@ -20,16 +21,11 @@ export const agentWatchlistService = {
     return Boolean(data && data.length > 0);
   },
 
-  async add(agentId: string) {
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    if (!user) throw new Error("Not authenticated");
-
+  async add(userId, agentId: string) {
     const { error } = await supabase.from(TABLE_NAME).upsert(
       [
         {
-          user_id: user.id,
+          user_id: userId,
           agent_id: agentId,
         },
       ],

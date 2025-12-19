@@ -115,6 +115,7 @@ export default function ProfileScreen() {
             sx={{ color: "textSecondary" }}
           >
             Logged in with: {user.linked_accounts[0].type}
+            {JSON.stringify(user)}
           </Text>
           <WalletSelector />
         </PaddedView>
@@ -127,7 +128,7 @@ export default function ProfileScreen() {
           </Section>
         ))}
       </ScrollView>
-      {false && <DebugOverlay />}
+      {true && <DebugOverlay />}
     </ContainerView>
   );
 }

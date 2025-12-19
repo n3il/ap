@@ -87,7 +87,7 @@ export function useMultiAgentChartData() {
   const { timeframe } = useTimeframeStore();
   const agents = useExploreAgentsStore((state) => state.agents);
   const { histories: accountHistories, isLoading: historiesLoading } =
-    useAgentAccountValueHistories();
+    useAgentAccountValueHistories(timeframe);
   const btcHistory = marketHistoryService.useCandleHistory("BTC", timeframe);
 
   const { dataSet, minValue, maxValue } = useMemo(() => {

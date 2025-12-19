@@ -192,6 +192,8 @@ export default function PriceColumn({
         // shadowOffset: [2,2],
         // shadowOpacity: .05,
 
+        backgroundColor: "transparent",
+
         // borderColor: withOpacity(palette.border, 0.9),
       }}
       enabled={false}

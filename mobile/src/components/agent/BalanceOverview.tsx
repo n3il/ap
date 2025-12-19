@@ -5,19 +5,24 @@ import { useAccountBalance } from "@/hooks/useAccountBalance";
 import { useTimeframeStore } from "@/stores/useTimeframeStore";
 import { useColors } from "@/theme";
 import type { AgentType } from "@/types/agent";
-import { formatAmount, formatPercent } from "@/utils/currency";
+import { formatPercent } from "@/utils/currency";
 
-const accountBalanceTimeframes = {
-  day: { id: "1D", label: "1D" },
-  week: { id: "1W", label: "1W" },
-  month: { id: "1M", label: "1M" },
-  alltime: { id: "All", label: "All" },
+// Standardizing the keys to match the processHyperliquidData output
+const accountBalanceTimeframes: Record<string, { id: string; label: string }> = {
+  perpDay: { id: "1D", label: "1D" },
+  perpWeek: { id: "1W", label: "1W" },
+  perpMonth: { id: "1M", label: "1M" },
+  allTime: { id: "All", label: "All" },
 };
 
 export default function BalanceOverview({ agent }: { agent: AgentType }) {
   const { colors: palette } = useColors();
   const accountData = useAccountBalance({ agent });
   const { setTimeframe } = useTimeframeStore();
+
+  // Helper to access PnL safely
+  const getAllTimePnl = () => accountData.pnlHistory.allTime?.pnl ?? 0;
+  const getAllTimePct = () => accountData.pnlHistory.allTime?.pnlPct ?? 0;
 
   return (
     <View
@@ -29,71 +34,43 @@ export default function BalanceOverview({ agent }: { agent: AgentType }) {
         borderRadius: 12,
       }}
     >
-      <View
-        sx={{ flexDirection: "row", gap: 2, justifyContent: "space-between" }}
-      >
+      {/* Top Section: Open P&L and Timeframe Badges */}
+      <View sx={{ flexDirection: "row", gap: 2, justifyContent: "space-between" }}>
         <View sx={{ flexDirection: "column", gap: 2, marginRight: 4 }}>
-          <View sx={{ flexDirection: "row", alignItems: "center", gap: 2 }}>
-            <Text
-              variant="xs"
-              tone="muted"
-              sx={{
-                color: "surfaceForeground",
-                opacity: 0.7,
-              }}
-            >
-              Open P&L
-            </Text>
-          </View>
+          <Text variant="xs" tone="muted" sx={{ color: "surfaceForeground", opacity: 0.7 }}>
+            Open P&L
+          </Text>
           <FormattedValueLabel
-            value={accountData.openPnl}
+            value={accountData.totalOpenPnl} // Updated from openPnl
             valueTextVariant="xl"
-            sx={{
-              fontWeight: "600",
-              fontFamily: "monospace",
-            }}
+            sx={{ fontWeight: "600", fontFamily: "monospace" }}
             showSign
           />
         </View>
 
-        <View
-          sx={{
-            flexShrink: 1,
-            flexDirection: "row",
-            gap: 8,
-            justifyContent: "space-evenly",
-            marginLeft: "auto",
-          }}
-        >
-          {Object.keys(accountData.accountValueHistory)
-            .filter((tf) => tf.includes("perp"))
-            .map((timeframe) => {
-              const { pnlPct } = accountData.accountValueHistory[timeframe];
-              const timeframeOpt =
-                accountBalanceTimeframes[
-                  timeframe.replace("perp", "").toLowerCase()
-                ];
-              if (!timeframeOpt || (!pnlPct && timeframeOpt !== "day"))
-                return null;
+        <View sx={{ flexShrink: 1, flexDirection: "row", gap: 8, justifyContent: "space-evenly", marginLeft: "auto" }}>
+          {Object.entries(accountData.pnlHistory)
+            .filter(([key]) => key.includes("perp"))
+            .map(([key, timeframeData]) => {
+              const timeframeOpt = accountBalanceTimeframes[key];
+              if (!timeframeOpt || !timeframeData) return null;
 
               return (
-                <Pressable
-                  key={timeframeOpt.id}
-                  onPress={() => setTimeframe(timeframeOpt.id)}
-                >
+                <Pressable key={timeframeOpt.id} onPress={() => setTimeframe(timeframeOpt.id)}>
                   <LabelValue
-                    label={`${timeframeOpt.label || timeframe} P&L`}
-                    value={pnlPct}
+                    label={`${timeframeOpt.label} P&L`}
+                    value={timeframeData.pnlPct}
                     formatter={formatPercent}
                     alignRight
                   />
                 </Pressable>
               );
             })}
-          <Pressable>
+
+          <Pressable onPress={() => setTimeframe("All")}>
             <LabelValue
               label={`All P&L`}
-              value={accountData.totalPnlPercent}
+              value={getAllTimePct()}
               formatter={formatPercent}
               alignRight
             />
@@ -101,72 +78,55 @@ export default function BalanceOverview({ agent }: { agent: AgentType }) {
         </View>
       </View>
 
-      <View
-        sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}
-      >
+      {/* Row 1: Equity (Balance) and Open P&L with Percent */}
+      <View sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}>
         <View sx={{ flex: 1 }}>
-          <LabelValue label="Balance" value={accountData?.equity} />
+          <LabelValue label="Balance" value={accountData.equity} />
         </View>
 
-        {/* <View sx={{ flex: 1 }}>
-          <LabelValue
-            label="Win Trades"
-            value={null}
-            alignRight
-          />
-        </View> */}
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Open P&L"
-            value={accountData.openPnl}
+            value={accountData.totalOpenPnl}
             colorize
             alignRight
           >
             <Text
               variant="sm"
               sx={{
-                color:
-                  accountData.openPnl > 0
-                    ? "success"
-                    : accountData.openPnl < 0
-                      ? "error"
-                      : "surfaceForeground",
+                color: accountData.totalOpenPnl > 0 ? "success" : accountData.totalOpenPnl < 0 ? "error" : "surfaceForeground",
               }}
             >
-              {`(${accountData.openPnlPct ? formatPercent(accountData.openPnlPct) : "-"})`}
+              {/* Calculating Open P&L % vs Equity */}
+              {`(${accountData.equity > 0 ? formatPercent((accountData.totalOpenPnl / accountData.equity) * 100) : "-"})`}
             </Text>
           </LabelValue>
         </View>
       </View>
 
-      <View
-        sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}
-      >
+      {/* Row 2: Positions Value and All-Time P&L Breakdown */}
+      <View sx={{ flexDirection: "row", justifyContent: "space-between", gap: 4 }}>
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="Positions Value"
-            value={accountData.positionValue}
+            // Summing notional value from margin summary
+            value={accountData.marginSummary?.totalNtlPos ?? 0}
           />
         </View>
         <View sx={{ flex: 1 }}>
           <LabelValue
             label="All P&L"
-            value={accountData.totalPnl}
+            value={getAllTimePnl()}
             colorize
             alignRight
           >
             <Text
               variant="sm"
               sx={{
-                color:
-                  accountData.totalPnl > 0
-                    ? "success"
-                    : accountData.totalPnl < 0
-                      ? "error"
-                      : "surfaceForeground",
+                color: getAllTimePnl() > 0 ? "success" : getAllTimePnl() < 0 ? "error" : "surfaceForeground",
               }}
             >
-              {`(${accountData.totalPnlPercent ? formatPercent(accountData.totalPnlPercent) : "-"})`}
+              {`(${formatPercent(getAllTimePct())})`}
             </Text>
           </LabelValue>
         </View>

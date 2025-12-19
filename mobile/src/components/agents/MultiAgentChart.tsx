@@ -32,13 +32,21 @@ type MultiAgentChartProps = {
 
 // Map UI timeframes to Hyperliquid portfolio timeframes
 const TIMEFRAME_MAP: Record<string, string> = {
-  "5m": "perp5m",
-  "15m": "perp15m",
-  "1h": "perphour",
+  "5m": "perpday",
+  "15m": "perpday",
+  "1h": "perpday",
   "24h": "perpday",
   "7d": "perpweek",
   "1M": "perpmonth",
   Alltime: "perpall",
+};
+
+// Duration in milliseconds for filtering perpday data
+const TIMEFRAME_DURATION: Record<string, number> = {
+  "5m": 5 * 60 * 1000,
+  "15m": 15 * 60 * 1000,
+  "1h": 60 * 60 * 1000,
+  "24h": 24 * 60 * 60 * 1000,
 };
 
 const { width } = Dimensions.get("window");
@@ -54,9 +62,8 @@ export default function MultiAgentChart({
   const { agents: exploreListAgents } = useExploreAgentsStore();
   const agents = agentsProp || exploreListAgents
 
-  const { histories, isLoading } = useAgentAccountValueHistories();
-
   const { timeframe } = useTimeframeStore();
+  const { histories, isLoading } = useAgentAccountValueHistories(timeframe);
   const {
     dataBySymbol: candleDataBySymbol,
     isFetching: candleDataLoading,
@@ -66,6 +73,20 @@ export default function MultiAgentChart({
   // Transform candle data for wagmi charts
   const { symbolDataSets, agentDataSets, xLength } = useMemo(() => {
     const portfolioTimeframe = TIMEFRAME_MAP[timeframe] || "perpday";
+    const duration = TIMEFRAME_DURATION[timeframe];
+
+    // Helper function to filter data by time duration
+    const filterByDuration = <T extends { timestamp: number }>(
+      data: T[],
+      durationMs?: number
+    ): T[] => {
+      if (!durationMs || data.length === 0) return data;
+
+      const latestTimestamp = data[data.length - 1]?.timestamp || Date.now();
+      const cutoffTimestamp = latestTimestamp - durationMs;
+
+      return data.filter((point) => point.timestamp >= cutoffTimestamp);
+    };
 
     // Process all symbol data (BTC, ETH, etc.)
     const symbolDataSets: Record<
@@ -78,8 +99,12 @@ export default function MultiAgentChart({
       const candles = candleData?.candles || [];
       if (candles.length === 0) return;
 
-      const firstPrice = candles[0]?.close || 1;
-      const normalizedData = candles.map((candle) => ({
+      // Filter candles by duration if needed
+      const filteredCandles = filterByDuration(candles, duration);
+      if (filteredCandles.length === 0) return;
+
+      const firstPrice = filteredCandles[0]?.close || 1;
+      const normalizedData = filteredCandles.map((candle) => ({
         timestamp: candle.timestamp,
         value: ((candle.close - firstPrice) / firstPrice) * 100,
       }));
@@ -99,12 +124,16 @@ export default function MultiAgentChart({
       const agentHistory = agentState.histories[portfolioTimeframe];
       if (!agentHistory || agentHistory.length === 0) return;
 
-      const firstValue = agentHistory[0]?.value || 1;
-      agentDataSets[agentId] = agentHistory.map((histPoint) => ({
+      // Filter agent history by duration if needed
+      const filteredHistory = filterByDuration(agentHistory, duration);
+      if (filteredHistory.length === 0) return;
+
+      const firstValue = filteredHistory[0]?.value || 1;
+      agentDataSets[agentId] = filteredHistory.map((histPoint) => ({
         timestamp: histPoint.timestamp,
         value: ((histPoint.value - firstValue) / firstValue) * 100,
       }));
-      agentsDataLength = agentHistory.length;
+      agentsDataLength = filteredHistory.length;
     });
 
     return {
@@ -181,9 +210,19 @@ export default function MultiAgentChart({
   const endTs =
     symbolDataSets?.["BTC"]?.[symbolDataSets?.["BTC"]?.length - 1].timestamp;
   const chartWidth = width - GLOBAL_PADDING * 2;
+  const chartHeight = 200
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, height: 200, paddingLeft: GLOBAL_PADDING }}>
+    <GestureHandlerRootView
+      style={{
+        flex: 1,
+        // height: chartHeight ,
+        paddingHorizontal: GLOBAL_PADDING,
+        // borderTopWidth: .5,
+        // borderTopColor: palette.border,
+        // borderRadius: 12,
+      }}
+    >
       {isLoading && (
         <ActivityIndicator color="foreground" />
       )}
@@ -201,7 +240,7 @@ export default function MultiAgentChart({
                 id={symbol}
                 yGutter={30}
                 width={chartWidth}
-                height={200}
+                height={chartHeight}
               >
                 <LineChart.Path
                   color={(symbolColors[symbol] || palette.primary)}
@@ -210,6 +249,7 @@ export default function MultiAgentChart({
                     opacity: isDark ? 0.4 : .9,
                   }}
                 >
+                  <LineChart.Gradient />
                 </LineChart.Path>
 
                 {idx === 0 && (
@@ -218,6 +258,14 @@ export default function MultiAgentChart({
                       position="bottom"
                       orientation="horizontal"
                       tickCount={4}
+                      labelPadding={0}
+                      labelWidth={0}
+                      containerStyle={{
+                        // backgroundColor: "#ddd"
+                      }}
+                      textStyle={{
+                        color: palette.foreground
+                      }}
                       domain={startTs ? [startTs, endTs] : undefined}
                       strokeWidth={.3}
                       format={(value) => {
@@ -242,7 +290,7 @@ export default function MultiAgentChart({
                 id={agent.id}
                 yGutter={30}
                 width={chartWidth}
-                height={200}
+                height={chartHeight}
               >
                 <LineChart.Path
                   // color={agentColour}
@@ -257,13 +305,14 @@ export default function MultiAgentChart({
                     opacity: 0.9,
                   }}
                 >
-                  {data[agent.id].length > 0 && idx === 0 && (
-                    <>
-                      <LineChart.HorizontalLine
-                        at={{ value: 0 }}
-                        color={palette.foreground}
-                      />
-                    </>
+                  {idx === 0 && (
+                    <LineChart.HorizontalLine
+                      at={{ value: 0 }}
+                      color={palette.foreground}
+                      lineProps={{
+                        strokeWidth: 1
+                      }}
+                    />
                   )}
                   <LineChart.Dot
                     color={agentColour}

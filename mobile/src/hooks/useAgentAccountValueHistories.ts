@@ -56,7 +56,7 @@ const deriveTotals = (histories: HistorySeriesMap) => {
   return { totalPnl, totalPnlPercent };
 };
 
-export function useAgentAccountValueHistories() {
+export function useAgentAccountValueHistories(timeframe?: string) {
   const agents = useExploreAgentsStore((state) => state.agents);
   const infoClient = useHyperliquidInfo();
   const [histories, setHistories] = useState<Record<string, AgentHistoryState>>(
@@ -172,7 +172,7 @@ export function useAgentAccountValueHistories() {
     return () => {
       isCancelled = true;
     };
-  }, [addressToAgents, infoClient]);
+  }, [addressToAgents, infoClient, timeframe]);
 
   const isLoading = useMemo(() => {
     return Object.keys(agentAddresses).some((agentId) => {

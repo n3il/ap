@@ -4,7 +4,7 @@ import { useState } from "react";
 import type { ViewStyle } from "react-native";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
-import { formatAmount, formatPercent } from "@/utils/currency";
+import { formatAmount, formatPercent, numberToColor } from "@/utils/currency";
 
 type PositionDetailRowProps = {
   label: string;
@@ -167,7 +167,7 @@ export function PositionRow({
               <Text variant="xs">{formatAmount(totalPositionValue)}</Text>
               <Text
                 variant="xs"
-                sx={{ fontWeight: "500", color: positionPnlColor }}
+                sx={{ fontWeight: "500", color: numberToColor(unrealizedPnlValue) }}
               >
                 {formatAmount(unrealizedPnlValue, { showSign: true })} (
                 {pnlPercentValue != null

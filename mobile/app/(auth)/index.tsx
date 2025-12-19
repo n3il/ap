@@ -19,7 +19,7 @@ import { AnimatedBox } from "@/components/ui/animated";
 import PhoneInputAutoDetect from "@/components/ui/PhoneInputAutoDetect";
 import { useLoginWithOAuth, usePrivy } from "@privy-io/expo";
 import { useLocalization } from "@/hooks/useLocalization";
-import { useColors } from "@/theme";
+import { useColors, withOpacity } from "@/theme";
 import { useAuthFlow } from "@/contexts/AuthFlowContext";
 
 export default function Auth() {
@@ -166,6 +166,7 @@ export default function Auth() {
                     flex: 0,
                   }}
                   selectionColor={palette.foreground}
+                  placeholderTextColor={withOpacity(palette.foreground, .8)}
                   textContentType="emailAddress"
                   placeholder={t("login.emailPlaceholder")}
                   autoFocus

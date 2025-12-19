@@ -4,11 +4,13 @@ import Constants from "expo-constants";
 const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl;
 const supabaseAnonKey = Constants.expoConfig?.extra?.supabaseAnonKey;
 
-// Supabase client for database operations only (auth handled by Privy)
+// Supabase client with Privy authentication integration
+// Auth sessions are managed by SupabaseProvider using Privy tokens
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
-    persistSession: false,
-    autoRefreshToken: false,
+    persistSession: true, // Allow session management
+    autoRefreshToken: false, // Privy handles token refresh
     detectSessionInUrl: false,
+    storage: undefined, // Don't persist to storage, managed in memory
   },
 });

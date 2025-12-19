@@ -10,6 +10,7 @@ import { supabase } from "@/config/supabase";
 import { useHyperliquidStore } from "@/hooks/useHyperliquid";
 import { agentWatchlistService } from "@/services/agentWatchlistService";
 import { useColors, withOpacity } from "@/theme";
+import { useSupabaseContext } from "@/contexts/SupabaseContext";
 
 type Props = {
   agentId?: string;
@@ -54,7 +55,7 @@ export default function AgentHeader({
   const router = useRouter();
   const { colors: palette } = useColors();
   const queryClient = useQueryClient();
-
+  const { userId } = useSupabaseContext()
   const { data: isWatchlisted = false, isLoading: isWatchlistLoading } =
     useQuery({
       queryKey: ["agent-watchlist", agentId],
@@ -70,7 +71,7 @@ export default function AgentHeader({
           await agentWatchlistService.remove(agentId);
           return "removed";
         }
-        await agentWatchlistService.add(agentId);
+        await agentWatchlistService.add(userId, agentId);
         return "added";
       },
       onSuccess: (action) => {

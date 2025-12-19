@@ -20,7 +20,6 @@ interface AgentListProps {
   includeLatestAssessment?: boolean;
   isActive?: boolean | null;
   isBookmarked?: boolean;
-  hideOpenPositions?: boolean;
   scrollY?: SharedValue<number> | null;
   style?: ViewStyle;
 }
@@ -39,9 +38,9 @@ export default function AgentList({
   includeLatestAssessment = true,
   isActive = null,
   isBookmarked = false,
-  hideOpenPositions = false,
   scrollY = null, // Animated scroll position
   style = {},
+  agentCardProps = {},
 }: AgentListProps) {
   const router = useRouter();
   const setAgents = useExploreAgentsStore((state) => state.setAgents);
@@ -64,7 +63,7 @@ export default function AgentList({
     queryFn: () =>
       agentService.getAgents({
         published,
-        includeLatestAssessment,
+        includeLatestAssessment: agentCardProps.showRecentAssessment && includeLatestAssessment,
         isActive,
         isBookmarked,
         userId,
@@ -181,6 +180,7 @@ export default function AgentList({
       isActive={activeAgentId === agent.id}
       style={style}
       onLayout={(event) => handleItemLayout(agent.id, event)}
+      {...agentCardProps}
     />
   ));
 }

@@ -12,7 +12,7 @@ export default function AccountStats({
   agent: AgentType;
   style?: ViewStyle;
 }) {
-  const accountData = useAccountBalance({ agent });
+  const { totalOpenPnl, pnlHistory } = useAccountBalance({ agent });
   return (
     <View
       style={[
@@ -24,7 +24,7 @@ export default function AccountStats({
     >
       <LabelValue
         label="Open P&L"
-        value={accountData.openPnlPct}
+        value={totalOpenPnl}
         textVariant="xs"
         valueTextVariant="sm"
         colorize
@@ -34,7 +34,7 @@ export default function AccountStats({
       ></LabelValue>
       <LabelValue
         label="All P&L"
-        value={accountData.totalPnlPercent}
+        value={pnlHistory.allTime?.pnlPct}
         textVariant="xs"
         valueTextVariant="sm"
         colorize

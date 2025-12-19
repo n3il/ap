@@ -309,6 +309,9 @@ export const mapHyperliquidPortfolio = (
         accountValueHistory: normalizeAccountValueHistory(
           summary?.accountValueHistory ?? [],
         ),
+        pnlHistory: normalizeAccountValueHistory(
+          summary?.pnlHistory ?? [],
+        ),
       };
     })
     .filter((entry): entry is PortfolioTimeframe =>

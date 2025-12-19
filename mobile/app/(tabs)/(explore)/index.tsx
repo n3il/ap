@@ -96,10 +96,10 @@ export default function ExploreScreen() {
                 flexDirection: "row",
                 justifyContent: "space-between",
                 gap: 2,
-                // paddingTop: 2,
+                paddingTop: 2,
                 paddingBottom: 2,
-                borderBottomWidth: 0.5,
-                borderBottomColor: palette.border,
+                // borderBottomWidth: 0.5,
+                // borderBottomColor: palette.border,
               }}
             >
               {/* <GlassSelector /> */}
