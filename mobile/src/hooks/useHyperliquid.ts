@@ -16,8 +16,8 @@ type HLMethodName = keyof {
     params: any,
     listener: any,
   ) => any
-    ? K
-    : never]: HLClientInstance[K];
+  ? K
+  : never]: HLClientInstance[K];
 };
 
 interface HLStoreState {
@@ -44,18 +44,20 @@ const clearPendingState = (
 // Handles incoming WebSocket messages for subscriptions
 const createMessageHandler =
   (registry: Map<string, Set<HLSubscriptionHandler>>) =>
-  (event: MessageEvent) => {
-    const msg = JSON.parse(event.data);
-    console.log(msg.channel, msg.data?.response?.type)
+    (event: MessageEvent) => {
+      const msg = JSON.parse(event.data);
+      console.log(msg.channel, msg.data?.response?.type)
 
-    // Handle subscription data (post responses are handled by InfoClient)
-    if (msg.channel !== "post") {
-      const handlers = registry.get(msg.channel);
-      if (handlers) {
-        handlers.forEach((h) => h(msg.data));
+      // Handle subscription data (post responses are handled by InfoClient)
+      if (msg.channel !== "post") {
+        const handlers = registry.get(msg.channel);
+        if (handlers) {
+          handlers.forEach((h) => h(msg.data));
+        }
+      } else if (msg.channel === "error") {
+        console.log(msg)
       }
-    }
-  };
+    };
 
 // Creates and manages ping interval for latency tracking
 const createPingManager = (

@@ -8,7 +8,7 @@ import Animated, {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import AgentList from "@/components/AgentList";
 import AgentTable from "@/components/AgentTable";
-import MultiAgentChart from "@/components/agents/MultiAgentChart";
+import PerformanceMultiAgentChart from "@/components/agents/PerformanceMultiAgentChart";
 import { GLOBAL_PADDING, PaddedView } from "@/components/ContainerView";
 import TimeFrameSelector from "@/components/chart/TimeFrameSelector";
 import ExploreHeader from "@/components/explore/Header";
@@ -62,11 +62,6 @@ export default function ExploreScreen() {
     setWidgetExpanded(!widgetExpanded);
   }, [widgetExpanded]);
 
-  const [chartExpanded, setChartExpanded] = useState(true);
-  const handleChartToggle = useCallback(() => {
-    setChartExpanded(!chartExpanded);
-  }, [chartExpanded]);
-
   return (
     <View
       style={{
@@ -109,11 +104,9 @@ export default function ExploreScreen() {
               onPress={handleAssetPressCallback}
               pageInFocus={isFocused}
             />
-            <MultiAgentChart
+            <PerformanceMultiAgentChart
               scrollY={scrollY}
-              expanded={chartExpanded}
               useScrollAnimation={true}
-              onPress={handleChartToggle}
               pageInFocus={isFocused}
             />
 

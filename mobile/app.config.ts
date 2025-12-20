@@ -7,10 +7,7 @@ export default ({ config }: ConfigContext): ExpoConfig => {
     ...config,
     name: "Puppet",
     slug: "puppet-ai",
-    scheme: [
-      "puppetai",
-      appIdentifier,
-    ],
+    scheme: "puppetai",
     version: "0.1.0",
     orientation: "portrait",
     icon: "./assets/icons/Icon-App-83.5x83.5.png",

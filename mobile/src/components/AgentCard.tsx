@@ -67,7 +67,7 @@ export default function AgentCard({
         borderColor: "#000",
       }}
     >
-      <Pressable onPress={() => onAgentPress(agent)}>
+      <Pressable onPress={onPress || (() => onAgentPress(agent))}>
         <View
           style={{
             flexDirection: "row",

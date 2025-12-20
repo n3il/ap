@@ -43,7 +43,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
             });
 
             if (!response.ok) {
-              throw new Error(`Edge function error: ${response.status}`);
+              console.log("Error setting Supabase auth", response.status, response.statusText);
             }
 
             const { session, user: profileUser } = await response.json();

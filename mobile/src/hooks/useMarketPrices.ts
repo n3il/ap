@@ -10,15 +10,27 @@ import { useHLSubscription, useHyperliquidInfo } from "@/hooks/useHyperliquid";
 
 export type NormalizedAsset = MarketAssetSnapshot;
 
+interface MarketPricesState {
+  tickers: MarketAssetSnapshot[];
+  mids: Record<string, number>;
+  isLoading: boolean;
+  setMids: (mids: Record<string, number>) => void;
+  setTickers: (tickers: MarketAssetSnapshot[]) => void;
+  updateTickers: (mids: Record<string, number>, timestamp: number) => void;
+  setLoading: (val: boolean) => void;
+}
+
 // Zustand store for market prices
-export const useMarketPricesStore = create((set, get) => ({
-  tickers: [] as MarketAssetSnapshot[],
-  mids: {} as Record<string, number>,
-  setMids: (mids: Record<string, number>) => set({ mids }),
+export const useMarketPricesStore = create<MarketPricesState>((set, get) => ({
+  tickers: [],
+  mids: {},
+  isLoading: false,
 
-  setTickers: (tickers: MarketAssetSnapshot[]) => set({ tickers }),
+  setMids: (mids) => set({ mids }),
 
-  updateTickers: (mids: Record<string, number>, timestamp: number) => {
+  setTickers: (tickers) => set({ tickers }),
+
+  updateTickers: (mids, timestamp) => {
     const updated = get().tickers.map((t) => ({
       ...t,
       midPrice: mids[t.symbol] ?? t.midPrice,
@@ -28,8 +40,7 @@ export const useMarketPricesStore = create((set, get) => ({
     set({ tickers: updated, mids });
   },
 
-  isLoading: false,
-  setLoading: (val: boolean) => set({ isLoading: val }),
+  setLoading: (val) => set({ isLoading: val }),
 }));
 
 export function useMarketPrices() {

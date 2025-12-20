@@ -36,8 +36,8 @@ function AuthNavigator() {
 
   useEffect(() => {
     async function prepare() {
-       await ExpoSplashScreen.hideAsync();
-     }
+      await ExpoSplashScreen.hideAsync();
+    }
     if (isReady) {
       prepare();
     }
@@ -122,7 +122,7 @@ export default Sentry.wrap(function RootLayout() {
   return (
     <ThemeProvider>
       <KeyboardProvider>
-        {/* <SafeAreaProvider> */}
+        <SafeAreaProvider>
           <QueryClientProvider client={queryClient}>
             <PrivyProvider
               appId={privyAppId}
@@ -131,7 +131,7 @@ export default Sentry.wrap(function RootLayout() {
               <PrivyWrapper />
             </PrivyProvider>
           </QueryClientProvider>
-        {/* </SafeAreaProvider> */}
+        </SafeAreaProvider>
       </KeyboardProvider>
     </ThemeProvider>
   );
