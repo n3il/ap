@@ -34,7 +34,7 @@ import { formatXAxisTick } from "../chart/utils";
 import { AgentType } from "@/types/agent";
 import { resolveProviderColor } from "@/theme/utils";
 import { useTheme } from "@/contexts/ThemeContext";
-import { useAccountStore } from "@/hooks/useAccountStore";
+import { useAccountStore, useAccountHistory } from "@/hooks/useAccountStore";
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -77,7 +77,13 @@ export default function PerformanceMultiAgentChart({
     const agents = agentsProp || exploreListAgents;
 
     const { timeframe } = useTimeframeStore();
-    const accountEntries = useAccountStore((state) => state.accounts);
+
+    // Access only the history for the agents we are displaying
+    const agentAddresses = useMemo(() =>
+        agents.map(agent => agent?.trading_accounts?.find(ta => ta.type === (agent.simulate ? "paper" : "real"))?.hyperliquid_address),
+        [agents]
+    );
+    const historyMap = useAccountHistory(agentAddresses);
 
     // Data Fetching
     const {
@@ -129,8 +135,7 @@ export default function PerformanceMultiAgentChart({
             const addr = agent?.trading_accounts?.find(
                 (ta) => ta.type === (agent.simulate ? "paper" : "real")
             )?.hyperliquid_address;
-            const historyPoints =
-                accountEntries[addr || ""]?.data?.rawHistory?.[portfolioTimeframe] || [];
+            const historyPoints = historyMap[addr || ""]?.[portfolioTimeframe] || [];
 
             if (historyPoints.length === 0) return;
 
@@ -172,7 +177,7 @@ export default function PerformanceMultiAgentChart({
             minVal: globalMin,
             maxVal: globalMax,
         };
-    }, [candleDataBySymbol, accountEntries, timeframe, agents]);
+    }, [candleDataBySymbol, historyMap, timeframe, agents]);
 
     // --- Layout & Dimensions ---
     const chartWidth = SCREEN_WIDTH - GLOBAL_PADDING * 2;
