@@ -132,14 +132,22 @@ export default function AgentCard({
         </View>
       ) : null}
 
-      <View style={{ gap: 12, marginTop: 8 }}>
-        {showDailyPnlCalendar &&
-          <PnlCalendar agent={agent} />
-        }
-        {showSentimentCalendar &&
-          <SentimentCalendar agent={agent} />
-        }
-      </View>
+      {showDailyPnlCalendar || showSentimentCalendar ? (
+        <View style={{
+          gap: 12,
+          marginTop: 8,
+          borderTopWidth: .5,
+          borderTopColor: withOpacity(palette.border, 0.3),
+          paddingTop: 8,
+        }}>
+          {showDailyPnlCalendar &&
+            <PnlCalendar agent={agent} />
+          }
+          {showSentimentCalendar &&
+            <SentimentCalendar agent={agent} />
+          }
+        </View>
+      ) : null}
     </GlassButton>
   );
 }

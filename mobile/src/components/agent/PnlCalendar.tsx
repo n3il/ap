@@ -14,16 +14,18 @@ import {
   addMonths
 } from "date-fns";
 import CalendarGrid, { type CalendarBucket } from "./CalendarGrid";
+import { Image } from "expo-image";
 
 export default function PnlCalendar({
   agent,
   showLabel = false,
+  timeframe = "7d",
 }: {
   agent: any;
   showLabel?: boolean;
+  timeframe?: "7d" | "1M" | "Alltime";
 }) {
   const accountData = useAccountBalance({ agent });
-  const timeframe = "7d"; // Fixed as per user adjustment
 
   const aggregatedBuckets = useMemo(() => {
     const rawHistory = accountData?.rawHistory;
@@ -98,6 +100,7 @@ export default function PnlCalendar({
       buckets={aggregatedBuckets}
       showLabel={showLabel}
       colorMode="pnl"
+      iconImage={require("assets/vector-icons/noun-profit-7689302.svg")}
     />
   );
 }

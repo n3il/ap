@@ -7,6 +7,7 @@ import { Ionicons, MaterialCommunityIcons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import Animated, { FadeIn, FadeOut, useSharedValue, runOnJS } from "react-native-reanimated";
 import { GestureDetector, Gesture } from "react-native-gesture-handler";
+import { Image } from "expo-image";
 
 export interface CalendarBucket {
   value: number;
@@ -23,6 +24,7 @@ interface CalendarGridProps {
   showIcon?: boolean;
   formatter?: (val: number) => string;
   icon?: string | React.ReactNode;
+  iconImage?: string;
 }
 
 export default function CalendarGrid({
@@ -33,6 +35,7 @@ export default function CalendarGrid({
   showIcon = true,
   formatter,
   icon = "calendar-outline",
+  iconImage,
 }: CalendarGridProps) {
   const { colors: palette, withOpacity } = useColors();
   const [activeTooltip, setActiveTooltip] = useState<{ index: number; text: string } | null>(null);
@@ -120,17 +123,24 @@ export default function CalendarGrid({
 
   return (
     <View>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', position: 'relative' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           {showLabel && (
             <>
               <Text style={{ fontSize: 18, fontWeight: '700', color: palette.foreground }}>
                 {currentMonthLabel}
               </Text>
-              {typeof icon === 'string' ? (
-                <MaterialCommunityIcons name={icon as any} size={16} color={palette.foreground} style={{ opacity: 0.8 }} />
+              {iconImage ? (
+                <Image
+                  source={iconImage}
+                  style={{ width: 20, height: 20 }}
+                />
               ) : (
-                icon
+                typeof icon === 'string' ? (
+                  <MaterialCommunityIcons name={icon as any} size={16} color={palette.foreground} style={{ opacity: 0.8 }} />
+                ) : (
+                  icon
+                )
               )}
             </>
           )}
@@ -141,13 +151,17 @@ export default function CalendarGrid({
             entering={FadeIn.duration(200)}
             exiting={FadeOut.duration(200)}
             style={{
-              backgroundColor: withOpacity(palette.surfaceLight, 0.1),
+              position: 'absolute',
+              right: 0,
+              top: -40,
+              backgroundColor: withOpacity(palette.foreground, 0.8),
               paddingHorizontal: 8,
               paddingVertical: 2,
               borderRadius: 4,
+              zIndex: 10,
             }}
           >
-            <Text style={{ fontSize: 10, fontWeight: '600', color: palette.mutedForeground }}>
+            <Text style={{ fontSize: 10, fontWeight: '600', color: palette.background }}>
               {activeTooltip.text}
             </Text>
           </Animated.View>
@@ -164,15 +178,25 @@ export default function CalendarGrid({
             flexDirection: 'row',
             flexWrap: buckets.length > 7 ? 'wrap' : 'nowrap',
             gap: 6,
+            justifyContent: 'space-evenly',
           }}
         >
-          {showIcon && (
-            typeof icon === 'string' ? (
-              <MaterialCommunityIcons name={icon as any} size={16} color={palette.foreground} style={{ opacity: 0.8 }} />
-            ) : (
-              icon
-            )
-          )}
+          <View style={{
+            margin: 6,
+          }}>
+            {showIcon && (
+              iconImage ? (
+                <Image
+                  source={iconImage}
+                  style={{ width: 24, height: 24 }}
+                  tintColor={palette.foreground}
+
+                />
+              ) : (
+                <MaterialCommunityIcons name={icon as any} size={20} color={palette.foreground} style={{ opacity: 0.8 }} />
+              )
+            )}
+          </View>
 
           {buckets.map((bucket, idx) => {
             const color = getColor(bucket.value);
@@ -182,16 +206,15 @@ export default function CalendarGrid({
               <View
                 key={idx}
                 style={{
-                  width: '13%', // Approx 7 columns
-                  aspectRatio: 1.8,
+                  flex: 1,
                   borderRadius: 4,
                   backgroundColor: bucket.isEmpty
-                    ? withOpacity(palette.surfaceLight, 0.05)
-                    : withOpacity(color, isActive ? 0.3 : 0.1),
+                    ? withOpacity(palette.surfaceLight, 0.1)
+                    : withOpacity(color, isActive ? 0.1 : 0.1),
                   alignItems: 'center',
                   justifyContent: 'center',
-                  borderWidth: isActive ? 1 : 0,
-                  borderColor: withOpacity(color, 0.5),
+                  borderWidth: 1,
+                  borderColor: withOpacity(color, isActive ? 1 : 0.1),
                 }}
               >
                 {!bucket.isEmpty && (

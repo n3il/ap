@@ -1,7 +1,6 @@
 import React from "react";
 import { useAgentSentimentHistory } from "@/hooks/useAgentSentimentHistory";
 import CalendarGrid from "./CalendarGrid";
-import { Image } from "expo-image";
 
 export default function SentimentCalendar({
   agent,
@@ -22,12 +21,7 @@ export default function SentimentCalendar({
       showLabel={showLabel}
       colorMode="sentiment"
       formatter={sentimentFormatter}
-      icon={
-        <Image
-          source={require("@assets/vector-icons/noun-bull-and-bear-6064687.svg")}
-          style={{ width: 24, height: 24 }}
-        />
-      }
+      iconImage={require("@assets/vector-icons/noun-bull-and-bear-6064687.svg")}
     />
   );
 }

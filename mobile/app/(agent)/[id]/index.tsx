@@ -15,12 +15,21 @@ import { Animated, SwipeableTabs, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
+import AssessmentCard from "@/components/AssessmentCard";
+import SectionTitle, { SectionTitleLink } from "@/components/SectionTitle";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
+import PositionList from "@/components/agents/PositionList";
+import PnlCalendar from "@/components/agent/PnlCalendar";
+import SentimentCalendar from "@/components/agent/SentimentCalendar";
+import { ActivityIndicator, ScrollView } from "dripsy";
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
   const { colors: palette } = useColors();
   const { id: agentId } = useLocalSearchParams();
-  const { data: agent, refetch, isRefetching } = useAgent(agentId);
+  const { data: agent, refetch, isRefetching, isLoading } = useAgent(agentId);
+  const accountData = useAccountBalance({ agent });
+
   const scrollY = useRef(new Animated.Value(0)).current;
   const [headerHeight, setHeaderHeight] = useState(100); // Default fallback
   const [overviewHeight, setOverviewHeight] = useState(220); // Default fallback
@@ -43,18 +52,57 @@ export default function AgentIndex() {
 
   const startContentAtHeight = headerHeight + overviewHeight;
 
+  const [currentTab, setCurrentTab] = useState("Account");
+
+  const handleTabSwitch = (tab: string) => {
+    setCurrentTab(tab);
+  };
+
   const tabs = useMemo(
     () => [
       {
         key: "Account",
         title: "Account",
         content: () => (
-          <View style={{
+          <ScrollView style={{
             flex: 1,
             paddingTop: startContentAtHeight,
-          }}>
+            paddingHorizontal: GLOBAL_PADDING,
 
-          </View>
+          }}>
+            <View sx={{
+              gap: 6,
+              paddingBottom: "60%",
+            }}>
+              <SectionTitleLink title="Timeline" onPress={() => handleTabSwitch("Timeline")} />
+              {accountData.isLoading || !agent ? (
+                <ActivityIndicator />
+              ) : (
+                <>
+                  {agent.latest_assessment && (
+                    <AssessmentCard assessment={agent.latest_assessment} />
+                  )}
+                  <SentimentCalendar agent={agent} />
+                </>
+              )}
+
+              <SectionTitleLink title="Positions" onPress={() => handleTabSwitch("Positions")} />
+              {accountData.isLoading ? (
+                <ActivityIndicator />
+              ) : (
+                <PositionList positions={accountData.positions} />
+              )}
+
+              <SectionTitle title="Performance" />
+              {accountData.isLoading ? (
+                <ActivityIndicator />
+              ) : (
+                <>
+                  <PnlCalendar agent={agent} />
+                </>
+              )}
+            </View>
+          </ScrollView>
         ),
       },
       {
@@ -152,6 +200,9 @@ export default function AgentIndex() {
       >
         <PaddedView style={{ gap: 12, paddingHorizontal: 8 }}>
           <BalanceOverview agent={agent} />
+          <PnlCalendar agent={agent} timeframe="1M" />
+          <SentimentCalendar agent={agent} />
+
           {/* <HeaderChart
             agentId={agent?.id}
             style={{

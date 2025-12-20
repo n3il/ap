@@ -87,7 +87,7 @@ export const agentService = {
   },
 
   // Get a single agent by ID
-  async getAgent(agentId, { includeLatestAssessment = false } = {}) {
+  async getAgent(agentId, { includeLatestAssessment = true } = {}) {
     const { data, error } = await buildAgentSelectQuery(includeLatestAssessment)
       .eq("id", agentId)
       .single();

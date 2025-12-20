@@ -107,7 +107,7 @@ export default function AgentActions({ agent }: { agent: AgentType }) {
         }
         onPress={handleTransfer}
         variant="primary"
-        style={{ flex: 3, }}
+        style={{ flex: 2.2, }}
       />
       <DrawerButton
         title="Clone"
