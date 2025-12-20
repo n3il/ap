@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
 import { FadeIn, FadeOut, LinearTransition } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import ContainerView from "@/components/ContainerView";
+import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
 import SectionTitle from "@/components/SectionTitle";
 import {
   ActivityIndicator,
@@ -52,7 +52,7 @@ export default function Auth() {
     try {
       await smsAuth.sendCode({ phone: phoneNumber });
       setContactInfo(phoneNumber)
-      router.push("verify-otp");
+      router.replace("verify-otp");
     } catch (error) {
       Alert.alert(
         t("login.errors.codeSendFailed"),
@@ -78,7 +78,7 @@ export default function Auth() {
     try {
       await emailAuth.sendCode({ email });
       setContactInfo(email)
-      router.push("verify-otp");
+      router.replace("verify-otp");
     } catch (error) {
       Alert.alert(
         t("login.errors.codeSendFailed"),
@@ -147,7 +147,7 @@ export default function Auth() {
                     ? t("login.phoneNumber")
                     : t("login.email")
                 }
-                sx={{ fontSize: 14 }}
+                sx={{ paddingLeft: 3, fontSize: 14 }}
               />
               {authType === "phone" ? (
                 <PhoneInputAutoDetect

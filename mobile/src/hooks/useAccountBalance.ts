@@ -21,12 +21,18 @@ export interface UseAccountBalanceReturn {
   positions: Array<{
     symbol: string;
     size: number;
+    entryPrice: number;
+    markPrice: number;
     unrealizedPnl: number;
-    cumFundingAllTime: number; // For the breakdown you need
+    cumFundingAllTime: number;
     positionValue: number;
+    livePnlPct: number;
+    roe: number;
+    liquidationPx: number;
+    leverage: number | null;
+    marginUsed: number;
   }>;
   equity: number;
-  totalOpenPnl: number;
 }
 
 export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBalanceReturn {
@@ -37,15 +43,23 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
   const userId = tradingAccount?.hyperliquid_address;
 
   const account = useAccountStore((state) => state.accounts[userId || ""]);
+  const initialize = useAccountStore((state) => state.initialize);
   const sync = useAccountStore((state) => state.sync);
   const infoClient = useHyperliquidInfo();
   const { mids } = useMarketPricesStore();
 
   useEffect(() => {
-    if (userId && infoClient) {
-      sync(userId, infoClient, mids);
+    if (userId && infoClient && !account) {
+      initialize(userId, infoClient);
     }
-  }, [userId, mids, infoClient, sync]);
+  }, []);
+
+  useEffect(() => {
+    const hasMids = Object.keys(mids).length > 0;
+    if (userId && hasMids && account?.data) {
+      sync(userId, mids);
+    }
+  }, [account, userId, mids, sync]);
 
   return useMemo((): UseAccountBalanceReturn => ({
     isLoading: account?.isLoading ?? false,
@@ -55,5 +69,5 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
     equity: account?.data?.accountValue ?? 0,
     marginSummary: account?.data?.marginSummary ?? null,
     totalOpenPnl: account?.data?.totalOpenPnl ?? 0,
-  }), [account]);
+  }), [account, mids]);
 }

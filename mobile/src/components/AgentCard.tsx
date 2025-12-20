@@ -1,16 +1,16 @@
-import { Pressable, type ViewStyle } from "react-native";
-import Animated from "react-native-reanimated";
+import { Pressable } from "react-native";
 import AccountStats from "@/components/agent/AccountStats";
 import { Avatar, GlassButton, View } from "@/components/ui";
 import { useAccountBalance } from "@/hooks/useAccountBalance";
-import { useColors, withOpacity } from "@/theme";
+import { useColors } from "@/theme";
 import type { AgentType } from "@/types/agent";
 import PositionList from "./agents/PositionList";
 import ReportPreview from "./reports/Preview";
 import PnlCalendar from "./agent/PnlCalendar";
-import { GlassView } from "expo-glass-effect";
-import { GLOBAL_PADDING } from "./ContainerView";
 import { useTheme } from "@/contexts/ThemeContext";
+import { ROUTES } from "@/config/routes";
+import { useRouter } from "expo-router";
+import { useCallback } from "react";
 
 export default function AgentCard({
   agent,
@@ -34,12 +34,24 @@ export default function AgentCard({
   transparent?: boolean;
   isActive?: boolean;
 }) {
+  const router = useRouter()
   const { colors: palette, withOpacity } = useColors();
   const { isDark } = useTheme()
   const accountData = useAccountBalance({ agent });
+
+  const onAgentPress = useCallback(
+    (agent: AgentType) => {
+      router.push({
+        pathname: ROUTES.AGENT_ID.path,
+        params: { id: agent.id, name: agent.name },
+      } as any);
+    },
+    [router],
+  );
+
   return (
     <GlassButton
-      enabled={isDark}
+      enabled={true}
       glassEffectStyle="clear"
       tintColor={isDark
         ? withOpacity(palette.surfaceLight, .5) // "rgba(0, 0, 0, 0.3)"
@@ -55,7 +67,7 @@ export default function AgentCard({
         borderColor: "#000",
       }}
     >
-      <Pressable onPress={onPress}>
+      <Pressable onPress={() => onAgentPress(agent)}>
         <View
           style={{
             flexDirection: "row",
@@ -107,7 +119,7 @@ export default function AgentCard({
       ) : null}
 
       {showDailyPnlCalendar &&
-        <PnlCalendar accountData={accountData}  />
+        <PnlCalendar accountData={accountData} />
       }
     </GlassButton>
   );

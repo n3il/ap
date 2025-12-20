@@ -1,7 +1,7 @@
 export const processHyperliquidData = (
   historyData: any[],
   chState: any,
-  mids: Record<string, string>
+  mids: Record<string, string> = {}
 ) => {
   if (!chState) return null;
 
@@ -9,9 +9,6 @@ export const processHyperliquidData = (
 
   const rawHistory: Record<string, any[]> = {};
 
-
-
-  // 1. Map Timeframe PnL safely
   const pnlHistory = Object.fromEntries(
     historyData.map(([timeframe, content]) => {
       const points = (content.accountValueHistory || []).map((p: any) => ({
@@ -19,23 +16,18 @@ export const processHyperliquidData = (
         value: parseFloat(p[1])
       }));
 
-      // Store the points for the chart
       rawHistory[timeframe] = points;
 
       const history = content.accountValueHistory || [];
       const firstVal = history[0]?.[1];
       const first = firstVal ? parseFloat(firstVal) : 0;
 
-      // Calculate PnL based on live equity vs historical start
       const pnl = accountValue - first;
 
       let pnlPct = 0;
-      // Safety check: Only calculate % if we have a non-zero starting basis
       if (first > 0) {
         pnlPct = (pnl / first) * 100;
       } else {
-        // If first is 0, we avoid the 100% "lie".
-        // We show 0% because no 'growth' has been measured yet.
         pnlPct = 0;
       }
 
@@ -52,7 +44,9 @@ export const processHyperliquidData = (
   const positions = chState.assetPositions.map(({ position: p }: any) => {
     const size = parseFloat(p.szi);
     const entryPrice = parseFloat(p.entryPx);
-    const markPrice = mids[p.coin] ? parseFloat(mids[p.coin]) : parseFloat(p.markPx);
+    const markPrice = mids[p.coin]
+      ? parseFloat(mids[p.coin])
+      : (parseFloat(p.markPx) || entryPrice);
     const unrealizedPnl = (markPrice - entryPrice) * size;
     const livePnlPct = entryPrice !== 0
       ? ((markPrice - entryPrice) / entryPrice) * 100 * (size > 0 ? 1 : -1)
@@ -69,6 +63,9 @@ export const processHyperliquidData = (
       cumFundingAllTime: parseFloat(p.cumFunding?.allTime || "0"),
       positionValue: Math.abs(size) * markPrice,
       roe: parseFloat(p.returnOnEquity) * 100,
+      liquidationPx: parseFloat(p.liquidationPx || "0"),
+      leverage: p.leverage ? parseFloat(p.leverage.value || p.leverage) : null,
+      marginUsed: parseFloat(p.marginUsed || "0"),
     };
   });
 
@@ -78,5 +75,7 @@ export const processHyperliquidData = (
     pnlHistory,
     rawHistory,
     totalOpenPnl: positions.reduce((sum: number, p: any) => sum + p.unrealizedPnl, 0),
+    historyDataSnapshot: historyData,
+    chDataSnapshot: chState,
   };
 };

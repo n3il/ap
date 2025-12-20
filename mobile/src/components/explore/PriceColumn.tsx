@@ -87,18 +87,18 @@ export default function PriceColumn({
 
   const priceOpacity = useSharedValue(1);
   const prevPrice = useRef(tickerData?.price);
-  useEffect(() => {
-    if (
-      prevPrice.current !== tickerData?.price &&
-      Number.isFinite(tickerData?.price)
-    ) {
-      priceOpacity.value = withSequence(
-        withTiming(1, { duration: 500 }),
-        withTiming(0.7, { duration: 200 }),
-      );
-    }
-    prevPrice.current = tickerData?.price;
-  }, [tickerData?.price, priceOpacity]);
+  // useEffect(() => {
+  //   if (
+  //     prevPrice.current !== tickerData?.price &&
+  //     Number.isFinite(tickerData?.price)
+  //   ) {
+  //     priceOpacity.value = withSequence(
+  //       withTiming(1, { duration: 500 }),
+  //       withTiming(0.7, { duration: 200 }),
+  //     );
+  //   }
+  //   prevPrice.current = tickerData?.price;
+  // }, [tickerData?.price, priceOpacity]);
 
   const {
     symbolStyle,

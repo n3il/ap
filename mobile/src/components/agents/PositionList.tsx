@@ -15,7 +15,7 @@ type PositionDetailRowProps = {
 export type PositionListItem = {
   symbol: string;
   coin?: string;
-  type: string;
+
   size: number;
   entryPrice: number;
   positionValue: number;
@@ -78,26 +78,14 @@ export function PositionRow({
   const [expanded, setExpanded] = useState(defaultExpanded);
   const { colors: palette } = useColors();
 
-  const {
-    symbol,
-    coin,
-    size,
-    entryPrice,
-    positionValue,
-    unrealizedPnl,
-    leverage,
-    livePnlPct,
-    liquidationPx,
-  } = position;
-
-  const displaySymbol = (symbol || coin)?.replace("-PERP", "/USDC") ?? "";
-  const side = size >= 0 ? "long" : "short";
-  const absSize = Math.abs(size);
-  const entryPriceValue = Number(entryPrice) || 0;
-  const currentPriceValue = absSize > 0 ? positionValue / absSize : 0;
-  const unrealizedPnlValue = Number(unrealizedPnl) || 0;
-  const pnlPercentValue = livePnlPct != null ? Number(livePnlPct) : null;
-  const totalPositionValue = positionValue + unrealizedPnlValue;
+  const displaySymbol = (position.symbol || position.coin)?.replace("-PERP", "/USDC") ?? "";
+  const side = position.size >= 0 ? "long" : "short";
+  const absSize = Math.abs(position.size);
+  const entryPriceValue = Number(position.entryPrice) || 0;
+  const currentPriceValue = absSize > 0 ? position.positionValue / absSize : 0;
+  const unrealizedPnlValue = Number(position.unrealizedPnl) || 0;
+  const pnlPercentValue = position.livePnlPct != null ? Number(position.livePnlPct) : null;
+  const totalPositionValue = position.positionValue + unrealizedPnlValue;
 
   const entryPriceLabel = entryPriceValue
     ? formatAmount(entryPriceValue, { precision: 4 })
@@ -150,7 +138,7 @@ export function PositionRow({
           </TableCell>
           <TableCell>
             <Text variant="xs" sx={{ marginRight: 2 }}>
-              {leverage}X {side}
+              {position.leverage}X {side}
             </Text>
           </TableCell>
           <TableCell>
@@ -193,8 +181,8 @@ export function PositionRow({
           <PositionDetailRow
             label="Liq. Price"
             value={
-              liquidationPx
-                ? formatAmount(liquidationPx, { precision: 4 })
+              position.liquidationPx
+                ? formatAmount(position.liquidationPx, { precision: 4 })
                 : "-"
             }
           />
@@ -236,11 +224,11 @@ export default function PositionList({
     <View sx={sx}>
       {topPositions.length > 0
         ? topPositions.map((position, i) => (
-            <PositionRow
-              key={position?.symbol ?? position?.coin ?? i}
-              position={position}
-            />
-          ))
+          <PositionRow
+            key={position?.symbol ?? position?.coin ?? i}
+            position={position}
+          />
+        ))
         : null}
 
       {positions.length > top ? (

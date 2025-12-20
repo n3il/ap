@@ -17,10 +17,24 @@ import { View, RefreshControl } from "@/components/ui";
 import Toggle from "@/components/ui/Toggle";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import { useColors } from "@/theme";
+import { useFocusEffect } from "expo-router";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
 
 export default function ExploreScreen() {
+  const [isFocused, setIsFocused] = useState(false);
+  useFocusEffect(
+    useCallback(() => {
+      // Invoked whenever the route is focused.
+      setIsFocused(true);
+
+      // Return function is invoked whenever the route gets out of focus.
+      return () => {
+        setIsFocused(false);
+      };
+    }, []),
+  );
+
   const [isFetching, setIsFetching] = useState(false);
   const queryClient = useQueryClient();
   const { viewMode } = useExploreAgentsStore();
@@ -29,12 +43,13 @@ export default function ExploreScreen() {
   const safeAreaInsets = useSafeAreaInsets();
 
   const handleRefresh = useCallback(async () => {
-    setIsFetching(true);
-    await queryClient.invalidateQueries({ queryKey: ["explore-agents"] });
-    setIsFetching(false);
+    // setIsFetching(true);
+    // await queryClient.invalidateQueries({ queryKey: ["explore-agents"] });
+    // setIsFetching(false);
   }, [queryClient.invalidateQueries]);
 
   const scrollY = useSharedValue(0);
+  const largeScrollValue = useSharedValue(9000);
 
   const scrollHandler = useAnimatedScrollHandler({
     onScroll: (event) => {
@@ -46,6 +61,11 @@ export default function ExploreScreen() {
   const handleAssetPressCallback = useCallback(() => {
     setWidgetExpanded(!widgetExpanded);
   }, [widgetExpanded]);
+
+  const [chartExpanded, setChartExpanded] = useState(true);
+  const handleChartToggle = useCallback(() => {
+    setChartExpanded(!chartExpanded);
+  }, [chartExpanded]);
 
   return (
     <View
@@ -82,13 +102,20 @@ export default function ExploreScreen() {
             }}
           >
             <MarketPricesWidget
-              scrollY={widgetExpanded ? scrollY : { value: 9000 }}
+              scrollY={widgetExpanded ? scrollY : largeScrollValue}
               style={{
                 marginVertical: 3,
               }}
               onPress={handleAssetPressCallback}
+              pageInFocus={isFocused}
             />
-            <MultiAgentChart scrollY={scrollY} />
+            <MultiAgentChart
+              scrollY={scrollY}
+              expanded={chartExpanded}
+              useScrollAnimation={true}
+              onPress={handleChartToggle}
+              pageInFocus={isFocused}
+            />
 
             <PaddedView
               sx={{
@@ -127,9 +154,10 @@ export default function ExploreScreen() {
         >
           {viewMode === "list" ? (
             <AgentList
-              queryKey={["explore-agents"]}
               isActive
+              published
               scrollY={scrollY}
+              pageInFocus={isFocused}
             />
           ) : (
             <AgentTable

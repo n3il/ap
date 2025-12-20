@@ -2,7 +2,7 @@ import { ActivityIndicator } from "dripsy";
 import * as haptics from "expo-haptics";
 import LottieView from "lottie-react-native";
 import { useMemo } from "react";
-import { Dimensions, type ViewStyle } from "react-native";
+import { Dimensions, type ViewStyle, Pressable, StyleSheet } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import type { SharedValue } from "react-native-reanimated";
 import Animated, {
@@ -11,6 +11,8 @@ import Animated, {
   useAnimatedStyle,
   useAnimatedProps,
   useDerivedValue,
+  withTiming,
+  useSharedValue,
 } from "react-native-reanimated";
 import { LineChart } from "react-native-wagmi-charts";
 import { useAgentAccountValueHistories } from "@/hooks/useAgentAccountValueHistories";
@@ -33,6 +35,10 @@ type MultiAgentChartProps = {
   style?: ViewStyle;
   agentsProp?: AgentType[],
   tickerSymbols?: string[],
+  expanded?: boolean;
+  useScrollAnimation?: boolean;
+  onPress?: () => void;
+  pageInFocus?: boolean;
 };
 
 // Map UI timeframes to Hyperliquid portfolio timeframes
@@ -61,6 +67,10 @@ export default function MultiAgentChart({
   style,
   agentsProp,
   tickerSymbols = ["BTC"],
+  expanded = true,
+  useScrollAnimation = false,
+  onPress,
+  pageInFocus = true,
 }: MultiAgentChartProps) {
   const { isDark } = useTheme()
   const { colors: palette } = useColors();
@@ -136,20 +146,30 @@ export default function MultiAgentChart({
     };
   }, [candleDataBySymbol, accountEntries, timeframe, agents]);
 
-  // Animate height based on scroll
+  // Animate height based on scroll or toggle state
+  const expandedHeight = 300;
+  const collapsedHeight = 150;
+
   const chartHeight = useDerivedValue(() => {
-    if (!scrollY) return 200;
-    return interpolate(
-      scrollY.value,
-      [0, 100],
-      [250, 200],
-      Extrapolation.CLAMP,
-    );
-  }, [scrollY]);
+    if (useScrollAnimation && scrollY) {
+      // Use scroll-based animation
+      return interpolate(
+        scrollY.value,
+        [0, 100],
+        [expandedHeight, collapsedHeight],
+        Extrapolation.CLAMP,
+      );
+    } else {
+      // Use toggle-based animation
+      return withTiming(expanded ? expandedHeight : collapsedHeight, {
+        duration: 300,
+      });
+    }
+  }, [scrollY, expanded, useScrollAnimation]);
 
   const animatedStyle = useAnimatedStyle(() => {
     return { height: chartHeight.value };
-  }, [scrollY]);
+  }, [scrollY, expanded, useScrollAnimation]);
 
   const darkChart = false;
   const textColor = darkChart ? palette.surfaceForeground : palette.foreground;
@@ -168,7 +188,6 @@ export default function MultiAgentChart({
     const data = { ...symbolDataSets, ...agentDataSets };
     let maxAbs = 0;
     let minAbs = 0;
-    console.log(Object.values(data))
     for (const entries of Object.values(data)) {
       for (const { value } of entries) {
         const abs = Math.abs(value);
@@ -185,135 +204,135 @@ export default function MultiAgentChart({
   const chartWidth = width - GLOBAL_PADDING * 2;
 
   return (
-    <Animated.View style={[animatedStyle, { minHeight: 100 }]}>
-      <GestureHandlerRootView
-        style={{
-          paddingHorizontal: GLOBAL_PADDING,
-        }}
-      >
-        {isLoading && (
-          <ActivityIndicator color="foreground" />
-        )}
-        <LineChart.Provider
-          xLength={xLength}
-          data={Object.keys(data).length > 0 ? data : []}
-          onCurrentIndexChange={invokeHaptic}
+    <Pressable onPress={onPress} disabled={!onPress}>
+      <Animated.View style={[animatedStyle, { minHeight: 100 }]}>
+        <GestureHandlerRootView
+          style={{
+            paddingHorizontal: GLOBAL_PADDING,
+          }}
         >
-        <LineChart.Group>
-          {tickerSymbols.map((symbol, idx) => {
-            if (!data[symbol]) return null;
+          {isLoading && (
+            <ActivityIndicator color="foreground" />
+          )}
+          <LineChart.Provider
+            xLength={xLength}
+            data={Object.keys(data).length > 0 ? data : []}
+            onCurrentIndexChange={invokeHaptic}
+          >
+            <LineChart.Group>
+              {tickerSymbols.map((symbol, idx) => {
+                if (!data[symbol]) return null;
 
-            return (
-              <AnimatedLineChart
-                id={symbol}
-                yGutter={30}
-                width={chartWidth}
-                style={[{position: "absolute"}, animatedStyle]}
-                key={symbol}
-              >
-                <LineChart.Path
-                  color={(symbolColors[symbol] || palette.primary)}
-                  width={1}
-                  pathProps={{
-                    opacity: isDark ? 0.4 : .9,
-                  }}
-                >
-                  <LineChart.Gradient />
-                </LineChart.Path>
+                return (
+                  <AnimatedLineChart
+                    id={symbol}
+                    yGutter={30}
+                    width={chartWidth}
+                    style={[StyleSheet.absoluteFill]}
+                    key={symbol}
+                  >
+                    <LineChart.Path
+                      color={(symbolColors[symbol] || palette.primary)}
+                      width={1}
+                      pathProps={{
+                        opacity: isDark ? 0.4 : .9,
+                      }}
+                    >
+                      <LineChart.Gradient />
+                    </LineChart.Path>
 
-                {idx === 0 && (
-                  <>
-                    <LineChart.Axis
-                      position="top"
-                      orientation="horizontal"
-                      tickCount={4}
-                      labelPadding={0}
-                      labelWidth={0}
-                      containerStyle={{
-                        // backgroundColor: "#ddd"
-                      }}
-                      textStyle={{
-                        color: palette.foreground
-                      }}
-                      domain={startTs ? [startTs, endTs] : undefined}
-                      strokeWidth={.3}
-                      format={(value) => {
-                        "worklet";
-                        return formatXAxisTick(value, startTs, endTs);
-                      }}
-                    />
-                  </>
-                )}
-              </AnimatedLineChart>
-            );
-          })}
+                    {idx === 0 && (
+                      <>
+                        <LineChart.Axis
+                          position="top"
+                          orientation="horizontal"
+                          tickCount={4}
+                          labelPadding={0}
+                          containerStyle={{
+                            // backgroundColor: "#ddd"
+                          }}
+                          textStyle={{
+                            color: palette.foreground
+                          }}
+                          domain={startTs ? [startTs, endTs] : undefined}
+                          strokeWidth={.3}
+                          format={(value) => {
+                            "worklet";
+                            return formatXAxisTick(value, startTs, endTs);
+                          }}
+                        />
+                      </>
+                    )}
+                  </AnimatedLineChart>
+                );
+              })}
 
-          {/* Agent performance lines */}
-          {agents.map((agent, idx) => {
-            if (!data[agent?.id]) return null;
+              {/* Agent performance lines */}
+              {agents.map((agent, idx) => {
+                if (!data[agent?.id]) return null;
 
-            // const agentColour = palette.providers[agent.llm_provider] ?? "#ddd";
-            const agentColour = resolveProviderColor(`${agent.llm_provider}`, palette.providers)
-            return (
-              <AnimatedLineChart
-                key={agent.id}
-                id={agent.id}
-                yGutter={30}
-                width={chartWidth}
-                style={[{position: "absolute"}, animatedStyle]}
-              >
-                <LineChart.Path
-                  // color={agentColour}
-                  // width={4}
-                  pathProps={{
-                    fill: "none",
-                    stroke: agentColour,
-                    strokeWidth: 2,
-                    strokeLinejoin: "round",
-                    strokeLinecap: "round",
-                    strokeDasharray: "1,1",
-                    opacity: 0.9,
-                  }}
-                >
-                  {idx === 0 && (
-                    <LineChart.HorizontalLine
-                      at={{ value: 0 }}
-                      color={palette.foreground}
-                      lineProps={{
-                        strokeWidth: 1
+                // const agentColour = palette.providers[agent.llm_provider] ?? "#ddd";
+                const agentColour = resolveProviderColor(`${agent.llm_provider}`, palette.providers)
+                return (
+                  <AnimatedLineChart
+                    key={agent.id}
+                    id={agent.id}
+                    yGutter={60}
+                    width={chartWidth}
+                    style={[StyleSheet.absoluteFill]}
+                  >
+                    <LineChart.Path
+                      // color={agentColour}
+                      // width={4}
+                      pathProps={{
+                        fill: "none",
+                        stroke: agentColour,
+                        strokeWidth: 2,
+                        strokeLinejoin: "round",
+                        strokeLinecap: "round",
+                        strokeDasharray: "1,1",
+                        opacity: 0.9,
                       }}
-                    />
-                  )}
-                  <LineChart.Dot
-                    color={agentColour}
-                    at={data[agent.id].length - 1}
-                    hasPulse
-                    pulseDurationMs={3000}
-                  />
-                </LineChart.Path>
-                <LineChart.CursorCrosshair
-                  color={palette.primary}
-                  outerSize={30}
-                  size={10}
-                  onActivated={invokeHaptic}
-                  onEnded={invokeHaptic}
-                >
-                  <LineChart.Tooltip
-                    textStyle={{
-                      backgroundColor: palette.background,
-                      borderRadius: 8,
-                      color: palette.foreground,
-                      fontSize: 14,
-                      padding: 8,
-                    }}
-                  />
-                </LineChart.CursorCrosshair>
-              </AnimatedLineChart>
-            );
-          })}
-        </LineChart.Group>
-      </LineChart.Provider>
-    </GestureHandlerRootView>
-    </Animated.View>
+                    >
+                      {idx === 0 && (
+                        <LineChart.HorizontalLine
+                          at={{ value: 0 }}
+                          color={palette.foreground}
+                          lineProps={{
+                            strokeWidth: 1
+                          }}
+                        />
+                      )}
+                      <LineChart.Dot
+                        color={agentColour}
+                        at={data[agent.id].length - 1}
+                        pulseDurationMs={3000}
+                      />
+                    </LineChart.Path>
+                    <LineChart.CursorCrosshair
+                      color={palette.primary}
+                      outerSize={30}
+                      size={10}
+                      onActivated={invokeHaptic}
+                      onEnded={invokeHaptic}
+                    >
+                      <LineChart.Tooltip
+                        textStyle={{
+                          backgroundColor: palette.background,
+                          borderRadius: 8,
+                          color: palette.foreground,
+                          fontSize: 14,
+                          padding: 8,
+                        }}
+                      />
+                    </LineChart.CursorCrosshair>
+                  </AnimatedLineChart>
+                );
+              })}
+            </LineChart.Group>
+          </LineChart.Provider>
+        </GestureHandlerRootView>
+      </Animated.View>
+    </Pressable>
   );
 }

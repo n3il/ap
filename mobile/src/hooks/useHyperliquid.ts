@@ -46,6 +46,7 @@ const createMessageHandler =
   (registry: Map<string, Set<HLSubscriptionHandler>>) =>
   (event: MessageEvent) => {
     const msg = JSON.parse(event.data);
+    console.log(msg.channel, msg.data?.response?.type)
 
     // Handle subscription data (post responses are handled by InfoClient)
     if (msg.channel !== "post") {

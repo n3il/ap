@@ -48,22 +48,12 @@ export const agentService = {
     published = null,
     isActive = null,
     includeLatestAssessment = false,
-    includeTradingAccounts = true,
     isBookmarked = false,
   } = {}) {
-    let resolvedUserId = userId;
-    if (!resolvedUserId && (!published || isBookmarked)) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      if (!user) throw new Error("Not authenticated");
-      resolvedUserId = user.id;
-    }
-
     let query = buildAgentSelectQuery(includeLatestAssessment);
 
-    if (resolvedUserId) {
-      query = query.eq("user_id", resolvedUserId);
+    if (userId) {
+      query = query.eq("user_id", userId);
     }
 
     if (isActive === true) {

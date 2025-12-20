@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { create } from "zustand";
 import {
   type MarketAssetSnapshot,
@@ -32,9 +32,6 @@ export const useMarketPricesStore = create((set, get) => ({
   setLoading: (val: boolean) => set({ isLoading: val }),
 }));
 
-/**
- * Hook to subscribe to live prices from Hyperliquid
- */
 export function useMarketPrices() {
   const {
     tickers,
@@ -47,6 +44,11 @@ export function useMarketPrices() {
   } = useMarketPricesStore();
 
   const infoClient = useHyperliquidInfo();
+
+  // 1. Setup Throttle Reference
+  const lastUpdateRef = useRef<number>(0);
+  const THROTTLE_MS = 5000;
+
   useEffect(() => {
     async function load() {
       setLoading(true);
@@ -60,7 +62,7 @@ export function useMarketPrices() {
       }
     }
     load();
-  }, [infoClient]);
+  }, [infoClient, setLoading, setTickers]);
 
   useHLSubscription(
     "allMids",
@@ -69,15 +71,20 @@ export function useMarketPrices() {
       const update = mapHyperliquidMids(msg);
       if (!update || update.isSnapshot) return;
 
-      setMids(update.mids);
-      updateTickers(update.mids, update.asOf);
+      const now = Date.now();
+
+      // 2. Only trigger state update if enough time has passed
+      if (now - lastUpdateRef.current > THROTTLE_MS) {
+        setMids(update.mids);
+        updateTickers(update.mids, update.asOf);
+        lastUpdateRef.current = now;
+      }
     },
     Boolean(tickers.length),
   );
 
   return {
-    tickers: tickers,
-    assets: tickers || {},
+    tickers,
     mids,
     isLoading,
   };

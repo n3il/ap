@@ -1,12 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import { ActivityIndicator } from "dripsy";
-import { useRouter } from "expo-router";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { LayoutChangeEvent, ViewStyle } from "react-native";
 import { type SharedValue, useAnimatedReaction } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { Text, View } from "@/components/ui";
-import { ROUTES } from "@/config/routes";
 import { agentService } from "@/services/agentService";
 import { useExploreAgentsStore } from "@/stores/useExploreAgentsStore";
 import AgentCard from "./AgentCard";
@@ -22,6 +20,7 @@ interface AgentListProps {
   isBookmarked?: boolean;
   scrollY?: SharedValue<number> | null;
   style?: ViewStyle;
+  pageInFocus?: boolean;
 }
 
 interface ItemLayouts {
@@ -41,8 +40,8 @@ export default function AgentList({
   scrollY = null, // Animated scroll position
   style = {},
   agentCardProps = {},
+  pageInFocus = true,
 }: AgentListProps) {
-  const router = useRouter();
   const setAgents = useExploreAgentsStore((state) => state.setAgents);
   const itemLayoutsRef = useRef<ItemLayouts>({});
   const [activeAgentId, setActiveAgentId] = useState();
@@ -54,6 +53,7 @@ export default function AgentList({
     isLoading,
     isFetching,
   } = useQuery({
+    enabled: pageInFocus,
     queryKey: [
       "agent-list",
       userId,
@@ -77,16 +77,6 @@ export default function AgentList({
       setAgents(agents);
     }
   }, [agents, setAgents]);
-
-  const onAgentPress = useCallback(
-    (agent: Agent) => {
-      router.push({
-        pathname: ROUTES.AGENT_ID.path,
-        params: { id: agent.id, name: agent.name },
-      } as any);
-    },
-    [router],
-  );
 
   // Calculate which agent is active based on scroll position
   const calculateActiveAgent = useCallback(
@@ -178,7 +168,6 @@ export default function AgentList({
     <AgentCard
       key={agent.id}
       agent={agent}
-      onPress={() => onAgentPress?.(agent)}
       isActive={activeAgentId === agent.id}
       style={style}
       onLayout={(event) => handleItemLayout(agent.id, event)}
