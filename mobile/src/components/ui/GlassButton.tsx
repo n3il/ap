@@ -1,6 +1,6 @@
 import { View } from "dripsy";
 import { GlassView, type GlassViewProps } from "expo-glass-effect";
-import { Pressable } from "react-native";
+import { Pressable, PressableProps, ViewStyle } from "react-native";
 import Text from "@/components/ui/Text";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
@@ -40,9 +40,9 @@ export interface GlassButtonProps extends GlassViewProps {
   disabled?: boolean;
   enabled?: boolean;
   onPress?: () => void;
-  style?: ViewProps["style"];
+  style?: ViewStyle;
   styleVariant?: keyof typeof styleVariants;
-  buttonProps?: ViewProps;
+  buttonProps?: PressableProps;
   tintColor?: string;
 }
 
@@ -50,7 +50,7 @@ export default function GlassButton({
   children,
   disabled = false,
   enabled = true,
-  onPress = () => {},
+  onPress = () => { },
   style = {},
   styleVariant = "default",
   buttonProps = {},

@@ -1,8 +1,8 @@
 import { create } from 'zustand';
-import { processHyperliquidData } from '@/data/utils/hyperliquid';
+import { processHyperliquidData, computeLivePnL, type ProcessedHyperliquidData } from '@/data/utils/hyperliquid';
 
 interface AccountEntry {
-  data: ReturnType<typeof processHyperliquidData> | null;
+  data: ProcessedHyperliquidData | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -13,7 +13,7 @@ interface AccountStore {
 
   // Action to fetch and process data
   initialize: (userId: string, infoClient: any) => Promise<void>;
-  sync: (userId: string, mids: any) => Promise<void>;
+  sync: (userId: string, mids: Record<string, string | number>) => void;
 }
 
 export const useAccountStore = create<AccountStore>((set, get) => ({
@@ -22,7 +22,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
   initialize: async (userId, infoClient) => {
     // Check if initialization is already in progress or completed successfully
     const current = get().accounts[userId];
-    if (current && !current.error) return;
+    if (current && !current.error && (current.isLoading || current.data)) return;
 
     // Set loading state for this specific user
     set((state) => ({
@@ -46,6 +46,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
         }
       }));
     } catch (err) {
+      console.error("Initialize failed", err);
       set((state) => ({
         accounts: {
           ...state.accounts,
@@ -55,31 +56,17 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
     }
   },
 
-  sync: async (userId, mids) => {
-    try {
-      const {
-        data,
-        isLoading,
-      } = get().accounts?.[userId] || {};
-      if (isLoading || !data?.historyDataSnapshot || !data?.chDataSnapshot) return;
+  sync: (userId, mids) => {
+    const account = get().accounts?.[userId];
+    if (!account?.data || account.isLoading) return;
 
-      const { historyDataSnapshot, chDataSnapshot } = data;
+    const processed = computeLivePnL(account.data, mids);
 
-      const processed = processHyperliquidData(historyDataSnapshot, chDataSnapshot, mids);
-
-      set((state) => ({
-        accounts: {
-          ...state.accounts,
-          [userId]: { data: processed, isLoading: false, error: null }
-        }
-      }));
-    } catch (err) {
-      set((state) => ({
-        accounts: {
-          ...state.accounts,
-          [userId]: { ...state.accounts[userId], isLoading: false, error: "Sync failed" }
-        }
-      }));
-    }
+    set((state) => ({
+      accounts: {
+        ...state.accounts,
+        [userId]: { ...state.accounts[userId], data: processed }
+      }
+    }));
   }
 }));

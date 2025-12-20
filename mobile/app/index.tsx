@@ -1,4 +1,3 @@
-import 'react-native-get-random-values'
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import { useVideoPlayer, VideoView } from "expo-video";

@@ -2,6 +2,7 @@ import { useEffect, useMemo } from 'react';
 import { useAccountStore } from './useAccountStore';
 import { useMarketPricesStore } from './useMarketPrices';
 import { useHyperliquidInfo } from './useHyperliquid';
+import type { AgentType } from '@/types/agent';
 
 export interface PnLSummary {
   first: number;      // Historical start value
@@ -33,12 +34,17 @@ export interface UseAccountBalanceReturn {
     marginUsed: number;
   }>;
   equity: number;
+  totalOpenPnl: number;
+  marginSummary: {
+    totalNtlPos: number;
+    accountValue: number;
+  } | null;
 }
 
 export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBalanceReturn {
   const tradingAccountType = !agent?.simulate ? "real" : "paper";
   const tradingAccount = agent?.trading_accounts?.find(
-    (ta) => ta.type === tradingAccountType,
+    (ta: any) => ta.type === tradingAccountType,
   );
   const userId = tradingAccount?.hyperliquid_address;
 
@@ -49,17 +55,16 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
   const { mids } = useMarketPricesStore();
 
   useEffect(() => {
-    if (userId && infoClient && !account) {
+    if (userId && infoClient && !account?.data && !account?.isLoading) {
       initialize(userId, infoClient);
     }
-  }, []);
+  }, [userId, infoClient, account?.data, account?.isLoading, initialize]);
 
   useEffect(() => {
-    const hasMids = Object.keys(mids).length > 0;
-    if (userId && hasMids && account?.data) {
+    if (userId && account?.data && Object.keys(mids).length > 0) {
       sync(userId, mids);
     }
-  }, [account, userId, mids, sync]);
+  }, [userId, mids, sync, !!account?.data]);
 
   return useMemo((): UseAccountBalanceReturn => ({
     isLoading: account?.isLoading ?? false,
@@ -67,7 +72,10 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
     pnlHistory: account?.data?.pnlHistory ?? {},
     positions: account?.data?.positions ?? [],
     equity: account?.data?.accountValue ?? 0,
-    marginSummary: account?.data?.marginSummary ?? null,
     totalOpenPnl: account?.data?.totalOpenPnl ?? 0,
-  }), [account, mids]);
+    marginSummary: account?.data ? {
+      totalNtlPos: account.data.totalNtlPos,
+      accountValue: account.data.accountValue,
+    } : null,
+  }), [account]);
 }

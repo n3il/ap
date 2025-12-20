@@ -19,6 +19,7 @@ export default function AccountStats({
         {
           flexDirection: "row",
           gap: 12,
+          alignItems: "flex-start",
         },
       ]}
     >

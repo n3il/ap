@@ -30,16 +30,15 @@ ExpoSplashScreen.setOptions({
 ExpoSplashScreen.preventAutoHideAsync();
 
 function AuthNavigator() {
-  const { user, isReady } = usePrivy();
+  const { user, isReady, error } = usePrivy();
   const router = useRouter()
   const hasCompletedOnboarding = true;
 
+  console.log({ isReady, user, error })
+
   useEffect(() => {
-    async function prepare() {
-      await ExpoSplashScreen.hideAsync();
-    }
     if (isReady) {
-      prepare();
+      ExpoSplashScreen.hide();
     }
   }, [isReady]);
 

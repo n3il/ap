@@ -1,12 +1,14 @@
+
 import { ActivityIndicator } from "dripsy";
 import * as haptics from "expo-haptics";
 import React, { useMemo } from "react";
-import { Dimensions, Pressable, StyleSheet, Platform } from "react-native";
+import { Dimensions, Pressable, StyleSheet, Platform, Text, View, TextInput } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, {
     Extrapolation,
     interpolate,
     runOnJS,
+    useAnimatedProps,
     useAnimatedStyle,
     useDerivedValue,
     useSharedValue,
@@ -20,8 +22,6 @@ import {
     vec,
     Circle,
     Line,
-    Text,
-    matchFont,
     DashPathEffect,
 } from "@shopify/react-native-skia";
 
@@ -35,6 +35,8 @@ import { AgentType } from "@/types/agent";
 import { resolveProviderColor } from "@/theme/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAccountStore } from "@/hooks/useAccountStore";
+
+const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 type MultiAgentChartProps = {
     scrollY?: Animated.SharedValue<number> | null;
@@ -77,13 +79,6 @@ export default function PerformanceMultiAgentChart({
     const { timeframe } = useTimeframeStore();
     const accountEntries = useAccountStore((state) => state.accounts);
 
-    // Font for axes
-    const font = matchFont({
-        fontFamily: Platform.select({ ios: "Helvetica", android: "sans-serif", default: "sans-serif" }),
-        fontSize: 10,
-        fontWeight: 'bold',
-    });
-
     // Data Fetching
     const {
         dataBySymbol: candleDataBySymbol,
@@ -103,7 +98,7 @@ export default function PerformanceMultiAgentChart({
         const masterTimestamps = btcCandles.map((c) => c.timestamp);
 
         // Global min/max tracking
-        let globalMin = isFinite(btcCandles[0]?.close) ? 0 : 0; // Relative change starts at 0
+        let globalMin = isFinite(btcCandles?.[0]?.close) ? 0 : 0; // Relative change starts at 0
         let globalMax = 0;
 
         // 2. Align Symbols
@@ -162,17 +157,9 @@ export default function PerformanceMultiAgentChart({
 
 
         // Ensure zero line is within the middle third (33% - 66%)
-        // minVal is <= 0, maxVal is >= 0
-        // Zero position ratio = (0 - minVal) / (maxVal - minVal) = -minVal / (maxVal - minVal)
-
-        // If ratio < 0.33 (Zero too close to bottom), we need to lower minVal
-        // Target: -minVal' / (maxVal - minVal') = 0.33 => -minVal' = 0.33max - 0.33minVal' => -0.67minVal' = 0.33max => minVal' = -max/2
         if (Math.abs(globalMin) * 2 < globalMax) {
             globalMin = -globalMax / 2;
         }
-
-        // If ratio > 0.66 (Zero too close to top), we need to raise maxVal
-        // Target: -minVal / (maxVal' - minVal) = 0.66 => -minVal = 0.66max' - 0.66minVal => -0.34minVal = 0.66max' => max' = -minVal/2
         if (globalMax * 2 < Math.abs(globalMin)) {
             globalMax = Math.abs(globalMin) / 2;
         }
@@ -192,7 +179,7 @@ export default function PerformanceMultiAgentChart({
     const expandedHeight = 300;
     const collapsedHeight = 150;
     const topPadding = 20;
-    const bottomPadding = 40; // Increased for X-axis labels
+    const bottomPadding = 30;
     const rightPadding = 50;  // Space for Y-labels and "not against edge"
 
     const effectiveWidth = chartWidth - rightPadding;
@@ -220,11 +207,7 @@ export default function PerformanceMultiAgentChart({
     const getY = (val: number, currentHeight: number) => {
         const range = maxVal - minVal;
         const actualRange = range === 0 ? 1 : range;
-
-        // Normalized 0..1 (0 is min, 1 is max)
         const norm = (val - minVal) / actualRange;
-
-        // Map to height..0 (inverted)
         const paddedHeight = currentHeight - (topPadding + bottomPadding);
         return topPadding + paddedHeight - (norm * paddedHeight);
     };
@@ -269,7 +252,6 @@ export default function PerformanceMultiAgentChart({
             activeX.value = -1;
         });
 
-    // Derived values for the "cursor" data point
     const activeIndex = useDerivedValue(() => {
         if (activeX.value < 0) return -1;
         // Clamp gesture to effective width
@@ -294,18 +276,132 @@ export default function PerformanceMultiAgentChart({
     const startTs = masterTimestamps[0];
     const endTs = masterTimestamps[masterTimestamps.length - 1];
 
+    // Tooltip Text Props
+    const tooltipTextProps = useAnimatedProps(() => {
+        if (!isActive.value || activeTimestamp.value === 0) {
+            return { text: "" };
+        }
+        const date = new Date(activeTimestamp.value);
+        // Simple format: MMM DD, HH:mm
+        // Manual formatting for worklet safety
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        const m = monthNames[date.getMonth()];
+        const d = date.getDate();
+        const h = date.getHours();
+        const min = date.getMinutes();
+        const minStr = min < 10 ? `0${min}` : `${min}`;
+
+        return { text: `${m} ${d}, ${h}:${minStr}` };
+    });
+
+    const tooltipStyle = useAnimatedStyle(() => {
+        return {
+            opacity: isActive.value ? 1 : 0,
+            transform: [{ translateX: Math.min(Math.max(activeX.value - 50, 0), effectiveWidth - 100) }] // Clamp tooltip to view
+        };
+    });
+
+
+
+    const cursorOpacity = useDerivedValue(() => isActive.value ? 1 : 0);
+    const cursorP1 = useDerivedValue(() => vec(activeX.value, 0));
+    const cursorP2 = useDerivedValue(() => vec(activeX.value, chartHeight.value));
+
+    // Hoist remaining hooks
+    const staticLabelOpacity = useDerivedValue(() => isActive.value ? 0 : 0.6);
+    const chartTransform = useDerivedValue(() => [
+        { scaleY: chartHeight.value / expandedHeight }
+    ]);
+
     return (
         <Pressable onPress={onPress} disabled={!onPress}>
             <Animated.View style={[animatedContainerStyle, { minHeight: 100, overflow: "hidden" }]}>
                 <GestureHandlerRootView style={{ flex: 1, paddingHorizontal: GLOBAL_PADDING }}>
                     <GestureDetector gesture={gesture}>
                         <Animated.View style={{ flex: 1 }}>
+
+                            {/* Overlay Labels (Absolute) - Using % to avoid squashing */}
+                            <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                                {/* Y Labels */}
+                                <Text style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: `${(getY(maxVal, expandedHeight) / expandedHeight) * 100}%`,
+                                    marginTop: -6,
+                                    fontSize: 10,
+                                    color: palette.foreground,
+                                    opacity: 0.6
+                                }}>{maxVal.toFixed(1)}%</Text>
+
+                                <Text style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: `${(getY(0, expandedHeight) / expandedHeight) * 100}%`,
+                                    marginTop: -6,
+                                    fontSize: 10,
+                                    color: palette.foreground,
+                                    opacity: 0.6
+                                }}>0%</Text>
+
+                                <Text style={{
+                                    position: 'absolute',
+                                    right: 0,
+                                    top: `${(getY(minVal, expandedHeight) / expandedHeight) * 100}%`,
+                                    marginTop: -6,
+                                    fontSize: 10,
+                                    color: palette.foreground,
+                                    opacity: 0.6
+                                }}>{minVal.toFixed(1)}%</Text>
+
+                                {/* X Labels - Bottom */}
+                                {startTs && endTs && (
+                                    <>
+                                        {/* Static Labels (fade out when active?) */}
+                                        <Animated.View style={{ opacity: staticLabelOpacity }}>
+                                            <Text style={{
+                                                position: 'absolute',
+                                                left: 0,
+                                                // Position at bottom padding area
+                                                // Bottom aligned essentially means '100% - padding'
+                                                // Or just use bottom: 10
+                                                bottom: 10,
+                                                fontSize: 10,
+                                                color: palette.foreground,
+                                            }}>{formatXAxisTick(startTs, startTs, endTs)}</Text>
+
+                                            <Text style={{
+                                                position: 'absolute',
+                                                left: effectiveWidth - 20,
+                                                bottom: 10,
+                                                fontSize: 10,
+                                                color: palette.foreground,
+                                            }}>{formatXAxisTick(endTs, startTs, endTs)}</Text>
+                                        </Animated.View>
+
+                                        {/* Dynamic Tooltip Label */}
+                                        <Animated.View style={[tooltipStyle, { position: 'absolute', bottom: 10, left: 0, width: 100, alignItems: 'center' }]}>
+                                            <AnimatedTextInput
+                                                underlineColorAndroid="transparent"
+                                                editable={false}
+                                                value="Loading..."
+                                                animatedProps={tooltipTextProps}
+                                                style={{
+                                                    color: palette.foreground,
+                                                    fontSize: 10,
+                                                    fontWeight: 'bold',
+                                                    textAlign: 'center'
+                                                }}
+                                            />
+                                        </Animated.View>
+                                    </>
+                                )}
+                            </View>
+
                             <Canvas style={{ flex: 1 }}>
                                 <Group
-                                    transform={useDerivedValue(() => [
-                                        { scaleY: chartHeight.value / expandedHeight }
-                                    ])}
+                                    transform={chartTransform}
                                 >
+
                                     {/* Zero Line */}
                                     <Line
                                         p1={vec(0, zeroY)}
@@ -366,92 +462,15 @@ export default function PerformanceMultiAgentChart({
                                     })}
                                 </Group>
 
-                                {/* Axes Labels - Drawn Static (no scaling) */}
-                                {/* We need to re-calculate Y positions based on CURRENT height for labels if they are static */}
-                                {/* Actually, it's easier to put them in the scaled group?
-                                    No, text distortion if we scale Y.
-                                    So we must calculate positions based on chartHeight.value.
-                                    But standard Canvas elements can't easily react to Reanimated SharedValue without derived props or re-render.
-                                    Skia Text takes `x` and `y` as numbers usually, or standard props.
-                                    If we want smooth animation, we need to use `useDerivedValue` for y position.
-                                 */}
-
-                                {/* Y-Axis Labels (Min, 0, Max) */}
-                                {font && (
-                                    <Group>
-                                        {/* Max */}
-                                        <Text
-                                            font={font}
-                                            x={effectiveWidth + 10}
-                                            y={useDerivedValue(() => getY(maxVal, chartHeight.value))}
-                                            text={`${maxVal.toFixed(1)}%`}
-                                            color={palette.foreground}
-                                            opacity={0.6}
-                                        />
-                                        {/* Zero */}
-                                        {/* Only show if significantly different from max/min */}
-                                        <Text
-                                            font={font}
-                                            x={effectiveWidth + 10}
-                                            y={useDerivedValue(() => getY(0, chartHeight.value))}
-                                            text="0%"
-                                            color={palette.foreground}
-                                            opacity={0.6}
-                                        />
-                                        {/* Min */}
-                                        <Text
-                                            font={font}
-                                            x={effectiveWidth + 10}
-                                            y={useDerivedValue(() => getY(minVal, chartHeight.value))}
-                                            text={`${minVal.toFixed(1)}%`}
-                                            color={palette.foreground}
-                                            opacity={0.6}
-                                        />
-                                    </Group>
-                                )}
-
-                                {/* X-Axis Labels (Start, End) - Stick to bottom */}
-                                {font && startTs && endTs && (
-                                    <Group
-                                    // Transform Y to bottom based on chartHeight
-                                    // We place them at chartHeight.value - bottomPadding / 2 + offset
-                                    // Actually getY is relative to currentHeight.
-                                    // Let's rely on chartHeight being passed or derived.
-                                    >
-                                        <Text
-                                            font={font}
-                                            x={0}
-                                            y={useDerivedValue(() => chartHeight.value - 10)}
-                                            text={formatXAxisTick(startTs, startTs, endTs)}
-                                            color={palette.foreground}
-                                            opacity={0.6}
-                                        />
-                                        <Text
-                                            font={font}
-                                            x={effectiveWidth - 40} // Approximate alignment
-                                            y={useDerivedValue(() => chartHeight.value - 10)}
-                                            text={formatXAxisTick(endTs, startTs, endTs)}
-                                            color={palette.foreground}
-                                            opacity={0.6}
-                                        />
-                                    </Group>
-                                )}
-
-
                                 {/* Cursor / Tooltip Overlay */}
-                                <Group opacity={useDerivedValue(() => isActive.value ? 1 : 0)}>
+                                <Group opacity={cursorOpacity}>
                                     <Line
-                                        p1={useDerivedValue(() => vec(activeX.value, 0))}
-                                        p2={useDerivedValue(() => vec(activeX.value, chartHeight.value))}
+                                        p1={cursorP1}
+                                        p2={cursorP2}
                                         color={palette.primary}
                                         strokeWidth={1}
                                     />
-                                    {/* Tooltip dot on zero line or active value?
-                                        Usually we want dots on the lines.
-                                        For now just the vertical line.
-                                    */}
                                 </Group>
-
                             </Canvas>
                         </Animated.View>
                     </GestureDetector>
@@ -459,4 +478,5 @@ export default function PerformanceMultiAgentChart({
             </Animated.View>
         </Pressable>
     );
+
 }

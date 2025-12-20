@@ -67,8 +67,7 @@ export default function ReportPreview({
         variant="sm"
         sx={{
           fontWeight: "500",
-          fontSize: 13,
-          fontFamily: "monospace",
+          fontSize: 14,
           lineHeight: 30,
         }}
       >

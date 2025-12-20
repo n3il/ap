@@ -6,7 +6,7 @@ import "fast-text-encoding";
 import "react-native-get-random-values";
 import "./src/polyfills/crypto";
 import "@ethersproject/shims";
-import "event-target-polyfill";
+// import "event-target-polyfill";
 import "./src/polyfills/domException";
 
 // Now load the Expo Router entry
