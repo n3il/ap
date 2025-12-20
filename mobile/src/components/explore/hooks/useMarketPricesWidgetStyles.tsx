@@ -35,7 +35,7 @@ export const useMarketPricesWidgetStyles = ({ scrollY, priceOpacity }) => {
     if (!scrollY) return { fontSize: 11 };
     const p = progress.value;
     return {
-      fontSize: interpolate(p, PROGRESS_RANGE, [11, 10]),
+      fontSize: interpolate(p, PROGRESS_RANGE, [12, 11]),
     };
   }, [progress]);
 

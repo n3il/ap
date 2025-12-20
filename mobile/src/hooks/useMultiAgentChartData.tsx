@@ -280,8 +280,6 @@ export function useMultiAgentChartData() {
     withOpacity,
   ]);
 
-  console.log({ dataSet })
-
   return {
     dataSet,
     minValue,

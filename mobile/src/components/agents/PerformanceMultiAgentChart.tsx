@@ -12,6 +12,7 @@ import Animated, {
     useAnimatedStyle,
     useDerivedValue,
     useSharedValue,
+    withRepeat,
     withTiming,
     type SharedValue,
 } from "react-native-reanimated";
@@ -37,6 +38,7 @@ import { resolveProviderColor } from "@/theme/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAccountStore, useAccountHistory } from "@/hooks/useAccountStore";
 import { useHyperliquidInfo } from "@/hooks/useHyperliquid";
+import { type MarketCandle } from "@/data/mappings/hyperliquid";
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
@@ -49,6 +51,7 @@ type MultiAgentChartProps = {
     useScrollAnimation?: boolean;
     onPress?: () => void;
     pageInFocus?: boolean;
+    agentCircleSize?: number;
 };
 
 // Map UI timeframes to Hyperliquid portfolio timeframes
@@ -64,14 +67,67 @@ const TIMEFRAME_MAP: Record<string, string> = {
 
 const { width: SCREEN_WIDTH } = Dimensions.get("window");
 
+const AgentInitialDot = ({ agent, x, y, expandedHeight, chartHeight, agentCircleSize, pulse }: { agent: AgentType, x: number, y: number, expandedHeight: number, chartHeight: SharedValue<number>, agentCircleSize: number, pulse: SharedValue<number> }) => {
+    const { colors: palette } = useColors();
+    const initial = agent.name?.charAt(0).toUpperCase() || "";
+    const agentColour = resolveProviderColor(`${agent.llm_provider}`, palette.providers);
+
+    const animatedStyle = useAnimatedStyle(() => {
+        const scaling = chartHeight.value / expandedHeight;
+        const r = pulse.value;
+        return {
+            top: y * scaling - r,
+            left: x - r,
+            width: r * 2,
+            height: r * 2,
+            borderRadius: r,
+        };
+    });
+
+    return (
+        <Animated.View
+            style={[
+                {
+                    position: 'absolute',
+                    backgroundColor: agentColour,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    pointerEvents: 'none',
+                    shadowColor: "#000",
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.2,
+                    shadowRadius: 3,
+                    elevation: 4,
+                },
+                animatedStyle
+            ]}
+        >
+            <Text
+                allowFontScaling={false}
+                style={{
+                    color: 'white',
+                    fontSize: agentCircleSize * 1.5,
+                    fontWeight: 'bold',
+                    textAlign: 'center',
+                    includeFontPadding: false,
+                    textAlignVertical: 'center',
+                }}
+            >
+                {initial}
+            </Text>
+        </Animated.View>
+    );
+};
+
 export default function PerformanceMultiAgentChart({
     scrollY,
     style,
     agentsProp,
-    tickerSymbols = ["BTC"],
+    tickerSymbols = ["BTC", "ETH", "SOL"],
     expanded = true,
     useScrollAnimation = false,
     onPress,
+    agentCircleSize = 12, // Increased default size
 }: MultiAgentChartProps) {
     const { isDark } = useTheme();
     const { colors: palette } = useColors();
@@ -117,13 +173,14 @@ export default function PerformanceMultiAgentChart({
         const masterTimestamps = (btcCandles.filter(Boolean) as MarketCandle[]).map((c) => c.timestamp);
 
         // Global min/max tracking
-        let globalMin = isFinite(btcCandles?.[0]?.close) ? 0 : 0; // Relative change starts at 0
+        let globalMin = 0; // Relative change starts at 0
         let globalMax = 0;
 
         // 2. Align Symbols
         const symbolDataSets: Record<string, { timestamp: number; value: number }[]> = {};
         Object.entries(candleDataBySymbol).forEach(([symbol, candleData]) => {
             const candles = candleData?.candles || [];
+            if (candles.length === 0) return;
             const firstPrice = candles[0]?.close || 1;
 
             symbolDataSets[symbol] = masterTimestamps.map((ts) => {
@@ -154,25 +211,32 @@ export default function PerformanceMultiAgentChart({
 
             const firstVal = historyPoints[0].value;
 
-            agentDataSets[agent.id] = masterTimestamps.map((ts) => {
+            const agentDataPoints = masterTimestamps.map((ts) => {
+                // Find closest point before or at ts
                 const closestPoint = historyPoints.reduce((prev, curr) => {
                     return curr.timestamp <= ts && curr.timestamp > prev.timestamp
                         ? curr
                         : prev;
                 }, historyPoints[0]);
 
-                const val = ((closestPoint.value - firstVal) / firstVal) * 100;
-
-                if (val < globalMin) globalMin = val;
-                if (val > globalMax) globalMax = val;
-
                 return {
                     timestamp: ts,
-                    value: val,
+                    value: ((closestPoint.value - firstVal) / firstVal) * 100,
                 };
             });
-        });
 
+            // Check if all values are zero (no performance movement)
+            const isAllZero = agentDataPoints.every(p => p.value === 0);
+            if (isAllZero) return;
+
+            agentDataSets[agent.id] = agentDataPoints;
+
+            // Updated global min/max tracking with only non-zero data
+            agentDataPoints.forEach(p => {
+                if (p.value < globalMin) globalMin = p.value;
+                if (p.value > globalMax) globalMax = p.value;
+            });
+        });
 
         // Ensure zero line is within the middle third (33% - 66%)
         if (Math.abs(globalMin) * 2 < globalMax) {
@@ -194,9 +258,9 @@ export default function PerformanceMultiAgentChart({
 
     // --- Layout & Dimensions ---
     const chartWidth = SCREEN_WIDTH - GLOBAL_PADDING * 2;
-    const expandedHeight = 300;
+    const expandedHeight = 275;
     const collapsedHeight = 150;
-    const topPadding = 20;
+    const topPadding = 40;
     const bottomPadding = 30;
     const rightPadding = 50;  // Space for Y-labels and "not against edge"
 
@@ -206,7 +270,7 @@ export default function PerformanceMultiAgentChart({
         if (useScrollAnimation && scrollY) {
             return interpolate(
                 scrollY.value,
-                [0, 50],
+                [0, 100],
                 [expandedHeight, collapsedHeight],
                 Extrapolation.CLAMP
             );
@@ -254,8 +318,16 @@ export default function PerformanceMultiAgentChart({
     const activeY = useSharedValue(0);
     const isActive = useSharedValue(false);
 
+    const pulse = useSharedValue(agentCircleSize * 1.01); // Larger base radius
+    React.useEffect(() => {
+        pulse.value = withRepeat(
+            withTiming(agentCircleSize * 1.01, { duration: 3000 }), // More pronounced pulse
+            -1,
+            true
+        );
+    }, [agentCircleSize]);
     const gesture = Gesture.Pan()
-        .onBegin((e) => {
+        .onStart((e) => {
             isActive.value = true;
             activeX.value = e.x;
             activeY.value = e.y;
@@ -265,13 +337,13 @@ export default function PerformanceMultiAgentChart({
             activeX.value = e.x;
             activeY.value = e.y;
         })
-        .onEnd(() => {
+        .onFinalize(() => {
             isActive.value = false;
             activeX.value = -1;
         });
 
     const activeIndex = useDerivedValue(() => {
-        if (activeX.value < 0) return -1;
+        if (!isActive.value || activeX.value < 0) return -1;
         // Clamp gesture to effective width
         const clampedX = Math.min(activeX.value, effectiveWidth);
         const idx = Math.round((clampedX / effectiveWidth) * (xLength - 1));
@@ -285,9 +357,9 @@ export default function PerformanceMultiAgentChart({
 
     // Colors
     const symbolColors: Record<string, string> = {
-        BTC: "#999",
-        ETH: "blue",
-        SOL: "purple",
+        BTC: palette.foreground, //"orange",
+        ETH: palette.foreground, //"blue",
+        SOL: palette.foreground, //"purple",
     };
 
     const zeroY = getY(0, expandedHeight);
@@ -313,20 +385,25 @@ export default function PerformanceMultiAgentChart({
     });
 
     const tooltipStyle = useAnimatedStyle(() => {
+        const opacity = withTiming(isActive.value ? 1 : 0, { duration: 150 });
         return {
-            opacity: isActive.value ? 1 : 0,
+            opacity,
             transform: [{ translateX: Math.min(Math.max(activeX.value - 50, 0), effectiveWidth - 100) }] // Clamp tooltip to view
         };
     });
 
 
 
-    const cursorOpacity = useDerivedValue(() => isActive.value ? 1 : 0);
+    const cursorOpacity = useDerivedValue(() => withTiming(isActive.value ? 1 : 0, { duration: 150 }));
     const cursorP1 = useDerivedValue(() => vec(activeX.value, 0));
     const cursorP2 = useDerivedValue(() => vec(activeX.value, chartHeight.value));
 
     // Hoist remaining hooks
-    const staticLabelOpacity = useDerivedValue(() => isActive.value ? 0 : 0.6);
+    const staticLabelOpacityStyle = useAnimatedStyle(() => {
+        return {
+            opacity: withTiming(isActive.value ? 0 : 0.6, { duration: 150 })
+        };
+    });
     const chartTransform = useDerivedValue(() => [
         { scaleY: chartHeight.value / expandedHeight }
     ]);
@@ -363,8 +440,8 @@ export default function PerformanceMultiAgentChart({
                                                 path={path}
                                                 color={symbolColors[symbol] || palette.primary}
                                                 style="stroke"
-                                                strokeWidth={1}
-                                                opacity={isDark ? 0.4 : 0.9}
+                                                strokeWidth={2}
+                                                opacity={isDark ? 0.4 : 0.2}
                                             >
                                             </Path>
                                         );
@@ -388,15 +465,7 @@ export default function PerformanceMultiAgentChart({
                                                     strokeCap="round"
                                                     opacity={0.9}
                                                 />
-                                                {/* Latest value dot */}
-                                                {data.length > 0 && (
-                                                    <Circle
-                                                        cx={getX(data.length - 1)}
-                                                        cy={getY(data[data.length - 1].value, expandedHeight)}
-                                                        r={4}
-                                                        color={agentColour}
-                                                    />
-                                                )}
+                                                {/* Latest value dot - REMOVED, now in AgentInitialDot */}
                                             </Group>
                                         );
                                     })}
@@ -446,11 +515,32 @@ export default function PerformanceMultiAgentChart({
                                     opacity: 0.6
                                 }}>{minVal.toFixed(1)}%</Text>
 
+                                {/* Agent Initials on Dots */}
+                                {agents.map((agent) => {
+                                    const data = agentDataSets[agent.id];
+                                    if (!data || data.length === 0) return null;
+                                    const x = getX(data.length - 1);
+                                    const y = getY(data[data.length - 1].value, expandedHeight);
+
+                                    return (
+                                        <AgentInitialDot
+                                            key={agent.id}
+                                            agent={agent}
+                                            x={x}
+                                            y={y}
+                                            expandedHeight={expandedHeight}
+                                            chartHeight={chartHeight}
+                                            agentCircleSize={agentCircleSize}
+                                            pulse={pulse}
+                                        />
+                                    );
+                                })}
+
                                 {/* X Labels - Bottom */}
                                 {startTs && endTs && (
                                     <>
                                         {/* Static Labels (fade out when active?) */}
-                                        <Animated.View style={{ opacity: staticLabelOpacity }}>
+                                        <Animated.View style={staticLabelOpacityStyle}>
                                             <Text style={{
                                                 position: 'absolute',
                                                 left: 0,
@@ -476,7 +566,6 @@ export default function PerformanceMultiAgentChart({
                                             <AnimatedTextInput
                                                 underlineColorAndroid="transparent"
                                                 editable={false}
-                                                value="Loading..."
                                                 animatedProps={tooltipTextProps}
                                                 style={{
                                                     color: palette.foreground,

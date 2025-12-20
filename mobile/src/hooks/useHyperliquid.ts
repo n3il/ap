@@ -47,10 +47,6 @@ const createMessageHandler =
   (registry: Map<string, Set<HLSubscriptionHandler>>) =>
     (event: MessageEvent) => {
       const msg = JSON.parse(event.data);
-      if (msg.channel !== "allMids") {
-        console.log('msg', msg)
-      }
-
       // Handle subscription data (post responses are handled by InfoClient)
       if (msg.channel !== "post") {
         const handlers = registry.get(msg.channel);

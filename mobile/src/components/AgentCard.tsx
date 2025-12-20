@@ -41,7 +41,6 @@ export default function AgentCard({
   const { colors: palette, withOpacity } = useColors();
   const { isDark } = useTheme()
   const accountData = useAccountBalance({ agent });
-  console.log(agent.name, accountData)
 
   const onAgentPress = useCallback(
     (agent: AgentType) => {

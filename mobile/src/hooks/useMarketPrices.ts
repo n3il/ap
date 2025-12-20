@@ -58,7 +58,7 @@ export function useMarketPrices() {
 
   // 1. Setup Throttle Reference
   const lastUpdateRef = useRef<number>(0);
-  const THROTTLE_MS = 5000;
+  const THROTTLE_MS = 1000;
 
   useEffect(() => {
     async function load() {

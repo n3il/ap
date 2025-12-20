@@ -52,7 +52,7 @@ export default function TimeFrameSelector({
           >
             <Text
               style={{
-                fontSize: 12,
+                fontSize: 13,
                 fontWeight: "600",
                 textTransform: "uppercase",
                 letterSpacing: 1.1,

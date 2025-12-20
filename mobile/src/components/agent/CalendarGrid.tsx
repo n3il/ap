@@ -224,7 +224,7 @@ export default function CalendarGrid({
                   borderColor: withOpacity(color, isActive ? 1 : 0.1),
                 }}
               >
-                {!bucket.isEmpty && (
+                {!bucket.isEmpty && bucket.length < 30 && (
                   <Text style={{
                     fontSize: 11,
                     fontWeight: '700',

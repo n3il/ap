@@ -14,7 +14,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useColors } from "@/theme";
 
 export default function AgentsScreen() {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const colorUtils = useColors();
   const palette = colorUtils.colors;
 
@@ -79,7 +79,7 @@ export default function AgentsScreen() {
               paddingRight: 30
             }
           }}
-          tintColor="rgba(0,0,0,.3)"
+          tintColor={isDark ? "rgba(0,0,0,.3)" : "rgba(0,0,0,.3)"}
         >
           <MaterialCommunityIcons name="meteor" size={30} color={"orange"} />
         </GlassButton>

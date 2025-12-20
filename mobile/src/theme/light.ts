@@ -7,7 +7,7 @@ const lightTheme = {
   colors: {
     ...base.colors,
     background: "#f8fafc",
-    backgroundSecondary: "#e2e8f0",
+    backgroundSecondary: "#eaf0f7ff",
     backgroundSplash: "#378593",
     surface: "#242c35ff",
     surfaceForeground: "#ffffff",
