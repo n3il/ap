@@ -44,37 +44,41 @@ export function useMarketHistory(
     })),
   });
 
-  const dataBySymbol = Object.fromEntries(
-    queries.flatMap((q, i) => {
-      if (!q.data?.length) return [];
+  const data = useMemo(() => {
+    const dataBySymbol = Object.fromEntries(
+      queries.flatMap((q, i) => {
+        if (!q.data?.length) return [];
 
-      const prices = q.data.map((c) => c.close);
-      const [start, end] = [prices[0], prices.at(-1)!];
+        const prices = q.data.map((c) => c?.close ?? 0);
+        const [start, end] = [prices[0], prices.at(-1) ?? 0];
 
-      const delta = end - start;
-      const percent = delta / start;
+        const delta = end - start;
+        const percent = delta / start;
 
-      return [
-        [
-          stableSymbols[i],
-          {
-            isLoading: q.isLoading,
-            candles: q.data,
-            start,
-            end,
-            delta,
-            percent,
-            prices,
-          },
-        ],
-      ];
-    }),
-  );
+        return [
+          [
+            stableSymbols[i],
+            {
+              isLoading: q.isLoading,
+              candles: q.data,
+              start,
+              end,
+              delta,
+              percent,
+              prices,
+            },
+          ],
+        ];
+      }),
+    );
 
-  return {
-    dataBySymbol,
-    isLoading: queries.some((q) => q.isLoading),
-    isFetching: queries.some((q) => q.isFetching),
-    error: queries.find((q) => q.error)?.error,
-  };
+    return {
+      dataBySymbol,
+      isLoading: queries.some((q) => q.isLoading),
+      isFetching: queries.some((q) => q.isFetching),
+      error: queries.find((q) => q.error)?.error,
+    };
+  }, [queries, stableSymbols]);
+
+  return data;
 }

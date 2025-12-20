@@ -15,7 +15,6 @@ import { Animated, SwipeableTabs, View } from "@/components/ui";
 import { ROUTES } from "@/config/routes";
 import { useAgent } from "@/hooks/useAgent";
 import { useColors } from "@/theme";
-import MultiAgentChart from "@/components/agents/MultiAgentChart";
 
 export default function AgentIndex() {
   const insets = useSafeAreaInsets();
@@ -54,12 +53,7 @@ export default function AgentIndex() {
             flex: 1,
             paddingTop: startContentAtHeight,
           }}>
-            <MultiAgentChart
-              agentsProp={[agent]}
-              tickerSymbols={[]}
-              // showTradeActions
-              // showSentiment
-            />
+
           </View>
         ),
       },

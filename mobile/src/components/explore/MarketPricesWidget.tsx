@@ -25,7 +25,9 @@ export default function MarketPricesWidget({
   onPress,
 }: {
   style: ViewStyle;
-  scrollY: number;
+  scrollY: Animated.SharedValue<number>;
+  onPress?: () => void;
+  pageInFocus?: boolean;
 }) {
   const { colors: palette } = useColors();
   const { tickers, isLoading } = useMarketPrices();
@@ -35,12 +37,16 @@ export default function MarketPricesWidget({
     ({ viewableItems }: { viewableItems: any[] }) => {
       setVisibleTickers((prev) => {
         const set = new Set(prev);
+        let changed = false;
 
         viewableItems.forEach((v) => {
-          set.add(v.item.symbol);
+          if (!set.has(v.item.symbol)) {
+            set.add(v.item.symbol);
+            changed = true;
+          }
         });
 
-        return Array.from(set);
+        return changed ? Array.from(set) : prev;
       });
     },
   ).current;
@@ -49,26 +55,27 @@ export default function MarketPricesWidget({
   const {
     dataBySymbol: candleDataBySymbol,
     isFetching: candleDataLoading,
-    error: candleDataError,
   } = useMarketHistory(visibleTickers, timeframe);
+
+  const renderItem = useCallback(({ item }: { item: NormalizedAsset }) => (
+    <PriceColumn
+      tickerData={item}
+      isLoading={isLoading}
+      scrollY={scrollY}
+      candleData={candleDataBySymbol?.[item.symbol]}
+      onPress={onPress}
+    />
+  ), [isLoading, scrollY, candleDataBySymbol, onPress]);
 
   return (
     <Animated.View style={style}>
       <FlashList
         data={tickers as NormalizedAsset[]}
         keyExtractor={(item) => item.symbol}
-        renderItem={({ item, extraData }) => (
-          <PriceColumn
-            tickerData={item}
-            isLoading={isLoading}
-            scrollY={scrollY}
-            candleData={candleDataBySymbol?.[item.symbol]}
-            onPress={onPress}
-          />
-        )}
+        renderItem={renderItem}
+        estimatedItemSize={ITEM_WIDTH}
         onViewableItemsChanged={onViewableItemsChanged}
         viewabilityConfig={{
-          // itemVisiblePercentThreshold: 90,
           viewAreaCoveragePercentThreshold: 0,
         }}
         horizontal

@@ -3,7 +3,7 @@ import { useAccountStore } from './useAccountStore';
 import { useMarketPricesStore } from './useMarketPrices';
 import { useHyperliquidInfo } from './useHyperliquid';
 import type { AgentType } from '@/types/agent';
-import { shallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/react/shallow';
 
 // ... existing interfaces ...
 
@@ -15,7 +15,7 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
   const userId = tradingAccount?.hyperliquid_address || "";
 
   // Granular selectors to avoid unnecessary re-renders
-  const accountData = useAccountStore((state) => state.accounts[userId]?.data, shallow);
+  const accountData = useAccountStore(useShallow((state) => state.accounts[userId]?.data));
   const isLoading = useAccountStore((state) => state.accounts[userId]?.isLoading ?? false);
   const error = useAccountStore((state) => state.accounts[userId]?.error ?? null);
 

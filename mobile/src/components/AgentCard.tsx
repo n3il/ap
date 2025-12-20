@@ -93,7 +93,9 @@ export default function AgentCard({
 
         {showRecentAssessment && agent.latest_assessment?.parsed_llm_response ? (
           <ReportPreview
-            style={{ marginTop: 6 }}
+            style={{
+              marginTop: 6,
+            }}
             assessmentData={agent.latest_assessment}
           />
         ) : null}

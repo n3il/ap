@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { processHyperliquidData, computeLivePnL, type ProcessedHyperliquidData } from '@/data/utils/hyperliquid';
 import { useMemo } from 'react';
-import { shallow } from 'zustand/shallow';
+import { shallow, useShallow } from 'zustand/shallow';
 
 interface AccountEntry {
   data: ProcessedHyperliquidData | null;
@@ -79,7 +79,7 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
  */
 export function useAccountHistory(addresses: (string | undefined)[]) {
   const historyMap = useAccountStore(
-    (state) => {
+    useShallow((state) => {
       const result: Record<string, Record<string, any[]>> = {};
       for (const addr of addresses) {
         if (!addr) continue;
@@ -89,8 +89,7 @@ export function useAccountHistory(addresses: (string | undefined)[]) {
         }
       }
       return result;
-    },
-    shallow
+    })
   );
 
   return historyMap;

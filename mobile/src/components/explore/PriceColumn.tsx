@@ -1,26 +1,18 @@
-import { useLayoutState } from "@shopify/flash-list";
-import { ActivityIndicator } from "dripsy";
-import { useRouter } from "expo-router";
-import { useEffect, useMemo, useRef } from "react";
+import { memo, useEffect, useMemo, useRef } from "react";
 import { Dimensions } from "react-native";
+import { ActivityIndicator } from "dripsy";
 import Animated, {
-  Extrapolation,
-  interpolate,
-  useAnimatedStyle,
   useSharedValue,
-  withSequence,
-  withTiming,
+  type SharedValue,
 } from "react-native-reanimated";
 import Svg, { Polyline } from "react-native-svg";
 import { GlassButton, Skeleton, Text, View } from "@/components/ui";
 import {
   type NormalizedAsset,
-  useMarketPricesStore,
 } from "@/hooks/useMarketPrices";
 import { useColors, withOpacity } from "@/theme";
 import { numberToColor } from "@/utils/currency";
 import { formatCurrency, formatPercent } from "@/utils/marketFormatting";
-import { GLOBAL_PADDING } from "../ContainerView";
 import {
   MINI_SPARKLINE_HEIGHT,
   SPARKLINE_HEIGHT,
@@ -30,12 +22,18 @@ import {
 
 const { width } = Dimensions.get("window");
 
-const Sparkline = ({
+const Sparkline = memo(({
   data = [],
   color = "#ddd",
   width = SPARKLINE_WIDTH,
   height = SPARKLINE_HEIGHT,
   isLoading = false,
+}: {
+  data?: number[];
+  color?: string;
+  width?: number;
+  height?: number;
+  isLoading?: boolean;
 }) => {
   if (isLoading) return <ActivityIndicator color="foreground" />;
 
@@ -68,9 +66,9 @@ const Sparkline = ({
       />
     </Svg>
   );
-};
+});
 
-export default function PriceColumn({
+function PriceColumn({
   tickerData,
   scrollY,
   onPress,
@@ -78,7 +76,7 @@ export default function PriceColumn({
   candleData,
 }: {
   tickerData: NormalizedAsset;
-  scrollY: number;
+  scrollY: SharedValue<number>;
   onPress?: any;
   isLoading: boolean;
   candleData?: any;
@@ -87,18 +85,6 @@ export default function PriceColumn({
 
   const priceOpacity = useSharedValue(1);
   const prevPrice = useRef(tickerData?.price);
-  // useEffect(() => {
-  //   if (
-  //     prevPrice.current !== tickerData?.price &&
-  //     Number.isFinite(tickerData?.price)
-  //   ) {
-  //     priceOpacity.value = withSequence(
-  //       withTiming(1, { duration: 500 }),
-  //       withTiming(0.7, { duration: 200 }),
-  //     );
-  //   }
-  //   prevPrice.current = tickerData?.price;
-  // }, [tickerData?.price, priceOpacity]);
 
   const {
     symbolStyle,
@@ -131,7 +117,7 @@ export default function PriceColumn({
       sparklineData: candleData.prices,
       candleDataLoading: candleData.isLoading,
     };
-  }, [candleData, tickerData.price]);
+  }, [candleData, tickerData.price, palette]);
 
   if (isLoading) {
     return (
@@ -147,24 +133,17 @@ export default function PriceColumn({
         }}
         enabled={false}
       >
-        {/* Symbol skeleton */}
         <Skeleton width="60%" height={11} borderRadius={4} />
-
-        {/* Price skeleton */}
         <Skeleton
           width="80%"
           height={16}
           borderRadius={4}
           sx={{ marginTop: 2 }}
         />
-
-        {/* Change skeleton */}
         <View style={{ flexDirection: "row", gap: 4, marginTop: 2 }}>
           <Skeleton width="40%" height={11} borderRadius={4} />
           <Skeleton width="30%" height={10} borderRadius={4} />
         </View>
-
-        {/* Sparkline skeleton */}
         <Skeleton
           width="100%"
           height={SPARKLINE_HEIGHT}
@@ -187,17 +166,9 @@ export default function PriceColumn({
         flexDirection: "column",
         borderWidth: 0,
         elevation: 10,
-        // backgroundColor: "#fff",
-        // shadowColor: "#000",
-        // shadowOffset: [2,2],
-        // shadowOpacity: .05,
-
         backgroundColor: "transparent",
-
-        // borderColor: withOpacity(palette.border, 0.9),
       }}
       enabled={false}
-      // tintColor={withOpacity(palette.surfaceLight, 0.1)}
       onPress={handleOnPress}
     >
       <View style={{ flexDirection: "row" }}>
@@ -277,8 +248,7 @@ export default function PriceColumn({
 
       <Animated.View
         style={[
-          {
-          },
+          {},
           sparklineStyle,
         ]}
       >
@@ -291,3 +261,13 @@ export default function PriceColumn({
     </GlassButton>
   );
 }
+
+export default memo(PriceColumn, (prev, next) => {
+  return (
+    prev.tickerData.price === next.tickerData.price &&
+    prev.tickerData.symbol === next.tickerData.symbol &&
+    prev.candleData === next.candleData &&
+    prev.isLoading === next.isLoading &&
+    prev.scrollY === next.scrollY
+  );
+});

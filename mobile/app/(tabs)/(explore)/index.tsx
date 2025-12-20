@@ -20,6 +20,7 @@ import { useColors } from "@/theme";
 import { useFocusEffect } from "expo-router";
 
 const AnimatedScrollView = Animated.createAnimatedComponent(ScrollView);
+const MARKET_WIDGET_STYLE = { marginVertical: 3 };
 
 export default function ExploreScreen() {
   const [isFocused, setIsFocused] = useState(false);
@@ -98,9 +99,7 @@ export default function ExploreScreen() {
           >
             <MarketPricesWidget
               scrollY={widgetExpanded ? scrollY : largeScrollValue}
-              style={{
-                marginVertical: 3,
-              }}
+              style={MARKET_WIDGET_STYLE}
               onPress={handleAssetPressCallback}
               pageInFocus={isFocused}
             />
