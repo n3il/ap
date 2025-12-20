@@ -23,12 +23,11 @@ export default function ProfileScreen() {
   const router = useRouter();
   const { colors: palette, withOpacity } = useColors();
 
-  useRouteAuth({ autoRedirect: true })
-  // useEffect(() => {
-  //   if (isReady && !user) {
-  //     router.push(ROUTES.AUTH_INDEX.path);
-  //   }
-  // }, [user, isReady]);
+  useEffect(() => {
+    if (isReady && !user) {
+      router.push(ROUTES.AUTH_INDEX.path);
+    }
+  }, [user, isReady]);
 
   const handleLogout = async () => {
     Alert.alert("Sign Out", "Are you sure you want to sign out?", [

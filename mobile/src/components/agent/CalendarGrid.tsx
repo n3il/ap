@@ -25,6 +25,7 @@ interface CalendarGridProps {
   formatter?: (val: number) => string;
   icon?: string | React.ReactNode;
   iconImage?: string;
+  maxIntensityValue?: number;
 }
 
 export default function CalendarGrid({
@@ -36,6 +37,7 @@ export default function CalendarGrid({
   formatter,
   icon = "calendar-outline",
   iconImage,
+  maxIntensityValue,
 }: CalendarGridProps) {
   const { colors: palette, withOpacity } = useColors();
   const [activeTooltip, setActiveTooltip] = useState<{ index: number; text: string } | null>(null);
@@ -210,7 +212,12 @@ export default function CalendarGrid({
                   borderRadius: 4,
                   backgroundColor: bucket.isEmpty
                     ? withOpacity(palette.surfaceLight, 0.1)
-                    : withOpacity(color, isActive ? 0.1 : 0.1),
+                    : withOpacity(
+                      color,
+                      maxIntensityValue
+                        ? Math.min(Math.max(Math.abs(bucket.value) / maxIntensityValue, 0.05), 0.5) // Cap between 0.05 and 0.5 for visibility
+                        : isActive ? 0.3 : 0.1
+                    ),
                   alignItems: 'center',
                   justifyContent: 'center',
                   borderWidth: 1,
