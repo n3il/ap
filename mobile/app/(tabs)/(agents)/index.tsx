@@ -43,6 +43,7 @@ export default function AgentsScreen() {
               showRecentAssessment: false,
               showPositions: true,
               showDailyPnlCalendar: true,
+              showSentimentCalendar: true,
             }}
           />
         </ScrollView>
@@ -76,7 +77,6 @@ export default function AgentsScreen() {
               padding: 10,
               paddingLeft: 100,
               paddingRight: 30
-
             }
           }}
           tintColor="rgba(0,0,0,.3)"

@@ -7,6 +7,7 @@ import type { AgentType } from "@/types/agent";
 import PositionList from "./agents/PositionList";
 import ReportPreview from "./reports/Preview";
 import PnlCalendar from "./agent/PnlCalendar";
+import SentimentCalendar from "./agent/SentimentCalendar";
 import { useTheme } from "@/contexts/ThemeContext";
 import { ROUTES } from "@/config/routes";
 import { useRouter } from "expo-router";
@@ -32,6 +33,7 @@ export default function AgentCard({
   showRecentAssessment?: boolean;
   showPositions?: boolean;
   showDailyPnlCalendar?: boolean;
+  showSentimentCalendar?: boolean;
   transparent?: boolean;
   isActive?: boolean;
 }) {
@@ -53,20 +55,29 @@ export default function AgentCard({
   return (
     <GlassButton
       enabled={true}
-      glassEffectStyle="clear"
+      glassEffectStyle={"clear"}
       tintColor={isDark
         ? withOpacity(palette.surfaceLight, .5) // "rgba(0, 0, 0, 0.3)"
         : "rgba(255,255,255, 1)"
       }
-      style={{
+      style={[{
         paddingVertical: 12,
         paddingHorizontal: 12,
         borderRadius: 12,
         marginHorizontal: 10,
         backgroundColor: "transparent",
         flexDirection: "row",
-        borderColor: "#000",
-      }}
+        // borderColor: "#000",
+      }, !isDark && {
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+      }]}
     >
       <Pressable onPress={onPress || (() => onAgentPress(agent))}>
         <View
@@ -121,12 +132,14 @@ export default function AgentCard({
         </View>
       ) : null}
 
-      {showDailyPnlCalendar &&
-        <PnlCalendar agent={agent} />
-      }
-      {/* {showSentimentCalendar &&
-        <SentimentCalendar agent={agent} />
-      } */}
+      <View style={{ gap: 12, marginTop: 8 }}>
+        {showDailyPnlCalendar &&
+          <PnlCalendar agent={agent} />
+        }
+        {showSentimentCalendar &&
+          <SentimentCalendar agent={agent} />
+        }
+      </View>
     </GlassButton>
   );
 }

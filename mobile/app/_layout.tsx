@@ -119,24 +119,28 @@ function PrivyWrapper() {
 
 const queryClient = new QueryClient();
 
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
 export default Sentry.wrap(function RootLayout() {
   const privyAppId = Constants.expoConfig?.extra?.privyAppId;
   const privyClientId = Constants.expoConfig?.extra?.privyClientId;
 
   return (
-    <ThemeProvider>
-      <KeyboardProvider>
-        <SafeAreaProvider>
-          <QueryClientProvider client={queryClient}>
-            <PrivyProvider
-              appId={privyAppId}
-              clientId={privyClientId}
-            >
-              <PrivyWrapper />
-            </PrivyProvider>
-          </QueryClientProvider>
-        </SafeAreaProvider>
-      </KeyboardProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <KeyboardProvider>
+          <SafeAreaProvider>
+            <QueryClientProvider client={queryClient}>
+              <PrivyProvider
+                appId={privyAppId}
+                clientId={privyClientId}
+              >
+                <PrivyWrapper />
+              </PrivyProvider>
+            </QueryClientProvider>
+          </SafeAreaProvider>
+        </KeyboardProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 });

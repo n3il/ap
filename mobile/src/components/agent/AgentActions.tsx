@@ -1,9 +1,10 @@
+import React from "react";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useColors } from "@/theme";
 import type { AgentType } from "@/types/agent";
 import { GLOBAL_PADDING } from "../ContainerView";
 import { View, Text } from "dripsy";
-import { GlassButton, ViewProps } from "../ui";
+import { GlassButton, ViewProps, Image } from "../ui";
 import { useRouter } from "expo-router";
 import { ROUTES } from "@/config/routes";
 import { ViewStyle } from "react-native";
@@ -18,16 +19,16 @@ export function DrawerButton({
 }: {
   title?: string;
   onPress: () => void;
-  icon?: string;
+  icon?: string | React.ReactNode;
   variant?: string;
-  styleVariant?: string;
+  styleVariant?: "default" | "none" | "square" | "minimal" | "paddedFull";
   style?: ViewStyle;
-}) {
+}): React.JSX.Element {
   const { colors: palette } = useColors();
   return (
     <GlassButton
       onPress={onPress}
-      tintColor={palette.surfaceLight}
+      tintColor={palette.surface}
       styleVariant={styleVariant}
       style={[{
         paddingVertical: 4,
@@ -37,13 +38,6 @@ export function DrawerButton({
       }, style]}
     >
       <View sx={{ flexDirection: "row", justifyContent: "center", alignItems: "center", gap: 2 }}>
-        {icon && (
-          <MaterialCommunityIcons
-            name={icon as any}
-            color={palette.surfaceForeground}
-            size={20}
-          />
-        )}
         {title && <Text
           style={{
             fontWeight: "600",
@@ -52,6 +46,18 @@ export function DrawerButton({
         >
           {title}
         </Text>}
+        {icon && (
+          typeof icon === "string" ? (
+            <MaterialCommunityIcons
+              name={icon as any}
+              color={palette.surfaceForeground}
+              size={20}
+              height={18}
+            />
+          ) : (
+            icon
+          )
+        )}
       </View>
     </GlassButton>
   );
@@ -59,7 +65,8 @@ export function DrawerButton({
 
 
 export default function AgentActions({ agent }: { agent: AgentType }) {
-  const router = useRouter()
+  const { colors: palette } = useColors();
+  const router = useRouter();
 
   const handleTransfer = () => {
     router.push({
@@ -68,12 +75,12 @@ export default function AgentActions({ agent }: { agent: AgentType }) {
     } as any);
   };
 
-  const handleTrade = () => {
+  const handleOpenInteract = () => {
     // TODO: Implement trade action
     console.log("Trade clicked for agent:", agent.id);
   };
 
-  const handleSettings = () => {
+  const handleOpenHistory = () => {
     // TODO: Implement settings action
     console.log("Settings clicked for agent:", agent.id);
   };
@@ -87,28 +94,40 @@ export default function AgentActions({ agent }: { agent: AgentType }) {
         left: GLOBAL_PADDING,
         right: GLOBAL_PADDING,
         gap: 0,
+        justifyContent: "space-evenly",
       }}
     >
       <DrawerButton
-        title="Buy"
-        icon="chevron-up"
+        title="Transfer"
+        icon={
+          <Image
+            source={require("@assets/vector-icons/noun-coins-7653365.svg")}
+            style={{ width: 24, height: 24, tintColor: palette.surfaceForeground }}
+          />
+        }
         onPress={handleTransfer}
-        variant="surface"
-        style={{ flex: 1, }}
+        variant="primary"
+        style={{ flex: 3, }}
       />
       <DrawerButton
-        title="Sell"
-        icon="chevron-down"
-        onPress={handleTrade}
+        title="Clone"
+        icon={
+          <Image
+            source={require("@assets/vector-icons/noun-cloning-8110862.svg")}
+            style={{ width: 24, height: 24, tintColor: palette.surfaceForeground }}
+          />
+        }
+        // icon="database-outline"
+        onPress={handleOpenInteract}
         variant="primary"
         style={{ flex: 1, }}
       />
-      <DrawerButton
+      {/* <DrawerButton
         icon="wallet"
-        onPress={handleSettings}
+        onPress={handleOpenHistory}
         variant="outline"
         style={{ flexShrink: 0, paddingHorizontal: 12 }}
-      />
+      /> */}
     </View>
   );
 }

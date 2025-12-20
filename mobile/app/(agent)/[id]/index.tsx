@@ -104,8 +104,8 @@ export default function AgentIndex() {
       //   ),
       // },
       {
-        key: "LPs",
-        title: "LPs (932)",
+        key: "LP",
+        title: "LP",
         content: () => (
           <View style={{ flex: 1, paddingTop: startContentAtHeight }}></View>
         ),

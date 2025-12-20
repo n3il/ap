@@ -193,7 +193,7 @@ export default function PerformanceMultiAgentChart({
         if (useScrollAnimation && scrollY) {
             return interpolate(
                 scrollY.value,
-                [0, 100],
+                [0, 50],
                 [expandedHeight, collapsedHeight],
                 Extrapolation.CLAMP
             );
@@ -324,6 +324,81 @@ export default function PerformanceMultiAgentChart({
                 <GestureHandlerRootView style={{ flex: 1, paddingHorizontal: GLOBAL_PADDING }}>
                     <GestureDetector gesture={gesture}>
                         <Animated.View style={{ flex: 1 }}>
+                            <Canvas style={{ flex: 1 }}>
+                                <Group
+                                    transform={chartTransform}
+                                >
+
+                                    {/* Zero Line */}
+                                    <Line
+                                        p1={vec(0, zeroY)}
+                                        p2={vec(effectiveWidth, zeroY)}
+                                        color={palette.border}
+                                        strokeWidth={1}
+                                    >
+                                        <DashPathEffect intervals={[5, 5]} />
+                                    </Line>
+
+                                    {/* Ticker Lines */}
+                                    {tickerSymbols.map((symbol) => {
+                                        const data = symbolDataSets[symbol];
+                                        if (!data) return null;
+                                        const path = generatePath(data, expandedHeight);
+                                        return (
+                                            <Path
+                                                key={symbol}
+                                                path={path}
+                                                color={symbolColors[symbol] || palette.primary}
+                                                style="stroke"
+                                                strokeWidth={1}
+                                                opacity={isDark ? 0.4 : 0.9}
+                                            >
+                                            </Path>
+                                        );
+                                    })}
+
+                                    {/* Agent Lines */}
+                                    {agents.map((agent) => {
+                                        const data = agentDataSets[agent.id];
+                                        if (!data) return null;
+                                        const path = generatePath(data, expandedHeight);
+                                        const agentColour = resolveProviderColor(`${agent.llm_provider}`, palette.providers);
+
+                                        return (
+                                            <Group key={agent.id}>
+                                                <Path
+                                                    path={path}
+                                                    color={agentColour}
+                                                    style="stroke"
+                                                    strokeWidth={2}
+                                                    strokeJoin="round"
+                                                    strokeCap="round"
+                                                    opacity={0.9}
+                                                />
+                                                {/* Latest value dot */}
+                                                {data.length > 0 && (
+                                                    <Circle
+                                                        cx={getX(data.length - 1)}
+                                                        cy={getY(data[data.length - 1].value, expandedHeight)}
+                                                        r={4}
+                                                        color={agentColour}
+                                                    />
+                                                )}
+                                            </Group>
+                                        );
+                                    })}
+                                </Group>
+
+                                {/* Cursor / Tooltip Overlay */}
+                                <Group opacity={cursorOpacity}>
+                                    <Line
+                                        p1={cursorP1}
+                                        p2={cursorP2}
+                                        color={palette.primary}
+                                        strokeWidth={1}
+                                    />
+                                </Group>
+                            </Canvas>
 
                             {/* Overlay Labels (Absolute) - Using % to avoid squashing */}
                             <View style={StyleSheet.absoluteFill} pointerEvents="none">
@@ -401,82 +476,6 @@ export default function PerformanceMultiAgentChart({
                                     </>
                                 )}
                             </View>
-
-                            <Canvas style={{ flex: 1 }}>
-                                <Group
-                                    transform={chartTransform}
-                                >
-
-                                    {/* Zero Line */}
-                                    <Line
-                                        p1={vec(0, zeroY)}
-                                        p2={vec(effectiveWidth, zeroY)}
-                                        color={palette.border}
-                                        strokeWidth={1}
-                                    >
-                                        <DashPathEffect intervals={[5, 5]} />
-                                    </Line>
-
-                                    {/* Ticker Lines */}
-                                    {tickerSymbols.map((symbol) => {
-                                        const data = symbolDataSets[symbol];
-                                        if (!data) return null;
-                                        const path = generatePath(data, expandedHeight);
-                                        return (
-                                            <Path
-                                                key={symbol}
-                                                path={path}
-                                                color={symbolColors[symbol] || palette.primary}
-                                                style="stroke"
-                                                strokeWidth={1}
-                                                opacity={isDark ? 0.4 : 0.9}
-                                            >
-                                            </Path>
-                                        );
-                                    })}
-
-                                    {/* Agent Lines */}
-                                    {agents.map((agent) => {
-                                        const data = agentDataSets[agent.id];
-                                        if (!data) return null;
-                                        const path = generatePath(data, expandedHeight);
-                                        const agentColour = resolveProviderColor(`${agent.llm_provider}`, palette.providers);
-
-                                        return (
-                                            <Group key={agent.id}>
-                                                <Path
-                                                    path={path}
-                                                    color={agentColour}
-                                                    style="stroke"
-                                                    strokeWidth={2}
-                                                    strokeJoin="round"
-                                                    strokeCap="round"
-                                                    opacity={0.9}
-                                                />
-                                                {/* Latest value dot */}
-                                                {data.length > 0 && (
-                                                    <Circle
-                                                        cx={getX(data.length - 1)}
-                                                        cy={getY(data[data.length - 1].value, expandedHeight)}
-                                                        r={4}
-                                                        color={agentColour}
-                                                    />
-                                                )}
-                                            </Group>
-                                        );
-                                    })}
-                                </Group>
-
-                                {/* Cursor / Tooltip Overlay */}
-                                <Group opacity={cursorOpacity}>
-                                    <Line
-                                        p1={cursorP1}
-                                        p2={cursorP2}
-                                        color={palette.primary}
-                                        strokeWidth={1}
-                                    />
-                                </Group>
-                            </Canvas>
                         </Animated.View>
                     </GestureDetector>
                 </GestureHandlerRootView>

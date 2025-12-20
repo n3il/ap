@@ -246,4 +246,20 @@ export const assessmentService = {
         sentiment_score: item.sentiment_score,
       }));
   },
+
+  // Get aggregated sentiment scores bucketed by time
+  async getBucketedSentiment(
+    agentId: string,
+    { startTime, endTime, numBuckets = 7 }: { startTime: string; endTime: string; numBuckets?: number },
+  ) {
+    const { data, error } = await supabase.rpc("get_agent_sentiment_bucketed", {
+      p_agent_id: agentId,
+      p_start_time: startTime,
+      p_end_time: endTime,
+      p_num_buckets: numBuckets,
+    });
+
+    if (error) throw error;
+    return data;
+  },
 };

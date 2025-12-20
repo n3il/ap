@@ -9,6 +9,7 @@ import type { AssessmentType } from "@/types/agent";
 import ReportPreview from "./reports/Preview";
 import TradeActionDisplay from "./TradeActionDisplay";
 import { Pressable, Text, View } from "dripsy";
+import { GlassButton } from "./ui";
 
 
 function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
@@ -22,13 +23,31 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
   }
 
   return (
-    <View
-      sx={{
-        bg: "background",
-        color: "red",
-        borderRadius: 'md',
-        p: 4
-      }}
+    <GlassButton
+      enabled={true}
+      glassEffectStyle={"clear"}
+      tintColor={isDark
+        ? withOpacity(palette.surfaceLight, .5) // "rgba(0, 0, 0, 0.3)"
+        : "rgba(255,255,255, 1)"
+      }
+      style={[{
+        paddingVertical: 12,
+        paddingHorizontal: 12,
+        borderRadius: 12,
+        marginHorizontal: 10,
+        backgroundColor: "transparent",
+        flexDirection: "row",
+        // borderColor: "#000",
+      }, !isDark && {
+        shadowColor: "#000",
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+      }]}
     >
       <Pressable
         onPress={() => {
@@ -50,13 +69,13 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
       </Pressable>
 
       {assessment?.parsed_llm_response.tradeActions.map((action, index) => (
-          <TradeActionDisplay
-            key={`${action.asset ?? "action"}-${index}`}
-            actionData={action}
-            showReason={expanded}
-          />
-        ))}
-    </View>
+        <TradeActionDisplay
+          key={`${action.asset ?? "action"}-${index}`}
+          actionData={action}
+          showReason={expanded}
+        />
+      ))}
+    </GlassButton>
   );
 }
 

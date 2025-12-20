@@ -1,0 +1,19 @@
+<svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+    <!-- Stack of coins -->
+    <rect x="4" y="4" width="9" height="2" rx="1" />
+    <rect x="2" y="7" width="9" height="2" rx="1" />
+    <rect x="3" y="10" width="9" height="2" rx="1" />
+    <rect x="2" y="13" width="9" height="2" rx="1" />
+    <rect x="3" y="16" width="9" height="2" rx="1" />
+    <rect x="3" y="19" width="9" height="2" rx="1" />
+    
+    <!-- Focus Coin -->
+    <circle cx="16" cy="14" r="6" />
+    <circle cx="16" cy="14" r="4.5" stroke-width="0.8" />
+    
+    <!-- Dollar Sign -->
+    <path d="M16 11.5v5M17.5 12.5c0-.8-.8-1-1.5-1s-1.5.5-1.5 1.5c0 1.2 3 .8 3 2.5s-.8 1.5-1.5 1.5-1.5-.5-1.5-1.2" 
+          stroke-width="1" />
+  </g>
+</svg>
