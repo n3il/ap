@@ -61,16 +61,16 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
   const { mids } = useMarketPricesStore();
 
   useEffect(() => {
-    if (userId && infoClient && !accountData && !isLoading) {
+    if (userId && infoClient && !accountData && !isLoading && !error) {
       initialize(userId, infoClient);
     }
-  }, [userId, infoClient, !!accountData, isLoading, initialize]);
+  }, [userId, infoClient, !!accountData, isLoading, initialize, error]);
 
   useEffect(() => {
-    if (userId && accountData && Object.keys(mids).length > 0) {
+    if (userId && accountData && Object.keys(mids).length > 0 && !error) {
       sync(userId, mids);
     }
-  }, [userId, mids, sync, !!accountData]);
+  }, [userId, mids, sync, !!accountData, error]);
 
   return useMemo((): UseAccountBalanceReturn => ({
     isLoading,

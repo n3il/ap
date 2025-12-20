@@ -1,7 +1,8 @@
 import SectionTitle from "@/components/SectionTitle";
-import { Button, ScrollView, Text, TextInput, View } from "@/components/ui";
+import { Button, Card, ScrollView, Text, TextInput, View } from "@/components/ui";
 import { useColors, withOpacity } from "@/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 interface StepDirectionProps {
   prompt: string;
@@ -17,67 +18,86 @@ export default function StepDirection({
   onAddGuardrail,
 }: StepDirectionProps) {
   const { colors: palette } = useColors();
-  const characterCount = prompt.trim().length;
 
   return (
     <ScrollView
       style={{ flex: 1 }}
-      contentContainerStyle={{ gap: 12, paddingBottom: 48 }}
+      contentContainerStyle={{ gap: 24, paddingBottom: 48, paddingTop: 8 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <View style={{ gap: 10 }}>
-        <SectionTitle title="Direction" />
-        <MaterialCommunityIcons name="movie-open-outline" size={40} />
-        <Text tone="muted" variant="sm">
-          Just some hints will do.
-        </Text>
-        <TextInput
+      <Animated.View entering={FadeInDown.delay(100).duration(400)} style={{ gap: 12 }}>
+        <SectionTitle title="Operating Instructions" />
+        <Card
+          variant="glass"
+          glassEffectStyle="light"
           style={{
-            marginTop: 0,
-            paddingVertical: 18,
-            paddingHorizontal: 18,
-            fontSize: 14,
-            borderColor: palette.surface,
-            borderWidth: .5,
-            borderRadius: 18,
-            elevation: 6,
-            shadowColor: palette.shadow,
-            shadowOffset: { width: 0, height: 1 },
-            shadowOpacity: 0.8,
-            shadowRadius: 1,
-            fontFamily: "monospace",
-            minHeight: 140,
+            padding: 4,
+            borderWidth: 1,
+            borderColor: withOpacity(palette.foreground, 0.1),
           }}
-          placeholder="Prioritize real life summits"
-          placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
-          value={prompt}
-          onChangeText={onChangePrompt}
-          multiline
-          numberOfLines={6}
-          textAlignVertical="top"
-        />
+        >
+          <TextInput
+            style={{
+              padding: 16,
+              fontSize: 16,
+              minHeight: 180,
+              textAlignVertical: "top",
+              fontFamily: "monospace",
+              color: palette.foreground,
+            }}
+            placeholder="e.g., Prioritize preserving capital during high volatility. Only trade BTC and ETH."
+            placeholderTextColor={withOpacity(palette.foreground, 0.3)}
+            value={prompt}
+            onChangeText={onChangePrompt}
+            multiline
+            numberOfLines={8}
+          />
+        </Card>
+        <View style={{ flexDirection: 'row', justifyContent: 'flex-end' }}>
+          <Text variant="xs" tone="muted">
+            {prompt.length} characters
+          </Text>
+        </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.delay(200).duration(400)} style={{ gap: 16 }}>
+        <View style={{ gap: 4 }}>
+          <SectionTitle title="Suggested Guardrails" />
+          <Text variant="sm" tone="muted">
+            Tap to append common constraints to your agent.
+          </Text>
+        </View>
+
         <View
           style={{
             flexDirection: "row",
             flexWrap: "wrap",
-            gap: 8,
+            gap: 10,
           }}
         >
-          <SectionTitle title="Quick-add Examples" />
-
           {guardrails.map((snippet) => (
             <Button
               key={snippet}
               variant="outline"
               size="sm"
               onPress={() => onAddGuardrail(snippet)}
+              style={{
+                borderRadius: 12,
+                borderColor: withOpacity(palette.foreground, 0.1),
+                backgroundColor: withOpacity(palette.foreground, 0.03),
+                paddingVertical: 8,
+                paddingHorizontal: 12,
+              }}
             >
-              <Text numberOfLines={2}>{snippet}</Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <MaterialCommunityIcons name="plus" size={14} color={palette.primary} />
+                <Text variant="sm" style={{ maxWidth: 200 }}>{snippet}</Text>
+              </View>
             </Button>
           ))}
         </View>
-      </View>
+      </Animated.View>
     </ScrollView>
   );
 }

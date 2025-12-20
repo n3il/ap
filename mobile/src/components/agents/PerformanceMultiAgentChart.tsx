@@ -13,6 +13,7 @@ import Animated, {
     useDerivedValue,
     useSharedValue,
     withTiming,
+    type SharedValue,
 } from "react-native-reanimated";
 import {
     Canvas,
@@ -35,11 +36,12 @@ import { AgentType } from "@/types/agent";
 import { resolveProviderColor } from "@/theme/utils";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useAccountStore, useAccountHistory } from "@/hooks/useAccountStore";
+import { useHyperliquidInfo } from "@/hooks/useHyperliquid";
 
 const AnimatedTextInput = Animated.createAnimatedComponent(TextInput);
 
 type MultiAgentChartProps = {
-    scrollY?: Animated.SharedValue<number> | null;
+    scrollY?: SharedValue<number> | null;
     style?: any;
     agentsProp?: AgentType[];
     tickerSymbols?: string[];
@@ -80,10 +82,21 @@ export default function PerformanceMultiAgentChart({
 
     // Access only the history for the agents we are displaying
     const agentAddresses = useMemo(() =>
-        agents.map(agent => agent?.trading_accounts?.find(ta => ta.type === (agent.simulate ? "paper" : "real"))?.hyperliquid_address),
+        agents.map(agent => agent?.trading_accounts?.find(ta => ta.type === (agent.simulate ? "paper" : "real"))?.hyperliquid_address).filter(Boolean) as string[],
         [agents]
     );
     const historyMap = useAccountHistory(agentAddresses);
+    const initialize = useAccountStore((state) => state.initialize);
+    const infoClient = useHyperliquidInfo();
+
+    React.useEffect(() => {
+        if (!infoClient) return;
+        agentAddresses.forEach((addr) => {
+            if (addr) {
+                initialize(addr, infoClient);
+            }
+        });
+    }, [agentAddresses, infoClient, initialize]);
 
     // Data Fetching
     const {
@@ -101,7 +114,7 @@ export default function PerformanceMultiAgentChart({
             return { symbolDataSets: {}, agentDataSets: {}, xLength: 0, masterTimestamps: [], minVal: 0, maxVal: 0 };
         }
 
-        const masterTimestamps = btcCandles.map((c) => c.timestamp);
+        const masterTimestamps = (btcCandles.filter(Boolean) as MarketCandle[]).map((c) => c.timestamp);
 
         // Global min/max tracking
         let globalMin = isFinite(btcCandles?.[0]?.close) ? 0 : 0; // Relative change starts at 0
@@ -114,7 +127,7 @@ export default function PerformanceMultiAgentChart({
             const firstPrice = candles[0]?.close || 1;
 
             symbolDataSets[symbol] = masterTimestamps.map((ts) => {
-                const match = candles.find((c) => c.timestamp === ts);
+                const match = candles.find((c) => c?.timestamp === ts);
                 const val = match
                     ? ((match.close - firstPrice) / firstPrice) * 100
                     : 0;
@@ -296,7 +309,7 @@ export default function PerformanceMultiAgentChart({
         const min = date.getMinutes();
         const minStr = min < 10 ? `0${min}` : `${min}`;
 
-        return { text: `${m} ${d}, ${h}:${minStr}` };
+        return { text: `${m} ${d}, ${h}:${minStr}` } as any;
     });
 
     const tooltipStyle = useAnimatedStyle(() => {
@@ -394,7 +407,7 @@ export default function PerformanceMultiAgentChart({
                                     <Line
                                         p1={cursorP1}
                                         p2={cursorP2}
-                                        color={palette.primary}
+                                        color={palette.foreground}
                                         strokeWidth={1}
                                     />
                                 </Group>

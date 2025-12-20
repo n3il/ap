@@ -1,9 +1,9 @@
 import SectionTitle from "@/components/SectionTitle";
-import { Button, GlassButton, ScrollView, Text, TextInput, View } from "@/components/ui";
-import { border, useColors, withOpacity } from "@/theme";
+import { Card, ScrollView, Text, TextInput, View } from "@/components/ui";
+import { useColors, withOpacity } from "@/theme";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { Pressable } from "dripsy";
-import { useState } from "react";
+import Animated, { FadeInDown } from "react-native-reanimated";
 
 export interface QuickStartTemplate {
   name: string;
@@ -25,75 +25,93 @@ export default function StepIdentity({
   onApplyTemplate,
 }: StepIdentityProps) {
   const { colors: palette } = useColors();
-  const [selected, setSelected] = useState(quickStarts[1])
 
   return (
     <ScrollView
       style={{ flex: 1 }}
-      contentContainerStyle={{ gap: 12, paddingBottom: 48 }}
+      contentContainerStyle={{ gap: 24, paddingBottom: 48, paddingTop: 8 }}
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
     >
-      <View style={{ gap: 4, paddingTop: 8 }}>
-        <SectionTitle title="Expected Investment Horizon" />
-        <Text variant="sm">
-          All agents are connected to live data feeds and can react to market conditions quickly.
-        </Text>
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-evenly",
-            gap: 10,
-            marginTop: 16
-          }}
-        >
-          {quickStarts.map((template) => (
-            <Pressable
-              key={template.name}
-              onPress={() => setSelected(template)}
-              sx={{
-                flexDirection: "column",
-                background: "transparent",
-                borderWidth: 2,
-                border: "border",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: 18,
-                paddingHorizontal: 4,
-                paddingVertical: 1,
-                opacity: selected.name === template.name ? 1 : 0.5,
-              }}
-            >
-              <Text
-                variant="lg"
-                sx={{ fontWeight: "700",  }}
-
-              >
-                {template.name}
-              </Text>
-              <MaterialCommunityIcons
-                name={template.icon}
-                size={30}
-              />
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <View style={{ gap: 10 }}>
+      <Animated.View entering={FadeInDown.delay(100).duration(400)} style={{ gap: 10 }}>
         <SectionTitle title="Identity" />
         <TextInput
-          placeholder={'Name your agent (e.g., "Calm Risk Manager")'}
+          placeholder={'Name your agent (e.g., "Mojo Manager")'}
           placeholderTextColor={palette.secondary500 ?? palette.textSecondary}
           value={name}
           onChangeText={onChangeName}
           autoFocus
-          style={{ fontWeight: "600" }}
+          style={{
+            fontSize: 18,
+            fontWeight: "700",
+            paddingVertical: 12
+          }}
         />
         <Text tone="muted" variant="sm">
-          Make it memorable—this appears on timelines, trades, and invites.
+          A memorable name helps personality shine through.
         </Text>
-      </View>
+      </Animated.View>
+
+      <Animated.View entering={FadeInDown.delay(200).duration(400)} style={{ gap: 12 }}>
+        <View style={{ gap: 4 }}>
+          <SectionTitle title="Persona Templates" />
+          <Text variant="sm" tone="muted">
+            Start fast with a predefined momentum profile.
+          </Text>
+        </View>
+
+        <View style={{ gap: 12 }}>
+          {quickStarts.map((template, index) => (
+            <Pressable
+              key={template.name}
+              onPress={() => onApplyTemplate(template)}
+            >
+              <Card
+                variant="glass"
+                glassEffectStyle="light"
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  padding: 16,
+                  gap: 16,
+                  borderWidth: name === template.name ? 2 : 1,
+                  borderColor: name === template.name ? palette.primary : withOpacity(palette.foreground, 0.05),
+                }}
+              >
+                <View
+                  style={{
+                    width: 48,
+                    height: 48,
+                    borderRadius: 24,
+                    backgroundColor: withOpacity(palette.primary, 0.1),
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <MaterialCommunityIcons
+                    name={template.icon as any}
+                    size={28}
+                    color={palette.primary}
+                  />
+                </View>
+                <View style={{ flex: 1, gap: 2 }}>
+                  <Text variant="lg" style={{ fontWeight: "800" }}>
+                    {template.name}
+                  </Text>
+                  <Text variant="sm" tone="muted" numberOfLines={2}>
+                    {template.headline}
+                  </Text>
+                </View>
+                <MaterialCommunityIcons
+                  name="chevron-right"
+                  size={20}
+                  color={withOpacity(palette.foreground, 0.3)}
+                />
+              </Card>
+            </Pressable>
+          ))}
+        </View>
+      </Animated.View>
     </ScrollView>
   );
 }

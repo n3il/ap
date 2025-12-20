@@ -86,11 +86,7 @@ export default function ReportDetail({ assessment }: ReportDetailProps) {
   const sentimentWord = hasContent(headline?.sentiment_word)
     ? headline.sentiment_word.trim()
     : "";
-  const sentimentLabel = sentimentWord
-    ? sentimentScore !== null
-      ? `${sentimentWord} (${sentimentScore.toFixed(2)})`
-      : sentimentWord
-    : "";
+  const sentimentLabel = sentimentWord;
 
   const sentimentVariant =
     sentimentScore === null

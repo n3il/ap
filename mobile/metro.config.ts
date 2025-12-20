@@ -31,16 +31,6 @@ const resolveRequestWithPackageExports = (context, moduleName, platform) => {
     return ctx.resolveRequest(ctx, moduleName, platform);
   }
 
-  // The following block is only needed if you are
-  // running React Native 0.78 *or older*.
-  if (moduleName.startsWith('@privy-io/')) {
-    const ctx = {
-      ...context,
-      unstable_enablePackageExports: true,
-    };
-    return ctx.resolveRequest(ctx, moduleName, platform);
-  }
-
   return context.resolveRequest(context, moduleName, platform);
 };
 

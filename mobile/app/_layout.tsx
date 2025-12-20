@@ -34,8 +34,6 @@ function AuthNavigator() {
   const router = useRouter()
   const hasCompletedOnboarding = true;
 
-  console.log({ isReady, user, error })
-
   useEffect(() => {
     if (isReady) {
       ExpoSplashScreen.hide();

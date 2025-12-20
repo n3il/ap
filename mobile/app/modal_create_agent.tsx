@@ -17,7 +17,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  SwipeableTabs,
   Text,
   View,
 } from "@/components/ui";
@@ -25,6 +24,7 @@ import { agentService } from "@/services/agentService";
 import { fetchOpenRouterModels, formatModelName } from "@/services/llmService";
 import { useColors, withOpacity } from "@/theme";
 import { Pressable } from "dripsy";
+import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft, useAnimatedStyle, withSpring } from "react-native-reanimated";
 
 const normalizeModelSlug = (model: any) =>
   model?.endpoint?.model_variant_permaslug ||
@@ -138,7 +138,7 @@ export default function ModalCreateAgent() {
 
   const applyTemplate = useCallback(
     (template: QuickStartTemplate) => {
-      const defaultModel = pickDefaultModel(template.modelSuggestions ?? []);
+      const defaultModel = pickDefaultModel([]);
       const slug = defaultModel ? normalizeModelSlug(defaultModel) : "";
       const provider =
         defaultModel?.endpoint?.provider_slug || slug.split("/")[0] || "";
@@ -146,7 +146,6 @@ export default function ModalCreateAgent() {
       setFormData((prev) => ({
         ...prev,
         name: template.name,
-        prompt_direction: template.prompt,
         model_name: slug || prev.model_name,
         llm_provider: provider || prev.llm_provider,
       }));
@@ -195,9 +194,9 @@ export default function ModalCreateAgent() {
   useEffect(() => {
     if (!models.length || formData.model_name) return;
     const defaultModel = pickDefaultModel([
-      "openai/gpt-5.2-chat",
+      "openai/gpt-4o",
       "openai/gpt-4o-mini",
-      "google/gemini-2.0-flash",
+      "google/gemini-2.0-flash-exp:free",
     ]);
     if (!defaultModel) return;
     const slug = normalizeModelSlug(defaultModel);
@@ -252,17 +251,6 @@ export default function ModalCreateAgent() {
       const freeSort = bFree - aFree;
       if (freeSort !== 0) return freeSort;
 
-      const aReasoning = Number(
-        a?.endpoint?.supports_reasoning || a?.features?.supports_reasoning,
-      );
-      const bReasoning = Number(
-        b?.endpoint?.supports_reasoning || b?.features?.supports_reasoning,
-      );
-      if (highlightReasoning) {
-        const reasoningSort = bReasoning - aReasoning;
-        if (reasoningSort !== 0) return reasoningSort;
-      }
-
       const aPrice =
         parseFloat(a?.endpoint?.pricing?.prompt ?? "") || Number.MAX_VALUE;
       const bPrice =
@@ -275,8 +263,8 @@ export default function ModalCreateAgent() {
       return bCreated - aCreated;
     });
 
-    return scored.slice(0, 60);
-  }, [highlightReasoning, modelQuery, models, onlyFree, providerFilter]);
+    return scored.slice(0, 40);
+  }, [modelQuery, models, onlyFree, providerFilter]);
 
   const currentModel = useMemo(
     () => findModelBySlug(formData.model_name),
@@ -286,103 +274,14 @@ export default function ModalCreateAgent() {
   const creationReady = Boolean(formData.name && formData.model_name);
 
   const createAgentMutation = useMutation({
-    mutationFn: (agentData) => agentService.createAgent(agentData),
-    onSuccess: (newAgent) => {
+    mutationFn: (agentData: any) => agentService.createAgent(agentData),
+    onSuccess: (newAgent: any) => {
       router.push(`/(agent)/[${newAgent.id}]`);
     },
     onError: (_error: any) => {
       alert(`Failed to create agent. ${_error.message ?? ""}`);
     },
   });
-
-  const renderModel = ({ item }: { item: any }) => {
-    const slug = normalizeModelSlug(item);
-    if (!slug) return null;
-
-    const isSelected = formData.model_name === slug;
-    const displayName = item?.name || formatModelName(item?.slug || slug);
-    const provider =
-      item?.endpoint?.provider_display_name || "Unknown provider";
-    const price = formatPrice(item?.endpoint?.pricing);
-    const ctx = contextLengthLabel(
-      item?.endpoint?.context_length || item?.context_length,
-    );
-    const supportsReasoning =
-      item?.endpoint?.supports_reasoning || item?.features?.supports_reasoning;
-
-    return (
-      <GlassButton
-        enabled={false}
-        onPress={() => handleModelSelect(slug, item)}
-        glassEffectStyle="regular"
-        tintColor={
-          isSelected ? withOpacity(palette.primary, 0.16) : palette.surface
-        }
-        style={{
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: 6,
-        }}
-      >
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            width: "100%",
-            gap: 12,
-          }}
-        >
-          <View style={{ flex: 1, gap: 4 }}>
-            <Text variant="lg" style={{ fontWeight: "700" }}>
-              {displayName}
-            </Text>
-            <Text tone="muted" variant="sm">
-              {provider} • {slug}
-            </Text>
-          </View>
-          <Badge variant="default" size="sm">
-            Recommended
-          </Badge>
-        </View>
-
-        <View style={{ flexDirection: "row", gap: 8, flexWrap: "wrap" }}>
-          {supportsReasoning && (
-            <Badge variant="info" size="sm">
-              Reasoning
-            </Badge>
-          )}
-          {ctx && (
-            <Badge variant="default" size="sm">
-              {ctx}
-            </Badge>
-          )}
-          {price && (
-            <Badge variant="default" size="sm">
-              {price}
-            </Badge>
-          )}
-          {item?.endpoint?.is_free && (
-            <Badge variant="default" size="sm">
-              Free
-            </Badge>
-          )}
-        </View>
-
-        <Text
-          tone="muted"
-          variant="sm"
-          style={{
-            flex: 0,
-          }}
-        >
-          {item?.description ||
-            item?.endpoint?.model?.description ||
-            "Balanced defaults for thoughtful, concise replies."}
-        </Text>
-      </GlassButton>
-    );
-  };
 
   const handleRetryModels = () => {
     setModelQuery("");
@@ -445,7 +344,8 @@ export default function ModalCreateAgent() {
               error={modelsError}
               onRetry={handleRetryModels}
               filteredModels={filteredModels}
-              renderModelCard={renderModel}
+              handleModelSelect={handleModelSelect}
+              selectedModelSlug={formData.model_name}
             />
           </ScrollView>
         ),
@@ -496,15 +396,9 @@ export default function ModalCreateAgent() {
       modelsError,
       onlyFree,
       providerFilter,
+      handleModelSelect,
     ],
   );
-
-  const tabs = steps.map((step) => ({
-    key: step.key,
-    title: step.title,
-    isCompleted: step.isCompleted,
-    content: step.content,
-  }));
 
   const isLastStep = activeStep === steps.length - 1;
 
@@ -525,12 +419,13 @@ export default function ModalCreateAgent() {
         ...formData,
         name: formData.name.trim(),
         prompt_direction: formData.prompt_direction.trim(),
+        simulate: true,
+        initial_capital: 10000,
       });
       return;
     }
     setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
   };
-
 
   return (
     <ContainerView>
@@ -543,78 +438,67 @@ export default function ModalCreateAgent() {
           <View
             style={{
               paddingHorizontal: GLOBAL_PADDING,
-              paddingBottom: 12,
-              paddingTop: 4,
-              borderBottomWidth: 1,
-              borderBottomColor: withOpacity(palette.foreground, 0.08),
-              gap: 8,
+              paddingBottom: 20,
+              paddingTop: 12,
+              gap: 16,
             }}
           >
             <View
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                alignItems: "flex-start",
-                gap: 10,
+                alignItems: "center",
               }}
             >
-              <View style={{ flex: 1, gap: 6 }}>
-                <SectionTitle title="New agent" sx={{ padding: 2 }} />
-                <Text variant="xl" style={{ fontWeight: "700" }}>
-                  Design AI Portfolio Manager
+              <View style={{ gap: 2 }}>
+                <Text variant="sm" tone="muted" style={{ fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
+                  Step {activeStep + 1} of {steps.length}
                 </Text>
-                <View
-                  style={{
-                    flexDirection: "row",
-                    gap: 6,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  <Badge
-                    variant={formData.name ? "success" : "default"}
-                    size="sm"
-                  >
-                    Name
-                  </Badge>
-                  <Badge
-                    variant={formData.model_name ? "success" : "default"}
-                    size="sm"
-                  >
-                    Model
-                  </Badge>
-                  <Badge
-                    variant={formData.prompt_direction ? "success" : "default"}
-                    size="sm"
-                  >
-                    Direction
-                  </Badge>
-                </View>
+                <Text variant="xl" style={{ fontWeight: "800" }}>
+                  {steps[activeStep].title}
+                </Text>
               </View>
               {isPresented && (
                 <Pressable
-                  sx={{ padding: 3 }}
-                  onPress={() => router.push("../")}
+                  sx={{
+                    padding: 2,
+                    backgroundColor: withOpacity(palette.foreground, 0.05),
+                    borderRadius: 20
+                  }}
+                  onPress={() => router.back()}
                 >
                   <MaterialCommunityIcons
-                    name="chevron-double-up"
-                    size={18}
+                    name="close"
+                    size={20}
                     color={palette.foreground}
                   />
                 </Pressable>
               )}
             </View>
+
+            {/* Progress Bar */}
+            <View style={{ height: 4, backgroundColor: withOpacity(palette.foreground, 0.1), borderRadius: 2, overflow: 'hidden' }}>
+              <Animated.View
+                style={[
+                  { height: '100%', backgroundColor: palette.primary },
+                  useAnimatedStyle(() => ({
+                    width: withSpring(`${((activeStep + 1) / steps.length) * 100}%`, { damping: 20 })
+                  }))
+                ]}
+              />
+            </View>
           </View>
 
-          <SwipeableTabs
-            tabs={tabs}
-            activeIndex={activeStep}
-            onTabChange={setActiveStep}
-            indicatorColor={palette.foreground}
-            contentStyle={{
-              paddingHorizontal: GLOBAL_PADDING,
-              paddingBottom: 16,
-            }}
-          />
+          <View style={{ flex: 1 }}>
+            <Animated.View
+              key={activeStep}
+              entering={SlideInRight.duration(300)}
+              exiting={SlideOutLeft.duration(300)}
+              style={{ flex: 1, paddingHorizontal: GLOBAL_PADDING }}
+            >
+              {steps[activeStep].content()}
+            </Animated.View>
+          </View>
 
           <View
             style={{
@@ -643,7 +527,7 @@ export default function ModalCreateAgent() {
               disabled={primaryDisabled}
               style={{ flex: 2 }}
             >
-              <Text color="surfaceForeground">
+              <Text style={{ color: palette.surfaceSecondary }}>
                 {isLastStep
                   ? createAgentMutation.isPending
                     ? "Launching…"

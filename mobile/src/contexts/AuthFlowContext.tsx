@@ -29,9 +29,8 @@ const AuthFlowContext = createContext<AuthFlowContextType | undefined>(
 );
 
 export const AuthFlowProvider = ({ children }: { children: ReactNode }) => {
-  const [authType, setAuthType] = useState<"email" | "phone" | null>(null);
+  const [authType, setAuthType] = useState<"email" | "phone" | null>("phone");
   const [contactInfo, setContactInfo] = useState("");
-  console.log({ authType })
   const emailAuth = useLoginWithEmail();
   const smsAuth = useLoginWithSMS();
 

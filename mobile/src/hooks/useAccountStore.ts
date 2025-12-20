@@ -1,7 +1,6 @@
 import { create } from 'zustand';
 import { processHyperliquidData, computeLivePnL, type ProcessedHyperliquidData } from '@/data/utils/hyperliquid';
-import { useMemo } from 'react';
-import { shallow, useShallow } from 'zustand/shallow';
+import { useShallow } from 'zustand/shallow';
 
 interface AccountEntry {
   data: ProcessedHyperliquidData | null;
@@ -48,11 +47,10 @@ export const useAccountStore = create<AccountStore>((set, get) => ({
         }
       }));
     } catch (err) {
-      console.error("Initialize failed", err);
       set((state) => ({
         accounts: {
           ...state.accounts,
-          [userId]: { ...state.accounts[userId], isLoading: false, error: "Initialize failed" }
+          [userId]: { ...state.accounts[userId], isLoading: false, error: "Error initializing" }
         }
       }));
     }

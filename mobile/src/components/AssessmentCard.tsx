@@ -65,7 +65,6 @@ function AssessmentCard({ assessment }: { assessment: AssessmentType }) {
             justifyContent: "space-between",
           }}
         />
-        <Text>asdf</Text>
       </Pressable>
 
       {assessment?.parsed_llm_response.tradeActions.map((action, index) => (

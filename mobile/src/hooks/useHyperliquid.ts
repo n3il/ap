@@ -4,6 +4,7 @@ import * as hl from "@nktkas/hyperliquid";
 import { useEffect } from "react";
 import { create } from "zustand";
 import { useShallow } from "zustand/react/shallow";
+import { HyperliquidError } from "@nktkas/hyperliquid";
 
 // Type aliases for better readability
 type HLClientInstance = InstanceType<typeof hl.SubscriptionClient>;
@@ -46,7 +47,9 @@ const createMessageHandler =
   (registry: Map<string, Set<HLSubscriptionHandler>>) =>
     (event: MessageEvent) => {
       const msg = JSON.parse(event.data);
-      console.log(msg.channel, msg.data?.response?.type)
+      if (msg.channel !== "allMids") {
+        console.log('msg', msg)
+      }
 
       // Handle subscription data (post responses are handled by InfoClient)
       if (msg.channel !== "post") {
@@ -55,7 +58,7 @@ const createMessageHandler =
           handlers.forEach((h) => h(msg.data));
         }
       } else if (msg.channel === "error") {
-        console.log(msg)
+        console.error(msg)
       }
     };
 

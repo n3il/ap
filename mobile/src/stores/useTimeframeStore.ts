@@ -17,6 +17,7 @@ type TimeFrameOption = {
 export const TIMEFRAME_OPTIONS: TimeFrameOption[] = [
   { id: "5m", label: "5m" },
   { id: "15m", label: "15m" },
+  { id: "15m", label: "15m" },
   { id: "1h", label: "1H" },
   { id: "24h", label: "24H" },
   { id: "7d", label: "7D" },
@@ -29,23 +30,24 @@ export const TIMEFRAME_CONFIG: Record<
   {
     durationMs: number;
     interval:
-      | "1m"
-      | "3m"
-      | "5m"
-      | "15m"
-      | "30m"
-      | "1h"
-      | "2h"
-      | "4h"
-      | "8h"
-      | "12h"
-      | "1d"
-      | "3d"
-      | "1w"
-      | "1M";
+    | "1m"
+    | "3m"
+    | "5m"
+    | "15m"
+    | "30m"
+    | "1h"
+    | "2h"
+    | "4h"
+    | "8h"
+    | "12h"
+    | "1d"
+    | "3d"
+    | "1w"
+    | "1M";
   }
 > = {
   "5m": { durationMs: 5 * 60 * 1000, interval: "1m" },
+  "15m": { durationMs: 15 * 60 * 1000, interval: "1m" },
   "1h": { durationMs: 60 * 60 * 1000, interval: "1m" },
   "24h": { durationMs: 24 * 60 * 60 * 1000, interval: "5m" },
   "7d": { durationMs: 7 * 24 * 60 * 60 * 1000, interval: "1h" },
