@@ -20,6 +20,7 @@ export default function AgentCard({
   showRecentAssessment = true,
   showPositions = true,
   showDailyPnlCalendar = false,
+  showSentimentCalendar = false,
 
   transparent = false,
   isActive = false,
@@ -78,7 +79,7 @@ export default function AgentCard({
         >
           <Avatar
             size="xs"
-            src={agent.avatar_url}
+            imgSrc={agent.avatar_url}
             name={agent.name.slice(0, 70)}
             backgroundColor={palette.providers[agent.llm_provider]}
           />
@@ -121,8 +122,11 @@ export default function AgentCard({
       ) : null}
 
       {showDailyPnlCalendar &&
-        <PnlCalendar accountData={accountData} />
+        <PnlCalendar agent={agent} />
       }
+      {/* {showSentimentCalendar &&
+        <SentimentCalendar agent={agent} />
+      } */}
     </GlassButton>
   );
 }

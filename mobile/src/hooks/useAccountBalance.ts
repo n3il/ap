@@ -5,7 +5,43 @@ import { useHyperliquidInfo } from './useHyperliquid';
 import type { AgentType } from '@/types/agent';
 import { useShallow } from 'zustand/react/shallow';
 
-// ... existing interfaces ...
+export interface PnLSummary {
+  first: number;      // Historical start value
+  last: number;       // Current live account value
+  pnl: number;        // Dollar change
+  pnlPct: number;     // Percentage change (safe-guarded)
+}
+
+export interface UseAccountBalanceReturn {
+  isLoading: boolean;
+  error: string | null;
+  pnlHistory: {
+    day?: PnLSummary;
+    allTime?: PnLSummary;
+    [key: string]: PnLSummary | undefined;
+  };
+  positions: Array<{
+    symbol: string;
+    size: number;
+    entryPrice: number;
+    markPrice: number;
+    unrealizedPnl: number;
+    cumFundingAllTime: number;
+    positionValue: number;
+    livePnlPct: number;
+    roe: number;
+    liquidationPx: number;
+    leverage: number | null;
+    marginUsed: number;
+  }>;
+  equity: number;
+  totalOpenPnl: number;
+  marginSummary: {
+    totalNtlPos: number;
+    accountValue: number;
+  } | null;
+  rawHistory: Record<string, any[]>;
+}
 
 export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBalanceReturn {
   const tradingAccountType = !agent?.simulate ? "real" : "paper";
@@ -47,5 +83,6 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
       totalNtlPos: accountData.totalNtlPos,
       accountValue: accountData.accountValue,
     } : null,
+    rawHistory: accountData?.rawHistory ?? {},
   }), [accountData, isLoading, error]);
 }

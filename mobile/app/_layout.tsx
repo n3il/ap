@@ -87,7 +87,12 @@ function AuthNavigator() {
       />
 
       <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="(agent)/[id]" />
+      <Stack.Screen
+        name="(agent)/[id]"
+        options={{
+          animation: "slide_from_right",
+        }}
+      />
       <Stack.Screen
         name="modal_create_agent"
         options={{
