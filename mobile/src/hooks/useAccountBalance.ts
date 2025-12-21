@@ -1,9 +1,9 @@
 import { useEffect, useMemo } from 'react';
 import { useAccountStore } from './useAccountStore';
-import { useMarketPricesStore } from './useMarketPrices';
 import { useHyperliquidInfo } from './useHyperliquid';
 import type { AgentType } from '@/types/agent';
 import { useShallow } from 'zustand/react/shallow';
+import { useMarketPrices } from './useMarketPrices';
 
 export interface PnLSummary {
   first: number;      // Historical start value
@@ -58,7 +58,7 @@ export function useAccountBalance({ agent }: { agent: AgentType }): UseAccountBa
   const initialize = useAccountStore((state) => state.initialize);
   const sync = useAccountStore((state) => state.sync);
   const infoClient = useHyperliquidInfo();
-  const { mids } = useMarketPricesStore();
+  const { mids } = useMarketPrices();
 
   useEffect(() => {
     if (userId && infoClient && !accountData && !isLoading && !error) {

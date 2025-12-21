@@ -44,6 +44,7 @@ export function SupabaseProvider({ children }: { children: React.ReactNode }) {
 
             if (!response.ok) {
               console.log("Error setting Supabase auth", response.status, response.statusText);
+              console.log(response)
             }
 
             const { session, user: profileUser } = await response.json();

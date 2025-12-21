@@ -123,7 +123,7 @@ export default function AgentCard({
           }}
         >
           <PositionList
-            positions={accountData.positions}
+            agent={agent}
             top={3}
             sx={{
               paddingHorizontal: 2,

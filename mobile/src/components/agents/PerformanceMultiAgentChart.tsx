@@ -153,10 +153,7 @@ const HoverLegend = ({
                     top: 10,
                     padding: 8,
                     borderRadius: 12,
-                    backgroundColor: Platform.select({
-                        ios: 'rgba(255, 255, 255, 0.8)',
-                        default: 'rgba(255, 255, 255, 0.9)'
-                    }),
+                    backgroundColor: palette.card,
                     borderWidth: 1,
                     borderColor: 'rgba(0,0,0,0.05)',
                     shadowColor: '#000',

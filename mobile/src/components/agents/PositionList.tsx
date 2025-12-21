@@ -5,6 +5,7 @@ import type { ViewStyle } from "react-native";
 import { Text, TouchableOpacity, View } from "@/components/ui";
 import { useColors } from "@/theme";
 import { formatAmount, formatPercent } from "@/utils/currency";
+import { useAccountBalance } from "@/hooks/useAccountBalance";
 
 type PositionDetailRowProps = {
   label: string;
@@ -213,16 +214,18 @@ export function PositionRow({
 }
 
 type PositionListProps = {
-  positions?: PositionListItem[];
+  agent: AgentType;
   top?: number;
   sx?: SxProp;
 };
 
 export default function PositionList({
-  positions = [],
+  agent,
   top = 3,
   sx = {},
 }: PositionListProps) {
+  const { positions } = useAccountBalance({ agent });
+
   const topPositions = [...positions]
     .sort((a, b) => Math.abs(b.size) - Math.abs(a.size))
     .slice(0, top);

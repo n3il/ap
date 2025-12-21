@@ -37,20 +37,47 @@ serve(async (req) => {
     }
 
     const userData = await userInfoResponse.json()
-    const privyUserId = userData.id
+    console.log('Privy user data:', JSON.stringify(userData))
 
-    // Extract email or wallet address from Privy user data
-    let email = `${privyUserId}@privy.local` // Default fallback
-
-    if (userData.email?.address) {
-      email = userData.email.address
-    } else if (userData.wallet?.address) {
-      email = `${userData.wallet.address}@wallet.privy.local`
-    } else if (userData.google?.email) {
-      email = userData.google.email
-    } else if (userData.twitter?.username) {
-      email = `${userData.twitter.username}@twitter.privy.local`
+    const privyUserId = userData.id || userData.did
+    if (!privyUserId) {
+      throw new Error('No user ID found in Privy response')
     }
+
+    // Extract email or other identifier from Privy user data
+    let email = `${privyUserId}@privy.local`
+    let phone: string | null = null
+
+    // Look through linked accounts for identifiers
+    if (userData.linked_accounts && Array.isArray(userData.linked_accounts)) {
+      // Priority: Email > Phone > Wallet > Others
+      const emailAccount = userData.linked_accounts.find((a: any) =>
+        (a.type === 'email' || a.type === 'google_oauth' || a.type === 'apple_oauth') && a.address || a.email
+      )
+      const phoneAccount = userData.linked_accounts.find((a: any) => a.type === 'phone' && a.number)
+      const walletAccount = userData.linked_accounts.find((a: any) => a.type === 'wallet' && a.address)
+
+      if (emailAccount) {
+        email = emailAccount.address || emailAccount.email
+      } else if (phoneAccount) {
+        phone = phoneAccount.number
+        email = `${phone?.replace('+', '') || 'unknown'}@phone.privy.local`
+      } else if (walletAccount) {
+        email = `${walletAccount.address}@wallet.privy.local`
+      }
+    } else {
+      // Fallback to top-level fields if linked_accounts is missing
+      if (userData.email?.address) {
+        email = userData.email.address
+      } else if (userData.phone?.number) {
+        phone = userData.phone.number
+        email = `${phone?.replace('+', '') || 'unknown'}@phone.privy.local`
+      } else if (userData.wallet?.address) {
+        email = `${userData.wallet.address}@wallet.privy.local`
+      }
+    }
+
+    console.log(`Extracted identity: email=${email}, phone=${phone}, privyUserId=${privyUserId}`)
 
     // 2. Initialize Supabase Admin Client (to bypass RLS)
     const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
