@@ -1,15 +1,10 @@
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 import { useMutation } from "@tanstack/react-query";
 import { router } from "expo-router";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { ScrollView as RNScrollView, View as RNView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import ContainerView, { GLOBAL_PADDING } from "@/components/ContainerView";
-import StepDirection from "@/components/create/agent/StepDirection";
-import StepIdentity, {
-  type QuickStartTemplate,
-} from "@/components/create/agent/StepIdentity";
-import StepModelSelect from "@/components/create/agent/StepModelSelect";
-import StepSummary from "@/components/create/agent/StepSummary";
 import SectionTitle from "@/components/SectionTitle";
 import {
   Badge,
@@ -18,13 +13,17 @@ import {
   Platform,
   ScrollView,
   Text,
+  TextInput,
   View,
+  ActivityIndicator,
+  Button,
 } from "@/components/ui";
 import { agentService } from "@/services/agentService";
 import { fetchOpenRouterModels, formatModelName } from "@/services/llmService";
 import { useColors, withOpacity } from "@/theme";
 import { Pressable } from "dripsy";
-import Animated, { FadeIn, FadeOut, SlideInRight, SlideOutLeft, useAnimatedStyle, withSpring } from "react-native-reanimated";
+import Animated, { FadeIn, FadeOut, Layout } from "react-native-reanimated";
+import { uniqueNamesGenerator, adjectives, animals, colors } from 'unique-names-generator';
 
 const normalizeModelSlug = (model: any) =>
   model?.endpoint?.model_variant_permaslug ||
@@ -33,46 +32,29 @@ const normalizeModelSlug = (model: any) =>
   model?.endpoint?.model_variant_slug ||
   "";
 
-const formatPrice = (pricing: any) => {
-  const promptCost = parseFloat(pricing?.prompt ?? "");
-  if (!Number.isFinite(promptCost)) return null;
-  const perK = promptCost * 1000;
-  const amount =
-    perK >= 1
-      ? perK.toFixed(2)
-      : perK >= 0.01
-        ? perK.toFixed(3)
-        : perK.toFixed(4);
-  return `$${amount}/1k input`;
-};
-
-const contextLengthLabel = (value?: number) => {
-  if (!value) return null;
-  const inThousands = Math.round(value / 1000);
-  return `${inThousands}k ctx`;
-};
-
-const guardrailSnippets = [
-  "Summarize each decision in 3 bullet points: thesis, risk, upside.",
-  "Ask for confirmation before committing to any trade with drawdown risk over 3%.",
-  "Keep responses under 90 words unless specifically asked for depth.",
-  "Prefer high-confidence moves over frequency; avoid over-trading.",
-];
-
-const quickStarts: QuickStartTemplate[] = [
+const quickStarts = [
   {
+    id: "The Woodpecker",
     name: "Lightning",
-    headline: "Keeps positions tidy and trims risk before it grows teeth.",
-    icon: "lightning-bolt",
+    headline: `Beak strikes hollow wood—
+    steady rhythm through the trees,
+    drumming out his claim.`,
+    icon: "bird",
   },
   {
+    id: "The Hare",
     name: "Intra Day",
-    headline: "Scans momentum and flags heat with a light, fast touch.",
+    headline: `Long ears catch the wind,
+    racing through the meadow grass—
+    gone before you blink.`,
     icon: "rabbit",
   },
   {
+    id: "The Tortoise",
     name: "Long Haul",
-    headline: "Stitches together context, risk, and narrative to advise.",
+    headline: `Ancient, patient shell
+    carries centuries of earth.
+    Slow steps outlast all.`,
     icon: "tortoise",
   },
 ];
@@ -81,8 +63,9 @@ export default function ModalCreateAgent() {
   const insets = useSafeAreaInsets();
   const { colors: palette } = useColors();
   const isPresented = router.canGoBack();
+  const scrollRef = useRef<RNScrollView>(null);
+  const modelSectionRef = useRef<RNView>(null);
 
-  const [activeStep, setActiveStep] = useState(0);
   const [models, setModels] = useState<any[]>([]);
   const [isLoadingModels, setIsLoadingModels] = useState(true);
   const [modelsError, setModelsError] = useState<string | null>(null);
@@ -91,13 +74,22 @@ export default function ModalCreateAgent() {
     name: "",
     llm_provider: "",
     model_name: "",
-    prompt_direction: "",
+    time_horizon: "The Hare",
   });
 
   const [modelQuery, setModelQuery] = useState("");
+  const [isModelDropdownExpanded, setIsModelDropdownExpanded] = useState(false);
   const [onlyFree, setOnlyFree] = useState(false);
-  const [highlightReasoning, setHighlightReasoning] = useState(false);
-  const [providerFilter, setProviderFilter] = useState<string | null>(null);
+
+  const generateRandomName = useCallback(() => {
+    const randomName = uniqueNamesGenerator({
+      dictionaries: [adjectives, colors, animals],
+      separator: ' ',
+      length: 2,
+      style: 'capital'
+    });
+    setFormData(prev => ({ ...prev, name: randomName }));
+  }, []);
 
   const findModelBySlug = useCallback(
     (slug: string) =>
@@ -134,43 +126,7 @@ export default function ModalCreateAgent() {
       llm_provider: provider,
       model_name: modelSlug,
     }));
-  }, []);
-
-  const applyTemplate = useCallback(
-    (template: QuickStartTemplate) => {
-      const defaultModel = pickDefaultModel([]);
-      const slug = defaultModel ? normalizeModelSlug(defaultModel) : "";
-      const provider =
-        defaultModel?.endpoint?.provider_slug || slug.split("/")[0] || "";
-
-      setFormData((prev) => ({
-        ...prev,
-        name: template.name,
-        model_name: slug || prev.model_name,
-        llm_provider: provider || prev.llm_provider,
-      }));
-
-      if (slug) {
-        setActiveStep(1);
-      }
-    },
-    [pickDefaultModel],
-  );
-
-  const appendGuardrail = useCallback((snippet: string) => {
-    setFormData((prev) => {
-      if (prev.prompt_direction.toLowerCase().includes(snippet.toLowerCase())) {
-        return prev;
-      }
-
-      const existing = prev.prompt_direction.trim();
-      const prefix = existing ? `${existing}\n- ` : "- ";
-
-      return {
-        ...prev,
-        prompt_direction: `${prefix}${snippet}`,
-      };
-    });
+    setIsModelDropdownExpanded(false);
   }, []);
 
   useEffect(() => {
@@ -214,18 +170,6 @@ export default function ModalCreateAgent() {
     const query = modelQuery.trim().toLowerCase();
     let list = models.filter((model) => Boolean(normalizeModelSlug(model)));
 
-    if (providerFilter) {
-      list = list.filter((model) => {
-        const provider =
-          model?.endpoint?.provider_slug ||
-          model?.provider_slug ||
-          model?.slug?.split("/")[0];
-        return (
-          provider?.toString().toLowerCase() === providerFilter.toLowerCase()
-        );
-      });
-    }
-
     if (onlyFree) {
       list = list.filter((model) => model?.endpoint?.is_free);
     }
@@ -264,14 +208,18 @@ export default function ModalCreateAgent() {
     });
 
     return scored.slice(0, 40);
-  }, [modelQuery, models, onlyFree, providerFilter]);
+  }, [modelQuery, models, onlyFree]);
 
   const currentModel = useMemo(
     () => findModelBySlug(formData.model_name),
     [formData.model_name, models],
   );
 
-  const creationReady = Boolean(formData.name && formData.model_name);
+  const modelLabel = currentModel
+    ? formatModelName(currentModel?.slug || normalizeModelSlug(currentModel))
+    : "Pick a model";
+
+  const creationReady = Boolean(formData.name.trim() && formData.model_name);
 
   const createAgentMutation = useMutation({
     mutationFn: (agentData: any) => agentService.createAgent(agentData),
@@ -283,148 +231,25 @@ export default function ModalCreateAgent() {
     },
   });
 
-  const handleRetryModels = () => {
-    setModelQuery("");
-    setProviderFilter(null);
-    setOnlyFree(false);
-    setHighlightReasoning(false);
-    setModelsError(null);
-    setIsLoadingModels(true);
-    fetchOpenRouterModels()
-      .then(setModels)
-      .catch((error: any) => {
-        setModels([]);
-        setModelsError(error?.message ?? "Could not refresh models.");
-      })
-      .finally(() => setIsLoadingModels(false));
+  const handleLaunch = () => {
+    if (!creationReady || createAgentMutation.isPending) return;
+    createAgentMutation.mutate({
+      ...formData,
+      name: formData.name.trim(),
+      prompt_direction: `Time Horizon: ${formData.time_horizon}`,
+      simulate: true,
+      initial_capital: 10000,
+    });
   };
 
-  const modelLabel = currentModel
-    ? formatModelName(currentModel?.slug || normalizeModelSlug(currentModel))
-    : "Pick a model";
-
-  const steps = useMemo(
-    () => [
-      {
-        key: "identity",
-        title: "Identity",
-        isCompleted: Boolean(formData.name.trim()),
-        content: () => (
-          <StepIdentity
-            name={formData.name}
-            onChangeName={(name) => setFormData((prev) => ({ ...prev, name }))}
-            quickStarts={quickStarts}
-            onApplyTemplate={applyTemplate}
-          />
-        ),
-      },
-      {
-        key: "model",
-        title: "Model",
-        isCompleted: Boolean(formData.model_name),
-        content: () => (
-          <ScrollView
-            style={{ flex: 1 }}
-            contentContainerStyle={{ gap: 12, paddingBottom: 48 }}
-            showsVerticalScrollIndicator={false}
-            keyboardShouldPersistTaps="handled"
-          >
-            <StepModelSelect
-              modelQuery={modelQuery}
-              onChangeQuery={setModelQuery}
-              onlyFree={onlyFree}
-              highlightReasoning={highlightReasoning}
-              providerFilter={providerFilter}
-              onToggleFree={() => setOnlyFree((prev) => !prev)}
-              onToggleReasoning={() => setHighlightReasoning((prev) => !prev)}
-              onToggleProviderFilter={() =>
-                setProviderFilter((prev) => (prev ? null : "openai"))
-              }
-              isLoading={isLoadingModels}
-              error={modelsError}
-              onRetry={handleRetryModels}
-              filteredModels={filteredModels}
-              handleModelSelect={handleModelSelect}
-              selectedModelSlug={formData.model_name}
-            />
-          </ScrollView>
-        ),
-      },
-      {
-        key: "direction",
-        title: "Direction",
-        isCompleted: Boolean(formData.prompt_direction.trim().length),
-        content: () => (
-          <StepDirection
-            prompt={formData.prompt_direction}
-            onChangePrompt={(prompt) =>
-              setFormData((prev) => ({ ...prev, prompt_direction: prompt }))
-            }
-            guardrails={guardrailSnippets}
-            onAddGuardrail={appendGuardrail}
-          />
-        ),
-      },
-      {
-        key: "summary",
-        title: "Review",
-        isCompleted: creationReady,
-        content: () => (
-          <View style={{ gap: 12, paddingBottom: 32 }}>
-            <StepSummary
-              name={formData.name || "Unnamed agent"}
-              modelLabel={modelLabel}
-              promptPreview={formData.prompt_direction}
-              creationReady={creationReady}
-            />
-          </View>
-        ),
-      },
-    ],
-    [
-      appendGuardrail,
-      applyTemplate,
-      creationReady,
-      filteredModels,
-      formData.name,
-      formData.model_name,
-      formData.prompt_direction,
-      highlightReasoning,
-      isLoadingModels,
-      modelLabel,
-      modelQuery,
-      modelsError,
-      onlyFree,
-      providerFilter,
-      handleModelSelect,
-    ],
-  );
-
-  const isLastStep = activeStep === steps.length - 1;
-
-  const stepAllowsNext = () => {
-    if (activeStep === 0) return Boolean(formData.name.trim());
-    if (activeStep === 1) return Boolean(formData.model_name);
-    return true;
-  };
-
-  const primaryDisabled = isLastStep
-    ? !creationReady || createAgentMutation.isPending
-    : !stepAllowsNext();
-
-  const handlePrimary = () => {
-    if (isLastStep) {
-      if (!creationReady || createAgentMutation.isPending) return;
-      createAgentMutation.mutate({
-        ...formData,
-        name: formData.name.trim(),
-        prompt_direction: formData.prompt_direction.trim(),
-        simulate: true,
-        initial_capital: 10000,
+  const toggleModelDropdown = () => {
+    const nextState = !isModelDropdownExpanded;
+    setIsModelDropdownExpanded(nextState);
+    if (nextState) {
+      modelSectionRef.current?.measure((_x, y, _width, _height, _pageX, _pageY) => {
+        scrollRef.current?.scrollTo({ y: y - 200, animated: true });
       });
-      return;
     }
-    setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
   };
 
   return (
@@ -435,106 +260,274 @@ export default function ModalCreateAgent() {
         style={{ flex: 1 }}
       >
         <View style={{ flex: 1 }}>
+          {/* Header */}
           <View
             style={{
-              paddingHorizontal: GLOBAL_PADDING,
-              paddingBottom: 20,
-              paddingTop: 12,
-              gap: 16,
-            }}
-          >
-            <View
-              style={{
-                flexDirection: "row",
-                justifyContent: "space-between",
-                alignItems: "center",
-              }}
-            >
-              <View style={{ gap: 2 }}>
-                <Text variant="sm" tone="muted" style={{ fontWeight: "600", textTransform: "uppercase", letterSpacing: 1 }}>
-                  Step {activeStep + 1} of {steps.length}
-                </Text>
-                <Text variant="xl" style={{ fontWeight: "800" }}>
-                  {steps[activeStep].title}
-                </Text>
-              </View>
-              {isPresented && (
-                <Pressable
-                  sx={{
-                    padding: 2,
-                    backgroundColor: withOpacity(palette.foreground, 0.05),
-                    borderRadius: 20
-                  }}
-                  onPress={() => router.back()}
-                >
-                  <MaterialCommunityIcons
-                    name="close"
-                    size={20}
-                    color={palette.foreground}
-                  />
-                </Pressable>
-              )}
-            </View>
-
-            {/* Progress Bar */}
-            <View style={{ height: 4, backgroundColor: withOpacity(palette.foreground, 0.1), borderRadius: 2, overflow: 'hidden' }}>
-              <Animated.View
-                style={[
-                  { height: '100%', backgroundColor: palette.primary },
-                  useAnimatedStyle(() => ({
-                    width: withSpring(`${((activeStep + 1) / steps.length) * 100}%`, { damping: 20 })
-                  }))
-                ]}
-              />
-            </View>
-          </View>
-
-          <View style={{ flex: 1 }}>
-            <Animated.View
-              key={activeStep}
-              entering={SlideInRight.duration(300)}
-              exiting={SlideOutLeft.duration(300)}
-              style={{ flex: 1, paddingHorizontal: GLOBAL_PADDING }}
-            >
-              {steps[activeStep].content()}
-            </Animated.View>
-          </View>
-
-          <View
-            style={{
-              paddingHorizontal: GLOBAL_PADDING,
-              paddingVertical: 12,
+              paddingHorizontal: GLOBAL_PADDING * 1.3,
+              paddingBottom: 16,
+              paddingTop: 24,
               flexDirection: "row",
-              gap: 8,
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottomWidth: 1,
+              borderBottomColor: withOpacity(palette.border, .5),
+              marginBottom: 16,
             }}
           >
-            {activeStep > 0 && (
+            <SectionTitle title="Create" sx={{ fontSize: 18, lineHeight: 24 }} />
+            {isPresented && (
               <GlassButton
-                onPress={() => setActiveStep((prev) => Math.max(prev - 1, 0))}
-                styleVariant="paddedFull"
-                tintColor={palette.surface}
-                glassEffectStyle="regular"
-                style={{ flex: 1 }}
+                onPress={() => router.back()}
+                styleVariant="minimalSquare"
+                tintColor={palette.surfaceLight}
               >
-                Back
+                <MaterialCommunityIcons
+                  name="close"
+                  size={20}
+                  color={palette.surfaceForeground}
+                />
               </GlassButton>
             )}
-            <GlassButton
-              onPress={handlePrimary}
-              styleVariant="paddedFull"
-              tintColor={palette.surface}
-              glassEffectStyle="regular"
-              disabled={primaryDisabled}
-              style={{ flex: 2 }}
-            >
-              <Text style={{ color: palette.surfaceSecondary }}>
-                {isLastStep
-                  ? createAgentMutation.isPending
-                    ? "Launching…"
-                    : "Launch agent"
-                  : "Next"}
-              </Text>
+          </View>
 
+          <ScrollView
+            ref={scrollRef}
+            style={{ flex: 1 }}
+            contentContainerStyle={{
+              paddingHorizontal: GLOBAL_PADDING,
+              paddingBottom: "80%",
+              gap: 32
+            }}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={{
+              gap: 16,
+            }}>
+              <View style={{
+                gap: 8,
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-evenly',
+                marginTop: 12,
+              }}>
+                {quickStarts.map((item) => {
+                  const isSelected = formData.time_horizon === item.id;
+                  return (
+                    <Pressable
+                      key={item.id}
+                      onPress={() => setFormData(p => ({ ...p, time_horizon: item.id }))}
+                      sx={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        borderRadius: "full",
+                        borderColor: isSelected ? palette.foreground : withOpacity(palette.foreground, 0.2),
+                        borderWidth: 1,
+                        gap: 12,
+                      }}
+                    >
+                      <View
+                        style={{
+                          width: 64,
+                          height: 64,
+                          borderRadius: 20,
+                          borderColor: withOpacity(isSelected ? palette.surfaceLight : palette.foreground, 0.05),
+                          alignItems: 'center',
+                          justifyContent: 'center'
+                        }}
+                      >
+                        <MaterialCommunityIcons
+                          name={item.icon as any}
+                          size={36}
+                          color={isSelected ? palette.surfaceLight : palette.textSecondary}
+                        />
+                      </View>
+                    </Pressable>
+                  );
+                })}
+              </View>
+              <View style={{ flex: 1, gap: 1 }}>
+                <Text variant="body" sx={{
+                  fontWeight: "600",
+                  color: palette.textPrimary,
+                  textAlign: 'center'
+                }}>
+                  {formData.time_horizon}
+                </Text>
+                <Text
+                  variant="xs"
+                  tone="muted"
+                  sx={{
+                    marginTop: 2,
+                    textAlign: 'center',
+                    letterSpacing: 4,
+                    lineHeight: 24,
+                  }}>
+                  {quickStarts.find((item) => item.id === formData.time_horizon)?.headline}
+                </Text>
+              </View>
+            </View>
+
+            <View style={{ gap: 16 }}>
+              <View sx={{ gap: 2, paddingHorizontal: 6, }}>
+                <View sx={{
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  gap: 12,
+                  position: 'relative',
+                }}>
+                  <TextInput
+                    placeholder={'name'}
+                    placeholderTextColor={withOpacity(palette.foreground, 0.5)}
+                    value={formData.name}
+                    onChangeText={(val) => setFormData(p => ({ ...p, name: val }))}
+                    style={{
+                      flex: 1,
+                      fontSize: 24,
+                      fontWeight: "300",
+                      paddingVertical: 12,
+                      paddingHorizontal: 24,
+                      borderRadius: 999,
+                      width: "100%",
+                      borderColor: withOpacity(palette.foreground, 0.2),
+                    }}
+                  />
+                  <Pressable
+                    onPress={generateRandomName}
+                    sx={{
+                      flexDirection: 'row',
+                      alignItems: 'center',
+                      borderRadius: 999,
+                      position: "absolute",
+                      paddingHorizontal: 4,
+                      right: 0,
+                      top: 0,
+                      bottom: 0,
+                    }}
+                  >
+                    <MaterialCommunityIcons name="dice-6" size={24} color={palette.surfaceLight} />
+                  </Pressable>
+                </View>
+                <Text
+                  tone="muted" variant="xs"
+                  sx={{
+                    textAlign: 'center',
+                    paddingHorizontal: 24,
+                  }}
+                >
+                  This can be changed anytime between now and publishing your agent.
+                </Text>
+              </View>
+            </View>
+
+            <View ref={modelSectionRef} style={{ gap: 16, marginTop: 12 }}>
+              <Pressable
+                onPress={toggleModelDropdown}
+                sx={{
+                  paddingHorizontal: 12,
+                  paddingVertical: 4,
+                  flexDirection: "row",
+                  alignItems: "center",
+                  gap: 12,
+                  borderRadius: 12,
+                  backgroundColor: withOpacity(palette.surfaceLight, 0.1),
+                }}
+              >
+                <MaterialCommunityIcons name="robot-excited" size={20} color={palette.surfaceLight} />
+                <View style={{ flex: 1 }}>
+                  <Text variant="body" style={{ fontWeight: "700" }}>
+                    {modelLabel}
+                  </Text>
+                </View>
+                <MaterialCommunityIcons
+                  name={isModelDropdownExpanded ? "chevron-up" : "chevron-down"}
+                  size={20}
+                  color={palette.textSecondary}
+                />
+              </Pressable>
+
+              {isModelDropdownExpanded && (
+                <Animated.View
+                  entering={FadeIn.duration(200)}
+                  exiting={FadeOut.duration(200)}
+                  layout={Layout.springify()}
+                  style={{ gap: 12, marginTop: 4 }}
+                >
+                  <View style={{ flexDirection: 'row', gap: 8 }}>
+                    <View style={{ flex: 1 }}>
+                      <TextInput
+                        placeholder={'Search'}
+                        value={modelQuery}
+                        onChangeText={setModelQuery}
+                        style={{ paddingVertical: 10 }}
+                        autoFocus
+                      />
+                    </View>
+                  </View>
+
+                  {isLoadingModels ? (
+                    <View style={{ paddingVertical: 20, alignItems: "center" }}>
+                      <ActivityIndicator color={palette.surfaceLight} />
+                    </View>
+                  ) : (
+                    <View style={{ gap: 4 }}>
+                      <ScrollView
+                        nestedScrollEnabled
+                        style={{ maxHeight: 300, marginRight: 96 }}
+                        contentContainerStyle={{ gap: 4 }}
+                      >
+                        {filteredModels.map((item) => {
+                          const slug = normalizeModelSlug(item);
+                          const isSelected = formData.model_name === slug;
+                          const name = item?.name || item?.short_name || slug;
+                          return (
+                            <Pressable
+                              key={slug}
+                              onPress={() => handleModelSelect(slug, item)}
+                              sx={{
+                                flexDirection: 'row',
+                                alignItems: 'center',
+                                gap: 12,
+                                borderRadius: 8,
+                                backgroundColor: isSelected ? withOpacity(palette.surfaceLight, 0.05) : 'transparent',
+                              }}
+                            >
+                              <View style={{ flex: 1 }}>
+                                <Text variant="sm" style={{ fontWeight: isSelected ? '700' : '500', color: isSelected ? palette.surfaceLight : palette.textPrimary }}>{name}</Text>
+                                <Text variant="xs" tone="muted" numberOfLines={1}>{slug}</Text>
+                              </View>
+                              {isSelected && (
+                                <MaterialCommunityIcons name="check" size={16} color={palette.surfaceLight} />
+                              )}
+                            </Pressable>
+                          );
+                        })}
+                      </ScrollView>
+                    </View>
+                  )}
+                </Animated.View>
+              )}
+            </View>
+          </ScrollView>
+
+          {/* Action Footer */}
+          <View
+            style={{
+              paddingHorizontal: GLOBAL_PADDING,
+              paddingVertical: 16,
+              borderTopWidth: 1,
+            }}
+          >
+            <GlassButton
+              onPress={handleLaunch}
+              styleVariant="paddedFull"
+              tintColor={palette.surfaceLight}
+              glassEffectStyle="regular"
+              disabled={!creationReady || createAgentMutation.isPending}
+            >
+              <Text style={{ color: palette.surfaceSecondary, fontWeight: "700" }}>
+                {createAgentMutation.isPending ? "Launching…" : "Launch Agent"}
+              </Text>
             </GlassButton>
           </View>
         </View>

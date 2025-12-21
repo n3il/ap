@@ -104,13 +104,11 @@ export default function BuySellAgentModal() {
 
       {/* Main Display Area */}
       <View sx={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <Text variant="sm" tone="muted" sx={{ marginBottom: 2 }}>
-          {mode === 'buy' ? 'How much to buy?' : 'How much to sell?'}
-        </Text>
         <View sx={{ flexDirection: 'row', alignItems: 'center' }}>
-          <Text sx={{ fontSize: 56, fontWeight: '700', color: "textPrimary" }}>$</Text>
+          <Text sx={{ fontSize: 56, lineHeight: 56, fontWeight: '700', color: "textPrimary" }}>$</Text>
           <Text sx={{
             fontSize: 64,
+            lineHeight: 64,
             fontWeight: '700',
             color: "textPrimary",
             marginLeft: 1

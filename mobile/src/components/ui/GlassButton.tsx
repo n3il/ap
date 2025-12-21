@@ -18,6 +18,10 @@ const styleVariants = {
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
+  minimalSquare: {
+    paddingHorizontal: 4,
+    paddingVertical: 4,
+  },
   minimal: {
     paddingHorizontal: 12,
     paddingVertical: 0,

@@ -49,7 +49,13 @@ function PositionDetailRow({
   );
 }
 
-function TableCell({ alignLeft, children }) {
+function TableCell({
+  alignLeft,
+  children
+}: {
+  alignLeft: boolean;
+  children: React.ReactNode
+}) {
   return (
     <View
       sx={{

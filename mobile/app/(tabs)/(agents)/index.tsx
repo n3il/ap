@@ -64,25 +64,16 @@ export default function AgentsScreen() {
           alignItems: "center",
           justifyContent: "space-between",
           paddingHorizontal: 4,
-          marginTop: 4,
         }}
       >
         <SectionTitle title="" sx={{ fontSize: 16 }} />
         <GlassButton
           onPress={handleCreateAgent}
-          tintColor={palette.surface}
+          tintColor={palette.surfaceLight}
           // tintColor={isDark ? "rgba(0,0,0,.3)" : "rgba(0,0,0,.3)"}
-          // styleVariant="square"
-          buttonProps={{
-            style: {
-              flexDirection: "column",
-              padding: 10,
-              paddingLeft: 100,
-              paddingRight: 30
-            }
-          }}
+          styleVariant="minimalSquare"
         >
-          <MaterialCommunityIcons name="magic-wand" size={30} color={"orange"} />
+          <MaterialCommunityIcons name="plus" size={28} color={palette.surfaceForeground} />
         </GlassButton>
       </View>
 

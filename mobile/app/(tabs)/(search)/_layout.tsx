@@ -8,6 +8,7 @@ export default function SearchLayout() {
       <Stack.Screen
         name="index"
         options={{
+          headerShown: false,
           title: "Search",
           headerStyle: {
             backgroundColor: palette.background,
@@ -18,7 +19,7 @@ export default function SearchLayout() {
           headerSearchBarOptions: {
             placement: "automatic",
             placeholder: "Search",
-            onChangeText: () => {},
+            onChangeText: () => { },
           },
         }}
       />
