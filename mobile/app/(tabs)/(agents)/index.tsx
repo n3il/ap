@@ -70,7 +70,9 @@ export default function AgentsScreen() {
         <SectionTitle title="" sx={{ fontSize: 16 }} />
         <GlassButton
           onPress={handleCreateAgent}
-          styleVariant="square"
+          tintColor={palette.surface}
+          // tintColor={isDark ? "rgba(0,0,0,.3)" : "rgba(0,0,0,.3)"}
+          // styleVariant="square"
           buttonProps={{
             style: {
               flexDirection: "column",
@@ -79,9 +81,8 @@ export default function AgentsScreen() {
               paddingRight: 30
             }
           }}
-          tintColor={isDark ? "rgba(0,0,0,.3)" : "rgba(0,0,0,.3)"}
         >
-          <MaterialCommunityIcons name="meteor" size={30} color={"orange"} />
+          <MaterialCommunityIcons name="magic-wand" size={30} color={"orange"} />
         </GlassButton>
       </View>
 

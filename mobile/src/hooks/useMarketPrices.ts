@@ -85,6 +85,7 @@ export function useMarketPrices() {
       const now = Date.now();
 
       // 2. Only trigger state update if enough time has passed
+      console.log(now - lastUpdateRef.current > THROTTLE_MS, now, lastUpdateRef.current)
       if (now - lastUpdateRef.current > THROTTLE_MS) {
         setMids(update.mids);
         updateTickers(update.mids, update.asOf);

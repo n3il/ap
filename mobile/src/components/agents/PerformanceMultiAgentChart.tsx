@@ -70,7 +70,7 @@ const { width: SCREEN_WIDTH } = Dimensions.get("window");
 const AgentInitialDot = ({ agent, x, y, expandedHeight, chartHeight, agentCircleSize, pulse }: { agent: AgentType, x: number, y: number, expandedHeight: number, chartHeight: SharedValue<number>, agentCircleSize: number, pulse: SharedValue<number> }) => {
     const { colors: palette } = useColors();
     const initial = agent.name?.charAt(0).toUpperCase() || "";
-    const agentColour = resolveProviderColor(`${agent.llm_provider}`, palette.providers);
+    const agentColour = palette.providers[agent.llm_provider] || palette.foreground;
 
     const animatedStyle = useAnimatedStyle(() => {
         const scaling = chartHeight.value / expandedHeight;
@@ -117,6 +117,143 @@ const AgentInitialDot = ({ agent, x, y, expandedHeight, chartHeight, agentCircle
             </Text>
         </Animated.View>
     );
+};
+
+const HoverLegend = ({
+    isActive,
+    activeX,
+    activeIndex,
+    agents,
+    agentDataSets,
+    effectiveWidth,
+    palette
+}: {
+    isActive: SharedValue<boolean>;
+    activeX: SharedValue<number>;
+    activeIndex: SharedValue<number>;
+    agents: AgentType[];
+    agentDataSets: Record<string, { timestamp: number; value: number }[]>;
+    effectiveWidth: number;
+    palette: any;
+}) => {
+    const containerStyle = useAnimatedStyle(() => {
+        const isRight = activeX.value < effectiveWidth / 2;
+        return {
+            opacity: withTiming(isActive.value ? 1 : 0, { duration: 150 }),
+            left: isRight ? "auto" : 10,
+            right: isRight ? 10 : "auto",
+        };
+    });
+
+    return (
+        <Animated.View
+            style={[
+                {
+                    position: 'absolute',
+                    top: 10,
+                    padding: 8,
+                    borderRadius: 12,
+                    backgroundColor: Platform.select({
+                        ios: 'rgba(255, 255, 255, 0.8)',
+                        default: 'rgba(255, 255, 255, 0.9)'
+                    }),
+                    borderWidth: 1,
+                    borderColor: 'rgba(0,0,0,0.05)',
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowOpacity: 0.1,
+                    shadowRadius: 4,
+                    elevation: 3,
+                    minWidth: 120,
+                    gap: 4
+                },
+                containerStyle
+            ]}
+            pointerEvents="none"
+        >
+            {agents.map((agent) => {
+                const data = agentDataSets[agent.id];
+                if (!data || data.length === 0) return null;
+                const color = palette.providers[agent.llm_provider] || palette.foreground;
+
+                return (
+                    <AgentHoverRow
+                        key={agent.id}
+                        agent={agent}
+                        color={color}
+                        data={data}
+                        activeIndex={activeIndex}
+                        palette={palette}
+                    />
+                );
+            })}
+        </Animated.View>
+    );
+};
+
+const AgentHoverRow = ({ agent, color, data, activeIndex, palette }: { agent: AgentType, color: string, data: { value: number }[], activeIndex: SharedValue<number>, palette: any }) => {
+    const animatedProps = useAnimatedProps(() => {
+        if (activeIndex.value === -1 || !data[activeIndex.value]) return { value: "--" };
+        const val = data[activeIndex.value].value;
+        return { value: `${val > 0 ? '+' : ''}${val.toFixed(2)}%` } as any;
+    });
+
+    return (
+        <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: color }} />
+                <Text style={{ fontSize: 12, fontWeight: '600', color: palette.text.primary }}>{agent.name}</Text>
+            </View>
+            <AnimatedTextInput
+                underlineColorAndroid="transparent"
+                editable={false}
+                animatedProps={animatedProps}
+                style={{
+                    fontSize: 12,
+                    fontWeight: '700', // mono-ish numbers look better?
+                    color: palette.text.primary,
+                    textAlign: 'right'
+                }}
+            />
+        </View>
+    );
+};
+
+const CursorDot = ({
+    activeIndex,
+    data,
+    expandedHeight,
+    chartHeight,
+    getX,
+    getY,
+    color,
+    isActive
+}: {
+    activeIndex: SharedValue<number>;
+    data: { value: number }[];
+    expandedHeight: number;
+    chartHeight: SharedValue<number>;
+    getX: (i: number) => number;
+    getY: (v: number, h: number) => number;
+    color: string;
+    isActive: SharedValue<boolean>;
+}) => {
+    const circleProps = useAnimatedProps(() => {
+        if (!isActive.value || activeIndex.value === -1 || !data[activeIndex.value]) {
+            return { r: 0, cx: 0, cy: 0 };
+        }
+        const point = data[activeIndex.value];
+        const cx = getX(activeIndex.value);
+        const cy = getY(point.value, chartHeight.value); // Use current chart height for correct Y
+
+        return {
+            cx,
+            cy,
+            r: 6
+        };
+    });
+
+    return <Circle animatedProps={circleProps} color={color} style="fill" />;
 };
 
 export default function PerformanceMultiAgentChart({
@@ -207,7 +344,7 @@ export default function PerformanceMultiAgentChart({
             )?.hyperliquid_address;
             const historyPoints = historyMap[addr || ""]?.[portfolioTimeframe] || [];
 
-            if (historyPoints.length === 0) return;
+            if (historyPoints.length === 0 || historyPoints.at(-1)?.value === 0) return;
 
             const firstVal = historyPoints[0].value;
 
@@ -286,18 +423,20 @@ export default function PerformanceMultiAgentChart({
     });
 
     // --- path generation helpers ---
-    const getY = (val: number, currentHeight: number) => {
+    const getY = React.useCallback((val: number, currentHeight: number) => {
+        'worklet';
         const range = maxVal - minVal;
         const actualRange = range === 0 ? 1 : range;
         const norm = (val - minVal) / actualRange;
         const paddedHeight = currentHeight - (topPadding + bottomPadding);
         return topPadding + paddedHeight - (norm * paddedHeight);
-    };
+    }, [maxVal, minVal, topPadding, bottomPadding]);
 
-    const getX = (index: number) => {
+    const getX = React.useCallback((index: number) => {
+        'worklet';
         if (xLength <= 1) return 0;
         return (index / (xLength - 1)) * effectiveWidth;
-    };
+    }, [xLength, effectiveWidth]);
 
     const generatePath = (
         points: { timestamp: number; value: number }[],
@@ -369,7 +508,7 @@ export default function PerformanceMultiAgentChart({
     // Tooltip Text Props
     const tooltipTextProps = useAnimatedProps(() => {
         if (!isActive.value || activeTimestamp.value === 0) {
-            return { text: "" };
+            return { value: "" };
         }
         const date = new Date(activeTimestamp.value);
         // Simple format: MMM DD, HH:mm
@@ -381,7 +520,7 @@ export default function PerformanceMultiAgentChart({
         const min = date.getMinutes();
         const minStr = min < 10 ? `0${min}` : `${min}`;
 
-        return { text: `${m} ${d}, ${h}:${minStr}` } as any;
+        return { value: `${m} ${d}, ${h}:${minStr}` } as any;
     });
 
     const tooltipStyle = useAnimatedStyle(() => {
@@ -452,7 +591,7 @@ export default function PerformanceMultiAgentChart({
                                         const data = agentDataSets[agent.id];
                                         if (!data) return null;
                                         const path = generatePath(data, expandedHeight);
-                                        const agentColour = resolveProviderColor(`${agent.llm_provider}`, palette.providers);
+                                        const agentColour = palette.providers[agent.llm_provider] || palette.foreground;
 
                                         return (
                                             <Group key={agent.id}>
@@ -465,7 +604,16 @@ export default function PerformanceMultiAgentChart({
                                                     strokeCap="round"
                                                     opacity={0.9}
                                                 />
-                                                {/* Latest value dot - REMOVED, now in AgentInitialDot */}
+                                                <CursorDot
+                                                    activeIndex={activeIndex}
+                                                    data={data}
+                                                    expandedHeight={expandedHeight}
+                                                    chartHeight={chartHeight}
+                                                    getX={getX}
+                                                    getY={getY}
+                                                    color={agentColour}
+                                                    isActive={isActive}
+                                                />
                                             </Group>
                                         );
                                     })}
@@ -515,7 +663,7 @@ export default function PerformanceMultiAgentChart({
                                     opacity: 0.6
                                 }}>{minVal.toFixed(1)}%</Text>
 
-                                {/* Agent Initials on Dots */}
+                                {/* Scrollable/Pulsating Agent Initials */}
                                 {agents.map((agent) => {
                                     const data = agentDataSets[agent.id];
                                     if (!data || data.length === 0) return null;
@@ -575,6 +723,17 @@ export default function PerformanceMultiAgentChart({
                                                 }}
                                             />
                                         </Animated.View>
+
+                                        {/* Hover Legend */}
+                                        <HoverLegend
+                                            isActive={isActive}
+                                            activeX={activeX}
+                                            activeIndex={activeIndex}
+                                            agents={agents}
+                                            agentDataSets={agentDataSets}
+                                            effectiveWidth={effectiveWidth}
+                                            palette={palette}
+                                        />
                                     </>
                                 )}
                             </View>
@@ -582,7 +741,7 @@ export default function PerformanceMultiAgentChart({
                     </GestureDetector>
                 </GestureHandlerRootView>
             </Animated.View>
-        </Pressable>
+        </Pressable >
     );
 
 }

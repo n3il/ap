@@ -7,13 +7,13 @@ import Text from "./Text";
 export interface BadgeProps {
   children: React.ReactNode;
   variant?:
-    | "default"
-    | "primary"
-    | "secondary"
-    | "success"
-    | "error"
-    | "warning"
-    | "info";
+  | "default"
+  | "primary"
+  | "secondary"
+  | "success"
+  | "error"
+  | "warning"
+  | "info";
   size?: "sm" | "md" | "lg";
   sx?: SxProp;
 }
@@ -73,7 +73,7 @@ const Badge: React.FC<BadgeProps> = ({
     },
   };
 
-  const currentSize = sizeStyles[size];
+  const currentSize = sizeStyles[size] || sizeStyles.md;
 
   return (
     <View

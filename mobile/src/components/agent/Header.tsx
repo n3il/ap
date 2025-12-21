@@ -17,6 +17,7 @@ type Props = {
   onBookmarkPress?: () => void;
   style?: StyleProp<ViewStyle>;
   timeframe?: string;
+  agentName?: string;
 };
 
 async function runAgentAssessment(agentId: string) {
@@ -293,7 +294,7 @@ export default function AgentHeader({
             padding: 0,
             width: 40,
             height: 40,
-            display: "none",
+            // display: "none",
           }}
         >
           <RadarSpinner
