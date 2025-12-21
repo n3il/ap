@@ -102,7 +102,7 @@ const darkTheme = {
     text: {
       primary: "#f8fafc",
       secondary: "#cbd5f5",
-      tertiary: "#575f68ff",
+      tertiary: "#606a75ff",
     },
     card: {
       DEFAULT: "#1e293b",

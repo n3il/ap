@@ -103,6 +103,9 @@ export default function GlassButton({
             backgroundColor: colors.glassTint,
           },
           style,
+          {
+            backgroundColor: tintColor,
+          }
         ]}
         {...props}
       >

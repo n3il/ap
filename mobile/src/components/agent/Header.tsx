@@ -24,6 +24,7 @@ async function runAgentAssessment(agentId: string) {
   const {
     data: { session },
   } = await supabase.auth.getSession();
+  console.log("session", session);
   if (!session?.access_token) {
     throw new Error("You need to be signed in to run an assessment.");
   }
@@ -218,7 +219,7 @@ export default function AgentHeader({
             flexGrow: 0,
             backgroundColor: "transparent"
           }}
-          tintColor={withOpacity(palette.backkgroundSecondary, .8)}
+          tintColor={withOpacity(palette.backgroundSecondary, .8)}
         >
           <MaterialCommunityIcons
             name="chevron-left"
@@ -245,7 +246,7 @@ export default function AgentHeader({
         ]}
       >
         <GlassButton
-          tintColor={withOpacity(palette.backkgroundSecondary, .1)}
+          tintColor={withOpacity(palette.backgroundSecondary, .1)}
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
           style={{
@@ -266,7 +267,7 @@ export default function AgentHeader({
           )}
         </GlassButton>
         <GlassButton
-          tintColor={withOpacity(palette.backkgroundSecondary, .1)}
+          tintColor={withOpacity(palette.backgroundSecondary, .1)}
           onPress={onBookmarkPress ?? handleToggleWatchlist}
           disabled={watchlistButtonDisabled}
           style={{
@@ -285,20 +286,17 @@ export default function AgentHeader({
           )}
         </GlassButton>
         <GlassButton
-          tintColor={withOpacity(palette.backkgroundSecondary, .1)}
-          glassEffectStyle="regular"
-          styleVariant="minimal"
+          tintColor={withOpacity(palette.backgroundSecondary, .1)}
           onPress={handleRunAssessment}
           disabled={!agentId || isTriggeringAssessment}
           style={{
-            padding: 0,
-            width: 40,
-            height: 40,
-            // display: "none",
+            width: 50,
+            height: 36,
           }}
         >
           <RadarSpinner
             isTriggeringAssessment={isTriggeringAssessment}
+            size={20}
             palette={palette}
           />
         </GlassButton>

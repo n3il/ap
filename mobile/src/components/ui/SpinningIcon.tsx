@@ -10,9 +10,10 @@ type Props = {
     foreground: string;
     accent?: string;
   };
+  size?: number;
 };
 
-export function RadarSpinner({ isTriggeringAssessment, palette }: Props) {
+export function RadarSpinner({ isTriggeringAssessment, palette, size = 20 }: Props) {
   const spinValue = useRef(new Animated.Value(0)).current;
   const pulseValue = useRef(new Animated.Value(0)).current;
   const accentColor = palette.accent ?? palette.foreground;
@@ -80,7 +81,7 @@ export function RadarSpinner({ isTriggeringAssessment, palette }: Props) {
     return (
       <MaterialCommunityIcons
         name="radar"
-        size={24}
+        size={size}
         color={palette.foreground}
       />
     );
@@ -89,7 +90,7 @@ export function RadarSpinner({ isTriggeringAssessment, palette }: Props) {
   return (
     <AnimatedIcon
       name="radar"
-      size={24}
+      size={size}
       style={{
         transform: [{ rotate: spin }],
         // Animated.createAnimatedComponent lets us animate style props

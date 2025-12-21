@@ -129,6 +129,10 @@ export default function VerifyOTPScreen() {
         <AnimatedBox
           layout={LinearTransition.duration(300).springify()}
           style={{
+            paddingTop: "auto",
+            justifyContent: "center",
+            paddingHorizontal: 8,
+            minHeight: 400,
             marginVertical: "auto",
           }}
         >
@@ -169,9 +173,9 @@ export default function VerifyOTPScreen() {
                 containerStyle: { gap: 8 },
                 pinCodeContainerStyle: {
                   borderWidth: 0,
-                  borderColor: palette.secondary700 ?? colors.secondary,
-                  borderBottomWidth: 1,
-                  borderRadius: 0,
+                  // borderColor: palette.secondary700 ?? colors.secondary,
+                  // borderBottomWidth: 1,
+                  backgroundColor: palette.secondary700 ?? colors.secondary,
                   width: 48,
                   height: 56,
                 },
@@ -183,8 +187,9 @@ export default function VerifyOTPScreen() {
                   backgroundColor: palette.foreground,
                 },
                 focusedPinCodeContainerStyle: {
-                  borderBottomColor: palette.foreground,
-                  borderBottomWidth: 2,
+                  backgroundColor: palette.secondary,
+                  // borderBottomColor: palette.foreground,
+                  // borderBottomWidth: 2,
                 },
               }}
             />
@@ -194,7 +199,10 @@ export default function VerifyOTPScreen() {
             onPress={() => handleVerifyCode(verificationCode)}
             disabled={loading || verificationCode.length !== 6}
             styleVariant="paddedFull"
-            tintColor={palette.surface}
+            tintColor={palette.surfaceLight}
+            style={{
+              backgroundColor: palette.surface,
+            }}
           >
             {loading ? (
               <ActivityIndicator color={palette.foreground} />
@@ -227,6 +235,8 @@ export default function VerifyOTPScreen() {
             flexGrow: 0,
             alignItems: "flex-start",
             justifyItems: "flex-end",
+            marginBottom: 16,
+            marginTop: "auto",
           }}
         >
           <GlassButton

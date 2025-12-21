@@ -116,7 +116,7 @@ export default function PhoneInputAutoDetect({
       {/* national number */}
       <TextInput
         value={displayValue}
-        placeholder="(000) 000-0000"
+        placeholder=""
         keyboardType="phone-pad"
         textContentType="telephoneNumber"
         onSelectionChange={(e) => setSelection(e.nativeEvent.selection)}

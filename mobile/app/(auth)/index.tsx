@@ -1,4 +1,4 @@
-import { AntDesign, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign, Ionicons, MaterialCommunityIcons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView } from "react-native-keyboard-controller";
@@ -131,6 +131,10 @@ export default function Auth() {
         <AnimatedBox
           layout={LinearTransition.duration(300).springify()}
           style={{
+            paddingTop: "auto",
+            justifyContent: "center",
+            paddingHorizontal: 8,
+            minHeight: 400,
             marginVertical: "auto",
           }}
         >
@@ -140,14 +144,16 @@ export default function Auth() {
             exiting={FadeOut.duration(200)}
             style={{ gap: 8 }}
           >
-            <View sx={{ marginBottom: 0, gap: 8 }}>
+            <View sx={{ marginBottom: 0, gap: 8, minHeight: 100 }}>
               <SectionTitle
                 title={
                   authType === "phone"
                     ? t("login.phoneNumber")
                     : t("login.email")
                 }
-                sx={{ paddingLeft: 3, fontSize: 14 }}
+                sx={{
+                  fontSize: 16,
+                }}
               />
               {authType === "phone" ? (
                 <PhoneInputAutoDetect
@@ -220,10 +226,10 @@ export default function Auth() {
                   gap: 8,
                 }}
               >
-                <MaterialIcons
-                  name={authType === "phone" ? "alternate-email" : "sms"}
+                <MaterialCommunityIcons
+                  name={authType === "phone" ? "email-fast-outline" : "message-fast-outline"}
                   size={22}
-                  color={palette.surfaceForeground}
+                  color={withOpacity(palette.surfaceForeground, .7)}
                 />
                 <Text
                   sx={{
@@ -257,7 +263,8 @@ export default function Auth() {
 
         <View
           style={{
-            marginBottom: 10,
+            marginBottom: 16,
+            marginTop: "auto",
           }}
         >
           <AnimatedBox
@@ -288,18 +295,26 @@ export default function Auth() {
                 authType === "phone" ? !isValidPhoneNumber : !validEmail
               )}
               styleVariant="paddedFull"
-              tintColor={palette.surface}
+              tintColor={palette.surfaceLight}
+              style={{
+                backgroundColor: palette.surface,
+              }}
             >
               {loading ? (
                 <ActivityIndicator color={palette.surfaceForeground} />
               ) : (
-                <View sx={{ flexDirection: "row" }}>
-                  <Text sx={{ color: "surfaceForeground" }}>{t("login.sendCode")}</Text>
+                <View sx={{
+                  flexDirection: "row",
+                  gap: 2,
+                  alignItems: "center",
+                }}>
                   <MaterialCommunityIcons
-                    name="chevron-double-right"
-                    color={palette.surfaceForeground}
-                    size={24}
+                    name={authType === "email" ? "email-fast-outline" : "message-fast-outline"}
+                    size={20}
+                    color={withOpacity(palette.surfaceForeground, .7)}
                   />
+
+                  <Text sx={{ color: "surfaceForeground" }}>{t("login.sendCode")}</Text>
                 </View>
               )}
             </GlassButton>
